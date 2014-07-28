@@ -2,6 +2,7 @@
 using System.Linq;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Views.Basic;
+using d60.EventSorcerer.Views.Basic.Locators;
 using NUnit.Framework;
 
 namespace d60.EventSorcerer.Tests.Views

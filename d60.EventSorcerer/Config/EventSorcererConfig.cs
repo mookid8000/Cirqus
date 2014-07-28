@@ -50,7 +50,7 @@ namespace d60.EventSorcerer.Config
         /// <summary>
         /// Processes the specified command by invoking the generic dispatcher method
         /// </summary>
-        public void ProcessCommand(ICommand command)
+        public void ProcessCommand(Command command)
         {
             var commandType = command.GetType();
             var aggregateRootType = GetAggregateRootType(commandType);

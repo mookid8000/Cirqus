@@ -3,7 +3,11 @@ using d60.EventSorcerer.Aggregates;
 
 namespace d60.EventSorcerer.Commands
 {
-    public abstract class Command<TAggregateRoot> : ICommand where TAggregateRoot:AggregateRoot
+    public class Command
+    {
+    }
+    
+    public abstract class Command<TAggregateRoot> : Command where TAggregateRoot : AggregateRoot
     {
         protected Command(Guid aggregateRootId)
         {
