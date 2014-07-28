@@ -109,6 +109,11 @@ namespace d60.EventSorcerer.Config
 
             if (!emittedEvents.Any()) return;
 
+            foreach (var e in emittedEvents)
+            {
+                e.Meta.Merge(command.Meta);
+            }
+
             // first: save the events
             _eventStore.Save(batchId, emittedEvents);
 

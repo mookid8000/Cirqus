@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggregates\TestEventApplication.cs" />
+    <Compile Include="Commands\TestCustomMetadata.cs" />
     <Compile Include="FixtureBase.cs" />
     <Compile Include="Integration\SimpleScenarioWithDelegation.cs" />
     <Compile Include="Integration\SimpleScenarioWithConcurrency.cs" />
@@ -80,9 +81,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Commands\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\d60.EventSorcerer.MongoDb\d60.EventSorcerer.MongoDb.csproj">
       <Project>{1ECCDCD5-DD78-4F9C-B0C3-BC083742CE99}</Project>

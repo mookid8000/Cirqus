@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace d60.EventSorcerer.Events
 {
@@ -8,5 +9,14 @@ namespace d60.EventSorcerer.Events
     /// </summary>
     public class Metadata : Dictionary<string, object>
     {
+        public void Merge(Metadata otherMeta)
+        {
+            foreach (var kvp in otherMeta)
+            {
+                if (ContainsKey(kvp.Key)) continue;
+
+                this[kvp.Key] = kvp.Value;
+            }
+        }
     }
 }

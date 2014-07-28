@@ -1,5 +1,6 @@
 ﻿using System;
 using d60.EventSorcerer.Aggregates;
+using d60.EventSorcerer.Events;
 
 namespace d60.EventSorcerer.Commands
 {
@@ -12,8 +13,10 @@ namespace d60.EventSorcerer.Commands
         protected Command(Guid aggregateRootId)
         {
             AggregateRootId = aggregateRootId;
+            Meta = new Metadata();
         }
 
+        public Metadata Meta { get; private set; }
         public Guid AggregateRootId { get; private set; }
 
         public Type AggregateRootType
