@@ -3,34 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30110.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EffectLauncher.ServerApi", "EffectLauncher.ServerApi\EffectLauncher.ServerApi.csproj", "{A3275989-39FB-42F4-BB3F-14B5988E6B07}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.EventSorcerer", "d60.EventSorcerer\d60.EventSorcerer.csproj", "{8E2DF6B4-A4DF-495E-8D74-5DCE6B333FB4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EffectLauncher.Client", "EffectLauncher.Client\EffectLauncher.Client.csproj", "{FBD7DB97-9FE9-45E2-A44F-45224EFF5D2B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.EventSorcerer.Tests", "d60.EventSorcerer.Tests\d60.EventSorcerer.Tests.csproj", "{7624F47B-B53F-40C6-B211-19288E814F86}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{B3C8ECDC-FA7A-488A-9EF5-F2C079F3F963}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.EventSorcerer.MongoDb", "d60.EventSorcerer.MongoDb\d60.EventSorcerer.MongoDb.csproj", "{1ECCDCD5-DD78-4F9C-B0C3-BC083742CE99}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{756E55BA-35D2-4281-BE7E-05E23444136E}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
 		.nuget\NuGet.exe = .nuget\NuGet.exe
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EffectLauncher.Tests", "EffectLauncher.Tests\EffectLauncher.Tests.csproj", "{821A3B30-EA8C-4FC1-937A-E520C625D7B3}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EffectLauncher.Migrator", "EffectLauncher.Migrator\EffectLauncher.Migrator.csproj", "{BBF62649-5E88-4AC7-BCB0-7B7189C9E567}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.EsKit", "d60.EsKit\d60.EsKit.csproj", "{BA16F924-5177-4831-804F-4ABD2ED44FFF}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.EsKit.MongoDB", "d60.EsKit.MongoDB\d60.EsKit.MongoDB.csproj", "{ABB4DAE8-BE05-49BC-9B8C-184CF33B9798}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.EsKit.Tests", "d60.EsKit.Tests\d60.EsKit.Tests.csproj", "{7479E09E-573B-43A2-B766-41569EC18FF0}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.EventSorcerer", "d60.EventSorcerer\d60.EventSorcerer.csproj", "{8E2DF6B4-A4DF-495E-8D74-5DCE6B333FB4}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.EventSorcerer.Tests", "d60.EventSorcerer.Tests\d60.EventSorcerer.Tests.csproj", "{7624F47B-B53F-40C6-B211-19288E814F86}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "reboot", "reboot", "{0CF6683B-852E-4BFB-B445-D34BD6B5D929}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.EventSorcerer.MongoDb", "d60.EventSorcerer.MongoDb\d60.EventSorcerer.MongoDb.csproj", "{1ECCDCD5-DD78-4F9C-B0C3-BC083742CE99}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,33 +22,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A3275989-39FB-42F4-BB3F-14B5988E6B07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A3275989-39FB-42F4-BB3F-14B5988E6B07}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A3275989-39FB-42F4-BB3F-14B5988E6B07}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A3275989-39FB-42F4-BB3F-14B5988E6B07}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FBD7DB97-9FE9-45E2-A44F-45224EFF5D2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FBD7DB97-9FE9-45E2-A44F-45224EFF5D2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FBD7DB97-9FE9-45E2-A44F-45224EFF5D2B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{821A3B30-EA8C-4FC1-937A-E520C625D7B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{821A3B30-EA8C-4FC1-937A-E520C625D7B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{821A3B30-EA8C-4FC1-937A-E520C625D7B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{821A3B30-EA8C-4FC1-937A-E520C625D7B3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BBF62649-5E88-4AC7-BCB0-7B7189C9E567}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BBF62649-5E88-4AC7-BCB0-7B7189C9E567}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BBF62649-5E88-4AC7-BCB0-7B7189C9E567}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BBF62649-5E88-4AC7-BCB0-7B7189C9E567}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BA16F924-5177-4831-804F-4ABD2ED44FFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BA16F924-5177-4831-804F-4ABD2ED44FFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BA16F924-5177-4831-804F-4ABD2ED44FFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BA16F924-5177-4831-804F-4ABD2ED44FFF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ABB4DAE8-BE05-49BC-9B8C-184CF33B9798}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ABB4DAE8-BE05-49BC-9B8C-184CF33B9798}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ABB4DAE8-BE05-49BC-9B8C-184CF33B9798}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ABB4DAE8-BE05-49BC-9B8C-184CF33B9798}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7479E09E-573B-43A2-B766-41569EC18FF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7479E09E-573B-43A2-B766-41569EC18FF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7479E09E-573B-43A2-B766-41569EC18FF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7479E09E-573B-43A2-B766-41569EC18FF0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8E2DF6B4-A4DF-495E-8D74-5DCE6B333FB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8E2DF6B4-A4DF-495E-8D74-5DCE6B333FB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E2DF6B4-A4DF-495E-8D74-5DCE6B333FB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -80,10 +37,5 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{7624F47B-B53F-40C6-B211-19288E814F86} = {0CF6683B-852E-4BFB-B445-D34BD6B5D929}
-		{8E2DF6B4-A4DF-495E-8D74-5DCE6B333FB4} = {0CF6683B-852E-4BFB-B445-D34BD6B5D929}
-		{1ECCDCD5-DD78-4F9C-B0C3-BC083742CE99} = {0CF6683B-852E-4BFB-B445-D34BD6B5D929}
 	EndGlobalSection
 EndGlobal
