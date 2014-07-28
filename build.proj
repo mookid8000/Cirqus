@@ -1,0 +1,38 @@
+﻿<Project DefaultTargets="build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <Root>.</Root>
+    
+    <BuildOutputFolder>$(Root)\deploy</BuildOutputFolder>
+    <NuGetFolder>$(Root)\.nuget</NuGetFolder>
+  </PropertyGroup>
+
+  <Target Name="build" DependsOnTargets="clean_output_folder; build_solution" />
+
+  <Target Name="clean_output_folder">
+    <Message Text="Removing old output folder"/>
+    <RemoveDir Directories="$(BuildOutputFolder)" ContinueOnError="true"/>
+  </Target>
+
+  <Target Name="build_solution">
+    <Message Text="Building everything"/>
+
+    <MSBuild Projects="EventSorcerer.sln" Targets="rebuild" StopOnFirstFailure="true" Properties="Configuration=Release">
+      <Output TaskParameter="TargetOutputs" ItemName="AssembliesBuilt" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="create_packages" DependsOnTargets="build">
+    <PropertyGroup>
+      <PackagesOutputFolder>$(BuildOutputFolder)\publish</PackagesOutputFolder>
+    </PropertyGroup>
+    <ItemGroup>
+      <NuSpecs Include="$(Root)\**\*.nuspec"/>
+    </ItemGroup>
+    <Message Text="NUSPECS: %(NuSpecs.FullPath)"/>
+    <MakeDir Directories="$(PackagesOutputFolder)"/>
+    <Exec Command="$(NuGetFolder)\nuget.exe pack %(NuSpecs.FullPath) -OutputDirectory $(PackagesOutputFolder)"/>
+  </Target>
+</Project>

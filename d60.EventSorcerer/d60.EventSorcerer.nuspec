@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>d60.EventSorcerer</id>
+    <version>0.0.1</version>
+    <title>d60.EventSorcerer</title>
+    <authors>Mogens Heller Grabe</authors>
+    <owners>mookid8000</owners>
+    <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Event sourcing + cqrs kit</description>
+    <dependencies>
+      <dependency id="Newtonsoft.Json" version="6.0.3" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin\Release\d60.EventSorcerer.dll" target="lib" />
+  </files>
+</package>

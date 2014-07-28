@@ -58,6 +58,7 @@
     <Compile Include="Views\MongoDbViewDispatcher.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="d60.EventSorcerer.MongoDb.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
