@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 using d60.EventSorcerer.Aggregates;
@@ -11,7 +10,7 @@ using d60.EventSorcerer.Views;
 namespace d60.EventSorcerer.Config
 {
     /// <summary>
-    /// Main event sorcerer thing - if you can successfully create this bad boy, you have a fully functioning event sourcing this going for you
+    /// Main event sorcerer thing - if you can successfully create this bad boy, you have a fully functioning event sourcing thing going for you
     /// </summary>
     public class EventSorcererConfig
     {
@@ -71,8 +70,6 @@ namespace d60.EventSorcerer.Config
             }
         }
 
-        readonly ConcurrentDictionary<Guid, object> _locks = new ConcurrentDictionary<Guid, object>();
-
         // ReSharper disable UnusedMember.Local
         /// <summary>
         /// This method is called via reflection!
@@ -112,16 +109,11 @@ namespace d60.EventSorcerer.Config
 
             if (!emittedEvents.Any()) return;
 
+            // first: save the events
             _eventStore.Save(batchId, emittedEvents);
 
-            try
-            {
-                _viewManager.Dispatch(emittedEvents);
-            }
-            catch (Exception exception)
-            {
-                // what to do when that fails?
-            }
+            // when we come to this place, we deliver the events to the view manager
+            _viewManager.Dispatch(emittedEvents);
         }
 
         static Type GetAggregateRootType(Type commandType)
