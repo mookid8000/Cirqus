@@ -72,7 +72,6 @@
     <Compile Include="Views\Basic\BasicViewManager.cs" />
     <Compile Include="Views\Basic\InMemoryViewDispatcher.cs" />
     <Compile Include="Views\Basic\Locators\GlobalInstanceLocator.cs" />
-    <Compile Include="Views\Basic\Locators\InstancePerDomainEventTypeLocator.cs" />
     <Compile Include="Views\Basic\Locators\InstancePerAggregateRootLocator.cs" />
     <Compile Include="Views\Basic\ISubscribeTo.cs" />
     <Compile Include="Views\Basic\IView.cs" />
