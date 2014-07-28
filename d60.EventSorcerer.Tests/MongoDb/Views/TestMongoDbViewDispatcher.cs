@@ -9,6 +9,7 @@ using NUnit.Framework;
 namespace d60.EventSorcerer.Tests.MongoDb.Views
 {
     [TestFixture]
+    [Category(TestCategories.MongoDb)]
     public class TestMongoDbViewDispatcher : FixtureBase
     {
         MongoDatabase _database;

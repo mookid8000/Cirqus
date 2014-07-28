@@ -55,7 +55,7 @@ namespace d60.EventSorcerer.Tests.Views
         /// Can possibly be optimized even more
         /// </summary>
         [TestCase(100000)]
-        [TestCase(1000000)]
+        [TestCase(1000000, Ignore = true, Description = "chill, dude")]
         public void CheckPerformance(int numberOfEvents)
         {
             var firstRoot = Guid.NewGuid();

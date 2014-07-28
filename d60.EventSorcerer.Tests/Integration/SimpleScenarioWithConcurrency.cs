@@ -6,13 +6,16 @@ using d60.EventSorcerer.Commands;
 using d60.EventSorcerer.Config;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.MongoDb.Events;
+using d60.EventSorcerer.Tests.MongoDb;
 using d60.EventSorcerer.Tests.Stubs;
 using MongoDB.Driver;
 using NUnit.Framework;
 
 namespace d60.EventSorcerer.Tests.Integration
 {
-    [TestFixture, Description(@"Simulates the entire pipeline of event processing:
+    [TestFixture]
+    [Category(TestCategories.MongoDb)]
+    [Description(@"Simulates the entire pipeline of event processing:
 
 1. command comes in
 2. command is mapped to an operation on an aggregate root
@@ -33,8 +36,7 @@ many time in parallel, and after some time the consistency of everything is veri
 
         protected override void DoSetUp()
         {
-            _mongoDatabase = new MongoClient().GetServer().GetDatabase("es_test");
-            _mongoDatabase.Drop();
+            _mongoDatabase = Helper.InitializeTestDatabase();
             var eventStore = new MongoDbEventStore(_mongoDatabase, "events", automaticallyCreateIndexes: true);
 
             _aggregateRootRepository = new BasicAggregateRootRepository(eventStore);

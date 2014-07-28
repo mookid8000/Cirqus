@@ -7,6 +7,7 @@ using NUnit.Framework;
 namespace d60.EventSorcerer.Tests.MongoDb
 {
     [TestFixture]
+    [Category(TestCategories.MongoDb)]
     public class TestMongoDbEventStoreIndexPerf : FixtureBase
     {
         [TestCase(true, 100, 10*1000)]

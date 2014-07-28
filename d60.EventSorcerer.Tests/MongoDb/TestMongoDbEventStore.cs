@@ -8,6 +8,7 @@ using NUnit.Framework;
 namespace d60.EventSorcerer.Tests.MongoDb
 {
     [TestFixture]
+    [Category(TestCategories.MongoDb)]
     public class TestMongoDbEventStore : FixtureBase
     {
         MongoDbEventStore _eventStore;
