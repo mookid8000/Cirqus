@@ -35,4 +35,18 @@
     <MakeDir Directories="$(PackagesOutputFolder)"/>
     <Exec Command="$(NuGetFolder)\nuget.exe pack %(NuSpecs.FullPath) -OutputDirectory $(PackagesOutputFolder)"/>
   </Target>
+
+  <Target Name="publish_packages" DependsOnTargets="validate_nuget_environment_variable; create_packages">
+   
+    <ItemGroup>
+      <GeneratedPackages Include="$(BuildOutputFolder)/publish/*.nupkg"/>
+    </ItemGroup>
+    
+    <Copy SourceFiles="@(GeneratedPackages)" DestinationFolder="$(NuggieRepoPath)"/>
+  </Target>
+
+  <Target Name="validate_nuget_environment_variable">
+    <Error Condition="'$(NuggieRepoPath)' == ''" 
+           Text="In order to publish NuGet packages you need to define an environment variable NuggieRepoPath to point to our NuGet repository in Dropbox"/>
+  </Target>
 </Project>
