@@ -1,22 +1,27 @@
 ﻿using System;
 using System.Linq;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.MongoDb.Views;
 using d60.EventSorcerer.Views.Basic;
 using d60.EventSorcerer.Views.Basic.Locators;
+using MongoDB.Driver;
 using NUnit.Framework;
 
-namespace d60.EventSorcerer.Tests.Views
+namespace d60.EventSorcerer.Tests.MongoDb.Views
 {
     [TestFixture]
-    public class TestInMemoryViewDispatcher : FixtureBase
+    [Category(TestCategories.MongoDb)]
+    public class TestMongoDbViewManager : FixtureBase
     {
-        InMemoryViewManager<SomeView> _viewManager;
+        MongoDatabase _database;
         BasicEventDispatcher _eventDispatcher;
+        MongoDbViewManager<SomeView> _viewManager;
 
         protected override void DoSetUp()
         {
-            _viewManager = new InMemoryViewManager<SomeView>();
-            _eventDispatcher = new BasicEventDispatcher(new IViewManager[] { _viewManager });
+            _database = Helper.InitializeTestDatabase();
+            _viewManager = new MongoDbViewManager<SomeView>(_database, "views");
+            _eventDispatcher = new BasicEventDispatcher(new IViewManager[]{_viewManager});
         }
 
         [Test]
@@ -33,30 +38,21 @@ namespace d60.EventSorcerer.Tests.Views
 
             Assert.That(viewInstances.Count, Is.EqualTo(2));
 
-            Assert.That(viewInstances.Count(i => i.Id == firstRoot), Is.EqualTo(1),
+            Assert.That(viewInstances.Count(i => i.AggregateRootId == firstRoot), Is.EqualTo(1),
                 "Expected one single view instance for aggregate root {0}", firstRoot);
 
-            Assert.That(viewInstances.Single(i => i.Id == firstRoot).NumberOfEventsHandled, Is.EqualTo(2),
+            Assert.That(viewInstances.Single(i => i.AggregateRootId == firstRoot).NumberOfEventsHandled, Is.EqualTo(2),
                 "Expected two events to have been processed");
 
-            Assert.That(viewInstances.Count(i => i.Id == secondRoot), Is.EqualTo(1),
+            Assert.That(viewInstances.Count(i => i.AggregateRootId == secondRoot), Is.EqualTo(1),
                 "Expected one single view instance for aggregate root {0}", secondRoot);
 
-            Assert.That(viewInstances.Single(i => i.Id == secondRoot).NumberOfEventsHandled, Is.EqualTo(1),
+            Assert.That(viewInstances.Single(i => i.AggregateRootId == secondRoot).NumberOfEventsHandled, Is.EqualTo(1),
                 "Expected one event to have been processed");
         }
 
-        /// <summary>
-        /// Initial:
-        /// Dispatch 1000000 events - elapsed: 5.9 s
-        /// 
-        /// After caching of eventDispatcher methods per domain event type:
-        /// Dispatch 1000000 events - elapsed: 2.5 s
-        /// 
-        /// Can possibly be optimized even more
-        /// </summary>
-        [TestCase(100000)]
-        [TestCase(1000000, Ignore = false, Description = "chill, dude")]
+        [TestCase(1000)]
+        [TestCase(10000)]
         public void CheckPerformance(int numberOfEvents)
         {
             var firstRoot = Guid.NewGuid();
@@ -64,7 +60,6 @@ namespace d60.EventSorcerer.Tests.Views
             TakeTime("Dispatch " + numberOfEvents + " events",
                 () => numberOfEvents.Times(() => _eventDispatcher.Dispatch(new DomainEvent[] { EventFor(firstRoot) })));
         }
-
 
         static SomeEvent EventFor(Guid newGuid)
         {
@@ -78,23 +73,26 @@ namespace d60.EventSorcerer.Tests.Views
 
         }
 
-        class SomeView : IView<InstancePerAggregateRootLocator>, ISubscribeTo<SomeEvent>
+        class SomeView : IView<InstancePerAggregateRootLocator>, ISubscribeTo<SomeEvent>, IMongoDbView
         {
             public SomeView()
             {
                 NumberOfEventsHandled = 0;
             }
 
-            public Guid Id { get; set; }
+            public Guid AggregateRootId { get; set; }
 
             public int NumberOfEventsHandled { get; set; }
 
             public void Handle(SomeEvent domainEvent)
             {
-                Id = new Guid(domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId].ToString());
+                AggregateRootId = new Guid(domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId].ToString());
 
                 NumberOfEventsHandled++;
             }
+
+            public string Id { get; set; }
         }
+
     }
 }

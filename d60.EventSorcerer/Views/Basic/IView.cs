@@ -4,6 +4,5 @@
 
     public interface IView<TViewLocator> : IView where TViewLocator : ViewLocator
     {
-
     }
 }

@@ -75,8 +75,8 @@
     <Compile Include="Stubs\InMemoryEventCollector.cs" />
     <Compile Include="Stubs\InMemoryEventStore.cs" />
     <Compile Include="Stubs\TestSequenceNumberGenerator.cs" />
-    <Compile Include="Views\TestInMemoryViewDispatcher.cs" />
-    <Compile Include="MongoDb\Views\TestMongoDbViewDispatcher.cs" />
+    <Compile Include="Views\TestInMemoryViewManager.cs" />
+    <Compile Include="MongoDb\Views\TestMongoDbViewManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

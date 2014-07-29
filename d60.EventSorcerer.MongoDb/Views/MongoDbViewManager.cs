@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Views.Basic;
 using MongoDB.Driver;
@@ -7,19 +8,21 @@ using MongoDB.Driver;
 namespace d60.EventSorcerer.MongoDb.Views
 {
     public class MongoDbViewManager<TView> : IEnumerable<TView>, IViewManager
-        where TView : class, IMongoDbView, new()
+        where TView : class, IView, ISubscribeTo, new()
     {
         readonly ViewDispatcherHelper<TView> _viewDispatcherHelper = new ViewDispatcherHelper<TView>();
-        readonly MongoCollection<TView> _viewCollection;
+        readonly MongoCollection<MongoDbView<TView>> _viewCollection;
 
-        public MongoDbViewManager(MongoCollection<TView> viewCollection)
+        public MongoDbViewManager(MongoDatabase database, string collectionName)
         {
-            _viewCollection = viewCollection;
+            _viewCollection = database.GetCollection<MongoDbView<TView>>(collectionName);
         }
 
         public IEnumerator<TView> GetEnumerator()
         {
-            return _viewCollection.FindAll().GetEnumerator();
+            return _viewCollection.FindAll()
+                .Select(d => d.View)
+                .GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -33,15 +36,24 @@ namespace d60.EventSorcerer.MongoDb.Views
             {
                 var viewId = ViewLocator.GetLocatorFor<TView>().GetViewId(e);
 
-                var view = _viewCollection.FindOneById(viewId)
-                           ?? new TView();
+                var doc = _viewCollection.FindOneById(viewId)
+                           ?? new MongoDbView<TView>
+                           {
+                               Id = viewId,
+                               View = new TView()
+                           };
 
-                view.Id = viewId;
+                _viewDispatcherHelper.DispatchToView(e, doc.View);
 
-                _viewDispatcherHelper.DispatchToView(e, view);
-
-                _viewCollection.Save(view);
+                _viewCollection.Save(doc);
             }
         }
+    }
+
+    class MongoDbView<TView> where TView : IView
+    {
+        public string Id { get; set; }
+
+        public TView View { get; set; }
     }
 }
