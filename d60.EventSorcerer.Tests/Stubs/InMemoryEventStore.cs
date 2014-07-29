@@ -27,6 +27,7 @@ namespace d60.EventSorcerer.Tests.Stubs
                 })
                 .Where(e => e.AggregateRootId == aggregateRootId)
                 .Where(e => e.SequenceNumber >= firstSeq && e.SequenceNumber < maxSequenceNumber)
+                .OrderBy(e => e.SequenceNumber)
                 .Select(e => e.Event);
         }
 
