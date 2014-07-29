@@ -2,22 +2,26 @@
 using System.Linq;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.MongoDb.Events;
-using MongoDB.Driver;
+using d60.EventSorcerer.Numbers;
+using d60.EventSorcerer.Tests.MongoDb;
+using d60.EventSorcerer.Tests.Stubs;
 using NUnit.Framework;
 
-namespace d60.EventSorcerer.Tests.MongoDb
+namespace d60.EventSorcerer.Tests.Contracts
 {
-    [TestFixture]
-    [Category(TestCategories.MongoDb)]
-    public class TestMongoDbEventStore : FixtureBase
+    [Description("Contract test for event stores. Verifies that event store implementation and sequence number generation works in tandem")]
+    [TestFixture(typeof(MongoDbEventStoreFactory), Category = TestCategories.MongoDb)]
+    [TestFixture(typeof(InMemoryEventStoreFactory))]
+    public class EventStoreTest<TEventStoreFactory> : FixtureBase where TEventStoreFactory : IEventStoreFactory, new()
     {
-        MongoDbEventStore _eventStore;
-        MongoDatabase _database;
+        TEventStoreFactory _eventStoreFactory;
+        IEventStore _eventStore;
 
         protected override void DoSetUp()
         {
-            _database = Helper.InitializeTestDatabase();
-            _eventStore = new MongoDbEventStore(_database, "events");
+            _eventStoreFactory = new TEventStoreFactory();
+
+            _eventStore = _eventStoreFactory.GetEventStore();
         }
 
         [Test]
@@ -25,28 +29,24 @@ namespace d60.EventSorcerer.Tests.MongoDb
         {
             // arrange
             var batchId = Guid.NewGuid();
+            var aggregateRootId = Guid.NewGuid();
+
             var events = new DomainEvent[] {new SomeEvent
             {
                 SomeValue = "hej",
                 Meta =
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 1},
-                    {DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid()}
+                    {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId}
                 }
             }};
-            _eventStore.Save(batchId, events);
 
             // act
-            var doc = _database.GetCollection("events").FindOne();
+            _eventStore.Save(batchId, events);
 
             // assert
-            Console.WriteLine(doc);
-
-            var someEvent = (SomeEvent)_eventStore.Load(1, 1).Single();
-
-            //var eventsArray = doc["Events"].AsBsonArray;
-            //var firstEventAsBsonDoc = eventsArray[0].AsBsonDocument;
-            //var someEvent = BsonSerializer.Deserialize<SomeEvent>(firstEventAsBsonDoc);
+            var persistedEvents = _eventStore.Load(aggregateRootId);
+            var someEvent = (SomeEvent)persistedEvents.Single();
 
             Assert.That(someEvent.SomeValue, Is.EqualTo("hej"));
         }
@@ -62,7 +62,35 @@ namespace d60.EventSorcerer.Tests.MongoDb
                 new SomeEvent
                 {
                     SomeValue = "hej",
-                    //Meta = {{DomainEvent.MetadataKeys.SequenceNumber, 1}} //< this one is missing!
+                    Meta = {
+                        {DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid()},
+                        //{DomainEvent.MetadataKeys.SequenceNumber, 1}, //< this one is missing!
+                    } 
+                }
+            };
+
+            // act
+            // assert
+            var ex = Assert.Throws<InvalidOperationException>(() => _eventStore.Save(batchId, events));
+
+            Console.WriteLine(ex);
+        }
+
+        [Test]
+        public void ValidatesPresenceOfAggregateRootId()
+        {
+            // arrange
+            var batchId = Guid.NewGuid();
+
+            var events = new DomainEvent[]
+            {
+                new SomeEvent
+                {
+                    SomeValue = "hej",
+                    Meta = {
+                        //{DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid()}, //< this one is missing!
+                        {DomainEvent.MetadataKeys.SequenceNumber, 1},
+                    } 
                 }
             };
 
@@ -160,7 +188,7 @@ namespace d60.EventSorcerer.Tests.MongoDb
                 Event(4, agg1Id),
                 Event(2, agg2Id)
             };
-            
+
             var ex = Assert.Throws<ConcurrencyException>(() => _eventStore.Save(Guid.NewGuid(), batchWithAlreadyUsedSequenceNumber));
         }
 
@@ -196,17 +224,17 @@ namespace d60.EventSorcerer.Tests.MongoDb
 
             // act
             // assert
-            Assert.That(_eventStore.Load(1, 1).Count(), Is.EqualTo(1));
-            Assert.That(_eventStore.Load(1, 1).GetSeq(), Is.EqualTo(Enumerable.Range(1, 1)));
+            Assert.That(_eventStore.Load(aggregateRootId, 1, 1).Count(), Is.EqualTo(1));
+            Assert.That(_eventStore.Load(aggregateRootId, 1, 1).GetSeq(), Is.EqualTo(Enumerable.Range(1, 1)));
 
-            Assert.That(_eventStore.Load(1, 2).Count(), Is.EqualTo(2));
-            Assert.That(_eventStore.Load(1, 2).GetSeq(), Is.EqualTo(Enumerable.Range(1, 2)));
+            Assert.That(_eventStore.Load(aggregateRootId, 1, 2).Count(), Is.EqualTo(2));
+            Assert.That(_eventStore.Load(aggregateRootId, 1, 2).GetSeq(), Is.EqualTo(Enumerable.Range(1, 2)));
 
-            Assert.That(_eventStore.Load(1, 10).Count(), Is.EqualTo(10));
-            Assert.That(_eventStore.Load(1, 10).GetSeq(), Is.EqualTo(Enumerable.Range(1, 10)));
+            Assert.That(_eventStore.Load(aggregateRootId, 1, 10).Count(), Is.EqualTo(10));
+            Assert.That(_eventStore.Load(aggregateRootId, 1, 10).GetSeq(), Is.EqualTo(Enumerable.Range(1, 10)));
 
-            Assert.That(_eventStore.Load(4, 10).Count(), Is.EqualTo(10));
-            Assert.That(_eventStore.Load(4, 10).GetSeq(), Is.EqualTo(Enumerable.Range(4, 10)));
+            Assert.That(_eventStore.Load(aggregateRootId, 4, 10).Count(), Is.EqualTo(10));
+            Assert.That(_eventStore.Load(aggregateRootId, 4, 10).GetSeq(), Is.EqualTo(Enumerable.Range(4, 10)));
         }
 
         [Test]
@@ -215,18 +243,20 @@ namespace d60.EventSorcerer.Tests.MongoDb
             var agg1Id = Guid.NewGuid();
             var agg2Id = Guid.NewGuid();
 
-            Assert.That(_eventStore.GetNextSeq(agg1Id), Is.EqualTo(0));
-            Assert.That(_eventStore.GetNextSeq(agg1Id), Is.EqualTo(0));
-            Assert.That(_eventStore.GetNextSeq(agg2Id), Is.EqualTo(0));
-            Assert.That(_eventStore.GetNextSeq(agg2Id), Is.EqualTo(0));
+            var generator = _eventStoreFactory.GetSequenceNumberGenerator();
+
+            Assert.That(generator.Next(agg1Id), Is.EqualTo(0));
+            Assert.That(generator.Next(agg1Id), Is.EqualTo(0));
+            Assert.That(generator.Next(agg2Id), Is.EqualTo(0));
+            Assert.That(generator.Next(agg2Id), Is.EqualTo(0));
 
             _eventStore.Save(Guid.NewGuid(), new[]
             {
                 Event(0, agg1Id)
             });
 
-            Assert.That(_eventStore.GetNextSeq(agg1Id), Is.EqualTo(1), "Expected the seq for {0} to have been incremented once", agg1Id);
-            Assert.That(_eventStore.GetNextSeq(agg2Id), Is.EqualTo(0), "Expected the seq for {0} to not have been changed", agg2Id);
+            Assert.That(generator.Next(agg1Id), Is.EqualTo(1), "Expected the seq for {0} to have been incremented once", agg1Id);
+            Assert.That(generator.Next(agg2Id), Is.EqualTo(0), "Expected the seq for {0} to not have been changed", agg2Id);
 
             _eventStore.Save(Guid.NewGuid(), new[]
             {
@@ -235,16 +265,16 @@ namespace d60.EventSorcerer.Tests.MongoDb
                 Event(3, agg1Id)
             });
 
-            Assert.That(_eventStore.GetNextSeq(agg1Id), Is.EqualTo(4), "Expected the seq for {0} to have been incremented four times", agg1Id);
-            Assert.That(_eventStore.GetNextSeq(agg2Id), Is.EqualTo(0), "Expected the seq for {0} to not have been changed", agg2Id);
+            Assert.That(generator.Next(agg1Id), Is.EqualTo(4), "Expected the seq for {0} to have been incremented four times", agg1Id);
+            Assert.That(generator.Next(agg2Id), Is.EqualTo(0), "Expected the seq for {0} to not have been changed", agg2Id);
 
             _eventStore.Save(Guid.NewGuid(), new[]
             {
                 Event(0, agg2Id)
             });
 
-            Assert.That(_eventStore.GetNextSeq(agg1Id), Is.EqualTo(4), "Expected the seq for {0} to have been incremented four times", agg1Id);
-            Assert.That(_eventStore.GetNextSeq(agg2Id), Is.EqualTo(1), "Expected the seq for {0} to have been incremented once", agg2Id);
+            Assert.That(generator.Next(agg1Id), Is.EqualTo(4), "Expected the seq for {0} to have been incremented four times", agg1Id);
+            Assert.That(generator.Next(agg2Id), Is.EqualTo(1), "Expected the seq for {0} to have been incremented once", agg2Id);
         }
 
         [Test]
@@ -291,10 +321,55 @@ namespace d60.EventSorcerer.Tests.MongoDb
             };
         }
 
-
         class SomeEvent : DomainEvent
         {
             public string SomeValue { get; set; }
         }
+    }
+
+    public class InMemoryEventStoreFactory : IEventStoreFactory
+    {
+        readonly InMemoryEventStore _eventStore;
+
+        public InMemoryEventStoreFactory()
+        {
+            _eventStore = new InMemoryEventStore();
+        }
+
+        public IEventStore GetEventStore()
+        {
+            return _eventStore;
+        }
+
+        public ISequenceNumberGenerator GetSequenceNumberGenerator()
+        {
+            return _eventStore;
+        }
+    }
+
+    public class MongoDbEventStoreFactory : IEventStoreFactory
+    {
+        readonly MongoDbEventStore _eventStore;
+
+        public MongoDbEventStoreFactory()
+        {
+            _eventStore = new MongoDbEventStore(Helper.InitializeTestDatabase(), "events");
+        }
+
+        public IEventStore GetEventStore()
+        {
+            return _eventStore;
+        }
+
+        public ISequenceNumberGenerator GetSequenceNumberGenerator()
+        {
+            return _eventStore;
+        }
+    }
+
+    public interface IEventStoreFactory
+    {
+        IEventStore GetEventStore();
+        ISequenceNumberGenerator GetSequenceNumberGenerator();
     }
 }
