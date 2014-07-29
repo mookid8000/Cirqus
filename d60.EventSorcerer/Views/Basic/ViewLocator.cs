@@ -6,7 +6,7 @@ using d60.EventSorcerer.Events;
 namespace d60.EventSorcerer.Views.Basic
 {
     /// <summary>
-    /// Abstracts away the logic of determining the scope of view instances
+    /// Abstracts away the logic of determining the scope of view instances by mapping from a <see cref="DomainEvent"/> to a view id
     /// </summary>
     public abstract class ViewLocator
     {
@@ -19,6 +19,9 @@ namespace d60.EventSorcerer.Views.Basic
             return CachedViewLocators.GetOrAdd(viewType, t => ActivateNewViewLocatorInstanceFromClosingType(viewType));
         }
 
+        /// <summary>
+        /// Gets the ID of the view to which this particular <see cref="DomainEvent"/> must be applied
+        /// </summary>
         public abstract string GetViewId(DomainEvent e);
 
         /// <summary>

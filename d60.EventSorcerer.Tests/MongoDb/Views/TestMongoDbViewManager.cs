@@ -25,6 +25,25 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
         }
 
         [Test]
+        public void CanLoadViewsAsWell()
+        {
+            var firstRoot = Guid.NewGuid();
+            var expectedViewId = InstancePerAggregateRootLocator.GetViewIdFromGuid(firstRoot);
+
+            _eventDispatcher.Dispatch(new DomainEvent[]
+            {
+                EventFor(firstRoot),
+                EventFor(firstRoot),
+                EventFor(firstRoot),
+            });
+
+            var view = _viewManager.Load(expectedViewId);
+            
+            Assert.That(view.NumberOfEventsHandled, Is.EqualTo(3));
+        }
+
+
+        [Test]
         public void CanDispatchEvents()
         {
             var firstRoot = Guid.NewGuid();

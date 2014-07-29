@@ -4,9 +4,16 @@ namespace d60.EventSorcerer.Views.Basic.Locators
 {
     public class GlobalInstanceLocator : ViewLocator
     {
+        const string ViewInstanceId = "__global__";
+
         public override string GetViewId(DomainEvent e)
         {
-            return "__global__";
+            return ViewInstanceId;
+        }
+
+        public static string GetViewInstanceId()
+        {
+            return ViewInstanceId;
         }
     }
 }

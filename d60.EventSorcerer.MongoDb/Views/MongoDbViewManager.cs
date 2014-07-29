@@ -18,6 +18,15 @@ namespace d60.EventSorcerer.MongoDb.Views
             _viewCollection = database.GetCollection<MongoDbView<TView>>(collectionName);
         }
 
+        public TView Load(string viewId)
+        {
+            var doc = _viewCollection.FindOneById(viewId);
+
+            return doc != null
+                ? doc.View
+                : null;
+        }
+
         public IEnumerator<TView> GetEnumerator()
         {
             return _viewCollection.FindAll()
