@@ -14,14 +14,14 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
     public class TestMongoDbViewDispatcher : FixtureBase
     {
         MongoDatabase _database;
-        BasicViewManager _viewManager;
-        MongoDbViewDispatcher<SomeView> _viewDispatcher;
+        BasicEventDispatcher _eventDispatcher;
+        MongoDbViewManager<SomeView> _viewManager;
 
         protected override void DoSetUp()
         {
             _database = Helper.InitializeTestDatabase();
-            _viewDispatcher = new MongoDbViewDispatcher<SomeView>(_database.GetCollection<SomeView>("views"));
-            _viewManager = new BasicViewManager(new IViewDispatcher[]{_viewDispatcher});
+            _viewManager = new MongoDbViewManager<SomeView>(_database.GetCollection<SomeView>("views"));
+            _eventDispatcher = new BasicEventDispatcher(new IViewManager[]{_viewManager});
         }
 
         [Test]
@@ -30,11 +30,11 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
             var firstRoot = Guid.NewGuid();
             var secondRoot = Guid.NewGuid();
 
-            _viewManager.Dispatch(new DomainEvent[] { EventFor(firstRoot) });
-            _viewManager.Dispatch(new DomainEvent[] { EventFor(firstRoot) });
-            _viewManager.Dispatch(new DomainEvent[] { EventFor(secondRoot) });
+            _eventDispatcher.Dispatch(new DomainEvent[] { EventFor(firstRoot) });
+            _eventDispatcher.Dispatch(new DomainEvent[] { EventFor(firstRoot) });
+            _eventDispatcher.Dispatch(new DomainEvent[] { EventFor(secondRoot) });
 
-            var viewInstances = _viewDispatcher.ToList();
+            var viewInstances = _viewManager.ToList();
 
             Assert.That(viewInstances.Count, Is.EqualTo(2));
 
@@ -58,7 +58,7 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
             var firstRoot = Guid.NewGuid();
 
             TakeTime("Dispatch " + numberOfEvents + " events",
-                () => numberOfEvents.Times(() => _viewManager.Dispatch(new DomainEvent[] { EventFor(firstRoot) })));
+                () => numberOfEvents.Times(() => _eventDispatcher.Dispatch(new DomainEvent[] { EventFor(firstRoot) })));
         }
 
         static SomeEvent EventFor(Guid newGuid)

@@ -6,13 +6,13 @@ using MongoDB.Driver;
 
 namespace d60.EventSorcerer.MongoDb.Views
 {
-    public class MongoDbViewDispatcher<TView> : IEnumerable<TView>, IViewDispatcher
+    public class MongoDbViewManager<TView> : IEnumerable<TView>, IViewManager
         where TView : class, IMongoDbView, new()
     {
-        readonly ViewDispatcher<TView> _viewDispatcher = new ViewDispatcher<TView>();
+        readonly ViewDispatcherHelper<TView> _viewDispatcherHelper = new ViewDispatcherHelper<TView>();
         readonly MongoCollection<TView> _viewCollection;
 
-        public MongoDbViewDispatcher(MongoCollection<TView> viewCollection)
+        public MongoDbViewManager(MongoCollection<TView> viewCollection)
         {
             _viewCollection = viewCollection;
         }
@@ -38,7 +38,7 @@ namespace d60.EventSorcerer.MongoDb.Views
 
                 view.Id = viewId;
 
-                _viewDispatcher.DispatchToView(e, view);
+                _viewDispatcherHelper.DispatchToView(e, view);
 
                 _viewCollection.Save(view);
             }

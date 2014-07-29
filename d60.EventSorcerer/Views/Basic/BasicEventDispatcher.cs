@@ -4,11 +4,11 @@ using d60.EventSorcerer.Events;
 
 namespace d60.EventSorcerer.Views.Basic
 {
-    public class BasicViewManager : IViewManager
+    public class BasicEventDispatcher : IEventDispatcher
     {
-        readonly List<IViewDispatcher> _viewDispatchers;
+        readonly List<IViewManager> _viewDispatchers;
 
-        public BasicViewManager(IEnumerable<IViewDispatcher> viewDispatchers)
+        public BasicEventDispatcher(IEnumerable<IViewManager> viewDispatchers)
         {
             _viewDispatchers = viewDispatchers.ToList();
         }

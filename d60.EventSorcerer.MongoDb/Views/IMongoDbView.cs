@@ -2,7 +2,7 @@
 
 namespace d60.EventSorcerer.MongoDb.Views
 {
-    public interface IMongoDbView : IView
+    public interface IMongoDbView : IView, ISubscribeTo
     {
         string Id { get; set; } 
     }

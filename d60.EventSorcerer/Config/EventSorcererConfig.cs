@@ -26,20 +26,20 @@ namespace d60.EventSorcerer.Config
         readonly ICommandMapper _commandMapper;
         readonly ISequenceNumberGenerator _sequenceNumberGenerator;
         readonly IAggregateRootRepository _aggregateRootRepository;
-        readonly IViewManager _viewManager;
+        readonly IEventDispatcher _eventDispatcher;
 
-        public EventSorcererConfig(IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, ICommandMapper commandMapper, ISequenceNumberGenerator sequenceNumberGenerator, IViewManager viewManager)
+        public EventSorcererConfig(IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, ICommandMapper commandMapper, ISequenceNumberGenerator sequenceNumberGenerator, IEventDispatcher eventDispatcher)
         {
             if (CommandProcessorMethod == null)
             {
-                throw new ApplicationException(string.Format("Could not find the expected dispatcher method '{0}' on {1}", InnerProcessMethodName, GetType()));
+                throw new ApplicationException(string.Format("Could not find the expected eventDispatcher method '{0}' on {1}", InnerProcessMethodName, GetType()));
             }
 
             _eventStore = eventStore;
             _aggregateRootRepository = aggregateRootRepository;
             _commandMapper = commandMapper;
             _sequenceNumberGenerator = sequenceNumberGenerator;
-            _viewManager = viewManager;
+            _eventDispatcher = eventDispatcher;
         }
 
         public EventSorcererOptions Options
@@ -48,7 +48,7 @@ namespace d60.EventSorcerer.Config
         }
 
         /// <summary>
-        /// Processes the specified command by invoking the generic dispatcher method
+        /// Processes the specified command by invoking the generic eventDispatcher method
         /// </summary>
         public void ProcessCommand(Command command)
         {
@@ -118,7 +118,7 @@ namespace d60.EventSorcerer.Config
             _eventStore.Save(batchId, emittedEvents);
 
             // when we come to this place, we deliver the events to the view manager
-            _viewManager.Dispatch(emittedEvents);
+            _eventDispatcher.Dispatch(emittedEvents);
         }
 
         static Type GetAggregateRootType(Type commandType)

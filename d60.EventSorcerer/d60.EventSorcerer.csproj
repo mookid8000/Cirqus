@@ -60,7 +60,6 @@
     <Compile Include="Events\DomainEvent.cs" />
     <Compile Include="Events\IEventStore.cs" />
     <Compile Include="Extensions\AttributeExtensions.cs" />
-    <Compile Include="Numbers\IIdGenerator.cs" />
     <Compile Include="Numbers\ISequenceNumberGenerator.cs" />
     <Compile Include="Events\Metadata.cs" />
     <Compile Include="Numbers\Time.cs" />
@@ -69,16 +68,16 @@
     <Compile Include="Serialization\Serializer.cs" />
     <Compile Include="Serialization\TypeAliasBinder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Views\Basic\BasicViewManager.cs" />
-    <Compile Include="Views\Basic\InMemoryViewDispatcher.cs" />
+    <Compile Include="Views\Basic\BasicEventDispatcher.cs" />
+    <Compile Include="Views\Basic\InMemoryViewManager.cs" />
     <Compile Include="Views\Basic\Locators\GlobalInstanceLocator.cs" />
     <Compile Include="Views\Basic\Locators\InstancePerAggregateRootLocator.cs" />
     <Compile Include="Views\Basic\ISubscribeTo.cs" />
     <Compile Include="Views\Basic\IView.cs" />
-    <Compile Include="Views\Basic\IViewDispatcher.cs" />
-    <Compile Include="Views\Basic\ViewDispatcher.cs" />
+    <Compile Include="Views\Basic\IViewManager.cs" />
+    <Compile Include="Views\Basic\ViewDispatcherHelper.cs" />
     <Compile Include="Views\Basic\ViewLocator.cs" />
-    <Compile Include="Views\IViewManager.cs" />
+    <Compile Include="Events\IEventDispatcher.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

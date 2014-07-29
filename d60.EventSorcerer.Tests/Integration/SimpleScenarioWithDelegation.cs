@@ -38,7 +38,7 @@ namespace d60.EventSorcerer.Tests.Integration
             var commandMapper = new CommandMapper()
                 .Map<BearSomeChildrenCommand, ProgrammerAggregate>((c, a) => a.BearChildren(c.IdsOfChildren));
 
-            var viewManager = new ConsoleOutViewManager();
+            var viewManager = new ConsoleOutEventDispatcher();
 
             _eventSorcerer = new EventSorcererConfig(eventStore, _aggregateRootRepository, commandMapper, sequenceNumberGenerator, viewManager);
         }

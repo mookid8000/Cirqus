@@ -5,10 +5,10 @@ using d60.EventSorcerer.Events;
 
 namespace d60.EventSorcerer.Views.Basic
 {
-    public class InMemoryViewDispatcher<TView> : IEnumerable<TView>, IViewDispatcher where TView : IView, new()
+    public class InMemoryViewManager<TView> : IEnumerable<TView>, IViewManager where TView : IView, ISubscribeTo, new()
     {
         readonly ConcurrentDictionary<string, TView> _views = new ConcurrentDictionary<string, TView>();
-        readonly ViewDispatcher<TView> _viewDispatcher = new ViewDispatcher<TView>();
+        readonly ViewDispatcherHelper<TView> _viewDispatcherHelper = new ViewDispatcherHelper<TView>();
 
         public void Dispatch(IEnumerable<DomainEvent> events)
         {
@@ -20,12 +20,12 @@ namespace d60.EventSorcerer.Views.Basic
                     id =>
                     {
                         var view = new TView();
-                        _viewDispatcher.DispatchToView(e, view);
+                        _viewDispatcherHelper.DispatchToView(e, view);
                         return view;
                     },
                     (id, view) =>
                     {
-                        _viewDispatcher.DispatchToView(e, view);
+                        _viewDispatcherHelper.DispatchToView(e, view);
                         return view;
                     });
             }

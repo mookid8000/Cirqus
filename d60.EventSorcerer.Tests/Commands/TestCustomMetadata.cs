@@ -26,7 +26,7 @@ namespace d60.EventSorcerer.Tests.Commands
             var commandMapper = new CommandMapper()
                 .Map<TakeNextStepCommand, ProgrammerAggregate>((c, a) => a.TakeNextStep());
 
-            var viewManager = new ConsoleOutViewManager();
+            var viewManager = new ConsoleOutEventDispatcher();
 
             _eventSorcerer = new EventSorcererConfig(_eventStore, _aggregateRootRepository, commandMapper, sequenceNumberGenerator, viewManager);
         }

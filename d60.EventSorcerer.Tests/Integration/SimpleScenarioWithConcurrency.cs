@@ -43,7 +43,7 @@ many time in parallel, and after some time the consistency of everything is veri
             var commandMapper = new CommandMapper()
                 .Map<TakeNextStepCommand, ProgrammerAggregate>((c, a) => a.TakeNextStep());
 
-            var viewManager = new ConsoleOutViewManager();
+            var viewManager = new ConsoleOutEventDispatcher();
 
             _eventSorcerer = new EventSorcererConfig(eventStore, _aggregateRootRepository, commandMapper, eventStore, viewManager);
         }

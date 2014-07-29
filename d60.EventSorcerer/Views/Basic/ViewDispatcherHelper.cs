@@ -5,19 +5,23 @@ using d60.EventSorcerer.Events;
 
 namespace d60.EventSorcerer.Views.Basic
 {
-    public class ViewDispatcher<TView>
+    /// <summary>
+    /// Helper that can dispatch events to an instance of a class that implements any number of
+    /// <see cref="ISubscribeTo{TDomainEvent}"/> interfaces
+    /// </summary>
+    public class ViewDispatcherHelper<TView> where TView : ISubscribeTo
     {
         readonly ConcurrentDictionary<Type, MethodInfo> _dispatcherMethods = new ConcurrentDictionary<Type, MethodInfo>();
         readonly MethodInfo _dispatchToViewGenericMethod;
 
-        public ViewDispatcher()
+        public ViewDispatcherHelper()
         {
             _dispatchToViewGenericMethod = GetType()
                 .GetMethod("DispatchToViewGeneric", BindingFlags.NonPublic | BindingFlags.Instance);
 
             if (_dispatchToViewGenericMethod == null)
             {
-                throw new ApplicationException("Could not find dispatcher method 'DispatchToViewGeneric<>' on InMemoryViewDispatcher");
+                throw new ApplicationException("Could not find dispatcher method 'DispatchToViewGeneric<>' on InMemoryViewManager");
             }
         }
 

@@ -2,7 +2,8 @@
 
 namespace d60.EventSorcerer.Views.Basic
 {
-    public interface ISubscribeTo<TDomainEvent> where TDomainEvent : DomainEvent
+    public interface ISubscribeTo { }
+    public interface ISubscribeTo<TDomainEvent> : ISubscribeTo where TDomainEvent : DomainEvent
     {
         void Handle(TDomainEvent domainEvent);
     }

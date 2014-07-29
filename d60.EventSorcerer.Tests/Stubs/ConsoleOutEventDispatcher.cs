@@ -5,7 +5,7 @@ using d60.EventSorcerer.Views;
 
 namespace d60.EventSorcerer.Tests.Stubs
 {
-    public class ConsoleOutViewManager : IViewManager
+    public class ConsoleOutEventDispatcher : IEventDispatcher
     {
         public void Dispatch(IEnumerable<DomainEvent> events)
         {

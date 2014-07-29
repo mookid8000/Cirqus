@@ -10,13 +10,13 @@ namespace d60.EventSorcerer.Tests.Views
     [TestFixture]
     public class TestInMemoryViewDispatcher : FixtureBase
     {
-        InMemoryViewDispatcher<SomeView> _viewDispatcher;
-        BasicViewManager _viewManager;
+        InMemoryViewManager<SomeView> _viewManager;
+        BasicEventDispatcher _eventDispatcher;
 
         protected override void DoSetUp()
         {
-            _viewDispatcher = new InMemoryViewDispatcher<SomeView>();
-            _viewManager = new BasicViewManager(new IViewDispatcher[] { _viewDispatcher });
+            _viewManager = new InMemoryViewManager<SomeView>();
+            _eventDispatcher = new BasicEventDispatcher(new IViewManager[] { _viewManager });
         }
 
         [Test]
@@ -25,11 +25,11 @@ namespace d60.EventSorcerer.Tests.Views
             var firstRoot = Guid.NewGuid();
             var secondRoot = Guid.NewGuid();
 
-            _viewManager.Dispatch(new DomainEvent[] { EventFor(firstRoot) });
-            _viewManager.Dispatch(new DomainEvent[] { EventFor(firstRoot) });
-            _viewManager.Dispatch(new DomainEvent[] { EventFor(secondRoot) });
+            _eventDispatcher.Dispatch(new DomainEvent[] { EventFor(firstRoot) });
+            _eventDispatcher.Dispatch(new DomainEvent[] { EventFor(firstRoot) });
+            _eventDispatcher.Dispatch(new DomainEvent[] { EventFor(secondRoot) });
 
-            var viewInstances = _viewDispatcher.ToList();
+            var viewInstances = _viewManager.ToList();
 
             Assert.That(viewInstances.Count, Is.EqualTo(2));
 
@@ -50,7 +50,7 @@ namespace d60.EventSorcerer.Tests.Views
         /// Initial:
         /// Dispatch 1000000 events - elapsed: 5.9 s
         /// 
-        /// After caching of dispatcher methods per domain event type:
+        /// After caching of eventDispatcher methods per domain event type:
         /// Dispatch 1000000 events - elapsed: 2.5 s
         /// 
         /// Can possibly be optimized even more
@@ -62,7 +62,7 @@ namespace d60.EventSorcerer.Tests.Views
             var firstRoot = Guid.NewGuid();
 
             TakeTime("Dispatch " + numberOfEvents + " events",
-                () => numberOfEvents.Times(() => _viewManager.Dispatch(new DomainEvent[] { EventFor(firstRoot) })));
+                () => numberOfEvents.Times(() => _eventDispatcher.Dispatch(new DomainEvent[] { EventFor(firstRoot) })));
         }
 
 
