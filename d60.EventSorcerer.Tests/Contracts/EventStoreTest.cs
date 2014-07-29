@@ -2,6 +2,7 @@
 using System.Linq;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.MongoDb.Events;
+using d60.EventSorcerer.MsSql;
 using d60.EventSorcerer.Numbers;
 using d60.EventSorcerer.Tests.MongoDb;
 using d60.EventSorcerer.Tests.Stubs;
@@ -12,6 +13,7 @@ namespace d60.EventSorcerer.Tests.Contracts
     [Description("Contract test for event stores. Verifies that event store implementation and sequence number generation works in tandem")]
     [TestFixture(typeof(MongoDbEventStoreFactory), Category = TestCategories.MongoDb)]
     [TestFixture(typeof(InMemoryEventStoreFactory))]
+    [TestFixture(typeof(MsSqlEventStoreFactory))]
     public class EventStoreTest<TEventStoreFactory> : FixtureBase where TEventStoreFactory : IEventStoreFactory, new()
     {
         TEventStoreFactory _eventStoreFactory;
@@ -354,6 +356,25 @@ namespace d60.EventSorcerer.Tests.Contracts
         public MongoDbEventStoreFactory()
         {
             _eventStore = new MongoDbEventStore(Helper.InitializeTestDatabase(), "events");
+        }
+
+        public IEventStore GetEventStore()
+        {
+            return _eventStore;
+        }
+
+        public ISequenceNumberGenerator GetSequenceNumberGenerator()
+        {
+            return _eventStore;
+        }
+    }
+    public class MsSqlEventStoreFactory : IEventStoreFactory
+    {
+        readonly MsSqlEventStore _eventStore;
+
+        public MsSqlEventStoreFactory()
+        {
+            _eventStore = new MsSqlEventStore();
         }
 
         public IEventStore GetEventStore()

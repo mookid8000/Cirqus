@@ -89,6 +89,10 @@
       <Project>{1ECCDCD5-DD78-4F9C-B0C3-BC083742CE99}</Project>
       <Name>d60.EventSorcerer.MongoDb</Name>
     </ProjectReference>
+    <ProjectReference Include="..\d60.EventSorcerer.MsSql\d60.EventSorcerer.MsSql.csproj">
+      <Project>{6EEBCA35-9B61-4A95-8E72-3AF583C14F32}</Project>
+      <Name>d60.EventSorcerer.MsSql</Name>
+    </ProjectReference>
     <ProjectReference Include="..\d60.EventSorcerer\d60.EventSorcerer.csproj">
       <Project>{8E2DF6B4-A4DF-495E-8D74-5DCE6B333FB4}</Project>
       <Name>d60.EventSorcerer</Name>
