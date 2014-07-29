@@ -9,7 +9,7 @@ namespace d60.EventSorcerer.Tests.Contracts
     [Description("Contract test for event stores. Verifies that event store implementation and sequence number generation works in tandem")]
     [TestFixture(typeof(MongoDbEventStoreFactory), Category = TestCategories.MongoDb)]
     [TestFixture(typeof(InMemoryEventStoreFactory))]
-    [TestFixture(typeof(MsSqlEventStoreFactory))]
+    [TestFixture(typeof(MsSqlEventStoreFactory), Category = TestCategories.MsSql)]
     public class EventStoreTest<TEventStoreFactory> : FixtureBase where TEventStoreFactory : IEventStoreFactory, new()
     {
         TEventStoreFactory _eventStoreFactory;
