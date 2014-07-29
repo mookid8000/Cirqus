@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="MsSqlEventStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SqlHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\d60.EventSorcerer\d60.EventSorcerer.csproj">

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
@@ -21,7 +20,7 @@ namespace d60.EventSorcerer.MsSql
         {
             _tableName = tableName;
 
-            var connectionString = GetConnectionString(connectionStringOrConnectionStringName);
+            var connectionString = SqlHelper.GetConnectionString(connectionStringOrConnectionStringName);
 
             _connectionProvider = () =>
             {
@@ -247,16 +246,6 @@ END
                     _cleanupAction(connection);
                 }
             }
-        }
-
-        string GetConnectionString(string connectionStringOrConnectionStringName)
-        {
-            var connectionStringSettings = ConfigurationManager.ConnectionStrings[connectionStringOrConnectionStringName];
-
-            var connectionString = connectionStringSettings != null
-                ? connectionStringSettings.ConnectionString
-                : connectionStringOrConnectionStringName;
-            return connectionString;
         }
     }
 }
