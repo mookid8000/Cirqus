@@ -46,7 +46,8 @@ END
             }
             catch (Exception exception)
             {
-                Console.WriteLine(exception);
+                Console.WriteLine("An exception occurred while trying to create test database '{0}': {1} - this is not necessarily an error, because everything should work fine if the test database already exists", 
+                    databaseName, exception);
             }
         }
 
