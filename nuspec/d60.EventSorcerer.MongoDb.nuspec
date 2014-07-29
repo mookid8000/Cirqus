@@ -16,6 +16,6 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="bin\Release\d60.EventSorcerer.MongoDb.dll" target="lib" />
+    <file src="..\d60.EventSorcerer.MongoDb\bin\Release\d60.EventSorcerer.MongoDb.dll" target="lib" />
   </files>
 </package>
