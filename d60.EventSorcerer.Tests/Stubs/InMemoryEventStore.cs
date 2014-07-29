@@ -10,21 +10,14 @@ namespace d60.EventSorcerer.Tests.Stubs
     public class InMemoryEventStore : IEventStore, IEnumerable<DomainEvent>, ISequenceNumberGenerator
     {
         public readonly List<EventBatch> SavedEventBatches = new List<EventBatch>();
+
         public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
         {
-            if (batch.Any(e => !e.Meta.ContainsKey(DomainEvent.MetadataKeys.SequenceNumber)))
-            {
-                throw new InvalidOperationException("Can't save batch with event without a sequence number");
-            }
+            var eventList = batch.ToList();
 
-            if (batch.Any(e => !e.Meta.ContainsKey(DomainEvent.MetadataKeys.AggregateRootId)))
-            {
-                throw new InvalidOperationException("Can't save batch with event without an aggregate root id");
-            }
+            EventValidation.ValidateBatchIntegrity(batchId, eventList);
 
-            ValidateSequenceNumbers(batchId, batch.ToList());
-
-            var tuplesInBatch = batch
+            var tuplesInBatch = eventList
                 .Select(e => new
                 {
                     AggregateRootId = e.GetAggregateRootId(),
@@ -45,10 +38,10 @@ namespace d60.EventSorcerer.Tests.Stubs
 
             if (overlaps.Any())
             {
-                throw new ConcurrencyException(batchId, new int[0], null);
+                throw new ConcurrencyException(batchId, eventList, null);
             }
 
-            SavedEventBatches.Add(new EventBatch(batchId, batch));
+            SavedEventBatches.Add(new EventBatch(batchId, eventList));
         }
 
         public IEnumerable<DomainEvent> Load(Guid aggregateRootId, int firstSeq = 0, int limit = int.MaxValue/2)
@@ -83,29 +76,6 @@ namespace d60.EventSorcerer.Tests.Stubs
             return domainEvents.Any()
                 ? domainEvents.Max(e => e.GetSeq()) + 1
                 : 0;
-        }
-
-        void ValidateSequenceNumbers(Guid batchId, List<DomainEvent> events)
-        {
-            var seqs = events
-                .GroupBy(e => e.GetAggregateRootId())
-                .ToDictionary(g => g.Key, g => g.Min(e => e.GetSeq()));
-
-            foreach (var e in events)
-            {
-                var sequenceNumberOfThisEvent = e.GetSeq();
-                var aggregateRootId = e.GetAggregateRootId();
-                var expectedSequenceNumber = seqs[aggregateRootId];
-
-                if (sequenceNumberOfThisEvent != expectedSequenceNumber)
-                {
-                    throw new InvalidOperationException(string.Format(@"Attempted to save batch {0} which contained events with non-sequential sequence numbers!
-
-{1}", batchId, string.Join(Environment.NewLine, events.Select(ev => string.Format("    {0} / {1}", ev.GetAggregateRootId(), ev.GetSeq())))));
-                }
-
-                seqs[aggregateRootId]++;
-            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()

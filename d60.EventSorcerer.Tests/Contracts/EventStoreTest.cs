@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Linq;
 using d60.EventSorcerer.Events;
-using d60.EventSorcerer.MongoDb.Events;
-using d60.EventSorcerer.MsSql;
-using d60.EventSorcerer.Numbers;
-using d60.EventSorcerer.Tests.MongoDb;
-using d60.EventSorcerer.Tests.Stubs;
+using d60.EventSorcerer.Tests.Contracts.Factories;
 using NUnit.Framework;
 
 namespace d60.EventSorcerer.Tests.Contracts
@@ -327,70 +323,5 @@ namespace d60.EventSorcerer.Tests.Contracts
         {
             public string SomeValue { get; set; }
         }
-    }
-
-    public class InMemoryEventStoreFactory : IEventStoreFactory
-    {
-        readonly InMemoryEventStore _eventStore;
-
-        public InMemoryEventStoreFactory()
-        {
-            _eventStore = new InMemoryEventStore();
-        }
-
-        public IEventStore GetEventStore()
-        {
-            return _eventStore;
-        }
-
-        public ISequenceNumberGenerator GetSequenceNumberGenerator()
-        {
-            return _eventStore;
-        }
-    }
-
-    public class MongoDbEventStoreFactory : IEventStoreFactory
-    {
-        readonly MongoDbEventStore _eventStore;
-
-        public MongoDbEventStoreFactory()
-        {
-            _eventStore = new MongoDbEventStore(Helper.InitializeTestDatabase(), "events");
-        }
-
-        public IEventStore GetEventStore()
-        {
-            return _eventStore;
-        }
-
-        public ISequenceNumberGenerator GetSequenceNumberGenerator()
-        {
-            return _eventStore;
-        }
-    }
-    public class MsSqlEventStoreFactory : IEventStoreFactory
-    {
-        readonly MsSqlEventStore _eventStore;
-
-        public MsSqlEventStoreFactory()
-        {
-            _eventStore = new MsSqlEventStore();
-        }
-
-        public IEventStore GetEventStore()
-        {
-            return _eventStore;
-        }
-
-        public ISequenceNumberGenerator GetSequenceNumberGenerator()
-        {
-            return _eventStore;
-        }
-    }
-
-    public interface IEventStoreFactory
-    {
-        IEventStore GetEventStore();
-        ISequenceNumberGenerator GetSequenceNumberGenerator();
     }
 }

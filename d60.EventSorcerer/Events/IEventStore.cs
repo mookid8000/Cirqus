@@ -27,19 +27,24 @@ namespace d60.EventSorcerer.Events
     public class ConcurrencyException : ApplicationException
     {
         public Guid BatchId { get; private set; }
-        public int[] InvolvedSequenceNumbers { get; private set; }
 
-        public ConcurrencyException(Guid batchId, IEnumerable<int> involvedSequenceNumbers, Exception innerException)
-            : base(string.Format("Could not save batch {0} containing {1} to the event store because someone else beat us to it", batchId, string.Join(", ", involvedSequenceNumbers)), innerException)
+        public ConcurrencyException(Guid batchId, IEnumerable<DomainEvent> involvedDomainEvents, Exception innerException)
+            : base(FormatErrorMessage(batchId, involvedDomainEvents), innerException)
         {
             BatchId = batchId;
-            InvolvedSequenceNumbers = involvedSequenceNumbers.ToArray();
         }
 
         public ConcurrencyException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
+        }
 
+        static string FormatErrorMessage(Guid batchId, IEnumerable<DomainEvent> involvedDomainEvents)
+        {
+            var sequenceNumbers = involvedDomainEvents.Select(e => e.Meta[DomainEvent.MetadataKeys.SequenceNumber]);
+            var sequenceNumbersText = string.Join(", ", sequenceNumbers);
+
+            return string.Format("Could not save batch {0} containing {1} to the event store because someone else beat us to it", batchId, sequenceNumbersText);
         }
     }
 }

@@ -73,7 +73,7 @@ namespace d60.EventSorcerer.MongoDb.Events
                 throw new InvalidOperationException(string.Format("Attempted to save batch {0}, but the batch of events was empty!", batchId));
             }
 
-            ValidateSequenceNumbers(batchId, events);
+            EventValidation.ValidateBatchIntegrity(batchId, events);
 
             var doc = new BsonDocument
             {
@@ -87,7 +87,7 @@ namespace d60.EventSorcerer.MongoDb.Events
             }
             catch (MongoDuplicateKeyException exception)
             {
-                throw new ConcurrencyException(batchId, batch.Select(e => GetSeq(batchId, e)), exception);
+                throw new ConcurrencyException(batchId, batch, exception);
             }
         }
 
@@ -143,72 +143,6 @@ namespace d60.EventSorcerer.MongoDb.Events
             }
 
             return array;
-        }
-
-        void ValidateSequenceNumbers(Guid batchId, List<DomainEvent> events)
-        {
-            var seqs = events
-                .GroupBy(e => GetAggregateRootId(batchId, e))
-                .ToDictionary(g => g.Key, g => g.Min(e => GetSeq(batchId, e)));
-
-            foreach (var e in events)
-            {
-                var sequenceNumberOfThisEvent = GetSeq(batchId, e);
-                var aggregateRootId = GetAggregateRootId(batchId, e);
-                var expectedSequenceNumber = seqs[aggregateRootId];
-
-                if (sequenceNumberOfThisEvent != expectedSequenceNumber)
-                {
-                    throw new InvalidOperationException(string.Format(@"Attempted to save batch {0} which contained events with non-sequential sequence numbers!
-
-{1}", batchId, string.Join(Environment.NewLine, events.Select(ev => string.Format("    {0} / {1}", GetAggregateRootId(batchId, ev), GetSeq(batchId, ev))))));
-                }
-
-                seqs[aggregateRootId]++;
-            }
-        }
-
-        static int GetSeq(Guid batchId, DomainEvent e)
-        {
-            object seq;
-
-            if (!e.Meta.TryGetValue(DomainEvent.MetadataKeys.SequenceNumber, out seq))
-            {
-                throw new InvalidOperationException(
-                    string.Format(
-                        "Attempted to save event batch {0} but one or more events was not equipped with a sequence number!",
-                        batchId));
-            }
-
-            try
-            {
-                return (int) seq;
-            }
-            catch (Exception exception)
-            {
-                throw new ApplicationException(string.Format("Could not cast sequence number '{0}' to an int", seq), exception);
-            }
-        }
-        static Guid GetAggregateRootId(Guid batchId, DomainEvent e)
-        {
-            object id;
-
-            if (!e.Meta.TryGetValue(DomainEvent.MetadataKeys.AggregateRootId, out id))
-            {
-                throw new InvalidOperationException(
-                    string.Format(
-                        "Attempted to save event batch {0} but one or more events was not equipped with an aggregate root ID!",
-                        batchId));
-            }
-
-            try
-            {
-                return new Guid(Convert.ToString(id));
-            }
-            catch (Exception exception)
-            {
-                throw new ApplicationException(string.Format("Could not cast aggregate root id '{0}' to a Guid", id), exception);
-            }
         }
     }
 
