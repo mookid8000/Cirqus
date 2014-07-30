@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>d60.EventSorcerer</id>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
     <title>d60.EventSorcerer</title>
     <authors>Mogens Heller Grabe</authors>
     <owners>mookid8000</owners>
@@ -14,6 +14,6 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="..\d60.EventSorcerer\bin\Release\d60.EventSorcerer.dll" target="lib" />
+    <file src="..\d60.EventSorcerer\bin\Release\d60.EventSorcerer.dll" target="lib\NET45" />
   </files>
 </package>

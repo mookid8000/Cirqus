@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>d60.EventSorcerer.MongoDb</id>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
     <title>d60.EventSorcerer.MongoDb</title>
     <authors>Mogens Heller Grabe</authors>
     <owners>mookid8000</owners>
@@ -10,12 +10,12 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>MongoDB stuff for d60 event sourcing + cqrs kit</description>
     <dependencies>
-      <dependency id="d60.EventSorcerer" version="0.0.4" />
+      <dependency id="d60.EventSorcerer" version="0.0.5" />
       <dependency id="Newtonsoft.Json" version="6.0.3" />
       <dependency id="mongocsharpdriver" version="1.9.2" />
     </dependencies>
   </metadata>
   <files>
-    <file src="..\d60.EventSorcerer.MongoDb\bin\Release\d60.EventSorcerer.MongoDb.dll" target="lib" />
+    <file src="..\d60.EventSorcerer.MongoDb\bin\Release\d60.EventSorcerer.MongoDb.dll" target="lib\NET45" />
   </files>
 </package>
