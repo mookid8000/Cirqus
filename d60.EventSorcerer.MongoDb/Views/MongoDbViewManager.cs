@@ -10,7 +10,6 @@ namespace d60.EventSorcerer.MongoDb.Views
     public class MongoDbViewManager<TView> : IEnumerable<TView>, IViewManager
         where TView : class, IView, ISubscribeTo, new()
     {
-        readonly ViewDispatcherHelper<TView> _viewDispatcherHelper = new ViewDispatcherHelper<TView>();
         readonly MongoCollection<MongoDbView<TView>> _viewCollection;
 
         public MongoDbViewManager(MongoDatabase database, string collectionName)
@@ -52,17 +51,10 @@ namespace d60.EventSorcerer.MongoDb.Views
                                View = new TView()
                            };
 
-                _viewDispatcherHelper.DispatchToView(e, doc.View);
+                doc.Dispatch(e);
 
                 _viewCollection.Save(doc);
             }
         }
-    }
-
-    class MongoDbView<TView> where TView : IView
-    {
-        public string Id { get; set; }
-
-        public TView View { get; set; }
     }
 }

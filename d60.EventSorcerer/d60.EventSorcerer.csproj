@@ -61,6 +61,7 @@
     <Compile Include="Events\IEventStore.cs" />
     <Compile Include="Events\EventValidation.cs" />
     <Compile Include="Extensions\AttributeExtensions.cs" />
+    <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\DomainEventExtensions.cs" />
     <Compile Include="Numbers\ISequenceNumberGenerator.cs" />
     <Compile Include="Events\Metadata.cs" />
