@@ -54,6 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Aggregates\TestLoading.cs" />
     <Compile Include="Contracts\AggregateRootRepository\Factories\BasicAggregateRootRepositoryFactory.cs" />
     <Compile Include="Contracts\AggregateRootRepository\Factories\InMemoryAggregateRootRepositoryFactory.cs" />
     <Compile Include="Contracts\AggregateRootRepository\IAggregateRootRepositoryFactory.cs" />

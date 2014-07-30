@@ -31,9 +31,9 @@ namespace d60.EventSorcerer.Tests.Integration
         protected override void DoSetUp()
         {
             var eventStore = new InMemoryEventStore();
-            
+
             _aggregateRootRepository = new InMemoryAggregateRootRepository();
-            
+
             var sequenceNumberGenerator = new TestSequenceNumberGenerator(1);
             var commandMapper = new CommandMapper()
                 .Map<BearSomeChildrenCommand, ProgrammerAggregate>((c, a) => a.BearChildren(c.IdsOfChildren));
@@ -47,15 +47,15 @@ namespace d60.EventSorcerer.Tests.Integration
         public void RunEntirePipelineAndProbePrivatesForMultipleAggregates()
         {
             var firstAggregateRootId = Guid.NewGuid();
-            
+
             var firstChildId = Guid.NewGuid();
             var secondChildId = Guid.NewGuid();
-            
+
             var grandChildId = Guid.NewGuid();
 
             var initialState = _aggregateRootRepository.ToList();
 
-            _eventSorcerer.ProcessCommand(new BearSomeChildrenCommand(firstAggregateRootId, new[] {firstChildId, secondChildId}));
+            _eventSorcerer.ProcessCommand(new BearSomeChildrenCommand(firstAggregateRootId, new[] { firstChildId, secondChildId }));
 
             var afterBearingTwoChildren = _aggregateRootRepository.ToList();
 
@@ -64,16 +64,16 @@ namespace d60.EventSorcerer.Tests.Integration
             var afterBearingGrandChild = _aggregateRootRepository.ToList();
 
             Assert.That(initialState.Count, Is.EqualTo(0), "No events yet, expected there to be zero agg roots in the repo");
-            
+
             Assert.That(afterBearingTwoChildren.Count, Is.EqualTo(3));
-            
+
             var idsOfChildren = afterBearingTwoChildren
                 .OfType<ProgrammerAggregate>()
                 .Single(p => p.Id == firstAggregateRootId)
                 .GetIdsOfChildren();
 
-            Assert.That(idsOfChildren, Is.EqualTo(new[]{firstChildId, secondChildId}));
-            
+            Assert.That(idsOfChildren, Is.EqualTo(new[] { firstChildId, secondChildId }));
+
             Assert.That(afterBearingGrandChild.Count, Is.EqualTo(4));
 
             var idsOfGrandChildren = afterBearingGrandChild
@@ -103,7 +103,7 @@ namespace d60.EventSorcerer.Tests.Integration
             {
                 foreach (var id in idsOfChildren)
                 {
-                    Load<ProgrammerAggregate>(id).GiveBirth();
+                    Load<ProgrammerAggregate>(id, createIfNotExists: true).GiveBirth();
                 }
 
                 Emit(new HadChildren(idsOfChildren));
@@ -111,7 +111,7 @@ namespace d60.EventSorcerer.Tests.Integration
 
             public void Apply(WasBorn e)
             {
-                
+
             }
 
             public void Apply(HadChildren e)
@@ -142,7 +142,7 @@ namespace d60.EventSorcerer.Tests.Integration
 
         public class WasBorn : DomainEvent<ProgrammerAggregate>
         {
-            
+
         }
     }
 }

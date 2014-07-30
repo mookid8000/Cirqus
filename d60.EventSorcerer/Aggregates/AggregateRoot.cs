@@ -11,7 +11,7 @@ namespace d60.EventSorcerer.Aggregates
         internal ISequenceNumberGenerator SequenceNumberGenerator { get; set; }
         internal IAggregateRootRepository AggregateRootRepository { get; set; }
         public Guid Id { get; private set; }
-        
+
         internal void Initialize(Guid id, IAggregateRootRepository aggregateRootRepository)
         {
             Id = id;
@@ -99,8 +99,21 @@ public void Apply({2} e)
             return string.Format("{0} ({1})", GetType().Name, Id);
         }
 
-        protected TAggregateRoot Load<TAggregateRoot>(Guid id) where TAggregateRoot : AggregateRoot, new()
+        protected TAggregateRoot Load<TAggregateRoot>(Guid id, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
         {
+            if (AggregateRootRepository == null)
+            {
+                throw new InvalidOperationException(
+                    string.Format(
+                        "Attempted to Load {0} with ID {1} from {2}, but it has not been initialize with an aggregate root repository!",
+                        typeof (TAggregateRoot), id, GetType()));
+            }
+
+            if (!createIfNotExists && !AggregateRootRepository.Exists<TAggregateRoot>(id))
+            {
+                throw new ArgumentException(string.Format("Aggregate root {0} with ID {1} does not exist!", typeof(TAggregateRoot), id), "id");
+            }
+
             var aggregateRoot = AggregateRootRepository.Get<TAggregateRoot>(id);
             aggregateRoot.EventCollector = EventCollector;
             aggregateRoot.SequenceNumberGenerator = SequenceNumberGenerator;
