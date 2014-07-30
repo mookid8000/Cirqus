@@ -19,6 +19,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{53C890A9-D587-4BD6-B69C-5B01F64B39F1}"
 	ProjectSection(SolutionItems) = preProject
 		build.proj = build.proj
+		CHANGELOG.md = CHANGELOG.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.EventSorcerer.MsSql", "d60.EventSorcerer.MsSql\d60.EventSorcerer.MsSql.csproj", "{6EEBCA35-9B61-4A95-8E72-3AF583C14F32}"
