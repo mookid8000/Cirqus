@@ -70,7 +70,9 @@ namespace d60.EventSorcerer.Tests.Commands
             }
         }
 
-        public class ProgrammerAggregate : AggregateRoot
+        public class ProgrammerAggregate : AggregateRoot, 
+            IEmit<FinishedEducation>,
+            IEmit<LearnedAboutFunctionalProgramming>
         {
             enum ProgrammerState
             {

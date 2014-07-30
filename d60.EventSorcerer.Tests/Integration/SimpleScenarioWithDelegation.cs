@@ -95,7 +95,7 @@ namespace d60.EventSorcerer.Tests.Integration
             }
         }
 
-        public class ProgrammerAggregate : AggregateRoot
+        public class ProgrammerAggregate : AggregateRoot, IEmit<HadChildren>, IEmit<WasBorn>
         {
             readonly List<Guid> _idsOfChildren = new List<Guid>();
 

@@ -2,10 +2,10 @@
 using System.Linq;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Exceptions;
-using d60.EventSorcerer.Tests.Contracts.Factories;
+using d60.EventSorcerer.Tests.Contracts.EventStore.Factories;
 using NUnit.Framework;
 
-namespace d60.EventSorcerer.Tests.Contracts
+namespace d60.EventSorcerer.Tests.Contracts.EventStore
 {
     [Description("Contract test for event stores. Verifies that event store implementation and sequence number generation works in tandem")]
     [TestFixture(typeof(MongoDbEventStoreFactory), Category = TestCategories.MongoDb)]

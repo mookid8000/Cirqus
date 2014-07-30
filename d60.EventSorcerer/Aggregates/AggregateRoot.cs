@@ -10,9 +10,8 @@ namespace d60.EventSorcerer.Aggregates
         internal IEventCollector EventCollector { get; set; }
         internal ISequenceNumberGenerator SequenceNumberGenerator { get; set; }
         internal IAggregateRootRepository AggregateRootRepository { get; set; }
-
         public Guid Id { get; private set; }
-
+        
         internal void Initialize(Guid id, IAggregateRootRepository aggregateRootRepository)
         {
             Id = id;
@@ -29,6 +28,15 @@ namespace d60.EventSorcerer.Aggregates
                     string.Format(
                         "Attempted to emit event {0} from aggregate root {1}, but it has not yet been assigned an ID!",
                         e, GetType()));
+            }
+
+            var emitterInterface = typeof(IEmit<>).MakeGenericType(e.GetType());
+            if (!emitterInterface.IsAssignableFrom(GetType()))
+            {
+                throw new InvalidOperationException(
+                    string.Format(
+                        "Attempted to emit event {0} but the aggregate root {1} does not implement IEmit<{2}>",
+                        e, GetType().Name, e.GetType().Name));
             }
 
             var eventType = e.GetType();
@@ -57,7 +65,7 @@ namespace d60.EventSorcerer.Aggregates
             e.Meta[DomainEvent.MetadataKeys.TimeLocal] = now.ToLocalTime();
             e.Meta[DomainEvent.MetadataKeys.TimeUtc] = now;
             e.Meta[DomainEvent.MetadataKeys.SequenceNumber] = sequenceNumber;
-            e.Meta[DomainEvent.MetadataKeys.Owner] = GetType().Name;
+            e.Meta[DomainEvent.MetadataKeys.Owner] = GetOwnerFromType(GetType());
             e.Meta[DomainEvent.MetadataKeys.Version] = eventType.GetFromAttributeOrDefault<VersionAttribute, int>(a => a.Number, 1);
 
             try
@@ -79,6 +87,11 @@ public void Apply({2} e)
             }
 
             EventCollector.Add(e);
+        }
+
+        internal static string GetOwnerFromType(Type aggregateRootType)
+        {
+            return aggregateRootType.Name;
         }
 
         public override string ToString()

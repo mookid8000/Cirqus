@@ -33,6 +33,12 @@ namespace d60.EventSorcerer.Tests.Stubs
             }
         }
 
+        public bool Exists<TAggregate>(Guid aggregateRootId) where TAggregate : AggregateRoot
+        {
+            return _aggregateRoots.ContainsKey(aggregateRootId)
+                   && _aggregateRoots[aggregateRootId] is TAggregate;
+        }
+
         public IEnumerator<AggregateRoot> GetEnumerator()
         {
             return _aggregateRoots.Values.GetEnumerator();

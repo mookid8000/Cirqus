@@ -68,7 +68,7 @@ namespace d60.EventSorcerer.Tests.Aggregates
             }
         }
 
-        public class SomeAggregate : AggregateRoot
+        public class SomeAggregate : AggregateRoot, IEmit<SomeEvent>
         {
             public readonly List<string> StuffThatWasDone = new List<string>();
             public void DoSomething()

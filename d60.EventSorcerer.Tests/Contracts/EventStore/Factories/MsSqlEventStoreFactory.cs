@@ -4,7 +4,7 @@ using d60.EventSorcerer.Events;
 using d60.EventSorcerer.MsSql;
 using d60.EventSorcerer.Numbers;
 
-namespace d60.EventSorcerer.Tests.Contracts.Factories
+namespace d60.EventSorcerer.Tests.Contracts.EventStore.Factories
 {
     public class MsSqlEventStoreFactory : IEventStoreFactory
     {

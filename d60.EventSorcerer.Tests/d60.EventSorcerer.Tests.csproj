@@ -54,13 +54,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Contracts\AggregateRootRepository\Factories\BasicAggregateRootRepositoryFactory.cs" />
+    <Compile Include="Contracts\AggregateRootRepository\Factories\InMemoryAggregateRootRepositoryFactory.cs" />
+    <Compile Include="Contracts\AggregateRootRepository\IAggregateRootRepositoryFactory.cs" />
+    <Compile Include="Contracts\AggregateRootRepository\TestAggregateRootRepositories.cs" />
     <Compile Include="Aggregates\TestEventApplication.cs" />
     <Compile Include="Commands\TestCustomMetadata.cs" />
-    <Compile Include="Contracts\EventStoreTest.cs" />
-    <Compile Include="Contracts\IEventStoreFactory.cs" />
-    <Compile Include="Contracts\Factories\InMemoryEventStoreFactory.cs" />
-    <Compile Include="Contracts\Factories\MongoDbEventStoreFactory.cs" />
-    <Compile Include="Contracts\Factories\MsSqlEventStoreFactory.cs" />
+    <Compile Include="Contracts\EventStore\EventStoreTest.cs" />
+    <Compile Include="Contracts\EventStore\IEventStoreFactory.cs" />
+    <Compile Include="Contracts\EventStore\Factories\InMemoryEventStoreFactory.cs" />
+    <Compile Include="Contracts\EventStore\Factories\MongoDbEventStoreFactory.cs" />
+    <Compile Include="Contracts\EventStore\Factories\MsSqlEventStoreFactory.cs" />
     <Compile Include="FixtureBase.cs" />
     <Compile Include="Integration\SimpleScenarioWithDelegation.cs" />
     <Compile Include="Integration\SimpleScenarioWithConcurrency.cs" />

@@ -2,7 +2,7 @@ using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Numbers;
 using d60.EventSorcerer.Tests.Stubs;
 
-namespace d60.EventSorcerer.Tests.Contracts.Factories
+namespace d60.EventSorcerer.Tests.Contracts.EventStore.Factories
 {
     public class InMemoryEventStoreFactory : IEventStoreFactory
     {

@@ -92,7 +92,7 @@ this time by using actual MongoDB underneath
             }
         }
 
-        public class ProgrammerAggregate : AggregateRoot
+        public class ProgrammerAggregate : AggregateRoot, IEmit<FinishedEducation>, IEmit<LearnedAboutFunctionalProgramming>
         {
             enum ProgrammerState
             {

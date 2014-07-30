@@ -3,7 +3,7 @@ using d60.EventSorcerer.MongoDb.Events;
 using d60.EventSorcerer.Numbers;
 using d60.EventSorcerer.Tests.MongoDb;
 
-namespace d60.EventSorcerer.Tests.Contracts.Factories
+namespace d60.EventSorcerer.Tests.Contracts.EventStore.Factories
 {
     public class MongoDbEventStoreFactory : IEventStoreFactory
     {

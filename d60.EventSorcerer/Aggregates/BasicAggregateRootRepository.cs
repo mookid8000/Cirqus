@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using d60.EventSorcerer.Events;
 
 namespace d60.EventSorcerer.Aggregates
@@ -24,6 +25,15 @@ namespace d60.EventSorcerer.Aggregates
             ApplyEvents(aggregate, domainEventsForThisAggregate);
 
             return aggregate;
+        }
+
+        public bool Exists<TAggregate>(Guid aggregateRootId) where TAggregate : AggregateRoot
+        {
+            var firstEvent = _eventStore.Load(aggregateRootId, 0, 1).FirstOrDefault();
+
+            return firstEvent != null
+                   && firstEvent.Meta.ContainsKey(DomainEvent.MetadataKeys.Owner)
+                   && firstEvent.Meta[DomainEvent.MetadataKeys.Owner].ToString() == AggregateRoot.GetOwnerFromType(typeof(TAggregate));
         }
 
         TAggregate CreateFreshAggregate<TAggregate>(Guid aggregateRootId) where TAggregate : AggregateRoot, new()
