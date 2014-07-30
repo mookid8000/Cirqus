@@ -7,6 +7,6 @@ namespace d60.EventSorcerer.Events
     /// </summary>
     public interface IEventDispatcher
     {
-        void Dispatch(IEnumerable<DomainEvent> events);
+        void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events);
     }
 }

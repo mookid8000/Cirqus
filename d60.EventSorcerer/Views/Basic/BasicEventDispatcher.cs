@@ -13,7 +13,7 @@ namespace d60.EventSorcerer.Views.Basic
             _viewDispatchers = viewDispatchers.ToList();
         }
 
-        public void Dispatch(IEnumerable<DomainEvent> events)
+        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
             var eventList = events.ToList();
             

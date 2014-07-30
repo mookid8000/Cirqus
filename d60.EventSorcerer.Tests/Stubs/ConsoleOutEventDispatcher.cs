@@ -7,7 +7,7 @@ namespace d60.EventSorcerer.Tests.Stubs
 {
     public class ConsoleOutEventDispatcher : IEventDispatcher
     {
-        public void Dispatch(IEnumerable<DomainEvent> events)
+        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
             foreach (var e in events)
             {

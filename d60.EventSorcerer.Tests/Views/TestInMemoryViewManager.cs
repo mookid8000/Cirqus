@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.Tests.Stubs;
 using d60.EventSorcerer.Views.Basic;
 using d60.EventSorcerer.Views.Basic.Locators;
 using NUnit.Framework;
@@ -25,9 +26,9 @@ namespace d60.EventSorcerer.Tests.Views
             var firstRoot = Guid.NewGuid();
             var secondRoot = Guid.NewGuid();
 
-            _eventDispatcher.Dispatch(new DomainEvent[] { EventFor(firstRoot) });
-            _eventDispatcher.Dispatch(new DomainEvent[] { EventFor(firstRoot) });
-            _eventDispatcher.Dispatch(new DomainEvent[] { EventFor(secondRoot) });
+            _eventDispatcher.Dispatch(new InMemoryEventStore(),  new DomainEvent[] { EventFor(firstRoot) });
+            _eventDispatcher.Dispatch(new InMemoryEventStore(), new DomainEvent[] { EventFor(firstRoot) });
+            _eventDispatcher.Dispatch(new InMemoryEventStore(), new DomainEvent[] { EventFor(secondRoot) });
 
             var viewInstances = _viewManager.ToList();
 
@@ -62,7 +63,7 @@ namespace d60.EventSorcerer.Tests.Views
             var firstRoot = Guid.NewGuid();
 
             TakeTime("Dispatch " + numberOfEvents + " events",
-                () => numberOfEvents.Times(() => _eventDispatcher.Dispatch(new DomainEvent[] { EventFor(firstRoot) })));
+                () => numberOfEvents.Times(() => _eventDispatcher.Dispatch(new InMemoryEventStore(), new DomainEvent[] { EventFor(firstRoot) })));
         }
 
 

@@ -118,7 +118,7 @@ namespace d60.EventSorcerer.Config
             _eventStore.Save(batchId, emittedEvents);
 
             // when we come to this place, we deliver the events to the view manager
-            _eventDispatcher.Dispatch(emittedEvents);
+            _eventDispatcher.Dispatch(_eventStore, emittedEvents);
         }
 
         static Type GetAggregateRootType(Type commandType)
