@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Views.Basic;
 
@@ -12,22 +11,9 @@ namespace d60.EventSorcerer.MongoDb.Views
 
         public TView View { get; set; }
 
-        public virtual void Dispatch(DomainEvent domainEvent)
+        public void Dispatch(DomainEvent domainEvent)
         {
             Dispatcher.DispatchToView(domainEvent, View);
-        }
-    }
-
-    class MongoDbCatchUpView<TView> : MongoDbView<TView> where TView : IView, ISubscribeTo
-    {
-        public MongoDbCatchUpView()
-        {
-            Pointers = new Dictionary<string, int>();
-        }
-        public Dictionary<string, int> Pointers { get; set; }
-        public override void Dispatch(DomainEvent domainEvent)
-        {
-            base.Dispatch(domainEvent);
         }
     }
 }

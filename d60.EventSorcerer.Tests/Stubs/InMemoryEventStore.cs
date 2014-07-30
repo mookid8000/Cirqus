@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.Exceptions;
 using d60.EventSorcerer.Numbers;
 
 namespace d60.EventSorcerer.Tests.Stubs

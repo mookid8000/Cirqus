@@ -1,5 +1,6 @@
 ﻿using System;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.Exceptions;
 using d60.EventSorcerer.MongoDb.Events;
 using d60.EventSorcerer.MongoDb.Views;
 using d60.EventSorcerer.Views.Basic;
@@ -29,13 +30,13 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
         {
             var rootId1 = Guid.NewGuid();
             var rootId2 = Guid.NewGuid();
-            
+
             _viewManager.Dispatch(_eventStore, new[]
             {
-                EventFor(rootId1),
-                EventFor(rootId1),
-                EventFor(rootId1),
-                EventFor(rootId2),
+                EventFor(rootId1, 1),
+                EventFor(rootId1, 2),
+                EventFor(rootId1, 3),
+                EventFor(rootId2, 1),
             });
 
             var firstView = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
@@ -45,11 +46,63 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
             Assert.That(secondView.EventCounter, Is.EqualTo(1));
         }
 
-        DomainEvent EventFor(Guid aggregateRootId)
+        [Test]
+        public void RejectsOutOfSequenceEvents()
+        {
+            var rootId1 = Guid.NewGuid();
+
+            _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 1) });
+            _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 2) });
+
+            Assert.Throws<ConsistencyException>(() => _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 1) }));
+            Assert.Throws<ConsistencyException>(() => _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 2) }));
+            Assert.Throws<ConsistencyException>(() => _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 4) }));
+        }
+
+        [Test]
+        public void RejectsOutOfSequenceEventsWithCounterPerAggregateRoot()
+        {
+            var rootId1 = Guid.NewGuid();
+            var rootId2 = Guid.NewGuid();
+
+            _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 1) });
+            _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 2) });
+            _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 3) });
+            
+            _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId2, 1) });
+            _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId2, 2) });
+
+            Assert.Throws<ConsistencyException>(() => _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 5) }));
+            Assert.Throws<ConsistencyException>(() => _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId2, 4) }));
+        }
+
+        [Test]
+        public void CanCatchUpIfEventStoreAllowsIt()
+        {
+            var rootId1 = Guid.NewGuid();
+
+            _eventStore.Save(Guid.NewGuid(), new[] {EventFor(rootId1, 1)});
+            _eventStore.Save(Guid.NewGuid(), new[] {EventFor(rootId1, 2)});
+            _eventStore.Save(Guid.NewGuid(), new[] {EventFor(rootId1, 3)});
+
+            _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 1) });
+            // deliberately dispatch an out-of-sequence event
+            _viewManager.Dispatch(_eventStore, new[] {EventFor(rootId1, 3)});
+
+            var view = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            Assert.That(view.EventCounter, Is.EqualTo(3));
+        }
+
+
+        DomainEvent EventFor(Guid aggregateRootId, int seqNo)
         {
             return new AnEvent
             {
-                Meta = { { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId } }
+                Meta =
+                {
+                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId },
+                    { DomainEvent.MetadataKeys.SequenceNumber, seqNo },
+                }
             };
         }
 

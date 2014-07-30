@@ -28,10 +28,10 @@ namespace d60.EventSorcerer.MongoDb.Views
                                             ?? new MongoDbCatchUpView<TView>
                                             {
                                                 Id = id,
-                                                View = new TView()
+                                                View = new TView(),
                                             });
 
-                doc.Dispatch(e);
+                doc.DispatchAndResolve(eventStore, e);
             }
 
             foreach (var doc in activeViewDocs.Values)

@@ -4,6 +4,7 @@ using System.Reflection;
 using d60.EventSorcerer.Aggregates;
 using d60.EventSorcerer.Commands;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.Exceptions;
 using d60.EventSorcerer.Numbers;
 using d60.EventSorcerer.Views;
 

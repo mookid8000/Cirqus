@@ -55,11 +55,13 @@
     <Compile Include="Config\EventSorcererOptions.cs" />
     <Compile Include="Config\Retryer.cs" />
     <Compile Include="Config\CachingSequenceNumberGenerator.cs" />
+    <Compile Include="Exceptions\ConcurrencyException.cs" />
     <Compile Include="Events\IEventCollector.cs" />
     <Compile Include="Commands\UnitOfWork.cs" />
     <Compile Include="Events\DomainEvent.cs" />
     <Compile Include="Events\IEventStore.cs" />
     <Compile Include="Events\EventValidation.cs" />
+    <Compile Include="Exceptions\ConsistencyException.cs" />
     <Compile Include="Extensions\AttributeExtensions.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\DomainEventExtensions.cs" />

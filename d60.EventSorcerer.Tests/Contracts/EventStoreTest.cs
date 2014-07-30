@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.Exceptions;
 using d60.EventSorcerer.Tests.Contracts.Factories;
 using NUnit.Framework;
 

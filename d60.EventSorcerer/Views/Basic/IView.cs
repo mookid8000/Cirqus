@@ -1,39 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using d60.EventSorcerer.Events;
 
 namespace d60.EventSorcerer.Views.Basic
 {
+    /// <summary>
+    /// Base interface of views
+    /// </summary>
     public interface IView
     {
         string Id { get; set; }
     }
 
+    // ReSharper disable UnusedTypeParameter
+    /// <summary>
+    /// Base interface of a view that can be located - i.e., given some <see cref="DomainEvent"/>,
+    /// it can be determined which view instance that must be updated with the event.
+    /// </summary>
+    /// <typeparam name="TViewLocator">The type of view locator that will be used to determine the ID of the view to be updated</typeparam>
     public interface IView<TViewLocator> : IView where TViewLocator : ViewLocator
     {
     }
-
-    public abstract class CatchUpView : IView {
-        public string Id { get; set; }
-    }
-
-    public abstract class CatchUpView<TViewLocator> : CatchUpView where TViewLocator : ViewLocator
-    {
-        protected CatchUpView()
-        {
-            Pointers = new Dictionary<string, int>();
-        }
-        public Dictionary<string, int> Pointers { get; set; }
-        internal void UpdatePointer(Guid aggId, int seqNo)
-        {
-            var id = aggId.ToString();
-
-            if (!Pointers.ContainsKey(id))
-            {
-                Pointers[id] = seqNo;
-                return;
-            }
-
-
-        }
-    }
+    // ReSharper restore UnusedTypeParameter
 }
