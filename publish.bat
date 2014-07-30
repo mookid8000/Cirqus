@@ -1,0 +1,1 @@
+msbuild build.proj /t:publish_packages
