@@ -68,6 +68,7 @@
     <Compile Include="Integration\SimpleScenario.cs" />
     <Compile Include="MongoDb\Helper.cs" />
     <Compile Include="MongoDb\TestMongoDbSerializer.cs" />
+    <Compile Include="MongoDb\Views\TestMongoDbCatchUpViewManager_GlobalViewLocator.cs" />
     <Compile Include="MongoDb\Views\TestMongoDbCatchUpViewManager.cs" />
     <Compile Include="Stubs\ConsoleOutEventDispatcher.cs" />
     <Compile Include="TestCategories.cs" />

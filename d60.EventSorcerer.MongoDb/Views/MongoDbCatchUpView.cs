@@ -22,14 +22,14 @@ namespace d60.EventSorcerer.MongoDb.Views
 
             if (!Pointers.ContainsKey(aggIdString))
             {
-                base.Dispatch(domainEvent);
+                Dispatch(domainEvent);
                 Pointers[aggIdString] = seqNo;
                 return;
             }
 
             var expectedNextSeqNo = Pointers[aggIdString] + 1;
 
-            while (seqNo != expectedNextSeqNo)
+            while (expectedNextSeqNo != seqNo)
             {
                 var missingEvent = eventStore
                     .Load(aggregateRootId, expectedNextSeqNo, 1)
@@ -37,7 +37,7 @@ namespace d60.EventSorcerer.MongoDb.Views
 
                 if (missingEvent == null) break;
 
-                base.Dispatch(missingEvent);
+                Dispatch(missingEvent);
                 expectedNextSeqNo++;
             }
 
@@ -48,7 +48,7 @@ namespace d60.EventSorcerer.MongoDb.Views
                     seqNo, aggIdString, Id, expectedNextSeqNo);
             }
 
-            base.Dispatch(domainEvent);
+            Dispatch(domainEvent);
             Pointers[aggIdString] = seqNo;
         }
     }

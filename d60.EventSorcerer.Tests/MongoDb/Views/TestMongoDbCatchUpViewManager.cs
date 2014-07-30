@@ -93,7 +93,6 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
             Assert.That(view.EventCounter, Is.EqualTo(3));
         }
 
-
         DomainEvent EventFor(Guid aggregateRootId, int seqNo)
         {
             return new AnEvent
