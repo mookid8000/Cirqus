@@ -39,7 +39,7 @@ namespace d60.EventSorcerer.MongoDb.Views
             return GetEnumerator();
         }
 
-        public void Dispatch(IEnumerable<DomainEvent> events)
+        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
             foreach (var e in events)
             {

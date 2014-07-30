@@ -5,6 +5,6 @@ namespace d60.EventSorcerer.Views.Basic
 {
     public interface IViewManager
     {
-        void Dispatch(IEnumerable<DomainEvent> events);
+        void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events);
     }
 }

@@ -19,7 +19,7 @@ namespace d60.EventSorcerer.Views.Basic
             
             foreach (var view in _viewDispatchers)
             {
-                view.Dispatch(eventList);
+                view.Dispatch(eventStore, eventList);
             }
         }
     }
