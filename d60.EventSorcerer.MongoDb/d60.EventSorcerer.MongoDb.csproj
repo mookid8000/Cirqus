@@ -54,7 +54,6 @@
     <Compile Include="Events\MongoDbEventStore.cs" />
     <Compile Include="Events\MongoDbSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Views\IMongoDbView.cs" />
     <Compile Include="Views\MongoDbViewManager.cs" />
   </ItemGroup>
   <ItemGroup>

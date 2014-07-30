@@ -33,16 +33,16 @@ namespace d60.EventSorcerer.Tests.Views
 
             Assert.That(viewInstances.Count, Is.EqualTo(2));
 
-            Assert.That(viewInstances.Count(i => i.Id == firstRoot), Is.EqualTo(1),
+            Assert.That(viewInstances.Count(i => i.AggregateRootId == firstRoot), Is.EqualTo(1),
                 "Expected one single view instance for aggregate root {0}", firstRoot);
 
-            Assert.That(viewInstances.Single(i => i.Id == firstRoot).NumberOfEventsHandled, Is.EqualTo(2),
+            Assert.That(viewInstances.Single(i => i.AggregateRootId == firstRoot).NumberOfEventsHandled, Is.EqualTo(2),
                 "Expected two events to have been processed");
 
-            Assert.That(viewInstances.Count(i => i.Id == secondRoot), Is.EqualTo(1),
+            Assert.That(viewInstances.Count(i => i.AggregateRootId == secondRoot), Is.EqualTo(1),
                 "Expected one single view instance for aggregate root {0}", secondRoot);
 
-            Assert.That(viewInstances.Single(i => i.Id == secondRoot).NumberOfEventsHandled, Is.EqualTo(1),
+            Assert.That(viewInstances.Single(i => i.AggregateRootId == secondRoot).NumberOfEventsHandled, Is.EqualTo(1),
                 "Expected one event to have been processed");
         }
 
@@ -85,13 +85,15 @@ namespace d60.EventSorcerer.Tests.Views
                 NumberOfEventsHandled = 0;
             }
 
-            public Guid Id { get; set; }
+            public string Id { get; set; }
+
+            public Guid AggregateRootId { get; set; }
 
             public int NumberOfEventsHandled { get; set; }
 
             public void Handle(SomeEvent domainEvent)
             {
-                Id = new Guid(domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId].ToString());
+                AggregateRootId = new Guid(domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId].ToString());
 
                 NumberOfEventsHandled++;
             }

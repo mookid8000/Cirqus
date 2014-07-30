@@ -92,7 +92,7 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
 
         }
 
-        class SomeView : IView<InstancePerAggregateRootLocator>, ISubscribeTo<SomeEvent>, IMongoDbView
+        class SomeView : IView<InstancePerAggregateRootLocator>, ISubscribeTo<SomeEvent>
         {
             public SomeView()
             {

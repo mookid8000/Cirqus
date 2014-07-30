@@ -1,5 +1,4 @@
-﻿using System;
-using d60.EventSorcerer.Aggregates;
+﻿using d60.EventSorcerer.Aggregates;
 
 namespace d60.EventSorcerer.Events
 {
@@ -33,9 +32,5 @@ namespace d60.EventSorcerer.Events
 
     public abstract class DomainEvent<TOwner> : DomainEvent where TOwner : AggregateRoot
     {
-        public Guid AggregateRootId
-        {
-            get { return new Guid(Meta[MetadataKeys.AggregateRootId].ToString()); }
-        }
     }
 }
