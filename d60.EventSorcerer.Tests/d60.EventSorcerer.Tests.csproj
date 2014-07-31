@@ -67,6 +67,7 @@
     <Compile Include="Contracts\EventStore\Factories\MongoDbEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\Factories\MsSqlEventStoreFactory.cs" />
     <Compile Include="Contracts\Views\CatchUpViews.cs" />
+    <Compile Include="Contracts\Views\Factories\MsSqlCatchUpViewManagerFactory.cs" />
     <Compile Include="Contracts\Views\ICatchUpViewManagerFactory.cs" />
     <Compile Include="Contracts\Views\Factories\MongoDbCatchUpViewManagerFactory.cs" />
     <Compile Include="Contracts\Views\BigCatchup.cs" />
@@ -78,6 +79,7 @@
     <Compile Include="Integration\SimpleScenario.cs" />
     <Compile Include="MongoDb\Helper.cs" />
     <Compile Include="MongoDb\TestMongoDbSerializer.cs" />
+    <Compile Include="MsSql\TestSqlHelper.cs" />
     <Compile Include="TestCategories.cs" />
     <Compile Include="TestExtensions.cs" />
     <Compile Include="MongoDb\TestMongoDbEventStoreIndexPerf.cs" />
@@ -90,9 +92,7 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="MsSql\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\d60.EventSorcerer.MongoDb\d60.EventSorcerer.MongoDb.csproj">
       <Project>{1ECCDCD5-DD78-4F9C-B0C3-BC083742CE99}</Project>

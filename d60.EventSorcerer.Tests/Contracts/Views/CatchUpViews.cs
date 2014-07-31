@@ -13,6 +13,7 @@ using NUnit.Framework;
 namespace d60.EventSorcerer.Tests.Contracts.Views
 {
     [TestFixture(typeof(MongoDbCatchUpViewManagerFactory), Category = TestCategories.MongoDb)]
+    [TestFixture(typeof(MsSqlCatchUpViewManagerFactory), Category = TestCategories.MsSql)]
     public class CatchUpViews<TViewManagerFactory> : FixtureBase where TViewManagerFactory : ICatchUpViewManagerFactory, new()
     {
         MongoDatabase _database;
@@ -160,6 +161,8 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             public static int ThrowAfterThisManyEvents { get; set; }
             public string Id { get; set; }
             public int EventsHandled { get; set; }
+            public string JustSomeString { get; set; }
+            public decimal Decimal { get; set; }
             public void Handle(AnEvent domainEvent)
             {
                 EventsHandled++;
@@ -241,6 +244,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             _justAnotherViewViewManager.Dispatch(_eventStore, new[] { lastEvent });
 
             var view = _factory.Load<JustAnotherView>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+
             Assert.That(view.EventCounter, Is.EqualTo(3));
         }
 
