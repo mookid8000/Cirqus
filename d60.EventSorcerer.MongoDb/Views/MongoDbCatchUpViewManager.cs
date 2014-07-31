@@ -15,6 +15,11 @@ namespace d60.EventSorcerer.MongoDb.Views
             _viewCollection = database.GetCollection<MongoDbCatchUpView<TView>>(collectionName);
         }
 
+        public void Initialize(IEventStore eventStore)
+        {
+            
+        }
+
         public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
             var locator = ViewLocator.GetLocatorFor<TView>();

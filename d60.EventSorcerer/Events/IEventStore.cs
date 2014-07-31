@@ -17,5 +17,10 @@ namespace d60.EventSorcerer.Events
         /// Loads events for the specified aggregate root
         /// </summary>
         IEnumerable<DomainEvent> Load(Guid aggregateRootId, int firstSeq = 0, int limit = int.MaxValue);
+
+        /// <summary>
+        /// Looks up the next available sequence number for that particular aggregate root ID
+        /// </summary>
+        long NextSeqNo(Guid aggregateRootId);
     }
 }

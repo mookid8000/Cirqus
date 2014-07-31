@@ -45,7 +45,7 @@ many time in parallel, and after some time the consistency of everything is veri
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _eventSorcerer = new EventSorcererConfig(eventStore, _aggregateRootRepository, commandMapper, eventStore, viewManager);
+            _eventSorcerer = new EventSorcererConfig(eventStore, _aggregateRootRepository, commandMapper, viewManager);
         }
 
         [TestCase(1, 1000, 40)]

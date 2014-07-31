@@ -5,8 +5,6 @@ using d60.EventSorcerer.Aggregates;
 using d60.EventSorcerer.Commands;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Exceptions;
-using d60.EventSorcerer.Numbers;
-using d60.EventSorcerer.Views;
 
 namespace d60.EventSorcerer.Config
 {
@@ -25,11 +23,10 @@ namespace d60.EventSorcerer.Config
         readonly EventSorcererOptions _options = new EventSorcererOptions();
         readonly IEventStore _eventStore;
         readonly ICommandMapper _commandMapper;
-        readonly ISequenceNumberGenerator _sequenceNumberGenerator;
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventDispatcher _eventDispatcher;
 
-        public EventSorcererConfig(IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, ICommandMapper commandMapper, ISequenceNumberGenerator sequenceNumberGenerator, IEventDispatcher eventDispatcher)
+        public EventSorcererConfig(IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, ICommandMapper commandMapper, IEventDispatcher eventDispatcher)
         {
             if (CommandProcessorMethod == null)
             {
@@ -39,7 +36,6 @@ namespace d60.EventSorcerer.Config
             _eventStore = eventStore;
             _aggregateRootRepository = aggregateRootRepository;
             _commandMapper = commandMapper;
-            _sequenceNumberGenerator = sequenceNumberGenerator;
             _eventDispatcher = eventDispatcher;
         }
 
@@ -102,7 +98,7 @@ namespace d60.EventSorcerer.Config
             var aggregateRoot = _aggregateRootRepository.Get<TAggregateRoot>(command.AggregateRootId);
 
             aggregateRoot.EventCollector = unitOfWork;
-            aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(_sequenceNumberGenerator);
+            aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(_eventStore);
 
             handler(command, aggregateRoot);
 

@@ -5,12 +5,11 @@ using System.Data.SqlClient;
 using System.Linq;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Exceptions;
-using d60.EventSorcerer.Numbers;
 using d60.EventSorcerer.Serialization;
 
-namespace d60.EventSorcerer.MsSql
+namespace d60.EventSorcerer.MsSql.Events
 {
-    public class MsSqlEventStore : IEventStore, ISequenceNumberGenerator
+    public class MsSqlEventStore : IEventStore
     {
         readonly string _tableName;
         readonly Func<SqlConnection> _connectionProvider;
@@ -133,7 +132,7 @@ SELECT [data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo AND [
             return domainEvents;
         }
 
-        public int Next(Guid aggregateRootId)
+        public long NextSeqNo(Guid aggregateRootId)
         {
             var next = 0;
 

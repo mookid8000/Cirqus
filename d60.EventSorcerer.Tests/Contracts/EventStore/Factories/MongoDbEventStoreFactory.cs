@@ -1,6 +1,5 @@
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.MongoDb.Events;
-using d60.EventSorcerer.Numbers;
 using d60.EventSorcerer.Tests.MongoDb;
 
 namespace d60.EventSorcerer.Tests.Contracts.EventStore.Factories
@@ -15,11 +14,6 @@ namespace d60.EventSorcerer.Tests.Contracts.EventStore.Factories
         }
 
         public IEventStore GetEventStore()
-        {
-            return _eventStore;
-        }
-
-        public ISequenceNumberGenerator GetSequenceNumberGenerator()
         {
             return _eventStore;
         }

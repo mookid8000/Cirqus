@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using d60.EventSorcerer.Numbers;
@@ -10,14 +9,14 @@ namespace d60.EventSorcerer.Tests.Stubs
     public class TestSequenceNumberGenerator : ISequenceNumberGenerator
     {
         readonly int _startWith;
-        readonly Dictionary<Guid, int> _numbers = new Dictionary<Guid, int>();
+        readonly Dictionary<Guid, long> _numbers = new Dictionary<Guid, long>();
 
         public TestSequenceNumberGenerator(int startWith = 0)
         {
             _startWith = startWith;
         }
 
-        public int Next(Guid aggregateRootId)
+        public long Next(Guid aggregateRootId)
         {
             lock (_numbers)
             {

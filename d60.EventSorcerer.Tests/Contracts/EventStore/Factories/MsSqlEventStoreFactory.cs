@@ -1,8 +1,9 @@
 using System;
 using System.Data.SqlClient;
+using System.Linq;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.MsSql;
-using d60.EventSorcerer.Numbers;
+using d60.EventSorcerer.MsSql.Events;
 
 namespace d60.EventSorcerer.Tests.Contracts.EventStore.Factories
 {
@@ -44,19 +45,18 @@ END
                     }
                 }
             }
-            catch (Exception exception)
+            catch (SqlException exception)
             {
-                Console.WriteLine("An exception occurred while trying to create test database '{0}': {1} - this is not necessarily an error, because everything should work fine if the test database already exists", 
-                    databaseName, exception);
+                if (exception.Errors.Cast<SqlError>().Any(e => e.Number == 1801))
+                {
+                    Console.WriteLine("Test database '{0}' already existed", databaseName);
+                    return;
+                }
+                throw;
             }
         }
 
         public IEventStore GetEventStore()
-        {
-            return _eventStore;
-        }
-
-        public ISequenceNumberGenerator GetSequenceNumberGenerator()
         {
             return _eventStore;
         }

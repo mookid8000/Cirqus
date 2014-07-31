@@ -20,14 +20,9 @@ namespace d60.EventSorcerer.MongoDb.Views
             var aggIdString = aggregateRootId.ToString();
             var seqNo = domainEvent.GetSequenceNumber();
 
-            if (!Pointers.ContainsKey(aggIdString))
-            {
-                Dispatch(domainEvent);
-                Pointers[aggIdString] = seqNo;
-                return;
-            }
-
-            var expectedNextSeqNo = Pointers[aggIdString] + 1;
+            var expectedNextSeqNo = Pointers.ContainsKey(aggIdString)
+                ? Pointers[aggIdString] + 1
+                : 0;
 
             while (expectedNextSeqNo != seqNo)
             {

@@ -41,7 +41,7 @@ this time by using actual MongoDB underneath
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _eventSorcerer = new EventSorcererConfig(eventStore, _aggregateRootRepository, commandMapper, eventStore, viewManager);
+            _eventSorcerer = new EventSorcererConfig(eventStore, _aggregateRootRepository, commandMapper, viewManager);
         }
 
         [Test]

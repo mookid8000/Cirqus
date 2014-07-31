@@ -30,13 +30,12 @@ namespace d60.EventSorcerer.Tests.Integration
             
             _aggregateRootRepository = new InMemoryAggregateRootRepository();
             
-            var sequenceNumberGenerator = new TestSequenceNumberGenerator(1);
             var commandMapper = new CommandMapper()
                 .Map<TakeNextStepCommand, ProgrammerAggregate>((c, a) => a.TakeNextStep());
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _eventSorcerer = new EventSorcererConfig(eventStore, _aggregateRootRepository, commandMapper, sequenceNumberGenerator, viewManager);
+            _eventSorcerer = new EventSorcererConfig(eventStore, _aggregateRootRepository, commandMapper, viewManager);
         }
 
         [Test]

@@ -24,6 +24,14 @@ namespace d60.EventSorcerer.Tests.Contracts.EventStore
         }
 
         [Test]
+        public void SequenceNumbersStartWithZero()
+        {
+            var nextSeqNo = _eventStore.NextSeqNo(Guid.NewGuid());
+
+            Assert.That(nextSeqNo, Is.EqualTo(0));
+        }
+
+        [Test]
         public void CanSaveEventBatch()
         {
             // arrange
@@ -242,20 +250,20 @@ namespace d60.EventSorcerer.Tests.Contracts.EventStore
             var agg1Id = Guid.NewGuid();
             var agg2Id = Guid.NewGuid();
 
-            var generator = _eventStoreFactory.GetSequenceNumberGenerator();
+            var generator = _eventStoreFactory.GetEventStore();
 
-            Assert.That(generator.Next(agg1Id), Is.EqualTo(0));
-            Assert.That(generator.Next(agg1Id), Is.EqualTo(0));
-            Assert.That(generator.Next(agg2Id), Is.EqualTo(0));
-            Assert.That(generator.Next(agg2Id), Is.EqualTo(0));
+            Assert.That(generator.NextSeqNo(agg1Id), Is.EqualTo(0));
+            Assert.That(generator.NextSeqNo(agg1Id), Is.EqualTo(0));
+            Assert.That(generator.NextSeqNo(agg2Id), Is.EqualTo(0));
+            Assert.That(generator.NextSeqNo(agg2Id), Is.EqualTo(0));
 
             _eventStore.Save(Guid.NewGuid(), new[]
             {
                 Event(0, agg1Id)
             });
 
-            Assert.That(generator.Next(agg1Id), Is.EqualTo(1), "Expected the seq for {0} to have been incremented once", agg1Id);
-            Assert.That(generator.Next(agg2Id), Is.EqualTo(0), "Expected the seq for {0} to not have been changed", agg2Id);
+            Assert.That(generator.NextSeqNo(agg1Id), Is.EqualTo(1), "Expected the seq for {0} to have been incremented once", agg1Id);
+            Assert.That(generator.NextSeqNo(agg2Id), Is.EqualTo(0), "Expected the seq for {0} to not have been changed", agg2Id);
 
             _eventStore.Save(Guid.NewGuid(), new[]
             {
@@ -264,16 +272,16 @@ namespace d60.EventSorcerer.Tests.Contracts.EventStore
                 Event(3, agg1Id)
             });
 
-            Assert.That(generator.Next(agg1Id), Is.EqualTo(4), "Expected the seq for {0} to have been incremented four times", agg1Id);
-            Assert.That(generator.Next(agg2Id), Is.EqualTo(0), "Expected the seq for {0} to not have been changed", agg2Id);
+            Assert.That(generator.NextSeqNo(agg1Id), Is.EqualTo(4), "Expected the seq for {0} to have been incremented four times", agg1Id);
+            Assert.That(generator.NextSeqNo(agg2Id), Is.EqualTo(0), "Expected the seq for {0} to not have been changed", agg2Id);
 
             _eventStore.Save(Guid.NewGuid(), new[]
             {
                 Event(0, agg2Id)
             });
 
-            Assert.That(generator.Next(agg1Id), Is.EqualTo(4), "Expected the seq for {0} to have been incremented four times", agg1Id);
-            Assert.That(generator.Next(agg2Id), Is.EqualTo(1), "Expected the seq for {0} to have been incremented once", agg2Id);
+            Assert.That(generator.NextSeqNo(agg1Id), Is.EqualTo(4), "Expected the seq for {0} to have been incremented four times", agg1Id);
+            Assert.That(generator.NextSeqNo(agg2Id), Is.EqualTo(1), "Expected the seq for {0} to have been incremented once", agg2Id);
         }
 
         [Test]
@@ -306,6 +314,29 @@ namespace d60.EventSorcerer.Tests.Contracts.EventStore
             Assert.That(allEventsForAgg2.Count, Is.EqualTo(2));
             Assert.That(allEventsForAgg2.GetSeq(), Is.EqualTo(new[] { 3, 6 }));
         }
+
+        [TestCase(1000, 10)]
+        [TestCase(1000, 100)]
+        [TestCase(1000, 1000, Ignore = true)]
+        public void ComparePerformance(int numberOfBatches, int numberOfEventsPerBatch)
+        {
+            TakeTime(string.Format("Save {0} batches with {1} events in each", numberOfBatches, numberOfEventsPerBatch),
+                () =>
+                {
+                    var seqNo = 0;
+                    var id = Guid.NewGuid();
+                    numberOfBatches.Times(() =>
+                    {
+                        var events = Enumerable
+                            .Range(0, numberOfEventsPerBatch)
+                            .Select(i => Event(seqNo++, id))
+                            .ToList();
+
+                        _eventStore.Save(Guid.NewGuid(), events);
+                    });
+                });
+        }
+
 
         static DomainEvent Event(int seq, Guid aggregateRootId)
         {

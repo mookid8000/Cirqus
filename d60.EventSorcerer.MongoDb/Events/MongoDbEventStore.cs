@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Exceptions;
-using d60.EventSorcerer.Numbers;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
@@ -11,7 +10,7 @@ using MongoDB.Driver.Builders;
 
 namespace d60.EventSorcerer.MongoDb.Events
 {
-    public class MongoDbEventStore : IEventStore, ISequenceNumberGenerator
+    public class MongoDbEventStore : IEventStore
     {
         static readonly string SeqNoDocPath = string.Format("Events.Meta.{0}", DomainEvent.MetadataKeys.SequenceNumber);
         static readonly string AggregateRootIdDocPath = string.Format("Events.Meta.{0}", DomainEvent.MetadataKeys.AggregateRootId);
@@ -35,12 +34,7 @@ namespace d60.EventSorcerer.MongoDb.Events
             }
         }
 
-        public int Next(Guid aggregateRootId)
-        {
-            return GetNextSeq(aggregateRootId);
-        }
-
-        public int GetNextSeq(Guid aggregateRootId)
+        public long NextSeqNo(Guid aggregateRootId)
         {
             var doc = _eventBatches.FindAs<BsonDocument>(Query.EQ(AggregateRootIdDocPath, aggregateRootId.ToString()))
                 .SetSortOrder(SortBy.Descending(SeqNoDocPath))

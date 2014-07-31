@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using d60.EventSorcerer.Extensions;
 
 namespace d60.EventSorcerer.Events
 {
@@ -34,13 +35,13 @@ namespace d60.EventSorcerer.Events
         static void EnsureSeq(Guid batchId, List<DomainEvent> events)
         {
             var seqs = events
-                .GroupBy(e => GetAggregateRootId(batchId, e))
-                .ToDictionary(g => g.Key, g => g.Min(e => GetSeq(batchId, e)));
+                .GroupBy(e => e.GetAggregateRootId())
+                .ToDictionary(g => g.Key, g => g.Min(e => e.GetSequenceNumber()));
 
             foreach (var e in events)
             {
-                var sequenceNumberOfThisEvent = GetSeq(batchId, e);
-                var aggregateRootId = GetAggregateRootId(batchId, e);
+                var sequenceNumberOfThisEvent = e.GetSequenceNumber();
+                var aggregateRootId = e.GetAggregateRootId();
                 var expectedSequenceNumber = seqs[aggregateRootId];
 
                 if (sequenceNumberOfThisEvent != expectedSequenceNumber)
@@ -51,54 +52,10 @@ namespace d60.EventSorcerer.Events
 {1}", batchId,
                             string.Join(Environment.NewLine,
                                 events.Select(
-                                    ev => string.Format("    {0} / {1}", GetAggregateRootId(batchId, ev), GetSeq(batchId, ev))))));
+                                    ev => string.Format("    {0} / {1}", ev.GetAggregateRootId(), ev.GetSequenceNumber())))));
                 }
 
                 seqs[aggregateRootId]++;
-            }
-        }
-
-        static Guid GetAggregateRootId(Guid batchId, DomainEvent e)
-        {
-            object id;
-
-            if (!e.Meta.TryGetValue(DomainEvent.MetadataKeys.AggregateRootId, out id))
-            {
-                throw new InvalidOperationException(
-                    string.Format(
-                        "Attempted to save event batch {0} but one or more events was not equipped with an aggregate root ID!",
-                        batchId));
-            }
-
-            try
-            {
-                return new Guid(Convert.ToString(id));
-            }
-            catch (Exception exception)
-            {
-                throw new ApplicationException(string.Format("Could not cast aggregate root id '{0}' to a Guid", id), exception);
-            }
-        }
-
-        static int GetSeq(Guid batchId, DomainEvent e)
-        {
-            object seq;
-
-            if (!e.Meta.TryGetValue(DomainEvent.MetadataKeys.SequenceNumber, out seq))
-            {
-                throw new InvalidOperationException(
-                    string.Format(
-                        "Attempted to save event batch {0} but one or more events was not equipped with a sequence number!",
-                        batchId));
-            }
-
-            try
-            {
-                return (int)seq;
-            }
-            catch (Exception exception)
-            {
-                throw new ApplicationException(string.Format("Could not cast sequence number '{0}' to an int", seq), exception);
             }
         }
     }

@@ -33,10 +33,10 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
 
             _viewManager.Dispatch(_eventStore, new[]
             {
+                EventFor(rootId1, 0),
                 EventFor(rootId1, 1),
                 EventFor(rootId1, 2),
-                EventFor(rootId1, 3),
-                EventFor(rootId2, 1),
+                EventFor(rootId2, 0),
             });
 
             var firstView = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
@@ -51,11 +51,15 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
         {
             var rootId1 = Guid.NewGuid();
 
-            _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 1) });
-            _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 2) });
+            var firstEvent = EventFor(rootId1, 0);
+            var nextEvent = EventFor(rootId1, 1);
 
-            Assert.Throws<ConsistencyException>(() => _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 1) }));
-            Assert.Throws<ConsistencyException>(() => _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 2) }));
+            _viewManager.Dispatch(_eventStore, new[] { firstEvent });
+            _viewManager.Dispatch(_eventStore, new[] { nextEvent });
+
+            Assert.Throws<ConsistencyException>(() => _viewManager.Dispatch(_eventStore, new[] { firstEvent }));
+            Assert.Throws<ConsistencyException>(() => _viewManager.Dispatch(_eventStore, new[] { nextEvent }));
+            Assert.Throws<ConsistencyException>(() => _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 3) }));
             Assert.Throws<ConsistencyException>(() => _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 4) }));
         }
 
@@ -65,15 +69,15 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
             var rootId1 = Guid.NewGuid();
             var rootId2 = Guid.NewGuid();
 
+            _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 0) });
             _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 1) });
             _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 2) });
-            _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 3) });
-            
-            _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId2, 1) });
-            _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId2, 2) });
 
-            Assert.Throws<ConsistencyException>(() => _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 5) }));
-            Assert.Throws<ConsistencyException>(() => _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId2, 4) }));
+            _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId2, 0) });
+            _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId2, 1) });
+
+            Assert.Throws<ConsistencyException>(() => _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 4) }));
+            Assert.Throws<ConsistencyException>(() => _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId2, 3) }));
         }
 
         [Test]
@@ -81,13 +85,16 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
         {
             var rootId1 = Guid.NewGuid();
 
-            _eventStore.Save(Guid.NewGuid(), new[] {EventFor(rootId1, 1)});
-            _eventStore.Save(Guid.NewGuid(), new[] {EventFor(rootId1, 2)});
-            _eventStore.Save(Guid.NewGuid(), new[] {EventFor(rootId1, 3)});
+            var firstEvent = EventFor(rootId1, 0);
+            var lastEvent = EventFor(rootId1, 2);
 
-            _viewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 1) });
+            _eventStore.Save(Guid.NewGuid(), new[] { firstEvent });
+            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 1) });
+            _eventStore.Save(Guid.NewGuid(), new[] { lastEvent });
+
+            _viewManager.Dispatch(_eventStore, new[] { firstEvent });
             // deliberately dispatch an out-of-sequence event
-            _viewManager.Dispatch(_eventStore, new[] {EventFor(rootId1, 3)});
+            _viewManager.Dispatch(_eventStore, new[] { lastEvent });
 
             var view = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
             Assert.That(view.EventCounter, Is.EqualTo(3));

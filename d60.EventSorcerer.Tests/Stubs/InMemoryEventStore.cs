@@ -4,13 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Exceptions;
-using d60.EventSorcerer.Numbers;
+using d60.EventSorcerer.Extensions;
 
 namespace d60.EventSorcerer.Tests.Stubs
 {
-    public class InMemoryEventStore : IEventStore, IEnumerable<DomainEvent>, ISequenceNumberGenerator
+    public class InMemoryEventStore : IEventStore, IEnumerable<DomainEvent>
     {
         public readonly List<EventBatch> SavedEventBatches = new List<EventBatch>();
+
+        readonly Dictionary<string, object> _idAndSeqNoTuples = new Dictionary<string, object>();
 
         public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
         {
@@ -19,28 +21,21 @@ namespace d60.EventSorcerer.Tests.Stubs
             EventValidation.ValidateBatchIntegrity(batchId, eventList);
 
             var tuplesInBatch = eventList
-                .Select(e => new
-                {
-                    AggregateRootId = e.GetAggregateRootId(),
-                    Seq = e.GetSeq()
-                })
-                .Distinct();
+                .Select(e => string.Format("{0}:{1}", e.GetAggregateRootId(), e.GetSequenceNumber()))
+                .ToList();
 
-            var tuplesAlreadyInStore = SavedEventBatches
-                .SelectMany(e => e.Events)
-                .Select(e => new
-                {
-                    AggregateRootId = e.GetAggregateRootId(),
-                    Seq = e.GetSeq()
-                })
-                .Distinct();
-
-            var overlaps = tuplesInBatch.Intersect(tuplesAlreadyInStore);
-
-            if (overlaps.Any())
+            try
             {
-                throw new ConcurrencyException(batchId, eventList, null);
+                foreach (var tuple in tuplesInBatch)
+                {
+                    _idAndSeqNoTuples.Add(tuple, null);
+                }
             }
+            catch (Exception exception)
+            {
+                throw new ConcurrencyException(batchId, eventList, exception);
+            }
+
 
             SavedEventBatches.Add(new EventBatch(batchId, eventList));
         }
@@ -67,7 +62,7 @@ namespace d60.EventSorcerer.Tests.Stubs
             return SavedEventBatches.SelectMany(b => b.Events).GetEnumerator();
         }
 
-        public int Next(Guid aggregateRootId)
+        public long NextSeqNo(Guid aggregateRootId)
         {
             var domainEvents = SavedEventBatches
                 .SelectMany(b => b.Events)

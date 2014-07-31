@@ -4,7 +4,7 @@ using d60.EventSorcerer.Events;
 
 namespace d60.EventSorcerer.Commands
 {
-    public class Command
+    public abstract class Command
     {
     }
     
@@ -18,10 +18,5 @@ namespace d60.EventSorcerer.Commands
 
         public Metadata Meta { get; private set; }
         public Guid AggregateRootId { get; private set; }
-
-        public Type AggregateRootType
-        {
-            get { return typeof (TAggregateRoot); }
-        }
     }
 }

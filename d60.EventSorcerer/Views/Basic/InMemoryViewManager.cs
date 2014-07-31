@@ -10,6 +10,11 @@ namespace d60.EventSorcerer.Views.Basic
         readonly ConcurrentDictionary<string, TView> _views = new ConcurrentDictionary<string, TView>();
         readonly ViewDispatcherHelper<TView> _viewDispatcherHelper = new ViewDispatcherHelper<TView>();
 
+        public void Initialize(IEventStore eventStore)
+        {
+            
+        }
+
         public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
             foreach (var e in events)

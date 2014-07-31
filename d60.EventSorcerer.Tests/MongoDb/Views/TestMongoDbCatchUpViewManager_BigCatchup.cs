@@ -11,7 +11,7 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
 {
     [TestFixture, Ignore]
     [Category(TestCategories.MongoDb)]
-    public class TestMongoDbCatchUpViewManager_GlobalViewLocator : FixtureBase
+    public class TestMongoDbCatchUpViewManager_BigCatchup : FixtureBase
     {
         MongoDatabase _database;
         MongoDbCatchUpViewManager<JustAnotherView> _viewManager;
@@ -28,6 +28,8 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
         [Test]
         public void CanCatchUpIfEventStoreAllowsIt()
         {
+
+
             var rootId1 = Guid.NewGuid();
             var rootId2 = Guid.NewGuid();
 
