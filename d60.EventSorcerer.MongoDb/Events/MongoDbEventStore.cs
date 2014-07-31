@@ -48,16 +48,45 @@ namespace d60.EventSorcerer.MongoDb.Events
                     .Max() + 1;
         }
 
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, int firstSeq = 0, int limit = int.MaxValue)
+        public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
         {
-            return InnerLoad(firstSeq, limit, aggregateRootId);
+            throw new NotImplementedException();
         }
 
-        public IEnumerable<DomainEvent> Load(int firstSeq, int limit)
+        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0, long limit = int.MaxValue)
         {
-            return InnerLoad(firstSeq, limit, Guid.Empty);
-        }
+            var lastSeq = firstSeq + limit;
+            var criteria = Query.And(
+                Query.GTE(SeqNoDocPath, firstSeq),
+                Query.LT(SeqNoDocPath, lastSeq));
 
+            if (aggregateRootId != Guid.Empty)
+            {
+                criteria = Query.And(criteria, Query.EQ(AggregateRootIdDocPath, aggregateRootId.ToString()));
+            }
+
+            var docs = _eventBatches.FindAs<BsonDocument>(criteria);
+
+            var eventsSatisfyingCriteria = docs
+                .SelectMany(doc => doc[EventsDocPath].AsBsonArray)
+                .Select(e => new
+                {
+                    Event = e,
+                    SequenceNumber = e[MetaDocPath][DomainEvent.MetadataKeys.SequenceNumber].ToInt32(),
+                    AggregateRootId = GetAggregateRootIdOrDefault(e)
+                })
+                .Where(e => e.SequenceNumber >= firstSeq && e.SequenceNumber < lastSeq);
+
+            if (aggregateRootId != Guid.Empty)
+            {
+                eventsSatisfyingCriteria = eventsSatisfyingCriteria
+                    .Where(e => e.AggregateRootId == aggregateRootId);
+            }
+
+            return eventsSatisfyingCriteria
+                .OrderBy(e => e.SequenceNumber)
+                .Select(e => _serializer.Deserialize(e.Event));
+        }
 
         public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
         {
@@ -91,41 +120,6 @@ namespace d60.EventSorcerer.MongoDb.Events
             var metaDoc = e[MetaDocPath].AsBsonDocument;
 
             return new Guid(metaDoc.GetValue(DomainEvent.MetadataKeys.AggregateRootId, Guid.Empty.ToString()).ToString());
-        }
-
-        IEnumerable<DomainEvent> InnerLoad(int firstSeq, int limit, Guid aggregateRootId)
-        {
-            var lastSeq = firstSeq + limit;
-            var criteria = Query.And(
-                Query.GTE(SeqNoDocPath, firstSeq),
-                Query.LT(SeqNoDocPath, lastSeq));
-
-            if (aggregateRootId != Guid.Empty)
-            {
-                criteria = Query.And(criteria, Query.EQ(AggregateRootIdDocPath, aggregateRootId.ToString()));
-            }
-
-            var docs = _eventBatches.FindAs<BsonDocument>(criteria);
-
-            var eventsSatisfyingCriteria = docs
-                .SelectMany(doc => doc[EventsDocPath].AsBsonArray)
-                .Select(e => new
-                {
-                    Event = e,
-                    SequenceNumber = e[MetaDocPath][DomainEvent.MetadataKeys.SequenceNumber].ToInt32(),
-                    AggregateRootId = GetAggregateRootIdOrDefault(e)
-                })
-                .Where(e => e.SequenceNumber >= firstSeq && e.SequenceNumber < lastSeq);
-
-            if (aggregateRootId != Guid.Empty)
-            {
-                eventsSatisfyingCriteria = eventsSatisfyingCriteria
-                    .Where(e => e.AggregateRootId == aggregateRootId);
-            }
-
-            return eventsSatisfyingCriteria
-                .OrderBy(e => e.SequenceNumber)
-                .Select(e => _serializer.Deserialize(e.Event));
         }
 
         BsonValue GetEvents(IEnumerable<DomainEvent> events)

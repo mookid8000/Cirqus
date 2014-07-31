@@ -9,7 +9,7 @@ using NUnit.Framework;
 
 namespace d60.EventSorcerer.Tests.MongoDb.Views
 {
-    [TestFixture, Ignore]
+    [TestFixture]
     [Category(TestCategories.MongoDb)]
     public class TestMongoDbCatchUpViewManager_GlobalViewLocator : FixtureBase
     {

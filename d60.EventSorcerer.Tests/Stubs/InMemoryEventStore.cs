@@ -40,7 +40,7 @@ namespace d60.EventSorcerer.Tests.Stubs
             SavedEventBatches.Add(new EventBatch(batchId, eventList));
         }
 
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, int firstSeq = 0, int limit = int.MaxValue/2)
+        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0, long limit = int.MaxValue/2)
         {
             long maxSequenceNumber = firstSeq + limit;
 
@@ -49,7 +49,7 @@ namespace d60.EventSorcerer.Tests.Stubs
                 {
                     Event = e,
                     AggregateRootId = e.GetAggregateRootId(),
-                    SequenceNumber = e.GetSeq()
+                    SequenceNumber = e.GetSequenceNumber()
                 })
                 .Where(e => e.AggregateRootId == aggregateRootId)
                 .Where(e => e.SequenceNumber >= firstSeq && e.SequenceNumber < maxSequenceNumber)
@@ -70,8 +70,13 @@ namespace d60.EventSorcerer.Tests.Stubs
                 .ToList();
 
             return domainEvents.Any()
-                ? domainEvents.Max(e => e.GetSeq()) + 1
+                ? domainEvents.Max(e => e.GetSequenceNumber()) + 1
                 : 0;
+        }
+
+        public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+        {
+            throw new NotImplementedException();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

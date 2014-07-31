@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.MongoDb.Events;
 using d60.EventSorcerer.MongoDb.Views;
 using d60.EventSorcerer.Views.Basic;
@@ -25,50 +28,63 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
         }
 
 
-        [Test]
-        public void CanCatchUpIfEventStoreAllowsIt()
+        [TestCase(1000, 100)]
+        public void CanCatchUpIfEventStoreAllowsIt(int numberOfEvents, int numberOfAggregateRoots)
         {
-
-
-            var rootId1 = Guid.NewGuid();
-            var rootId2 = Guid.NewGuid();
-
-            var lastEventForRoot1 = EventFor(rootId1, 2);
-            var lastEventForRoot2 = EventFor(rootId2, 2);
-
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 0) });
-            _eventStore.Save(Guid.NewGuid(), new[] {EventFor(rootId1, 1)});
-            _eventStore.Save(Guid.NewGuid(), new[] {lastEventForRoot1});
+            var random = new Random(DateTime.Now.GetHashCode());
+            var aggregateRootIds = Enumerable.Range(0, numberOfAggregateRoots).Select(i => Guid.NewGuid()).ToArray();
+            var seqNos = new Dictionary<Guid, long>();
             
-            _eventStore.Save(Guid.NewGuid(), new[] {EventFor(rootId2, 0)});
-            _eventStore.Save(Guid.NewGuid(), new[] {EventFor(rootId2, 1)});
-            _eventStore.Save(Guid.NewGuid(), new[] {lastEventForRoot2});
+            Func<Guid, long> getNextSequenceNumberFor = id =>
+            {
+                if (!seqNos.ContainsKey(id)) seqNos[id] = 0;
 
-            // deliberately dispatch an out-of-sequence event
-            _viewManager.Dispatch(_eventStore, new[] {lastEventForRoot1});
-            _viewManager.Dispatch(_eventStore, new[] {lastEventForRoot2});
+                return seqNos[id]++;
+            };
+            Func<Guid> getRandomAggregateRootId = () => aggregateRootIds[random.Next(aggregateRootIds.Length)];
 
-            var view = _viewManager.Load(GlobalInstanceLocator.GetViewInstanceId());
-            Assert.That(view.EventCounter, Is.EqualTo(6));
+            Console.WriteLine("Saving {0} events distributed among {1} roots", numberOfEvents, numberOfAggregateRoots);
+
+            numberOfEvents.Times(() =>
+            {
+                var id = getRandomAggregateRootId();
+                var seqNo = getNextSequenceNumberFor(id);
+
+                _eventStore.Save(Guid.NewGuid(), new[] { EventFor(id, seqNo) });
+            });
+
+            Console.WriteLine("Done - initiating catch-up");
+            
+            TakeTime("Catch-up involving " + numberOfEvents + " events", () => _viewManager.Initialize(_eventStore));
+
+            foreach (var id in aggregateRootIds)
+            {
+                var view = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(id));
+
+                Assert.That(view.EventCounter, Is.EqualTo(seqNos[id]));
+            }
         }
 
-        DomainEvent EventFor(Guid aggregateRootId, int seqNo)
+        DomainEvent EventFor(Guid aggregateRootId, long seqNo)
         {
             return new AnEvent
             {
                 Meta =
                 {
-                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId },
-                    { DomainEvent.MetadataKeys.SequenceNumber, seqNo },
-                }
+                    {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId},
+                    {DomainEvent.MetadataKeys.SequenceNumber, seqNo},
+                },
+                SomeData = new string('*', 1024)
             };
         }
 
-        class JustAnotherView : IView<GlobalInstanceLocator>, ISubscribeTo<AnEvent>
+        class JustAnotherView : IView<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
         {
             public int EventCounter { get; set; }
+            public Guid AggregateRootId { get; set; }
             public void Handle(AnEvent domainEvent)
             {
+                AggregateRootId = domainEvent.GetAggregateRootId();
                 EventCounter++;
             }
 
@@ -77,7 +93,7 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
 
         class AnEvent : DomainEvent
         {
-
+            public string SomeData { get; set; }
         }
     }
 }

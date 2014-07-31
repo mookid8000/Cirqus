@@ -16,11 +16,16 @@ namespace d60.EventSorcerer.Events
         /// <summary>
         /// Loads events for the specified aggregate root
         /// </summary>
-        IEnumerable<DomainEvent> Load(Guid aggregateRootId, int firstSeq = 0, int limit = int.MaxValue);
+        IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0, long limit = int.MaxValue);
 
         /// <summary>
         /// Looks up the next available sequence number for that particular aggregate root ID
         /// </summary>
         long GetNextSeqNo(Guid aggregateRootId);
+
+        /// <summary>
+        /// Streams all events with a global sequence number that is greater than or equal to the one given
+        /// </summary>
+        IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0);
     }
 }

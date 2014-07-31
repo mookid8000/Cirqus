@@ -93,7 +93,7 @@ INSERT INTO [{0}] (
             }
         }
 
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, int firstSeq = 0, int limit = int.MaxValue)
+        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0, long limit = int.MaxValue)
         {
             var domainEvents = new List<DomainEvent>();
             var lastSeqNo = firstSeq + limit == int.MaxValue ? int.MaxValue : firstSeq + limit;
@@ -163,6 +163,11 @@ SELECT MAX([seqNo]) FROM [{0}] WHERE [aggId] = @aggId
             });
 
             return next;
+        }
+
+        public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>

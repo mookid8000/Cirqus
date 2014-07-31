@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.Views.Basic;
@@ -17,7 +18,16 @@ namespace d60.EventSorcerer.MongoDb.Views
 
         public void Initialize(IEventStore eventStore)
         {
-            
+            var status = _viewCollection.FindOneByIdAs<MongoDbCatchUpViewStatus>(MongoDbCatchUpViewStatus.InstanceId);
+
+            if (status == null) return;
+
+            var lastSeenGlobalSequenceNumber = status.LastSeenGlobalSequenceNumber;
+
+            foreach (var e in eventStore.Stream(lastSeenGlobalSequenceNumber + 1))
+            {
+
+            }
         }
 
         public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
@@ -53,5 +63,12 @@ namespace d60.EventSorcerer.MongoDb.Views
                 ? doc.View
                 : null;
         }
+    }
+
+    class MongoDbCatchUpViewStatus
+    {
+        public const string InstanceId = "__status__";
+        public string Id { get; set; }
+        public long LastSeenGlobalSequenceNumber { get; set; }
     }
 }

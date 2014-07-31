@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.Extensions;
 
 namespace d60.EventSorcerer.Tests
 {
@@ -9,16 +10,7 @@ namespace d60.EventSorcerer.Tests
     {
         public static IEnumerable<int> GetSeq(this IEnumerable<DomainEvent> events)
         {
-            return events.Select(e => e.GetSeq());
-        }
-
-        public static int GetSeq(this DomainEvent e)
-        {
-            return Convert.ToInt32(e.Meta[DomainEvent.MetadataKeys.SequenceNumber]);
-        }
-        public static Guid GetAggregateRootId(this DomainEvent e)
-        {
-            return new Guid(Convert.ToString(e.Meta[DomainEvent.MetadataKeys.AggregateRootId]));
+            return events.Select(e => e.GetSequenceNumber());
         }
 
         public static void Times(this int iterations, Action action)
