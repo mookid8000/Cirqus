@@ -36,8 +36,13 @@ namespace d60.EventSorcerer.MongoDb.Views
             }
         }
 
-        public void Initialize(IEventStore eventStore)
+        public void Initialize(IEventStore eventStore, bool purgeExisting = false)
         {
+            if (purgeExisting)
+            {
+                Purge();
+            }
+
             var viewInstanceWithMaxGlobalSequenceNumber = _viewCollection
                 .FindAllAs<MongoDbCatchUpView<TView>>()
                 .SetSortOrder(SortBy<MongoDbCatchUpView<TView>>.Descending(v => v.MaxGlobalSeq))
@@ -54,6 +59,11 @@ namespace d60.EventSorcerer.MongoDb.Views
             {
                 Dispatch(eventStore, partition);
             }
+        }
+
+        public void Purge()
+        {
+            _viewCollection.Drop();
         }
 
         public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)

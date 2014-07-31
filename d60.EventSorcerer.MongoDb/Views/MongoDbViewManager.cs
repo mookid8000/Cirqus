@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using d60.EventSorcerer.Events;
@@ -7,6 +8,7 @@ using MongoDB.Driver;
 
 namespace d60.EventSorcerer.MongoDb.Views
 {
+    [Obsolete("This view manager is to be replaced by MongoDbCatchUpViewManager which is far superior")]
     public class MongoDbViewManager<TView> : IEnumerable<TView>, IViewManager
         where TView : class, IView, ISubscribeTo, new()
     {
@@ -38,9 +40,8 @@ namespace d60.EventSorcerer.MongoDb.Views
             return GetEnumerator();
         }
 
-        public void Initialize(IEventStore eventStore)
+        public void Initialize(IEventStore eventStore, bool purgeExisting = false)
         {
-            
         }
 
         public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
