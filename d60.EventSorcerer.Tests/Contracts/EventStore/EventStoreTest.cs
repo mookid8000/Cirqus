@@ -2,6 +2,7 @@
 using System.Linq;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Exceptions;
+using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.Tests.Contracts.EventStore.Factories;
 using NUnit.Framework;
 
@@ -22,6 +23,34 @@ namespace d60.EventSorcerer.Tests.Contracts.EventStore
 
             _eventStore = _eventStoreFactory.GetEventStore();
         }
+
+        [Test]
+        public void EventAreAutomaticallyGivenGlobalSequenceNumbers()
+        {
+            // arrange
+
+            // act
+            _eventStore.Save(Guid.NewGuid(), new[] { Event(0, Guid.NewGuid()) });
+            _eventStore.Save(Guid.NewGuid(), new[] { Event(0, Guid.NewGuid()) });
+            _eventStore.Save(Guid.NewGuid(), new[] { Event(0, Guid.NewGuid()) });
+            _eventStore.Save(Guid.NewGuid(), new[] { Event(0, Guid.NewGuid()) });
+            _eventStore.Save(Guid.NewGuid(), new[] { Event(0, Guid.NewGuid()) });
+
+            // assert
+            var allEvents = _eventStore
+                .Stream()
+                .Select(e => new
+                {
+                    Event = e,
+                    GlobalSequenceNumber = e.GetGlobalSequenceNumber()
+                })
+                .OrderBy(a => a.GlobalSequenceNumber)
+                .ToList();
+
+            Assert.That(allEvents.Count, Is.EqualTo(5));
+            Assert.That(allEvents.Select(a => a.GlobalSequenceNumber), Is.EqualTo(new[] { 0, 1, 2, 3, 4 }));
+        }
+
 
         [Test]
         public void SequenceNumbersStartWithZero()

@@ -10,9 +10,14 @@ namespace d60.EventSorcerer.Extensions
         {
             return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.AggregateRootId, value => new Guid(Convert.ToString(value)), throwIfNotFound);
         }
-        public static int GetSequenceNumber(this DomainEvent domainEvent, bool throwIfNotFound = true)
+        public static long GetSequenceNumber(this DomainEvent domainEvent, bool throwIfNotFound = true)
         {
-            return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.SequenceNumber, Convert.ToInt32, throwIfNotFound);
+            return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.SequenceNumber, Convert.ToInt64, throwIfNotFound);
+        }
+
+        public static long GetGlobalSequenceNumber(this DomainEvent domainEvent, bool throwIfNotFound = true)
+        {
+            return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.GlobalSequenceNumber, Convert.ToInt64, throwIfNotFound);
         }
 
         static TValue GetMetadataField<TValue>(DomainEvent domainEvent, string key, Func<object, TValue> converter, bool throwIfNotFound)

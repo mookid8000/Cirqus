@@ -8,7 +8,7 @@ namespace d60.EventSorcerer.Tests
 {
     static class TestExtensions
     {
-        public static IEnumerable<int> GetSeq(this IEnumerable<DomainEvent> events)
+        public static IEnumerable<long> GetSeq(this IEnumerable<DomainEvent> events)
         {
             return events.Select(e => e.GetSequenceNumber());
         }

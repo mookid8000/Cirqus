@@ -11,9 +11,9 @@ namespace d60.EventSorcerer.MongoDb.Views
     {
         public MongoDbCatchUpView()
         {
-            Pointers = new Dictionary<string, int>();
+            Pointers = new Dictionary<string, long>();
         }
-        public Dictionary<string, int> Pointers { get; set; }
+        public Dictionary<string, long> Pointers { get; set; }
         public void DispatchAndResolve(IEventStore eventStore, DomainEvent domainEvent)
         {
             var aggregateRootId = domainEvent.GetAggregateRootId();

@@ -6,6 +6,7 @@ namespace d60.EventSorcerer.Events
     {
         public static class MetadataKeys
         {
+            public const string GlobalSequenceNumber = "gl_seq";
             public const string SequenceNumber = "seq";
             public const string AggregateRootId = "root_id";
             public const string TimeLocal = "time_local";

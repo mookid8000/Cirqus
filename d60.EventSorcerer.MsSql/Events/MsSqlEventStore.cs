@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -49,8 +50,12 @@ namespace d60.EventSorcerer.MsSql.Events
                 {
                     using (var tx = conn.BeginTransaction())
                     {
+                        var globalSequenceNumber = GetNextSequenceNumber(conn, tx);
+
                         foreach (var e in eventList)
                         {
+                            e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = globalSequenceNumber++;
+
                             using (var cmd = conn.CreateCommand())
                             {
                                 cmd.Transaction = tx;
@@ -60,11 +65,13 @@ INSERT INTO [{0}] (
     [batchId],
     [aggId],
     [seqNo],
+    [globSeqNo],
     [data]
 ) VALUES (
     @batchId,
     @aggId,
     @seqNo,
+    @globSeqNo,
     @data
 )
 
@@ -72,6 +79,7 @@ INSERT INTO [{0}] (
                                 cmd.Parameters.Add("batchId", SqlDbType.UniqueIdentifier).Value = batchId;
                                 cmd.Parameters.Add("aggId", SqlDbType.UniqueIdentifier).Value = new Guid(e.Meta[DomainEvent.MetadataKeys.AggregateRootId].ToString());
                                 cmd.Parameters.Add("seqNo", SqlDbType.BigInt).Value = e.Meta[DomainEvent.MetadataKeys.SequenceNumber];
+                                cmd.Parameters.Add("globSeqNo", SqlDbType.BigInt).Value = e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber];
                                 cmd.Parameters.Add("data", SqlDbType.NVarChar).Value = _serializer.Serialize(e);
 
                                 cmd.ExecuteNonQuery();
@@ -90,6 +98,21 @@ INSERT INTO [{0}] (
                 }
 
                 throw;
+            }
+        }
+
+        long GetNextSequenceNumber(SqlConnection conn, SqlTransaction tx)
+        {
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.Transaction = tx;
+                cmd.CommandText = string.Format("SELECT MAX(globSeqNo) FROM [{0}]", _tableName);
+
+                var result = cmd.ExecuteScalar();
+
+                return result != DBNull.Value
+                    ? (long) result + 1
+                    : 0;
             }
         }
 
@@ -167,7 +190,44 @@ SELECT MAX([seqNo]) FROM [{0}] WHERE [aggId] = @aggId
 
         public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
         {
-            throw new NotImplementedException();
+            SqlConnection connection = null;
+
+            try
+            {
+                connection = _connectionProvider();
+
+                using (var tx = connection.BeginTransaction())
+                {
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = string.Format(@"
+
+SELECT [data] FROM [{0}] WHERE [globSeqNo] >= @cutoff ORDER BY [globSeqNo]
+
+", _tableName);
+
+                        cmd.Parameters.Add("cutoff", SqlDbType.BigInt).Value = globalSequenceNumber;
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var data = (string)reader["data"];
+
+                                yield return _serializer.Deserialize(data);
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                if (connection != null)
+                {
+                    _cleanupAction(connection);
+                }
+            }
         }
 
         /// <summary>
@@ -212,6 +272,7 @@ BEGIN
 	    [batchId] [uniqueidentifier] NOT NULL,
 	    [aggId] [uniqueidentifier] NOT NULL,
 	    [seqNo] [bigint] NOT NULL,
+	    [globSeqNo] [bigint] NOT NULL,
 	    [data] [nvarchar](max) NOT NULL,
 
         CONSTRAINT [PK_{0}] PRIMARY KEY CLUSTERED 
@@ -220,10 +281,15 @@ BEGIN
         ) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
     )
 
-    CREATE UNIQUE NONCLUSTERED INDEX [IDX_{0}] ON [dbo].[{0}]
+    CREATE UNIQUE NONCLUSTERED INDEX [IDX_{0}_aggIdSeqNo] ON [dbo].[{0}]
     (
 	    [aggId] ASC,
 	    [seqNo] ASC
+    ) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+
+    CREATE UNIQUE NONCLUSTERED INDEX [IDX_{0}_globSeq] ON [dbo].[{0}]
+    (
+	    [globSeqNo] ASC
     ) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 END
 

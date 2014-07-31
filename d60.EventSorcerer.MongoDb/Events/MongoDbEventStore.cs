@@ -12,13 +12,15 @@ namespace d60.EventSorcerer.MongoDb.Events
 {
     public class MongoDbEventStore : IEventStore
     {
-        static readonly string SeqNoDocPath = string.Format("Events.Meta.{0}", DomainEvent.MetadataKeys.SequenceNumber);
-        static readonly string AggregateRootIdDocPath = string.Format("Events.Meta.{0}", DomainEvent.MetadataKeys.AggregateRootId);
-        
+        const string GlobalSeqUniquenessIndexName = "EnsureGlobalSeqUniqueness";
         const string SeqUniquenessIndexName = "EnsureSeqUniqueness";
         const string AggregateRootIndexName = "AggregateRootId";
         const string EventsDocPath = "Events";
         const string MetaDocPath = "Meta";
+
+        static readonly string SeqNoDocPath = string.Format("{0}.{1}.{2}", EventsDocPath, MetaDocPath, DomainEvent.MetadataKeys.SequenceNumber);
+        static readonly string GlobalSeqNoDocPath = string.Format("{0}.{1}.{2}", EventsDocPath, MetaDocPath, DomainEvent.MetadataKeys.GlobalSequenceNumber);
+        static readonly string AggregateRootIdDocPath = string.Format("{0}.{1}.{2}", EventsDocPath, MetaDocPath, DomainEvent.MetadataKeys.AggregateRootId);
 
         readonly MongoDbSerializer _serializer = new MongoDbSerializer();
         readonly MongoCollection _eventBatches;
@@ -29,6 +31,7 @@ namespace d60.EventSorcerer.MongoDb.Events
 
             if (automaticallyCreateIndexes)
             {
+                _eventBatches.CreateIndex(IndexKeys.Ascending(GlobalSeqNoDocPath), IndexOptions.SetUnique(true).SetName(GlobalSeqUniquenessIndexName));
                 _eventBatches.CreateIndex(IndexKeys.Ascending(SeqNoDocPath, AggregateRootIdDocPath), IndexOptions.SetUnique(true).SetName(SeqUniquenessIndexName));
                 _eventBatches.CreateIndex(IndexKeys.Ascending(AggregateRootIdDocPath), IndexOptions.SetName(AggregateRootIndexName));
             }
@@ -36,7 +39,8 @@ namespace d60.EventSorcerer.MongoDb.Events
 
         public long GetNextSeqNo(Guid aggregateRootId)
         {
-            var doc = _eventBatches.FindAs<BsonDocument>(Query.EQ(AggregateRootIdDocPath, aggregateRootId.ToString()))
+            var doc = _eventBatches
+                .FindAs<BsonDocument>(Query.EQ(AggregateRootIdDocPath, aggregateRootId.ToString()))
                 .SetSortOrder(SortBy.Descending(SeqNoDocPath))
                 .SetLimit(1)
                 .SingleOrDefault();
@@ -44,13 +48,42 @@ namespace d60.EventSorcerer.MongoDb.Events
             return doc == null
                 ? 0
                 : doc[EventsDocPath].AsBsonArray
-                    .Select(e => e[MetaDocPath][DomainEvent.MetadataKeys.SequenceNumber].ToInt32())
+                    .Select(e => e[MetaDocPath][DomainEvent.MetadataKeys.SequenceNumber].ToInt64())
                     .Max() + 1;
         }
 
         public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
         {
-            throw new NotImplementedException();
+            const int limit = 1000;
+            var sequenceNumberToQueryFor = globalSequenceNumber;
+
+            while (true)
+            {
+                var docs = _eventBatches
+                    .FindAs<BsonDocument>(Query.GTE(GlobalSeqNoDocPath, sequenceNumberToQueryFor))
+                    .SetLimit(limit)
+                    .ToList();
+
+                if (!docs.Any()) yield break;
+
+                foreach (var doc in docs)
+                {
+                    foreach (var e in doc[EventsDocPath].AsBsonArray)
+                    {
+                        var bsonValue = e[MetaDocPath][DomainEvent.MetadataKeys.GlobalSequenceNumber];
+                        var sequenceNumberOfThisEvent = bsonValue.IsInt32
+                            ? bsonValue.AsInt32
+                            : bsonValue.AsInt64;
+
+                        // skip events before cutoff
+                        if (sequenceNumberOfThisEvent < sequenceNumberToQueryFor) continue;
+
+                        yield return _serializer.Deserialize(e);
+
+                        sequenceNumberToQueryFor = sequenceNumberOfThisEvent + 1;
+                    }
+                }
+            }
         }
 
         public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0, long limit = int.MaxValue)
@@ -99,6 +132,13 @@ namespace d60.EventSorcerer.MongoDb.Events
 
             EventValidation.ValidateBatchIntegrity(batchId, events);
 
+            var nextGlobalSeqNo = GetNextGlobalSeqNo();
+
+            foreach (var e in events)
+            {
+                e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = nextGlobalSeqNo++;
+            }
+
             var doc = new BsonDocument
             {
                 {"_id", batchId.ToString()},
@@ -111,8 +151,23 @@ namespace d60.EventSorcerer.MongoDb.Events
             }
             catch (MongoDuplicateKeyException exception)
             {
-                throw new ConcurrencyException(batchId, batch, exception);
+                throw new ConcurrencyException(batchId, events, exception);
             }
+        }
+
+        long GetNextGlobalSeqNo()
+        {
+            var doc = _eventBatches
+                .FindAllAs<BsonDocument>()
+                .SetSortOrder(SortBy.Descending(GlobalSeqNoDocPath))
+                .SetLimit(1)
+                .SingleOrDefault();
+
+            return doc == null
+                ? 0
+                : doc[EventsDocPath].AsBsonArray
+                    .Select(e => e[MetaDocPath][DomainEvent.MetadataKeys.GlobalSequenceNumber].ToInt64())
+                    .Max() + 1;
         }
 
         static Guid GetAggregateRootIdOrDefault(BsonValue e)

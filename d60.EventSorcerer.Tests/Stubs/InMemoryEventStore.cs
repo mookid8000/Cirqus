@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Exceptions;
 using d60.EventSorcerer.Extensions;
@@ -13,6 +14,7 @@ namespace d60.EventSorcerer.Tests.Stubs
         public readonly List<EventBatch> SavedEventBatches = new List<EventBatch>();
 
         readonly Dictionary<string, object> _idAndSeqNoTuples = new Dictionary<string, object>();
+        long _globalSequenceNumber;
 
         public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
         {
@@ -36,6 +38,16 @@ namespace d60.EventSorcerer.Tests.Stubs
                 throw new ConcurrencyException(batchId, eventList, exception);
             }
 
+            var sequenceNumbersToAllocate = eventList.Count;
+
+            var result = Interlocked.Add(ref _globalSequenceNumber, sequenceNumbersToAllocate);
+
+            result -= sequenceNumbersToAllocate;
+
+            foreach (var e in eventList)
+            {
+                e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = result++;
+            }
 
             SavedEventBatches.Add(new EventBatch(batchId, eventList));
         }
@@ -76,7 +88,16 @@ namespace d60.EventSorcerer.Tests.Stubs
 
         public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
         {
-            throw new NotImplementedException();
+            return SavedEventBatches
+                .SelectMany(e => e.Events)
+                .Select(e => new
+                {
+                    Event = e,
+                    GlobalSequenceNumner = e.GetGlobalSequenceNumber()
+                })
+                .Where(a => a.GlobalSequenceNumner >= globalSequenceNumber)
+                .OrderBy(a => a.GlobalSequenceNumner)
+                .Select(a => a.Event);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
