@@ -14,6 +14,7 @@ namespace d60.EventSorcerer.MongoDb.Views
             Pointers = new Dictionary<string, long>();
         }
         public Dictionary<string, long> Pointers { get; set; }
+        public long MaxGlobalSeq { get; set; }
         public void DispatchAndResolve(IEventStore eventStore, DomainEvent domainEvent)
         {
             var aggregateRootId = domainEvent.GetAggregateRootId();
@@ -34,6 +35,7 @@ namespace d60.EventSorcerer.MongoDb.Views
 
                 Dispatch(missingEvent);
                 expectedNextSeqNo++;
+                MaxGlobalSeq = missingEvent.GetGlobalSequenceNumber();
             }
 
             if (seqNo != expectedNextSeqNo)
@@ -45,6 +47,7 @@ namespace d60.EventSorcerer.MongoDb.Views
 
             Dispatch(domainEvent);
             Pointers[aggIdString] = seqNo;
+            MaxGlobalSeq = domainEvent.GetGlobalSequenceNumber();
         }
     }
 }

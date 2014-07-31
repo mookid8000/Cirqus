@@ -12,7 +12,7 @@ using NUnit.Framework;
 
 namespace d60.EventSorcerer.Tests.MongoDb.Views
 {
-    [TestFixture, Ignore]
+    [TestFixture]
     [Category(TestCategories.MongoDb)]
     public class TestMongoDbCatchUpViewManager_BigCatchup : FixtureBase
     {
@@ -23,18 +23,26 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
         protected override void DoSetUp()
         {
             _database = Helper.InitializeTestDatabase();
+
             _eventStore = new MongoDbEventStore(_database, "events");
             _viewManager = new MongoDbCatchUpViewManager<JustAnotherView>(_database, "justAnother");
         }
 
-
+        /// <summary>
+        /// Catch-up involving 1000000 events - elapsed: 423.9 s
+        /// Catch-up involving 100000 events - elapsed: 30.2 s
+        /// 
+        /// 
+        /// </summary>
         [TestCase(1000, 100)]
+        [TestCase(100000, 1000, Ignore = true)]
+        [TestCase(1000000, 10000, Ignore = true)]
         public void CanCatchUpIfEventStoreAllowsIt(int numberOfEvents, int numberOfAggregateRoots)
         {
             var random = new Random(DateTime.Now.GetHashCode());
             var aggregateRootIds = Enumerable.Range(0, numberOfAggregateRoots).Select(i => Guid.NewGuid()).ToArray();
             var seqNos = new Dictionary<Guid, long>();
-            
+
             Func<Guid, long> getNextSequenceNumberFor = id =>
             {
                 if (!seqNos.ContainsKey(id)) seqNos[id] = 0;
@@ -45,16 +53,26 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
 
             Console.WriteLine("Saving {0} events distributed among {1} roots", numberOfEvents, numberOfAggregateRoots);
 
-            numberOfEvents.Times(() =>
+            TakeTime("Save " + numberOfEvents + " events", () =>
             {
-                var id = getRandomAggregateRootId();
-                var seqNo = getNextSequenceNumberFor(id);
+                var batches = Enumerable.Range(0, numberOfEvents)
+                    .Select(i =>
+                    {
+                        var id = getRandomAggregateRootId();
+                        var seqNo = getNextSequenceNumberFor(id);
 
-                _eventStore.Save(Guid.NewGuid(), new[] { EventFor(id, seqNo) });
+                        return EventFor(id, seqNo);
+                    })
+                    .Batch(100);
+
+                foreach (var batch in batches)
+                {
+                    _eventStore.Save(Guid.NewGuid(), batch);
+                }
             });
 
             Console.WriteLine("Done - initiating catch-up");
-            
+
             TakeTime("Catch-up involving " + numberOfEvents + " events", () => _viewManager.Initialize(_eventStore));
 
             foreach (var id in aggregateRootIds)

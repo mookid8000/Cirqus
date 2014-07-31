@@ -66,6 +66,7 @@
     <Compile Include="Extensions\AttributeExtensions.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\DomainEventExtensions.cs" />
+    <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Numbers\ISequenceNumberGenerator.cs" />
     <Compile Include="Events\Metadata.cs" />
     <Compile Include="Numbers\Time.cs" />
