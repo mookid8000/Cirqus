@@ -7,14 +7,19 @@ using d60.EventSorcerer.Views.Basic;
 
 namespace d60.EventSorcerer.MongoDb.Views
 {
-    class MongoDbCatchUpView<TView> : MongoDbView<TView> where TView : IView, ISubscribeTo
+    class MongoDbCatchUpView<TView> where TView : IView, ISubscribeTo
     {
+        protected readonly ViewDispatcherHelper<TView> Dispatcher = new ViewDispatcherHelper<TView>();
+
         public MongoDbCatchUpView()
         {
             Pointers = new Dictionary<string, long>();
         }
         public Dictionary<string, long> Pointers { get; set; }
         public long MaxGlobalSeq { get; set; }
+        public string Id { get; set; }
+        public TView View { get; set; }
+
         public void DispatchAndResolve(IEventStore eventStore, DomainEvent domainEvent)
         {
             var aggregateRootId = domainEvent.GetAggregateRootId();
@@ -53,6 +58,11 @@ namespace d60.EventSorcerer.MongoDb.Views
             Dispatch(domainEvent);
             Pointers[aggIdString] = seqNo;
             MaxGlobalSeq = domainEvent.GetGlobalSequenceNumber();
+        }
+
+        public void Dispatch(DomainEvent domainEvent)
+        {
+            Dispatcher.DispatchToView(domainEvent, View);
         }
     }
 }
