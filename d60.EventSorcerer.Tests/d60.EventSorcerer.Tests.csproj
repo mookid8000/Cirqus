@@ -76,16 +76,11 @@
     <Compile Include="MongoDb\Views\TestMongoDbCatchUpViewManager_GlobalViewLocator.cs" />
     <Compile Include="MongoDb\Views\TestMongoDbCatchUpViewManager_BigCatchup.cs" />
     <Compile Include="MongoDb\Views\TestMongoDbCatchUpViewManager.cs" />
-    <Compile Include="Stubs\ConsoleOutEventDispatcher.cs" />
     <Compile Include="TestCategories.cs" />
     <Compile Include="TestExtensions.cs" />
     <Compile Include="MongoDb\TestMongoDbEventStoreIndexPerf.cs" />
-    <Compile Include="Stubs\ConsoleOutEventCollector.cs" />
     <Compile Include="Events\TestSerialization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Stubs\InMemoryAggregateRootRepository.cs" />
-    <Compile Include="Stubs\InMemoryEventCollector.cs" />
-    <Compile Include="Stubs\InMemoryEventStore.cs" />
     <Compile Include="Stubs\TestSequenceNumberGenerator.cs" />
     <Compile Include="Views\TestInMemoryViewManager.cs" />
     <Compile Include="MongoDb\Views\TestMongoDbViewManager.cs" />
@@ -105,6 +100,10 @@
     <ProjectReference Include="..\d60.EventSorcerer.MsSql\d60.EventSorcerer.MsSql.csproj">
       <Project>{6EEBCA35-9B61-4A95-8E72-3AF583C14F32}</Project>
       <Name>d60.EventSorcerer.MsSql</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\d60.EventSorcerer.TestHelpers\d60.EventSorcerer.TestHelpers.csproj">
+      <Project>{44D72FC8-F786-47A7-8D83-3D926D4E7DB0}</Project>
+      <Name>d60.EventSorcerer.TestHelpers</Name>
     </ProjectReference>
     <ProjectReference Include="..\d60.EventSorcerer\d60.EventSorcerer.csproj">
       <Project>{8E2DF6B4-A4DF-495E-8D74-5DCE6B333FB4}</Project>

@@ -4,8 +4,8 @@ using d60.EventSorcerer.Commands;
 using d60.EventSorcerer.Config;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.MongoDb.Events;
+using d60.EventSorcerer.TestHelpers;
 using d60.EventSorcerer.Tests.MongoDb;
-using d60.EventSorcerer.Tests.Stubs;
 using NUnit.Framework;
 
 namespace d60.EventSorcerer.Tests.Integration

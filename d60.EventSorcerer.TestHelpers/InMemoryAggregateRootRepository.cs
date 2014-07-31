@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using d60.EventSorcerer.Aggregates;
 
-namespace d60.EventSorcerer.Tests.Stubs
+namespace d60.EventSorcerer.TestHelpers
 {
     public class InMemoryAggregateRootRepository : IAggregateRootRepository, IEnumerable<AggregateRoot>
     {

@@ -7,7 +7,7 @@ using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Exceptions;
 using d60.EventSorcerer.Extensions;
 
-namespace d60.EventSorcerer.Tests.Stubs
+namespace d60.EventSorcerer.TestHelpers
 {
     public class InMemoryEventStore : IEventStore, IEnumerable<DomainEvent>
     {

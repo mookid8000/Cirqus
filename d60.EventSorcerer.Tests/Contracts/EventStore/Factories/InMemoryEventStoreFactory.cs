@@ -1,5 +1,5 @@
 using d60.EventSorcerer.Events;
-using d60.EventSorcerer.Tests.Stubs;
+using d60.EventSorcerer.TestHelpers;
 
 namespace d60.EventSorcerer.Tests.Contracts.EventStore.Factories
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 using d60.EventSorcerer.Aggregates;
-using d60.EventSorcerer.Tests.Stubs;
+using d60.EventSorcerer.TestHelpers;
 using NUnit.Framework;
 
 namespace d60.EventSorcerer.Tests.Aggregates

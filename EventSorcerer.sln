@@ -30,7 +30,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspec", "nuspec", "{407E21
 		nuspec\d60.EventSorcerer.MongoDb.nuspec = nuspec\d60.EventSorcerer.MongoDb.nuspec
 		nuspec\d60.EventSorcerer.MsSql.nuspec = nuspec\d60.EventSorcerer.MsSql.nuspec
 		nuspec\d60.EventSorcerer.nuspec = nuspec\d60.EventSorcerer.nuspec
+		nuspec\d60.EventSorcerer.TestHelpers.nuspec = nuspec\d60.EventSorcerer.TestHelpers.nuspec
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.EventSorcerer.TestHelpers", "d60.EventSorcerer.TestHelpers\d60.EventSorcerer.TestHelpers.csproj", "{44D72FC8-F786-47A7-8D83-3D926D4E7DB0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -54,6 +57,10 @@ Global
 		{6EEBCA35-9B61-4A95-8E72-3AF583C14F32}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6EEBCA35-9B61-4A95-8E72-3AF583C14F32}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6EEBCA35-9B61-4A95-8E72-3AF583C14F32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44D72FC8-F786-47A7-8D83-3D926D4E7DB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44D72FC8-F786-47A7-8D83-3D926D4E7DB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44D72FC8-F786-47A7-8D83-3D926D4E7DB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44D72FC8-F786-47A7-8D83-3D926D4E7DB0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

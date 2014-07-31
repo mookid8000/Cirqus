@@ -85,9 +85,8 @@ namespace d60.EventSorcerer.MongoDb.Views
                         ProcessOneBatch(eventStore, new[] {e});
                     }
                 }
-                catch(Exception exception)
+                catch
                 {
-                    int a = 2;
                 }
             }
         }
