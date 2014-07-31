@@ -35,6 +35,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspec", "nuspec", "{407E21
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.EventSorcerer.TestHelpers", "d60.EventSorcerer.TestHelpers\d60.EventSorcerer.TestHelpers.csproj", "{44D72FC8-F786-47A7-8D83-3D926D4E7DB0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B7EFFA50-A51B-4D7D-A264-07151A10F9D8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,6 +68,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{7624F47B-B53F-40C6-B211-19288E814F86} = {B7EFFA50-A51B-4D7D-A264-07151A10F9D8}
 		{407E215D-36B1-46F9-A39F-39465ADC4F2D} = {53C890A9-D587-4BD6-B69C-5B01F64B39F1}
 	EndGlobalSection
 EndGlobal

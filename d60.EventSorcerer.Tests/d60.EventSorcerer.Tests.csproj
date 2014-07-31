@@ -66,6 +66,11 @@
     <Compile Include="Contracts\EventStore\Factories\InMemoryEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\Factories\MongoDbEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\Factories\MsSqlEventStoreFactory.cs" />
+    <Compile Include="Contracts\Views\CatchUpViews.cs" />
+    <Compile Include="Contracts\Views\ICatchUpViewManagerFactory.cs" />
+    <Compile Include="Contracts\Views\Factories\MongoDbCatchUpViewManagerFactory.cs" />
+    <Compile Include="Contracts\Views\BigCatchup.cs" />
+    <Compile Include="Contracts\Views\ViewLocators.cs" />
     <Compile Include="FixtureBase.cs" />
     <Compile Include="Integration\SimpleScenarioWithDelegation.cs" />
     <Compile Include="Integration\SimpleScenarioWithConcurrency.cs" />
@@ -73,9 +78,6 @@
     <Compile Include="Integration\SimpleScenario.cs" />
     <Compile Include="MongoDb\Helper.cs" />
     <Compile Include="MongoDb\TestMongoDbSerializer.cs" />
-    <Compile Include="MongoDb\Views\TestMongoDbCatchUpViewManager_GlobalViewLocator.cs" />
-    <Compile Include="MongoDb\Views\TestMongoDbCatchUpViewManager_BigCatchup.cs" />
-    <Compile Include="MongoDb\Views\TestMongoDbCatchUpViewManager.cs" />
     <Compile Include="TestCategories.cs" />
     <Compile Include="TestExtensions.cs" />
     <Compile Include="MongoDb\TestMongoDbEventStoreIndexPerf.cs" />
@@ -83,7 +85,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stubs\TestSequenceNumberGenerator.cs" />
     <Compile Include="Views\TestInMemoryViewManager.cs" />
-    <Compile Include="MongoDb\Views\TestMongoDbViewManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

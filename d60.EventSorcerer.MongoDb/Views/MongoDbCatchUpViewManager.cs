@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.Exceptions;
 using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.Views.Basic;
 using MongoDB.Driver;
@@ -84,6 +85,10 @@ namespace d60.EventSorcerer.MongoDb.Views
                     {
                         ProcessOneBatch(eventStore, new[] {e});
                     }
+                }
+                catch (ConsistencyException)
+                {
+                    throw;
                 }
                 catch
                 {
