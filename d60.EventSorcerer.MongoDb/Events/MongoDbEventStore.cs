@@ -34,7 +34,7 @@ namespace d60.EventSorcerer.MongoDb.Events
             }
         }
 
-        public long NextSeqNo(Guid aggregateRootId)
+        public long GetNextSeqNo(Guid aggregateRootId)
         {
             var doc = _eventBatches.FindAs<BsonDocument>(Query.EQ(AggregateRootIdDocPath, aggregateRootId.ToString()))
                 .SetSortOrder(SortBy.Descending(SeqNoDocPath))

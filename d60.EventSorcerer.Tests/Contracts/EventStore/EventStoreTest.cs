@@ -26,7 +26,7 @@ namespace d60.EventSorcerer.Tests.Contracts.EventStore
         [Test]
         public void SequenceNumbersStartWithZero()
         {
-            var nextSeqNo = _eventStore.NextSeqNo(Guid.NewGuid());
+            var nextSeqNo = _eventStore.GetNextSeqNo(Guid.NewGuid());
 
             Assert.That(nextSeqNo, Is.EqualTo(0));
         }
@@ -252,18 +252,18 @@ namespace d60.EventSorcerer.Tests.Contracts.EventStore
 
             var generator = _eventStoreFactory.GetEventStore();
 
-            Assert.That(generator.NextSeqNo(agg1Id), Is.EqualTo(0));
-            Assert.That(generator.NextSeqNo(agg1Id), Is.EqualTo(0));
-            Assert.That(generator.NextSeqNo(agg2Id), Is.EqualTo(0));
-            Assert.That(generator.NextSeqNo(agg2Id), Is.EqualTo(0));
+            Assert.That(generator.GetNextSeqNo(agg1Id), Is.EqualTo(0));
+            Assert.That(generator.GetNextSeqNo(agg1Id), Is.EqualTo(0));
+            Assert.That(generator.GetNextSeqNo(agg2Id), Is.EqualTo(0));
+            Assert.That(generator.GetNextSeqNo(agg2Id), Is.EqualTo(0));
 
             _eventStore.Save(Guid.NewGuid(), new[]
             {
                 Event(0, agg1Id)
             });
 
-            Assert.That(generator.NextSeqNo(agg1Id), Is.EqualTo(1), "Expected the seq for {0} to have been incremented once", agg1Id);
-            Assert.That(generator.NextSeqNo(agg2Id), Is.EqualTo(0), "Expected the seq for {0} to not have been changed", agg2Id);
+            Assert.That(generator.GetNextSeqNo(agg1Id), Is.EqualTo(1), "Expected the seq for {0} to have been incremented once", agg1Id);
+            Assert.That(generator.GetNextSeqNo(agg2Id), Is.EqualTo(0), "Expected the seq for {0} to not have been changed", agg2Id);
 
             _eventStore.Save(Guid.NewGuid(), new[]
             {
@@ -272,16 +272,16 @@ namespace d60.EventSorcerer.Tests.Contracts.EventStore
                 Event(3, agg1Id)
             });
 
-            Assert.That(generator.NextSeqNo(agg1Id), Is.EqualTo(4), "Expected the seq for {0} to have been incremented four times", agg1Id);
-            Assert.That(generator.NextSeqNo(agg2Id), Is.EqualTo(0), "Expected the seq for {0} to not have been changed", agg2Id);
+            Assert.That(generator.GetNextSeqNo(agg1Id), Is.EqualTo(4), "Expected the seq for {0} to have been incremented four times", agg1Id);
+            Assert.That(generator.GetNextSeqNo(agg2Id), Is.EqualTo(0), "Expected the seq for {0} to not have been changed", agg2Id);
 
             _eventStore.Save(Guid.NewGuid(), new[]
             {
                 Event(0, agg2Id)
             });
 
-            Assert.That(generator.NextSeqNo(agg1Id), Is.EqualTo(4), "Expected the seq for {0} to have been incremented four times", agg1Id);
-            Assert.That(generator.NextSeqNo(agg2Id), Is.EqualTo(1), "Expected the seq for {0} to have been incremented once", agg2Id);
+            Assert.That(generator.GetNextSeqNo(agg1Id), Is.EqualTo(4), "Expected the seq for {0} to have been incremented four times", agg1Id);
+            Assert.That(generator.GetNextSeqNo(agg2Id), Is.EqualTo(1), "Expected the seq for {0} to have been incremented once", agg2Id);
         }
 
         [Test]

@@ -21,6 +21,6 @@ namespace d60.EventSorcerer.Events
         /// <summary>
         /// Looks up the next available sequence number for that particular aggregate root ID
         /// </summary>
-        long NextSeqNo(Guid aggregateRootId);
+        long GetNextSeqNo(Guid aggregateRootId);
     }
 }

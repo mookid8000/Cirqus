@@ -132,7 +132,7 @@ SELECT [data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo AND [
             return domainEvents;
         }
 
-        public long NextSeqNo(Guid aggregateRootId)
+        public long GetNextSeqNo(Guid aggregateRootId)
         {
             var next = 0;
 

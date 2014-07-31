@@ -20,7 +20,7 @@ namespace d60.EventSorcerer.Config
             if (_next.ContainsKey(aggregateRootId))
                 return _next[aggregateRootId]++;
 
-            _next[aggregateRootId] = _eventStore.NextSeqNo(aggregateRootId);
+            _next[aggregateRootId] = _eventStore.GetNextSeqNo(aggregateRootId);
 
             return _next[aggregateRootId]++;
         }

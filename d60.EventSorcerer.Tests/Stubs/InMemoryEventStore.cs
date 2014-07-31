@@ -62,7 +62,7 @@ namespace d60.EventSorcerer.Tests.Stubs
             return SavedEventBatches.SelectMany(b => b.Events).GetEnumerator();
         }
 
-        public long NextSeqNo(Guid aggregateRootId)
+        public long GetNextSeqNo(Guid aggregateRootId)
         {
             var domainEvents = SavedEventBatches
                 .SelectMany(b => b.Events)
