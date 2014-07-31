@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Exceptions;
 using d60.EventSorcerer.MongoDb.Events;
@@ -26,6 +27,58 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
             _justAnotherViewViewManager = new MongoDbCatchUpViewManager<JustAnotherView>(_database, "justAnother");
             _viewThatCanThrowViewManager = new MongoDbCatchUpViewManager<ViewThatCanThrow>(_database, "errorTest");
         }
+
+        [Test]
+        public void IgnoresEventsWhenTheyHaveAlreadyBeenProcessed()
+        {
+            // arrange
+            ViewThatCanThrow.ThrowAfterThisManyEvents = int.MaxValue;
+            var rootId1 = Guid.NewGuid();
+            var domainEvents = new[]
+            {
+                EventFor(rootId1, 0, 0),
+                EventFor(rootId1, 1, 1),
+                EventFor(rootId1, 2, 2),
+            };
+
+            _viewThatCanThrowViewManager.Dispatch(_eventStore, domainEvents);
+
+            // act
+            _viewThatCanThrowViewManager.Dispatch(_eventStore, domainEvents);
+
+            // assert
+            var view = _viewThatCanThrowViewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            
+            Assert.That(view.EventsHandled, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void IgnoresEventsWhenTheyHaveAlreadyBeenProcessed_EnsureTailIsStillProcessed()
+        {
+            // arrange
+            ViewThatCanThrow.ThrowAfterThisManyEvents = int.MaxValue;
+            var rootId1 = Guid.NewGuid();
+            var domainEvents = new[]
+            {
+                EventFor(rootId1, 0, 0),
+                EventFor(rootId1, 1, 1),
+                EventFor(rootId1, 2, 2),
+            };
+
+            _viewThatCanThrowViewManager.Dispatch(_eventStore, domainEvents);
+
+            // act
+            var domainEventsWithOneAdditionalEvent = domainEvents
+                .Concat(new[] {EventFor(rootId1, 3, 3)});
+
+            _viewThatCanThrowViewManager.Dispatch(_eventStore, domainEventsWithOneAdditionalEvent);
+
+            // assert
+            var view = _viewThatCanThrowViewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            
+            Assert.That(view.EventsHandled, Is.EqualTo(4));
+        }
+
 
         [Test]
         public void CorrectlyHaltsEventDispatchToViewInCaseOfError()
@@ -188,9 +241,9 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
             Assert.That(view.EventCounter, Is.EqualTo(3));
         }
 
-        DomainEvent EventFor(Guid aggregateRootId, int seqNo)
+        DomainEvent EventFor(Guid aggregateRootId, int seqNo, int globalSeqNo = -1)
         {
-            return new AnEvent
+            var e = new AnEvent
             {
                 Meta =
                 {
@@ -198,6 +251,13 @@ namespace d60.EventSorcerer.Tests.MongoDb.Views
                     { DomainEvent.MetadataKeys.SequenceNumber, seqNo },
                 }
             };
+
+            if (globalSeqNo >= 0)
+            {
+                e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = globalSeqNo;
+            }
+
+            return e;
         }
 
         class JustAnotherView : IView<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>

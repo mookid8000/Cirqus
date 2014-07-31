@@ -25,7 +25,12 @@ namespace d60.EventSorcerer.MongoDb.Views
                 ? Pointers[aggIdString] + 1
                 : 0;
 
-            while (expectedNextSeqNo != seqNo)
+            if (expectedNextSeqNo > seqNo)
+            {
+                return;
+            }
+
+            while (expectedNextSeqNo < seqNo)
             {
                 var missingEvent = eventStore
                     .Load(aggregateRootId, expectedNextSeqNo, 1)
