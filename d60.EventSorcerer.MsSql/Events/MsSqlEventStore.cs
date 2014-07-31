@@ -42,8 +42,6 @@ namespace d60.EventSorcerer.MsSql.Events
         {
             var eventList = batch.ToList();
 
-            EventValidation.ValidateBatchIntegrity(batchId, eventList);
-
             try
             {
                 WithConnection(conn =>
@@ -55,7 +53,12 @@ namespace d60.EventSorcerer.MsSql.Events
                         foreach (var e in eventList)
                         {
                             e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = globalSequenceNumber++;
+                        }
 
+                        EventValidation.ValidateBatchIntegrity(batchId, eventList);
+
+                        foreach (var e in eventList)
+                        {
                             using (var cmd = conn.CreateCommand())
                             {
                                 cmd.Transaction = tx;
@@ -111,7 +114,7 @@ INSERT INTO [{0}] (
                 var result = cmd.ExecuteScalar();
 
                 return result != DBNull.Value
-                    ? (long) result + 1
+                    ? (long)result + 1
                     : 0;
             }
         }
@@ -161,7 +164,7 @@ SELECT [data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo AND [
 
             WithConnection(conn =>
             {
-                using(var tx = conn.BeginTransaction())
+                using (var tx = conn.BeginTransaction())
                 {
                     using (var cmd = conn.CreateCommand())
                     {

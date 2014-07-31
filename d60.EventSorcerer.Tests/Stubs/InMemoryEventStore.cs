@@ -20,8 +20,6 @@ namespace d60.EventSorcerer.Tests.Stubs
         {
             var eventList = batch.ToList();
 
-            EventValidation.ValidateBatchIntegrity(batchId, eventList);
-
             var tuplesInBatch = eventList
                 .Select(e => string.Format("{0}:{1}", e.GetAggregateRootId(), e.GetSequenceNumber()))
                 .ToList();
@@ -48,6 +46,8 @@ namespace d60.EventSorcerer.Tests.Stubs
             {
                 e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = result++;
             }
+
+            EventValidation.ValidateBatchIntegrity(batchId, eventList);
 
             SavedEventBatches.Add(new EventBatch(batchId, eventList));
         }

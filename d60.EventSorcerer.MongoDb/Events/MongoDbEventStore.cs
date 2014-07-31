@@ -130,14 +130,14 @@ namespace d60.EventSorcerer.MongoDb.Events
                 throw new InvalidOperationException(string.Format("Attempted to save batch {0}, but the batch of events was empty!", batchId));
             }
 
-            EventValidation.ValidateBatchIntegrity(batchId, events);
-
             var nextGlobalSeqNo = GetNextGlobalSeqNo();
 
             foreach (var e in events)
             {
                 e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = nextGlobalSeqNo++;
             }
+
+            EventValidation.ValidateBatchIntegrity(batchId, events);
 
             var doc = new BsonDocument
             {

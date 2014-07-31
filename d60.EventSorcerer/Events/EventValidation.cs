@@ -30,19 +30,36 @@ namespace d60.EventSorcerer.Events
             {
                 throw new InvalidOperationException("Can't save batch with event without a sequence number");
             }
+
+            if (events.Any(e => !e.Meta.ContainsKey(DomainEvent.MetadataKeys.GlobalSequenceNumber)))
+            {
+                throw new InvalidOperationException("Can't save batch with event without a global sequence number");
+            }
         }
 
         static void EnsureSeq(Guid batchId, List<DomainEvent> events)
         {
-            var seqs = events
+            var aggregateRootSeqs = events
                 .GroupBy(e => e.GetAggregateRootId())
                 .ToDictionary(g => g.Key, g => g.Min(e => e.GetSequenceNumber()));
+
+            var expectedNextGlobalSeq = events.First().GetGlobalSequenceNumber();
 
             foreach (var e in events)
             {
                 var sequenceNumberOfThisEvent = e.GetSequenceNumber();
+                var globalSequenceNumberOfThisEvent = e.GetGlobalSequenceNumber();
                 var aggregateRootId = e.GetAggregateRootId();
-                var expectedSequenceNumber = seqs[aggregateRootId];
+                var expectedSequenceNumber = aggregateRootSeqs[aggregateRootId];
+
+                if (globalSequenceNumberOfThisEvent != expectedNextGlobalSeq)
+                {
+                    throw new InvalidOperationException(
+                        string.Format(@"Attempted to save batch {0} which contained events with non-sequential global sequence numbers!
+
+{1}", batchId,
+                            string.Join(", ", events.Select(ev => ev.GetGlobalSequenceNumber()))));
+                }
 
                 if (sequenceNumberOfThisEvent != expectedSequenceNumber)
                 {
@@ -55,7 +72,8 @@ namespace d60.EventSorcerer.Events
                                     ev => string.Format("    {0} / {1}", ev.GetAggregateRootId(), ev.GetSequenceNumber())))));
                 }
 
-                seqs[aggregateRootId]++;
+                aggregateRootSeqs[aggregateRootId]++;
+                expectedNextGlobalSeq++;
             }
         }
     }
