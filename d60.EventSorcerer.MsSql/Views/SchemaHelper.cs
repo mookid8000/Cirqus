@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Reflection;
+using System.Security.Policy;
 
 namespace d60.EventSorcerer.MsSql.Views
 {
@@ -23,6 +25,8 @@ namespace d60.EventSorcerer.MsSql.Views
                 
                 {typeof (List<string>), Tuple.Create(SqlDbType.NVarChar, "max")},
                 {typeof (List<int>), Tuple.Create(SqlDbType.NVarChar, "max")},
+                {typeof (HashSet<string>), Tuple.Create(SqlDbType.NVarChar, "max")},
+                {typeof (HashSet<int>), Tuple.Create(SqlDbType.NVarChar, "max")},
             };
 
         public static Prop[] GetSchema<TView>()
@@ -47,11 +51,80 @@ namespace d60.EventSorcerer.MsSql.Views
                         ColumnName = columnName,
                         SqlDbType = sqlDbType.Item1,
                         Size = sqlDbType.Item2,
-                        Getter = instance => propertyInfo.GetValue(instance),
-                        Setter = (instance, value) => propertyInfo.SetValue(instance, value)
+                        Getter = instance => GetGetter(propertyInfo, instance),
+                        Setter = (instance, value) => GetSetter(propertyInfo, instance, value)
                     };
                 })
                 .ToArray();
+        }
+
+        static void GetSetter(PropertyInfo propertyInfo, object instance, object value)
+        {
+            object valueToSet;
+
+            if (propertyInfo.PropertyType == typeof(List<string>))
+            {
+                var tokens = ((string)value).Split(';');
+                
+                valueToSet = tokens.ToList();
+            }
+            else if (propertyInfo.PropertyType == typeof(List<int>))
+            {
+                var tokens = ((string)value).Split(';').Select(int.Parse);
+
+                valueToSet = tokens.ToList();
+            }
+            else if (propertyInfo.PropertyType == typeof(HashSet<string>))
+            {
+                var tokens = ((string)value).Split(';');
+
+                valueToSet = new HashSet<string>(tokens);
+            }
+            else if (propertyInfo.PropertyType == typeof(HashSet<int>))
+            {
+                var tokens = ((string)value).Split(';').Select(int.Parse);
+
+                valueToSet = new HashSet<int>(tokens);
+            }
+            else
+            {
+                valueToSet = Convert.ChangeType(value, propertyInfo.PropertyType);
+            }
+
+            propertyInfo.SetValue(instance, valueToSet);
+        }
+
+        static object GetGetter(PropertyInfo propertyInfo, object instance)
+        {
+            if (propertyInfo.PropertyType == typeof(List<string>))
+            {
+                var stringList = (List<string>)propertyInfo.GetValue(instance);
+
+                return string.Join(";", stringList);
+            }
+
+            if (propertyInfo.PropertyType == typeof(List<int>))
+            {
+                var stringList = (List<int>)propertyInfo.GetValue(instance);
+
+                return string.Join(";", stringList);
+            }
+
+            if (propertyInfo.PropertyType == typeof(HashSet<string>))
+            {
+                var stringList = (HashSet<string>)propertyInfo.GetValue(instance);
+
+                return string.Join(";", stringList);
+            }
+
+            if (propertyInfo.PropertyType == typeof(HashSet<int>))
+            {
+                var stringList = (HashSet<int>)propertyInfo.GetValue(instance);
+
+                return string.Join(";", stringList);
+            }
+
+            return propertyInfo.GetValue(instance);
         }
 
         static Tuple<SqlDbType, string> MapType(Type propertyType)
