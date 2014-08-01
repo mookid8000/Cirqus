@@ -137,9 +137,9 @@ INSERT INTO [{0}] (
 
                     cmd.CommandText = string.Format(@"
 
-MERGE [{0}]
+MERGE [{0}] AS ViewTable
 
-USING (SELECT @id AS MyId)
+USING (VALUES (@id)) AS MyId
 
 WHEN MATCHED
 

@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using d60.EventSorcerer.Aggregates;
 using d60.EventSorcerer.Events;
 
 namespace d60.EventSorcerer.TestHelpers
@@ -14,10 +13,9 @@ namespace d60.EventSorcerer.TestHelpers
             _emittedEvents.Add(e);
         }
 
-        public InMemoryEventCollector CollectEventsFor(AggregateRoot aggregateRoot)
+        public void Clear()
         {
-            aggregateRoot.EventCollector = this;
-            return this;
+            _emittedEvents.Clear();
         }
 
         public IEnumerator<DomainEvent> GetEnumerator()
