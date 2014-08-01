@@ -26,5 +26,10 @@ namespace d60.EventSorcerer.Extensions
                 yield return batch;
             }
         }
+
+        public static IEnumerable<string> Indented(this IEnumerable<string> lines, int indentationLevel)
+        {
+            return lines.Select(line => new string(' ', indentationLevel) + line);
+        }
     }
 }

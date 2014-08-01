@@ -52,23 +52,40 @@ namespace d60.EventSorcerer.MsSql.Views
                 Purge();
             }
 
-            //var viewInstanceWithMaxGlobalSequenceNumber = _viewCollection
-            //    .FindAllAs<MongoDbCatchUpView<TView>>()
-            //    .SetSortOrder(SortBy<MongoDbCatchUpView<TView>>.Descending(v => v.MaxGlobalSeq))
-            //    .SetLimit(1)
-            //    .FirstOrDefault();
+            var maxSequenceNumber = GetMaxSequenceNumber();
+            var globalSequenceNumberCutoff = maxSequenceNumber + 1;
 
-            //var globalSequenceNumberCutoff = viewInstanceWithMaxGlobalSequenceNumber == null
-            //    ? 0
-            //    : viewInstanceWithMaxGlobalSequenceNumber.MaxGlobalSeq + 1;
+            var batches = eventStore.Stream(globalSequenceNumberCutoff).Batch(1000);
 
-            //var batches = eventStore.Stream(globalSequenceNumberCutoff).Batch(1000);
+            foreach (var partition in batches)
+            {
+                Dispatch(eventStore, partition);
+            }
+        }
 
-            //foreach (var partition in batches)
-            //{
-            //    Dispatch(eventStore, partition);
-            //}
+        long GetMaxSequenceNumber()
+        {
+            var max = 0L;
 
+            WithConnection(conn =>
+            {
+                using (var tx = conn.BeginTransaction())
+                {
+                    using (var cmd = conn.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = string.Format("SELECT MAX([GlobalSeqNo]) FROM [{0}]", _tableName);
+
+                        var result = cmd.ExecuteScalar();
+
+                        max = result != DBNull.Value
+                            ? (long)result
+                            : 0;
+                    }
+                }
+            });
+
+            return max;
         }
 
         public void Purge()
@@ -89,10 +106,15 @@ namespace d60.EventSorcerer.MsSql.Views
 
         public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
-            var eventsList = events.ToList();
+            var maxGlobalSequenceNumber = GetMaxSequenceNumber();
+
+            var eventsToDispatch = events
+                .Where(e => e.GetGlobalSequenceNumber() > maxGlobalSequenceNumber)
+                .ToList();
+
             try
             {
-                foreach (var batch in eventsList.Batch(MaxDomainEventsBetweenFlush))
+                foreach (var batch in eventsToDispatch.Batch(MaxDomainEventsBetweenFlush))
                 {
                     ProcessOneBatch(eventStore, batch);
                 }
@@ -103,7 +125,7 @@ namespace d60.EventSorcerer.MsSql.Views
                 try
                 {
                     // make sure we flush after each single domain event
-                    foreach (var e in eventsList)
+                    foreach (var e in eventsToDispatch)
                     {
                         ProcessOneBatch(eventStore, new[] { e });
                     }
@@ -128,14 +150,14 @@ namespace d60.EventSorcerer.MsSql.Views
             using (var tx = conn.BeginTransaction())
             {
                 var locator = ViewLocator.GetLocatorFor<TView>();
-                var activeViewsById = new Dictionary<string, TView>();
+                var activeViewsById = new Dictionary<string, MsSqlView<TView>>();
 
                 foreach (var e in batch)
                 {
                     var viewId = locator.GetViewId(e);
                     var view = activeViewsById
                         .GetOrAdd(viewId, id => FindOneById(id, tx, conn)
-                                                ?? new TView());
+                                                ?? new MsSqlView<TView> { View = new TView() });
 
                     DispatchEvent(eventStore, e, view);
                 }
@@ -146,7 +168,7 @@ namespace d60.EventSorcerer.MsSql.Views
             }
         }
 
-        void Save(Dictionary<string, TView> activeViewsById, SqlConnection conn, SqlTransaction tx)
+        void Save(Dictionary<string, MsSqlView<TView>> activeViewsById, SqlConnection conn, SqlTransaction tx)
         {
             foreach (var kvp in activeViewsById)
             {
@@ -160,42 +182,57 @@ namespace d60.EventSorcerer.MsSql.Views
 
 MERGE [{0}] AS ViewTable
 
-USING (VALUES (@id)) AS foo(Id)
+USING (VALUES (@Id)) AS foo(Id)
 
 ON ViewTable.Id = foo.Id
 
 WHEN MATCHED THEN
 
-    UPDATE SET {1}
+    UPDATE SET 
+{1},
+[GlobalSeqNo] = @GlobalSeqNo
 
 WHEN NOT MATCHED THEN
 
-    INSERT ({2}) VALUES ({3})
+    INSERT (
+{2},
+[GlobalSeqNo]
+) VALUES (
+{3},
+@GlobalSeqNo
+)
     
 ;
 ", _tableName, FormatAssignments(_schema.Where(prop => !prop.IsPrimaryKey)), FormatColumnNames(_schema), FormatParameterNames(_schema));
 
                     cmd.Parameters.Add("Id", SqlDbType.NChar, PrimaryKeySize).Value = id;
+                    cmd.Parameters.Add("GlobalSeqNo", SqlDbType.BigInt).Value = view.MaxGlobalSeq;
 
                     foreach (var prop in _schema.Where(p => !p.IsPrimaryKey))
                     {
-                        var value = prop.Getter(view);
-                        
+                        var value = prop.Getter(view.View);
+
                         cmd.Parameters.AddWithValue(prop.SqlParameterName, value);
                     }
 
                     Console.WriteLine(cmd.CommandText);
+
                     cmd.ExecuteNonQuery();
                 }
             }
         }
 
-        void DispatchEvent(IEventStore eventStore, DomainEvent domainEvent, TView view)
+        void DispatchEvent(IEventStore eventStore, DomainEvent domainEvent, MsSqlView<TView> view)
         {
-            _dispatcher.DispatchToView(domainEvent, view);
+            var globalSequenceNumber = domainEvent.GetGlobalSequenceNumber();
+            if (globalSequenceNumber < view.MaxGlobalSeq) return;
+
+            _dispatcher.DispatchToView(domainEvent, view.View);
+
+            view.MaxGlobalSeq = globalSequenceNumber;
         }
 
-        TView FindOneById(string id, SqlTransaction tx, SqlConnection conn)
+        MsSqlView<TView> FindOneById(string id, SqlTransaction tx, SqlConnection conn)
         {
             using (var cmd = conn.CreateCommand())
             {
@@ -204,7 +241,8 @@ WHEN NOT MATCHED THEN
 
 SELECT 
 
-{0}
+{0},
+[GlobalSeqNo]
 
 FROM [{1}] WHERE [Id] = @id
 
@@ -223,7 +261,13 @@ FROM [{1}] WHERE [Id] = @id
                             prop.Setter(view, reader[prop.ColumnName]);
                         }
 
-                        return view;
+                        var globalSeqNo = (long)reader["GlobalSeqNo"];
+
+                        return new MsSqlView<TView>
+                        {
+                            View = view,
+                            MaxGlobalSeq = globalSeqNo
+                        };
                     }
 
                     return null;
@@ -257,7 +301,12 @@ FROM [{1}] WHERE [Id] = @id
             {
                 using (var tx = conn.BeginTransaction())
                 {
-                    view = FindOneById(viewId, tx, conn);
+                    var wrapper = FindOneById(viewId, tx, conn);
+
+                    if (wrapper != null)
+                    {
+                        view = wrapper.View;
+                    }
                 }
             });
 
@@ -296,6 +345,9 @@ BEGIN
     CREATE TABLE [dbo].[{0}] (
 
 {1},
+
+[GlobalSeqNo] [BigInt],
+
 
         CONSTRAINT [PK_{0}] PRIMARY KEY CLUSTERED 
         (
@@ -342,5 +394,11 @@ END
         {
             ColumnName = columnName;
         }
+    }
+
+    class MsSqlView<TView> where TView : IView
+    {
+        public long MaxGlobalSeq { get; set; }
+        public TView View { get; set; }
     }
 }

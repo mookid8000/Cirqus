@@ -158,6 +158,10 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 
         class ViewThatCanThrow : IView<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
         {
+            public ViewThatCanThrow()
+            {
+                JustSomeString = "needs to be set to something";
+            }
             public static int ThrowAfterThisManyEvents { get; set; }
             public string Id { get; set; }
             public int EventsHandled { get; set; }
