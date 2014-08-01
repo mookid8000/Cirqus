@@ -48,7 +48,7 @@ namespace d60.EventSorcerer.Tests.Aggregates
 
             someAggregate.DoSomething();
 
-            var someEvent = eventCollector.EmittedEvents.Cast<SomeEvent>().Single();
+            var someEvent = eventCollector.Cast<SomeEvent>().Single();
 
             Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.TimeUtc], Is.EqualTo(now));
             Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.TimeLocal], Is.EqualTo(now.ToLocalTime()));
