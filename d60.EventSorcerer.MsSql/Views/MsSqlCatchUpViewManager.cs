@@ -139,7 +139,7 @@ INSERT INTO [{0}] (
 
 MERGE [{0}] AS ViewTable
 
-USING (VALUES (@id)) AS MyId
+USING (VALUES (@id)) AS foo(Id)
 
 WHEN MATCHED
 
