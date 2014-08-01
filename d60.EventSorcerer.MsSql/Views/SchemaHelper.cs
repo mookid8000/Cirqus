@@ -11,10 +11,18 @@ namespace d60.EventSorcerer.MsSql.Views
         static readonly Dictionary<Type, Tuple<SqlDbType, string>> DbTypes =
             new Dictionary<Type, Tuple<SqlDbType, string>>
             {
-                {typeof (long), Tuple.Create(SqlDbType.BigInt, "")},
+                {typeof (short), Tuple.Create(SqlDbType.SmallInt, "")},
                 {typeof (int), Tuple.Create(SqlDbType.Int, "")},
+                {typeof (long), Tuple.Create(SqlDbType.BigInt, "")},
+
                 {typeof (string), Tuple.Create(SqlDbType.NVarChar, "max")},
+                
+                {typeof (double), Tuple.Create(SqlDbType.Decimal, "12,5")},
+                {typeof (float), Tuple.Create(SqlDbType.Decimal, "12,5")},
                 {typeof (decimal), Tuple.Create(SqlDbType.Decimal, "12,5")},
+                
+                {typeof (List<string>), Tuple.Create(SqlDbType.NVarChar, "max")},
+                {typeof (List<int>), Tuple.Create(SqlDbType.NVarChar, "max")},
             };
 
         public static Prop[] GetSchema<TView>()

@@ -65,7 +65,7 @@ namespace d60.EventSorcerer.MsSql.Views
 
         long GetMaxSequenceNumber()
         {
-            var max = 0L;
+            var max = -1L;
 
             WithConnection(conn =>
             {
@@ -80,7 +80,7 @@ namespace d60.EventSorcerer.MsSql.Views
 
                         max = result != DBNull.Value
                             ? (long)result
-                            : 0;
+                            : -1L;
                     }
                 }
             });
