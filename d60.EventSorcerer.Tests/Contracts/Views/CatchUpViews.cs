@@ -94,8 +94,8 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 0, 10) });
             _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 1, 11) });
             _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 2, 12) });
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 3,13) });
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 4,14) });
+            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 3, 13) });
+            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 4, 14) });
 
             _factory.SetMaxDomainEventsBetweenFlush(1);
             ViewThatCanThrow.ThrowAfterThisManyEvents = 3;
@@ -114,10 +114,10 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             // arrange
             var rootId1 = Guid.NewGuid();
             _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 0, 80) });
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 1,81) });
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 2,82) });
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 3,83) });
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 4,84) });
+            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 1, 81) });
+            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 2, 82) });
+            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 3, 83) });
+            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 4, 84) });
 
             _factory.SetMaxDomainEventsBetweenFlush(1);
             ViewThatCanThrow.ThrowAfterThisManyEvents = 3;
@@ -140,11 +140,11 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             _factory.SetMaxDomainEventsBetweenFlush(10);
 
             var rootId1 = Guid.NewGuid();
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 0,50) });
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 1,51) });
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 2,52) });
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 3,53) });
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 4,54) });
+            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 0, 50) });
+            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 1, 51) });
+            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 2, 52) });
+            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 3, 53) });
+            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 4, 54) });
 
             ViewThatCanThrow.ThrowAfterThisManyEvents = 3;
 
@@ -233,10 +233,11 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             var rootId1 = Guid.NewGuid();
 
             var firstEvent = EventFor(rootId1, 0, 10);
+            var nextEvent = EventFor(rootId1, 1, 11);
             var lastEvent = EventFor(rootId1, 2, 12);
 
             _eventStore.Save(Guid.NewGuid(), new[] { firstEvent });
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 1, 11) });
+            _eventStore.Save(Guid.NewGuid(), new[] { nextEvent });
             _eventStore.Save(Guid.NewGuid(), new[] { lastEvent });
 
             _justAnotherViewViewManager.Dispatch(_eventStore, new[] { firstEvent });
@@ -273,6 +274,8 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             public void Handle(AnEvent domainEvent)
             {
                 EventCounter++;
+
+                Console.WriteLine("Event counter incremented to {0}", EventCounter);
             }
 
             public string Id { get; set; }

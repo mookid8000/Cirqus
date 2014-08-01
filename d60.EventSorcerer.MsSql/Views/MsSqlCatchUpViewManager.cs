@@ -47,7 +47,44 @@ namespace d60.EventSorcerer.MsSql.Views
 
         public void Initialize(IEventStore eventStore, bool purgeExisting = false)
         {
+            if (purgeExisting)
+            {
+                Purge();
+            }
 
+            //var viewInstanceWithMaxGlobalSequenceNumber = _viewCollection
+            //    .FindAllAs<MongoDbCatchUpView<TView>>()
+            //    .SetSortOrder(SortBy<MongoDbCatchUpView<TView>>.Descending(v => v.MaxGlobalSeq))
+            //    .SetLimit(1)
+            //    .FirstOrDefault();
+
+            //var globalSequenceNumberCutoff = viewInstanceWithMaxGlobalSequenceNumber == null
+            //    ? 0
+            //    : viewInstanceWithMaxGlobalSequenceNumber.MaxGlobalSeq + 1;
+
+            //var batches = eventStore.Stream(globalSequenceNumberCutoff).Batch(1000);
+
+            //foreach (var partition in batches)
+            //{
+            //    Dispatch(eventStore, partition);
+            //}
+
+        }
+
+        public void Purge()
+        {
+            WithConnection(conn =>
+            {
+                using (var tx = conn.BeginTransaction())
+                {
+                    using (var cmd = conn.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = string.Format(@"DELETE FROM [{0}]", _tableName);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            });
         }
 
         public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
@@ -119,33 +156,24 @@ namespace d60.EventSorcerer.MsSql.Views
                 using (var cmd = conn.CreateCommand())
                 {
                     cmd.Transaction = tx;
-                    var insertStatement = string.Format(@"
-
-INSERT INTO [{0}] (
-
-{1}
-
-) VALUES (
-
-{2}
-
-)
-
-", _tableName, FormatColumnNames(_schema), FormatParameterNames(_schema));
-
-
-
                     cmd.CommandText = string.Format(@"
 
 MERGE [{0}] AS ViewTable
 
 USING (VALUES (@id)) AS foo(Id)
 
-WHEN MATCHED
+ON ViewTable.Id = foo.Id
 
+WHEN MATCHED THEN
+
+    UPDATE SET {1}
+
+WHEN NOT MATCHED THEN
+
+    INSERT ({2}) VALUES ({3})
     
 ;
-", _tableName);
+", _tableName, FormatAssignments(_schema.Where(prop => !prop.IsPrimaryKey)), FormatColumnNames(_schema), FormatParameterNames(_schema));
 
                     cmd.Parameters.Add("Id", SqlDbType.NChar, PrimaryKeySize).Value = id;
 
@@ -160,12 +188,6 @@ WHEN MATCHED
                     cmd.ExecuteNonQuery();
                 }
             }
-        }
-
-        string FormatParameterNames(IEnumerable<Prop> schema)
-        {
-            return string.Join(", " + Environment.NewLine,
-                schema.Select(prop => prop.SqlParameterName));
         }
 
         void DispatchEvent(IEventStore eventStore, DomainEvent domainEvent, TView view)
@@ -200,11 +222,25 @@ FROM [{1}] WHERE [Id] = @id
                         {
                             prop.Setter(view, reader[prop.ColumnName]);
                         }
+
+                        return view;
                     }
 
                     return null;
                 }
             }
+        }
+
+        static string FormatAssignments(IEnumerable<Prop> schema)
+        {
+            return string.Join(", " + Environment.NewLine,
+                schema.Select(prop => string.Format("[{0}] = {1}", prop.ColumnName, prop.SqlParameterName)));
+        }
+
+        string FormatParameterNames(IEnumerable<Prop> schema)
+        {
+            return string.Join(", " + Environment.NewLine,
+                schema.Select(prop => prop.SqlParameterName));
         }
 
         static string FormatColumnNames(IEnumerable<Prop> schema)
@@ -215,7 +251,17 @@ FROM [{1}] WHERE [Id] = @id
 
         public TView Load(string viewId)
         {
-            return default(TView);
+            TView view = null;
+
+            WithConnection(conn =>
+            {
+                using (var tx = conn.BeginTransaction())
+                {
+                    view = FindOneById(viewId, tx, conn);
+                }
+            });
+
+            return view;
         }
 
         public int MaxDomainEventsBetweenFlush
