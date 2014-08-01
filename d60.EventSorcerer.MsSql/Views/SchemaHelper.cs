@@ -8,14 +8,14 @@ namespace d60.EventSorcerer.MsSql.Views
 {
     public class SchemaHelper
     {
-        static readonly Dictionary<Type, Tuple<SqlDbType, string>> DbTypes = new Dictionary
-            <Type, Tuple<SqlDbType, string>>
-        {
-            {typeof (long), Tuple.Create(SqlDbType.BigInt, "")},
-            {typeof (int), Tuple.Create(SqlDbType.Int, "")},
-            {typeof (string), Tuple.Create(SqlDbType.NVarChar, "max")},
-            {typeof (decimal), Tuple.Create(SqlDbType.Decimal, "12,5")},
-        };
+        static readonly Dictionary<Type, Tuple<SqlDbType, string>> DbTypes =
+            new Dictionary<Type, Tuple<SqlDbType, string>>
+            {
+                {typeof (long), Tuple.Create(SqlDbType.BigInt, "")},
+                {typeof (int), Tuple.Create(SqlDbType.Int, "")},
+                {typeof (string), Tuple.Create(SqlDbType.NVarChar, "max")},
+                {typeof (decimal), Tuple.Create(SqlDbType.Decimal, "12,5")},
+            };
 
         public static Prop[] GetSchema<TView>()
         {
@@ -38,7 +38,9 @@ namespace d60.EventSorcerer.MsSql.Views
                     {
                         ColumnName = columnName,
                         SqlDbType = sqlDbType.Item1,
-                        Size = sqlDbType.Item2
+                        Size = sqlDbType.Item2,
+                        Getter = instance => propertyInfo.GetValue(instance),
+                        Setter = (instance, value) => propertyInfo.SetValue(instance, value)
                     };
                 })
                 .ToArray();
@@ -59,11 +61,19 @@ namespace d60.EventSorcerer.MsSql.Views
 
     public class Prop
     {
+        public bool IsPrimaryKey
+        {
+            get { return ColumnName.Equals("Id", StringComparison.InvariantCultureIgnoreCase); }
+        }
         public string ColumnName { get; set; }
-        public Func<object> Getter { get; set; }
-        public Action<object> Setter { get; set; }
+        public Func<object, object> Getter { get; set; }
+        public Action<object, object> Setter { get; set; }
         public SqlDbType SqlDbType { get; set; }
         public string Size { get; set; }
+        public string SqlParameterName
+        {
+            get { return "@" + ColumnName; }
+        }
 
         public override string ToString()
         {

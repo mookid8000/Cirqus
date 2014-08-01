@@ -69,9 +69,11 @@ namespace d60.EventSorcerer.MongoDb.Views
 
         public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
+            var eventsList = events.ToList();
+
             try
             {
-                foreach (var batch in events.Batch(MaxDomainEventsBetweenFlush))
+                foreach (var batch in eventsList.Batch(MaxDomainEventsBetweenFlush))
                 {
                     ProcessOneBatch(eventStore, batch);
                 }
@@ -81,7 +83,7 @@ namespace d60.EventSorcerer.MongoDb.Views
                 try
                 {
                     // make sure we flush after each single domain event
-                    foreach (var e in events)
+                    foreach (var e in eventsList)
                     {
                         ProcessOneBatch(eventStore, new[] {e});
                     }
