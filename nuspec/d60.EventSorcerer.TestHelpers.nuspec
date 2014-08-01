@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>d60.EventSorcerer.TestHelpers</id>
-    <version>0.0.12</version>
+    <version>0.0.13</version>
     <title>d60.EventSorcerer.TestHelpers</title>
     <authors>Mogens Heller Grabe</authors>
     <owners>mookid8000</owners>
@@ -10,7 +10,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Test helpers for d60 event sourcing + cqrs kit</description>
     <dependencies>
-      <dependency id="d60.EventSorcerer" version="0.0.12" />
+      <dependency id="d60.EventSorcerer" version="0.0.13" />
     </dependencies>
   </metadata>
   <files>
