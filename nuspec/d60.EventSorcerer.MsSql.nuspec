@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>d60.EventSorcerer.MsSql</id>
-    <version>0.0.13</version>
+    <version>0.0.14</version>
     <title>d60.EventSorcerer.MsSql</title>
     <authors>Mogens Heller Grabe</authors>
     <owners>mookid8000</owners>
@@ -10,7 +10,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>MSSQL stuff for d60 event sourcing + cqrs kit</description>
     <dependencies>
-      <dependency id="d60.EventSorcerer" version="0.0.13" />
+      <dependency id="d60.EventSorcerer" version="0.0.14" />
     </dependencies>
   </metadata>
   <files>
