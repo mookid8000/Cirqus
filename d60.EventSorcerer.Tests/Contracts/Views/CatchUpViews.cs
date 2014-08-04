@@ -199,7 +199,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             Assert.That(secondView.EventCounter, Is.EqualTo(1));
         }
 
-        [Test]
+        [Test, Ignore("Can no longer happen")]
         public void RejectsOutOfSequenceEvents()
         {
             var rootId1 = Guid.NewGuid();
@@ -214,7 +214,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             Assert.Throws<ConsistencyException>(() => _justAnotherViewViewManager.Dispatch(_eventStore, new[] { EventFor(rootId1, 4, 4) }));
         }
 
-        [Test]
+        [Test, Ignore("Can no longer happen")]
         public void RejectsOutOfSequenceEventsWithCounterPerAggregateRoot()
         {
             var rootId1 = Guid.NewGuid();
@@ -231,7 +231,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             Assert.Throws<ConsistencyException>(() => _justAnotherViewViewManager.Dispatch(_eventStore, new[] { EventFor(rootId2, 3, 16) }));
         }
 
-        [Test]
+        [Test, Ignore("Can no longer happen")]
         public void CanCatchUpIfEventStoreAllowsIt()
         {
             var rootId1 = Guid.NewGuid();
