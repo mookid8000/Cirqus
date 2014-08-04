@@ -20,7 +20,7 @@ namespace d60.EventSorcerer.MongoDb.Views
         public string Id { get; set; }
         public TView View { get; set; }
 
-        public void DispatchAndResolve(IEventStore eventStore, DomainEvent domainEvent)
+        public void DispatchAndResolve(IEventStore eventStore, DomainEvent domainEvent, IViewContext context)
         {
             var aggregateRootId = domainEvent.GetAggregateRootId();
             var aggIdString = aggregateRootId.ToString();
@@ -43,7 +43,8 @@ namespace d60.EventSorcerer.MongoDb.Views
 
                 if (missingEvent == null) break;
 
-                Dispatch(missingEvent);
+                Dispatcher.DispatchToView(context, missingEvent, View);
+            
                 expectedNextSeqNo++;
                 MaxGlobalSeq = missingEvent.GetGlobalSequenceNumber();
             }
@@ -55,14 +56,10 @@ namespace d60.EventSorcerer.MongoDb.Views
                     seqNo, aggIdString, Id, expectedNextSeqNo);
             }
 
-            Dispatch(domainEvent);
+            Dispatcher.DispatchToView(context, domainEvent, View);
+
             Pointers[aggIdString] = seqNo;
             MaxGlobalSeq = domainEvent.GetGlobalSequenceNumber();
-        }
-
-        public void Dispatch(DomainEvent domainEvent)
-        {
-            Dispatcher.DispatchToView(domainEvent, View);
         }
     }
 }

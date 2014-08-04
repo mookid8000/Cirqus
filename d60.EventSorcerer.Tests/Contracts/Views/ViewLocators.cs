@@ -3,6 +3,7 @@ using d60.EventSorcerer.Events;
 using d60.EventSorcerer.MongoDb.Events;
 using d60.EventSorcerer.Tests.Contracts.Views.Factories;
 using d60.EventSorcerer.Tests.MongoDb;
+using d60.EventSorcerer.Tests.Stubs;
 using d60.EventSorcerer.Views.Basic;
 using d60.EventSorcerer.Views.Basic.Locators;
 using MongoDB.Driver;
@@ -50,8 +51,8 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             _eventStore.Save(Guid.NewGuid(), new[] { lastEventForRoot2 });
 
             // deliberately dispatch an out-of-sequence event
-            _instancePerAggregateRootViewManager.Dispatch(_eventStore, new[] { lastEventForRoot1 });
-            _instancePerAggregateRootViewManager.Dispatch(_eventStore, new[] { lastEventForRoot2 });
+            _instancePerAggregateRootViewManager.Dispatch(new ThrowingViewContext(), _eventStore, new[] { lastEventForRoot1 });
+            _instancePerAggregateRootViewManager.Dispatch(new ThrowingViewContext(), _eventStore, new[] { lastEventForRoot2 });
 
             var view = _factory.Load<InstancePerAggregateRootView>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
             Assert.That(view.EventCounter, Is.EqualTo(3));
@@ -75,8 +76,8 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             _eventStore.Save(Guid.NewGuid(), new[] { lastEventForRoot2 });
 
             // deliberately dispatch an out-of-sequence event
-            _globalInstanceViewManager.Dispatch(_eventStore, new[] { lastEventForRoot1 });
-            _globalInstanceViewManager.Dispatch(_eventStore, new[] { lastEventForRoot2 });
+            _globalInstanceViewManager.Dispatch(new ThrowingViewContext(), _eventStore, new[] { lastEventForRoot1 });
+            _globalInstanceViewManager.Dispatch(new ThrowingViewContext(), _eventStore, new[] { lastEventForRoot2 });
 
             var view = _factory.Load<GlobalInstanceView>(GlobalInstanceLocator.GetViewInstanceId());
             Assert.That(view.EventCounter, Is.EqualTo(6));
@@ -97,7 +98,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
         class GlobalInstanceView : IView<GlobalInstanceLocator>, ISubscribeTo<AnEvent>
         {
             public int EventCounter { get; set; }
-            public void Handle(AnEvent domainEvent)
+            public void Handle(IViewContext context, AnEvent domainEvent)
             {
                 EventCounter++;
             }
@@ -107,7 +108,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
         class InstancePerAggregateRootView : IView<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
         {
             public int EventCounter { get; set; }
-            public void Handle(AnEvent domainEvent)
+            public void Handle(IViewContext context, AnEvent domainEvent)
             {
                 EventCounter++;
             }

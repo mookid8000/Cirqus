@@ -9,8 +9,14 @@ namespace d60.EventSorcerer.TestHelpers
     {
         readonly Dictionary<Guid, AggregateRoot> _aggregateRoots = new Dictionary<Guid, AggregateRoot>();
 
-        public TAggregate Get<TAggregate>(Guid aggregateRootId) where TAggregate : AggregateRoot, new()
+        public TAggregate Get<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = int.MaxValue) where TAggregate : AggregateRoot, new()
         {
+            if (maxGlobalSequenceNumber != int.MaxValue)
+            {
+                throw new InvalidOperationException(string.Format("Sorry, but the in-mem aggregate root repository does not support versioning because it is not backed by an event store! Attempted to get version {0} of {1} with ID {2}",
+                    maxGlobalSequenceNumber, typeof(TAggregate), aggregateRootId));
+            }
+
             AggregateRoot toReturn;
 
             if (!_aggregateRoots.TryGetValue(aggregateRootId, out toReturn))

@@ -10,8 +10,8 @@ namespace d60.EventSorcerer.Tests.MongoDb
     [Category(TestCategories.MongoDb)]
     public class TestMongoDbEventStoreIndexPerf : FixtureBase
     {
-        [TestCase(true, 100, 10*1000)]
-        [TestCase(false, 100, 10*1000)]
+        [TestCase(true, 100, 10*1000, Description = "Indexes")]
+        [TestCase(false, 100, 10*1000, Description = "NO indexes")]
         public void IndexSpeedTest(bool useIndexes, int numberOfQueries, int numberOfEvents)
         {
             var database = Helper.InitializeTestDatabase();

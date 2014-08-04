@@ -82,6 +82,7 @@
     <Compile Include="MongoDb\TestMongoDbSerializer.cs" />
     <Compile Include="MsSql\TestMsSqlEventStore.cs" />
     <Compile Include="MsSql\TestSqlHelper.cs" />
+    <Compile Include="Stubs\ThrowingViewContext.cs" />
     <Compile Include="TestCategories.cs" />
     <Compile Include="TestExtensions.cs" />
     <Compile Include="MongoDb\TestMongoDbEventStoreIndexPerf.cs" />
@@ -90,6 +91,7 @@
     <Compile Include="Stubs\TestSequenceNumberGenerator.cs" />
     <Compile Include="TestHelpers\TestTestContext.cs" />
     <Compile Include="Views\TestInMemoryViewManager.cs" />
+    <Compile Include="Views\TestLoadAggregatesFromView.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

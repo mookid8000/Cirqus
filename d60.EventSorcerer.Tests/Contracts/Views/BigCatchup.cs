@@ -6,6 +6,7 @@ using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.MongoDb.Events;
 using d60.EventSorcerer.Tests.Contracts.Views.Factories;
 using d60.EventSorcerer.Tests.MongoDb;
+using d60.EventSorcerer.Tests.Stubs;
 using d60.EventSorcerer.Views.Basic;
 using d60.EventSorcerer.Views.Basic.Locators;
 using MongoDB.Driver;
@@ -85,7 +86,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 
             Console.WriteLine("Done - initiating catch-up");
 
-            TakeTime("Catch-up involving " + numberOfEvents + " events", () => _viewManager.Initialize(_eventStore));
+            TakeTime("Catch-up involving " + numberOfEvents + " events", () => _viewManager.Initialize(new ThrowingViewContext(), _eventStore));
 
             foreach (var id in aggregateRootIds)
             {
@@ -112,7 +113,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
         {
             public int EventCounter { get; set; }
             public Guid AggregateRootId { get; set; }
-            public void Handle(AnEvent domainEvent)
+            public void Handle(IViewContext context, AnEvent domainEvent)
             {
                 AggregateRootId = domainEvent.GetAggregateRootId();
                 EventCounter++;

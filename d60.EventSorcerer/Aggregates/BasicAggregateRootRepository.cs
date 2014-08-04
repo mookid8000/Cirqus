@@ -17,7 +17,7 @@ namespace d60.EventSorcerer.Aggregates
             _eventStore = eventStore;
         }
 
-        public TAggregate Get<TAggregate>(Guid aggregateRootId) where TAggregate : AggregateRoot, new()
+        public TAggregate Get<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = int.MaxValue) where TAggregate : AggregateRoot, new()
         {
             var aggregate = CreateFreshAggregate<TAggregate>(aggregateRootId);
             var domainEventsForThisAggregate = _eventStore.Load(aggregateRootId);

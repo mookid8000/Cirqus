@@ -45,7 +45,7 @@ namespace d60.EventSorcerer.MsSql.Views
             }
         }
 
-        public void Initialize(IEventStore eventStore, bool purgeExisting = false)
+        public void Initialize(IViewContext context, IEventStore eventStore, bool purgeExisting = false)
         {
             if (purgeExisting)
             {
@@ -59,7 +59,7 @@ namespace d60.EventSorcerer.MsSql.Views
 
             foreach (var partition in batches)
             {
-                Dispatch(eventStore, partition);
+                Dispatch(context, eventStore, partition);
             }
         }
 
@@ -104,7 +104,7 @@ namespace d60.EventSorcerer.MsSql.Views
             });
         }
 
-        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
+        public void Dispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
             var maxGlobalSequenceNumber = GetMaxSequenceNumber();
 
@@ -116,7 +116,7 @@ namespace d60.EventSorcerer.MsSql.Views
             {
                 foreach (var batch in eventsToDispatch.Batch(MaxDomainEventsBetweenFlush))
                 {
-                    ProcessOneBatch(eventStore, batch);
+                    ProcessOneBatch(eventStore, batch, context);
                 }
             }
             catch (Exception ex)
@@ -127,7 +127,7 @@ namespace d60.EventSorcerer.MsSql.Views
                     // make sure we flush after each single domain event
                     foreach (var e in eventsToDispatch)
                     {
-                        ProcessOneBatch(eventStore, new[] { e });
+                        ProcessOneBatch(eventStore, new[] { e }, context);
                     }
                 }
                 catch (ConsistencyException)
@@ -140,12 +140,12 @@ namespace d60.EventSorcerer.MsSql.Views
             }
         }
 
-        void ProcessOneBatch(IEventStore eventStore, IEnumerable<DomainEvent> batch)
+        void ProcessOneBatch(IEventStore eventStore, IEnumerable<DomainEvent> batch, IViewContext context)
         {
-            WithConnection(conn => ProcessOneBatch(eventStore, batch, conn));
+            WithConnection(conn => ProcessOneBatch(eventStore, batch, conn, context));
         }
 
-        void ProcessOneBatch(IEventStore eventStore, IEnumerable<DomainEvent> batch, SqlConnection conn)
+        void ProcessOneBatch(IEventStore eventStore, IEnumerable<DomainEvent> batch, SqlConnection conn, IViewContext context)
         {
             using (var tx = conn.BeginTransaction())
             {
@@ -159,7 +159,7 @@ namespace d60.EventSorcerer.MsSql.Views
                         .GetOrAdd(viewId, id => FindOneById(id, tx, conn)
                                                 ?? new MsSqlView<TView> { View = new TView() });
 
-                    DispatchEvent(eventStore, e, view);
+                    DispatchEvent(eventStore, e, view, context);
                 }
 
                 Save(activeViewsById, conn, tx);
@@ -222,12 +222,12 @@ WHEN NOT MATCHED THEN
             }
         }
 
-        void DispatchEvent(IEventStore eventStore, DomainEvent domainEvent, MsSqlView<TView> view)
+        void DispatchEvent(IEventStore eventStore, DomainEvent domainEvent, MsSqlView<TView> view, IViewContext context)
         {
             var globalSequenceNumber = domainEvent.GetGlobalSequenceNumber();
             if (globalSequenceNumber < view.MaxGlobalSeq) return;
 
-            _dispatcher.DispatchToView(domainEvent, view.View);
+            _dispatcher.DispatchToView(context, domainEvent, view.View);
 
             view.MaxGlobalSeq = globalSequenceNumber;
         }

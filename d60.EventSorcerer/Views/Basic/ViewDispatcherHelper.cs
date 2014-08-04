@@ -25,7 +25,7 @@ namespace d60.EventSorcerer.Views.Basic
             }
         }
 
-        public void DispatchToView(DomainEvent domainEvent, TView view)
+        public void DispatchToView(IViewContext context, DomainEvent domainEvent, TView view)
         {
             var domainEventType = domainEvent.GetType();
 
@@ -34,7 +34,7 @@ namespace d60.EventSorcerer.Views.Basic
 
             try
             {
-                dispatcherMethod.Invoke(this, new object[] { domainEvent, view });
+                dispatcherMethod.Invoke(this, new object[] { context, domainEvent, view });
             }
             catch (Exception exception)
             {
@@ -43,13 +43,13 @@ namespace d60.EventSorcerer.Views.Basic
         }
 
         // ReSharper disable UnusedMember.Local
-        void DispatchToViewGeneric<TDomainEvent>(TDomainEvent domainEvent, IView view) where TDomainEvent : DomainEvent
+        void DispatchToViewGeneric<TDomainEvent>(IViewContext context, TDomainEvent domainEvent, IView view) where TDomainEvent : DomainEvent
         {
             var handler = view as ISubscribeTo<TDomainEvent>;
 
             if (handler == null) return;
 
-            handler.Handle(domainEvent);
+            handler.Handle(context, domainEvent);
         }
         // ReSharper restore UnusedMember.Local 
     }

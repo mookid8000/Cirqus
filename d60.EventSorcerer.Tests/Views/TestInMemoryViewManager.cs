@@ -17,7 +17,7 @@ namespace d60.EventSorcerer.Tests.Views
         protected override void DoSetUp()
         {
             _viewManager = new InMemoryViewManager<SomeView>();
-            _eventDispatcher = new BasicEventDispatcher(new IViewManager[] { _viewManager });
+            _eventDispatcher = new BasicEventDispatcher(new InMemoryAggregateRootRepository(), new IViewManager[] { _viewManager });
         }
 
         [Test]
@@ -92,7 +92,7 @@ namespace d60.EventSorcerer.Tests.Views
 
             public int NumberOfEventsHandled { get; set; }
 
-            public void Handle(SomeEvent domainEvent)
+            public void Handle(IViewContext context, SomeEvent domainEvent)
             {
                 AggregateRootId = new Guid(domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId].ToString());
 

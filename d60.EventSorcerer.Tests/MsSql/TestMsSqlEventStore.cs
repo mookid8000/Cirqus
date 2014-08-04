@@ -4,6 +4,7 @@ using d60.EventSorcerer.Events;
 using d60.EventSorcerer.MsSql;
 using d60.EventSorcerer.MsSql.Views;
 using d60.EventSorcerer.TestHelpers;
+using d60.EventSorcerer.Tests.Stubs;
 using d60.EventSorcerer.Views.Basic;
 using d60.EventSorcerer.Views.Basic.Locators;
 using NUnit.Framework;
@@ -31,7 +32,7 @@ namespace d60.EventSorcerer.Tests.MsSql
         {
             var aggregateRootId = Guid.NewGuid();
 
-            _viewManager.Dispatch(new InMemoryEventStore(), new[] { GetAnEvent(aggregateRootId) });
+            _viewManager.Dispatch(new ThrowingViewContext(), new InMemoryEventStore(), new[] { GetAnEvent(aggregateRootId) });
 
             var view = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(aggregateRootId));
 
@@ -103,7 +104,7 @@ namespace d60.EventSorcerer.Tests.MsSql
             public HashSet<string> HashOfStrings { get; set; }
             public HashSet<int> HashOfInts { get; set; }
 
-            public void Handle(AnEvent domainEvent)
+            public void Handle(IViewContext context, AnEvent domainEvent)
             {
 
             }

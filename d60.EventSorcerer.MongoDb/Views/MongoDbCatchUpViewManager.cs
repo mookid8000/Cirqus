@@ -37,7 +37,7 @@ namespace d60.EventSorcerer.MongoDb.Views
             }
         }
 
-        public void Initialize(IEventStore eventStore, bool purgeExisting = false)
+        public void Initialize(IViewContext context, IEventStore eventStore, bool purgeExisting = false)
         {
             if (purgeExisting)
             {
@@ -58,7 +58,7 @@ namespace d60.EventSorcerer.MongoDb.Views
 
             foreach (var partition in batches)
             {
-                Dispatch(eventStore, partition);
+                Dispatch(context, eventStore, partition);
             }
         }
 
@@ -67,7 +67,7 @@ namespace d60.EventSorcerer.MongoDb.Views
             _viewCollection.Drop();
         }
 
-        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
+        public void Dispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
             var eventsList = events.ToList();
 
@@ -75,7 +75,7 @@ namespace d60.EventSorcerer.MongoDb.Views
             {
                 foreach (var batch in eventsList.Batch(MaxDomainEventsBetweenFlush))
                 {
-                    ProcessOneBatch(eventStore, batch);
+                    ProcessOneBatch(eventStore, batch, context);
                 }
             }
             catch
@@ -85,7 +85,7 @@ namespace d60.EventSorcerer.MongoDb.Views
                     // make sure we flush after each single domain event
                     foreach (var e in eventsList)
                     {
-                        ProcessOneBatch(eventStore, new[] {e});
+                        ProcessOneBatch(eventStore, new[] {e}, context);
                     }
                 }
                 catch (ConsistencyException)
@@ -98,7 +98,7 @@ namespace d60.EventSorcerer.MongoDb.Views
             }
         }
 
-        void ProcessOneBatch(IEventStore eventStore, IEnumerable<DomainEvent> batch)
+        void ProcessOneBatch(IEventStore eventStore, IEnumerable<DomainEvent> batch, IViewContext context)
         {
             var locator = ViewLocator.GetLocatorFor<TView>();
             var activeViewDocsByid = new Dictionary<string, MongoDbCatchUpView<TView>>();
@@ -114,7 +114,7 @@ namespace d60.EventSorcerer.MongoDb.Views
                                                 View = new TView(),
                                             });
 
-                doc.DispatchAndResolve(eventStore, e);
+                doc.DispatchAndResolve(eventStore, e, context);
             }
 
             Save(activeViewDocsByid.Values);

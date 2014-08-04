@@ -5,12 +5,21 @@ using d60.EventSorcerer.Events;
 
 namespace d60.EventSorcerer.Views.Basic
 {
-    public class InMemoryViewManager<TView> : IEnumerable<TView>, IViewManager where TView : IView, ISubscribeTo, new()
+    public class InMemoryViewManager<TView> : IEnumerable<TView>, IViewManager where TView : class, IView, ISubscribeTo, new()
     {
         readonly ConcurrentDictionary<string, TView> _views = new ConcurrentDictionary<string, TView>();
         readonly ViewDispatcherHelper<TView> _viewDispatcherHelper = new ViewDispatcherHelper<TView>();
 
-        public void Initialize(IEventStore eventStore, bool purgeExisting = false)
+        public TView Load(string viewId)
+        {
+            TView view;
+
+            return _views.TryGetValue(viewId, out view)
+                ? view
+                : null;
+        }
+
+        public void Initialize(IViewContext context, IEventStore eventStore, bool purgeExisting = false)
         {
             if (purgeExisting)
             {
@@ -19,11 +28,11 @@ namespace d60.EventSorcerer.Views.Basic
 
             foreach (var e in eventStore.Stream())
             {
-                Dispatch(eventStore, new[] {e});
+                Dispatch(context, eventStore, new[] { e });
             }
         }
 
-        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
+        public void Dispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
             foreach (var e in events)
             {
@@ -33,12 +42,12 @@ namespace d60.EventSorcerer.Views.Basic
                     id =>
                     {
                         var view = new TView();
-                        _viewDispatcherHelper.DispatchToView(e, view);
+                        _viewDispatcherHelper.DispatchToView(context, e, view);
                         return view;
                     },
                     (id, view) =>
                     {
-                        _viewDispatcherHelper.DispatchToView(e, view);
+                        _viewDispatcherHelper.DispatchToView(context, e, view);
                         return view;
                     });
             }
