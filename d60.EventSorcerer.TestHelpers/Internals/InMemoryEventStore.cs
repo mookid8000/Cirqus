@@ -7,9 +7,9 @@ using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Exceptions;
 using d60.EventSorcerer.Extensions;
 
-namespace d60.EventSorcerer.TestHelpers
+namespace d60.EventSorcerer.TestHelpers.Internals
 {
-    public class InMemoryEventStore : IEventStore, IEnumerable<DomainEvent>
+    class InMemoryEventStore : IEventStore, IEnumerable<DomainEvent>
     {
         public readonly List<EventBatch> SavedEventBatches = new List<EventBatch>();
 

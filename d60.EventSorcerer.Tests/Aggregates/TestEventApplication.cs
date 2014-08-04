@@ -5,6 +5,7 @@ using d60.EventSorcerer.Aggregates;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Numbers;
 using d60.EventSorcerer.TestHelpers;
+using d60.EventSorcerer.TestHelpers.Internals;
 using d60.EventSorcerer.Tests.Stubs;
 using NUnit.Framework;
 

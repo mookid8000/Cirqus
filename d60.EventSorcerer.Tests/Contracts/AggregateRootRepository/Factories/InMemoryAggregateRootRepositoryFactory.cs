@@ -3,6 +3,7 @@ using d60.EventSorcerer.Aggregates;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.TestHelpers;
+using d60.EventSorcerer.TestHelpers.Internals;
 
 namespace d60.EventSorcerer.Tests.Contracts.AggregateRootRepository.Factories
 {

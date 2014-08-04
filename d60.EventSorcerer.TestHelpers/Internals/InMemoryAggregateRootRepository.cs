@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using d60.EventSorcerer.Aggregates;
 
-namespace d60.EventSorcerer.TestHelpers
+namespace d60.EventSorcerer.TestHelpers.Internals
 {
-    public class InMemoryAggregateRootRepository : IAggregateRootRepository, IEnumerable<AggregateRoot>
+    class InMemoryAggregateRootRepository : IAggregateRootRepository, IEnumerable<AggregateRoot>
     {
         readonly Dictionary<Guid, AggregateRoot> _aggregateRoots = new Dictionary<Guid, AggregateRoot>();
 

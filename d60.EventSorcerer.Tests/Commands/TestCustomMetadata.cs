@@ -5,6 +5,7 @@ using d60.EventSorcerer.Commands;
 using d60.EventSorcerer.Config;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.TestHelpers;
+using d60.EventSorcerer.TestHelpers.Internals;
 using NUnit.Framework;
 
 namespace d60.EventSorcerer.Tests.Commands

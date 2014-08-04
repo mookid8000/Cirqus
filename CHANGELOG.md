@@ -21,3 +21,4 @@
 ## 0.0.17
 
 * Extended `TestContext` with the ability to dispatch events to views
+* Made not-intended-for-others-to-use in-mem versions of some stuff internal

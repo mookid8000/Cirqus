@@ -4,9 +4,9 @@ using d60.EventSorcerer.Aggregates;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Views.Basic;
 
-namespace d60.EventSorcerer.TestHelpers
+namespace d60.EventSorcerer.TestHelpers.Internals
 {
-    internal class TestEventDispatcher : IEventDispatcher
+    class TestEventDispatcher : IEventDispatcher
     {
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly List<IViewManager> _viewManagers = new List<IViewManager>();

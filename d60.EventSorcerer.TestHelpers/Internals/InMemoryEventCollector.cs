@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using d60.EventSorcerer.Events;
 
-namespace d60.EventSorcerer.TestHelpers
+namespace d60.EventSorcerer.TestHelpers.Internals
 {
-    public class InMemoryEventCollector : IEventCollector, IEnumerable<DomainEvent>
+    class InMemoryEventCollector : IEventCollector, IEnumerable<DomainEvent>
     {
         readonly List<DomainEvent> _emittedEvents = new List<DomainEvent>();
         

@@ -4,6 +4,7 @@ using d60.EventSorcerer.Events;
 using d60.EventSorcerer.MsSql;
 using d60.EventSorcerer.MsSql.Views;
 using d60.EventSorcerer.TestHelpers;
+using d60.EventSorcerer.TestHelpers.Internals;
 using d60.EventSorcerer.Tests.Stubs;
 using d60.EventSorcerer.Views.Basic;
 using d60.EventSorcerer.Views.Basic.Locators;

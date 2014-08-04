@@ -6,6 +6,7 @@ using d60.EventSorcerer.Config;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.Numbers;
+using d60.EventSorcerer.TestHelpers.Internals;
 using d60.EventSorcerer.Views.Basic;
 
 namespace d60.EventSorcerer.TestHelpers

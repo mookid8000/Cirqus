@@ -83,6 +83,8 @@
     <Compile Include="MongoDb\TestMongoDbSerializer.cs" />
     <Compile Include="MsSql\TestMsSqlEventStore.cs" />
     <Compile Include="MsSql\TestSqlHelper.cs" />
+    <Compile Include="Stubs\ConsoleOutEventCollector.cs" />
+    <Compile Include="Stubs\ConsoleOutEventDispatcher.cs" />
     <Compile Include="Stubs\ThrowingViewContext.cs" />
     <Compile Include="TestCategories.cs" />
     <Compile Include="TestExtensions.cs" />
