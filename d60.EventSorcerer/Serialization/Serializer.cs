@@ -65,5 +65,24 @@ namespace d60.EventSorcerer.Serialization
                 throw new SerializationException(string.Format("Could not deserialize JSON text '{0}' into proper DomainEvent!", text), exception);
             }
         }
+
+        public void EnsureSerializability(DomainEvent domainEvent)
+        {
+            var firstSerialization = Serialize(domainEvent);
+
+            var secondSerialization = Serialize(Deserialize(firstSerialization));
+
+            if (firstSerialization.Equals(secondSerialization)) return;
+
+            throw new ArgumentException(string.Format(@"Could not properly roundtrip the following domain event: {0}
+
+Result after first serialization:
+
+{1}
+
+Result after roundtripping:
+
+{2}", domainEvent, firstSerialization, secondSerialization));
+        }
     }
 }

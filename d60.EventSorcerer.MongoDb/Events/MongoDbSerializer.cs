@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Serialization;
 using MongoDB.Bson;
@@ -24,8 +25,7 @@ namespace d60.EventSorcerer.MongoDb.Events
 
         public BsonDocument Serialize(DomainEvent e)
         {
-            var jsonText = JsonConvert.SerializeObject(e, JsonSerializerSettings);
-            jsonText = Regex.Replace(jsonText, JsonDotNetTypePropertyRegex, BsonTypeProperty);
+            var jsonText = SerializeToString(e);
             var doc = BsonDocument.Parse(jsonText);
             return doc;
         }
@@ -33,8 +33,39 @@ namespace d60.EventSorcerer.MongoDb.Events
         public DomainEvent Deserialize(BsonValue o)
         {
             var jsonText = o.ToString();
+            return DeserializeFromString(jsonText);
+        }
+
+        public void EnsureSerializability(DomainEvent domainEvent)
+        {
+            var firstSerialization = SerializeToString(domainEvent);
+
+            var secondSerialization = SerializeToString(DeserializeFromString(firstSerialization));
+
+            if (firstSerialization.Equals(secondSerialization)) return;
+
+            throw new ArgumentException(string.Format(@"Could not properly roundtrip the following domain event: {0}
+
+Result after first serialization:
+
+{1}
+
+Result after roundtripping:
+
+{2}", domainEvent, firstSerialization, secondSerialization));
+        }
+
+        static DomainEvent DeserializeFromString(string jsonText)
+        {
             jsonText = Regex.Replace(jsonText, BsonTypePropertyRegex, JsonDotNetTypeProperty);
             return (DomainEvent) JsonConvert.DeserializeObject(jsonText, JsonSerializerSettings);
+        }
+
+        static string SerializeToString(DomainEvent e)
+        {
+            var jsonText = JsonConvert.SerializeObject(e, JsonSerializerSettings);
+            jsonText = Regex.Replace(jsonText, JsonDotNetTypePropertyRegex, BsonTypeProperty);
+            return jsonText;
         }
     }
 }

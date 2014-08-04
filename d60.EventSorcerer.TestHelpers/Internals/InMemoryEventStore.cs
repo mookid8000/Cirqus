@@ -6,19 +6,24 @@ using System.Threading;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Exceptions;
 using d60.EventSorcerer.Extensions;
+using d60.EventSorcerer.Serialization;
 
 namespace d60.EventSorcerer.TestHelpers.Internals
 {
     class InMemoryEventStore : IEventStore, IEnumerable<DomainEvent>
     {
+        readonly Dictionary<string, object> _idAndSeqNoTuples = new Dictionary<string, object>();
+        readonly Serializer _serializer = new Serializer("<events>");
+
         public readonly List<EventBatch> SavedEventBatches = new List<EventBatch>();
 
-        readonly Dictionary<string, object> _idAndSeqNoTuples = new Dictionary<string, object>();
         long _globalSequenceNumber;
 
         public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
         {
             var eventList = batch.ToList();
+
+            eventList.ForEach(e => _serializer.EnsureSerializability(e));
 
             var tuplesInBatch = eventList
                 .Select(e => string.Format("{0}:{1}", e.GetAggregateRootId(), e.GetSequenceNumber()))

@@ -130,6 +130,8 @@ namespace d60.EventSorcerer.MongoDb.Events
                 throw new InvalidOperationException(string.Format("Attempted to save batch {0}, but the batch of events was empty!", batchId));
             }
 
+            events.ForEach(e => _serializer.EnsureSerializability(e));
+
             var nextGlobalSeqNo = GetNextGlobalSeqNo();
 
             foreach (var e in events)

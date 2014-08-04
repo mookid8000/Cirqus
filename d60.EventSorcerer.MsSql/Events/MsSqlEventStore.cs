@@ -41,6 +41,8 @@ namespace d60.EventSorcerer.MsSql.Events
         {
             var eventList = batch.ToList();
 
+            eventList.ForEach(e => _serializer.EnsureSerializability(e));
+
             try
             {
                 WithConnection(conn =>

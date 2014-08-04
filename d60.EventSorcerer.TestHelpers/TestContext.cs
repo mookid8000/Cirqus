@@ -17,13 +17,13 @@ namespace d60.EventSorcerer.TestHelpers
     /// </summary>
     public class TestContext
     {
+        readonly Serializer _serializer = new Serializer("<events>");
         readonly InMemoryEventCollector _eventCollector = new InMemoryEventCollector();
         readonly InMemoryEventStore _eventStore = new InMemoryEventStore();
         readonly BasicAggregateRootRepository _aggregateRootRepository;
         readonly TestEventDispatcher _eventDispatcher;
         DateTime _currentTime = DateTime.MinValue;
         bool _initialized;
-        readonly Serializer _serializer = new Serializer("<events>");
 
         public TestContext()
         {
@@ -115,29 +115,11 @@ namespace d60.EventSorcerer.TestHelpers
             domainEvent.Meta[DomainEvent.MetadataKeys.TimeLocal] = now.ToLocalTime();
             domainEvent.Meta[DomainEvent.MetadataKeys.TimeUtc] = now;
 
-            EnsureSerializability(domainEvent);
+            _serializer.EnsureSerializability(domainEvent);
 
             _eventStore.Save(Guid.NewGuid(), new[] { domainEvent });
         }
 
-        void EnsureSerializability(DomainEvent domainEvent)
-        {
-            var firstSerialization = _serializer.Serialize(domainEvent);
-
-            var secondSerialization = _serializer.Serialize(_serializer.Deserialize(firstSerialization));
-
-            if (firstSerialization.Equals(secondSerialization)) return;
-
-            throw new ArgumentException(string.Format(@"Could not properly roundtrip the following domain event: {0}
-
-Result after first serialization:
-
-{1}
-
-Result after roundtripping:
-
-{2}", domainEvent, firstSerialization, secondSerialization));
-        }
 
         DateTime GetNow()
         {

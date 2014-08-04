@@ -26,3 +26,7 @@
 ## 0.0.18
 
 * Added serializability check to test context
+
+## 0.0.19
+
+* Added serializability check to all current event stores
