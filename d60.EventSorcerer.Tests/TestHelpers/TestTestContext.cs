@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using d60.EventSorcerer.Aggregates;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Extensions;
+using d60.EventSorcerer.Views.Basic;
 using NUnit.Framework;
 using TestContext = d60.EventSorcerer.TestHelpers.TestContext;
 
@@ -17,6 +19,38 @@ namespace d60.EventSorcerer.Tests.TestHelpers
         {
             _context = new TestContext();
         }
+
+        [Test]
+        public void CanDispatchToViews()
+        {
+            var viewMan = new SillyViewManager();
+            _context.AddViewManager(viewMan);
+            var aggregateRootId = Guid.NewGuid();
+
+            _context.Save(aggregateRootId, new AnEvent());
+            _context.Commit();
+
+            Assert.That(viewMan.ReceivedDomainEvents.Count, Is.EqualTo(1));
+        }
+
+        class SillyViewManager : IViewManager
+        {
+            public SillyViewManager()
+            {
+                ReceivedDomainEvents = new List<DomainEvent>();
+            }
+            public List<DomainEvent> ReceivedDomainEvents { get; set; }
+            public void Initialize(IViewContext context, IEventStore eventStore, bool purgeExistingViews = false)
+            {
+                ReceivedDomainEvents.AddRange(eventStore.Stream().ToList());
+            }
+
+            public void Dispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events)
+            {
+                ReceivedDomainEvents.AddRange(events);
+            }
+        }
+
 
         [Test]
         public void HydratesEntitiesWithExistingEvents()
