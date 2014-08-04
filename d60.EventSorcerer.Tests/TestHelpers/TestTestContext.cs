@@ -46,7 +46,7 @@ namespace d60.EventSorcerer.Tests.TestHelpers
         }
 
         [Test]
-        public void VerifiesThatEvensCanBeSerialized()
+        public void VerifiesThatEventsCanBeSerialized()
         {
             Assert.Throws<ArgumentException >(() => _context.Save(Guid.NewGuid(), UnserializableDomainEvent.Create("hej der!")));
         }

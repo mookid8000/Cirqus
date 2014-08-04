@@ -22,11 +22,11 @@ namespace d60.EventSorcerer.Views.Basic
             _viewManagers = viewManagers.ToList();
         }
 
-        public void Initialize(IEventStore eventStore, bool purgeExitingViews = false)
+        public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
         {
             foreach (var manager in _viewManagers)
             {
-                manager.Initialize(new DefaultViewContext(_aggregateRootRepository), eventStore, purgeExistingViews: purgeExitingViews);
+                manager.Initialize(new DefaultViewContext(_aggregateRootRepository), eventStore, purgeExistingViews: purgeExistingViews);
             }
         }
 
