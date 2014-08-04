@@ -19,9 +19,9 @@ namespace d60.EventSorcerer.Views.Basic
                 : null;
         }
 
-        public void Initialize(IViewContext context, IEventStore eventStore, bool purgeExisting = false)
+        public void Initialize(IViewContext context, IEventStore eventStore, bool purgeExistingViews = false)
         {
-            if (purgeExisting)
+            if (purgeExistingViews)
             {
                 _views.Clear();
             }

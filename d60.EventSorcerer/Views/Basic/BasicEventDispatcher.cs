@@ -9,7 +9,7 @@ namespace d60.EventSorcerer.Views.Basic
     public class BasicEventDispatcher : IEventDispatcher
     {
         readonly IAggregateRootRepository _aggregateRootRepository;
-        readonly List<IViewManager> _viewDispatchers;
+        readonly List<IViewManager> _viewManagers;
 
         public BasicEventDispatcher(IAggregateRootRepository aggregateRootRepository, params IViewManager[] viewManagers)
             : this(aggregateRootRepository, (IEnumerable<IViewManager>)viewManagers)
@@ -19,14 +19,22 @@ namespace d60.EventSorcerer.Views.Basic
         public BasicEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEnumerable<IViewManager> viewManagers)
         {
             _aggregateRootRepository = aggregateRootRepository;
-            _viewDispatchers = viewManagers.ToList();
+            _viewManagers = viewManagers.ToList();
+        }
+
+        public void Initialize(IEventStore eventStore, bool purgeExitingViews = false)
+        {
+            foreach (var manager in _viewManagers)
+            {
+                manager.Initialize(new DefaultViewContext(_aggregateRootRepository), eventStore, purgeExistingViews: purgeExitingViews);
+            }
         }
 
         public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
             var eventList = events.ToList();
 
-            foreach (var view in _viewDispatchers)
+            foreach (var view in _viewManagers)
             {
                 view.Dispatch(new DefaultViewContext(_aggregateRootRepository), eventStore, eventList);
             }

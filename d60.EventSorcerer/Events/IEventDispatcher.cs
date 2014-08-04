@@ -7,6 +7,7 @@ namespace d60.EventSorcerer.Events
     /// </summary>
     public interface IEventDispatcher
     {
+        void Initialize(IEventStore eventStore, bool purgeExistingViews = false);
         void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events);
     }
 }

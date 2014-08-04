@@ -5,7 +5,7 @@ namespace d60.EventSorcerer.Views.Basic
 {
     public interface IViewManager
     {
-        void Initialize(IViewContext context, IEventStore eventStore, bool purgeExisting = false);
+        void Initialize(IViewContext context, IEventStore eventStore, bool purgeExistingViews = false);
         void Dispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events);
     }
 }

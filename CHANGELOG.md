@@ -13,3 +13,7 @@
 
 * Implemented simple SQL server row-based view
 * Views get an `IViewContext` now that they can use to load aggregate roots (including the ability to specify which version to load) 
+
+## 0.0.16
+
+* Gave event dispatcher the ability to initialize itself
