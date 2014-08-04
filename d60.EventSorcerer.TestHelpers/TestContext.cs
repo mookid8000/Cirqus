@@ -6,6 +6,7 @@ using d60.EventSorcerer.Config;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.Numbers;
+using d60.EventSorcerer.Views.Basic;
 
 namespace d60.EventSorcerer.TestHelpers
 {
@@ -17,11 +18,20 @@ namespace d60.EventSorcerer.TestHelpers
         readonly InMemoryEventCollector _eventCollector = new InMemoryEventCollector();
         readonly InMemoryEventStore _eventStore = new InMemoryEventStore();
         readonly BasicAggregateRootRepository _aggregateRootRepository;
+        readonly TestEventDispatcher _eventDispatcher;
         DateTime _currentTime = DateTime.MinValue;
+        bool _initialized;
 
         public TestContext()
         {
             _aggregateRootRepository = new BasicAggregateRootRepository(_eventStore);
+            _eventDispatcher = new TestEventDispatcher(_aggregateRootRepository);
+        }
+
+        public TestContext AddViewManager(IViewManager viewManager)
+        {
+            _eventDispatcher.AddViewManager(viewManager);
+            return this;
         }
 
         public void SetCurrentTime(DateTime fixedCurrentTime)
@@ -39,12 +49,19 @@ namespace d60.EventSorcerer.TestHelpers
             return aggregateRoot;
         }
 
+        public void Initialize()
+        {
+            EnsureInitialized();
+        }
+
         /// <summary>
         /// Commits the current unit of work (i.e. emitted events from <see cref="UnitOfWork"/> are saved
         /// to the history and will be used to hydrate aggregate roots from now on.
         /// </summary>
         public void Commit()
         {
+            EnsureInitialized();
+
             var domainEvents = UnitOfWork.ToList();
 
             if (!domainEvents.Any()) return;
@@ -52,6 +69,17 @@ namespace d60.EventSorcerer.TestHelpers
             _eventStore.Save(Guid.NewGuid(), domainEvents);
 
             _eventCollector.Clear();
+
+            _eventDispatcher.Dispatch(_eventStore, domainEvents);
+        }
+
+        void EnsureInitialized()
+        {
+            if (!_initialized)
+            {
+                _eventDispatcher.Initialize(_eventStore, purgeExistingViews: true);
+                _initialized = true;
+            }
         }
 
         /// <summary>

@@ -20,9 +20,7 @@ namespace d60.EventSorcerer.Tests.Bugs
         protected override void DoSetUp()
         {
             _eventStore = new InMemoryEventStore();
-
             _aggregateRootRepository = new BasicAggregateRootRepository(_eventStore);
-
             _eventDispatcher = new BasicEventDispatcher(_aggregateRootRepository, new InMemoryViewManager<SomeView>());
 
             _sequenceNumberGenerator = new TestSequenceNumberGenerator();
