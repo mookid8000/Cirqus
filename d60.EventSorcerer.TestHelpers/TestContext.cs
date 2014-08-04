@@ -6,6 +6,7 @@ using d60.EventSorcerer.Config;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.Numbers;
+using d60.EventSorcerer.Serialization;
 using d60.EventSorcerer.TestHelpers.Internals;
 using d60.EventSorcerer.Views.Basic;
 
@@ -22,6 +23,7 @@ namespace d60.EventSorcerer.TestHelpers
         readonly TestEventDispatcher _eventDispatcher;
         DateTime _currentTime = DateTime.MinValue;
         bool _initialized;
+        readonly Serializer _serializer = new Serializer("<events>");
 
         public TestContext()
         {
@@ -113,7 +115,28 @@ namespace d60.EventSorcerer.TestHelpers
             domainEvent.Meta[DomainEvent.MetadataKeys.TimeLocal] = now.ToLocalTime();
             domainEvent.Meta[DomainEvent.MetadataKeys.TimeUtc] = now;
 
+            EnsureSerializability(domainEvent);
+
             _eventStore.Save(Guid.NewGuid(), new[] { domainEvent });
+        }
+
+        void EnsureSerializability(DomainEvent domainEvent)
+        {
+            var firstSerialization = _serializer.Serialize(domainEvent);
+
+            var secondSerialization = _serializer.Serialize(_serializer.Deserialize(firstSerialization));
+
+            if (firstSerialization.Equals(secondSerialization)) return;
+
+            throw new ArgumentException(string.Format(@"Could not properly roundtrip the following domain event: {0}
+
+Result after first serialization:
+
+{1}
+
+Result after roundtripping:
+
+{2}", domainEvent, firstSerialization, secondSerialization));
         }
 
         DateTime GetNow()

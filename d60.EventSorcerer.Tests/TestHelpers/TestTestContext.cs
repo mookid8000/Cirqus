@@ -45,6 +45,27 @@ namespace d60.EventSorcerer.Tests.TestHelpers
             Assert.That(viewMan.ReceivedDomainEvents.Count, Is.EqualTo(0));
         }
 
+        [Test]
+        public void VerifiesThatEvensCanBeSerialized()
+        {
+            _context.Save(Guid.NewGuid(), UnserializableDomainEvent.Create("hej der!"));
+        }
+
+        class UnserializableDomainEvent : DomainEvent<AnAggregate>
+        {
+            UnserializableDomainEvent()
+            {
+            }
+
+            public static UnserializableDomainEvent Create(string text)
+            {
+                return new UnserializableDomainEvent { MyString = text };
+            }
+
+            public string MyString { get; private set; }
+        }
+
+
         class SillyViewManager : IViewManager
         {
             public SillyViewManager()
@@ -73,7 +94,7 @@ namespace d60.EventSorcerer.Tests.TestHelpers
             _context.Save(rootId, new AnEvent());
             _context.Save(rootId, new AnEvent());
             _context.Save(rootId, new AnEvent());
-            
+
             // act
             var firstInstance = _context.Get<AnAggregate>(rootId);
 
@@ -130,14 +151,14 @@ namespace d60.EventSorcerer.Tests.TestHelpers
 
     public class AnEvent : DomainEvent<AnAggregate>
     {
-        
+
     }
 
     public class AnotherAggregate : AggregateRoot, IEmit<AnotherEvent>
     {
         public void Apply(AnotherEvent e)
         {
-            
+
         }
     }
 
