@@ -345,7 +345,7 @@ namespace d60.EventSorcerer.Tests.Contracts.EventStore
         }
 
         [TestCase(1000, 10)]
-        [TestCase(1000, 100)]
+        [TestCase(1000, 100, Ignore = true)]
         [TestCase(1000, 1000, Ignore = true)]
         public void ComparePerformance(int numberOfBatches, int numberOfEventsPerBatch)
         {
