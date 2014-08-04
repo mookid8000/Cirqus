@@ -53,16 +53,12 @@ namespace d60.EventSorcerer.Tests.TestHelpers
 
         class UnserializableDomainEvent : DomainEvent<AnAggregate>
         {
-            UnserializableDomainEvent()
-            {
-            }
-
             public static UnserializableDomainEvent Create(string text)
             {
                 return new UnserializableDomainEvent { MyString = text };
             }
 
-            public string MyString { get; private set; }
+            public string MyString { get; protected set; }
         }
 
 

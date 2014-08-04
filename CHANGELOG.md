@@ -22,3 +22,7 @@
 
 * Extended `TestContext` with the ability to dispatch events to views
 * Made not-intended-for-others-to-use in-mem versions of some stuff internal
+
+## 0.0.18
+
+* Added serializability check to test context
