@@ -33,6 +33,18 @@ namespace d60.EventSorcerer.Tests.TestHelpers
             Assert.That(viewMan.ReceivedDomainEvents.Count, Is.EqualTo(1));
         }
 
+        [Test]
+        public void UncommittedEventsAreNotDispatchedToViews()
+        {
+            var viewMan = new SillyViewManager();
+            _context.AddViewManager(viewMan);
+            var aggregateRootId = Guid.NewGuid();
+
+            _context.Save(aggregateRootId, new AnEvent());
+
+            Assert.That(viewMan.ReceivedDomainEvents.Count, Is.EqualTo(0));
+        }
+
         class SillyViewManager : IViewManager
         {
             public SillyViewManager()
