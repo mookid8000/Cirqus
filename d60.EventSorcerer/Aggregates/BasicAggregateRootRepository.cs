@@ -52,7 +52,14 @@ namespace d60.EventSorcerer.Aggregates
 
             foreach (var e in domainEventsForThisAggregate)
             {
-                dynamicAggregate.Apply((dynamic) e);
+                try
+                {
+                    dynamicAggregate.Apply((dynamic) e);
+                }
+                catch (Exception exception)
+                {
+                    throw new ApplicationException(string.Format("Could not apply event {0} to {1}", e, aggregate), exception);
+                }
             }
         }
     }
