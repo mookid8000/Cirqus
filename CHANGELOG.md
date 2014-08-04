@@ -17,3 +17,7 @@
 ## 0.0.16
 
 * Gave event dispatcher the ability to initialize itself
+
+## 0.0.17
+
+* Extended `TestContext` with the ability to dispatch events to views
