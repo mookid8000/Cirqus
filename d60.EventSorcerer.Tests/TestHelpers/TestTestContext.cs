@@ -48,7 +48,7 @@ namespace d60.EventSorcerer.Tests.TestHelpers
         [Test]
         public void VerifiesThatEvensCanBeSerialized()
         {
-            _context.Save(Guid.NewGuid(), UnserializableDomainEvent.Create("hej der!"));
+            Assert.Throws<ArgumentException >(() => _context.Save(Guid.NewGuid(), UnserializableDomainEvent.Create("hej der!")));
         }
 
         class UnserializableDomainEvent : DomainEvent<AnAggregate>
