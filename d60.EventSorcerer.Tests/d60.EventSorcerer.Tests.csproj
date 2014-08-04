@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggregates\TestLoading.cs" />
+    <Compile Include="Commands\TestCommandProcessing.cs" />
     <Compile Include="Contracts\AggregateRootRepository\Factories\BasicAggregateRootRepositoryFactory.cs" />
     <Compile Include="Contracts\AggregateRootRepository\Factories\InMemoryAggregateRootRepositoryFactory.cs" />
     <Compile Include="Contracts\AggregateRootRepository\IAggregateRootRepositoryFactory.cs" />

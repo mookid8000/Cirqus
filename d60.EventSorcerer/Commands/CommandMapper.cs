@@ -21,12 +21,28 @@ namespace d60.EventSorcerer.Commands
             where TCommand : Command<TAggregateRoot>
             where TAggregateRoot : AggregateRoot
         {
+            if (typeof(MappedCommand<TAggregateRoot>).IsAssignableFrom(typeof(TCommand)))
+            {
+                return (command, root) =>
+                {
+                    // for some reason, an unconditional cast cannot be performed here - therefore:
+                    var autoMapCommand = command as MappedCommand<TAggregateRoot>;
+
+                    if (autoMapCommand == null)
+                    {
+                        throw new ApplicationException(string.Format("Could not transform {0} into MappedCommand<{1}> - this should be impossible though, so it's crazy that we've ended up here :(", command, typeof(TAggregateRoot)));
+                    }
+
+                    autoMapCommand.Execute(root);
+                };
+            }
+
             Delegate action;
             var commandType = typeof(TCommand);
 
             if (!_mappings.TryGetValue(commandType, out action))
             {
-                throw new ArgumentException(string.Format("Could not map command of type {0} to a handler!", commandType));
+                throw new ArgumentException(string.Format("Could not map command of type {0} to a handler! In order to be able to process a command, the command must be mapped to one or more operations on an aggregate root - e.g. like so: commandMapper.Map<SomeCommand, SomeAggregateRoot>((command, root) => root.DoStuff(command.SomeParameter))", commandType));
             }
 
             try

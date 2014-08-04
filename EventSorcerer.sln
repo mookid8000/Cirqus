@@ -16,7 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{756E55
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{53C890A9-D587-4BD6-B69C-5B01F64B39F1}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".solution items", ".solution items", "{53C890A9-D587-4BD6-B69C-5B01F64B39F1}"
 	ProjectSection(SolutionItems) = preProject
 		build.proj = build.proj
 		CHANGELOG.md = CHANGELOG.md
@@ -36,6 +36,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.EventSorcerer.TestHelpers", "d60.EventSorcerer.TestHelpers\d60.EventSorcerer.TestHelpers.csproj", "{44D72FC8-F786-47A7-8D83-3D926D4E7DB0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B7EFFA50-A51B-4D7D-A264-07151A10F9D8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "core", "core", "{89F6887C-D659-4483-9BFC-DBC7C2BC29F8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integration", "integration", "{AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,7 +72,11 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{8E2DF6B4-A4DF-495E-8D74-5DCE6B333FB4} = {89F6887C-D659-4483-9BFC-DBC7C2BC29F8}
 		{7624F47B-B53F-40C6-B211-19288E814F86} = {B7EFFA50-A51B-4D7D-A264-07151A10F9D8}
+		{1ECCDCD5-DD78-4F9C-B0C3-BC083742CE99} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
+		{6EEBCA35-9B61-4A95-8E72-3AF583C14F32} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
 		{407E215D-36B1-46F9-A39F-39465ADC4F2D} = {53C890A9-D587-4BD6-B69C-5B01F64B39F1}
+		{44D72FC8-F786-47A7-8D83-3D926D4E7DB0} = {89F6887C-D659-4483-9BFC-DBC7C2BC29F8}
 	EndGlobalSection
 EndGlobal

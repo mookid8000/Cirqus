@@ -51,6 +51,7 @@
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\CommandMapper.cs" />
     <Compile Include="Commands\ICommandMapper.cs" />
+    <Compile Include="Commands\MappedCommand.cs" />
     <Compile Include="Config\EventSorcererConfig.cs" />
     <Compile Include="Config\EventSorcererOptions.cs" />
     <Compile Include="Config\Retryer.cs" />

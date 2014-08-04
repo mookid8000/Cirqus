@@ -21,6 +21,7 @@ namespace d60.EventSorcerer.Config
                 .SingleOrDefault(m => m.Name == InnerProcessMethodName && m.IsGenericMethod);
 
         readonly EventSorcererOptions _options = new EventSorcererOptions();
+        readonly Retryer _retryer = new Retryer(10);
         readonly IEventStore _eventStore;
         readonly ICommandMapper _commandMapper;
         readonly IAggregateRootRepository _aggregateRootRepository;
@@ -60,7 +61,7 @@ namespace d60.EventSorcerer.Config
             }
             catch (Exception exception)
             {
-                var errorMessage = string.Format("Could not process command {0} when attempting to dispatch dynamically to ProcessCommand<{1}, {2}>(command)",
+                var errorMessage = string.Format("Could not process command {0} when attempting to dispatch dynamically to InnerProcessCommand<{1}, {2}>(command)",
                     command, aggregateRootType.Name, commandType.Name);
 
                 throw new ApplicationException(errorMessage, exception);
@@ -79,8 +80,7 @@ namespace d60.EventSorcerer.Config
             {
                 var batchId = Guid.NewGuid();
 
-                Retryer.RetryOn<ConcurrencyException>(
-                    () => DoProcessCommand<TAggregateRoot, TCommand>(batchId, command));
+                _retryer.RetryOn<ConcurrencyException>(() => DoProcessCommand<TAggregateRoot, TCommand>(batchId, command));
             }
             catch (Exception exception)
             {
@@ -128,10 +128,10 @@ namespace d60.EventSorcerer.Config
                 {
                     return baseCommandType.GetGenericArguments().Single();
                 }
-                baseCommandType = commandType.BaseType;
+                baseCommandType = baseCommandType.BaseType;
             } while (baseCommandType != null);
 
-            throw new ArgumentException(string.Format("Could not find Command<> base type from which {0} should have been derived", commandType));
+            throw new ArgumentException(string.Format("Could not find the generic Command<> base type from which {0} should have been derived - please derive commands off of the generic Command<> type, closing it with the type of the aggregate root that the command targets, e.g. Command<SomeAggregateRoot>", commandType));
         }
     }
 }
