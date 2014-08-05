@@ -8,12 +8,12 @@ using d60.EventSorcerer.Views.Basic;
 
 namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
 {
-    public class MsSqlCatchUpViewManagerFactory : ICatchUpViewManagerFactory
+    public class MsSqlViewManagerFactory : IViewManagerFactory
     {
         readonly string _connectionString;
         readonly List<IViewManager> _viewManagers = new List<IViewManager>();
 
-        public MsSqlCatchUpViewManagerFactory()
+        public MsSqlViewManagerFactory()
         {
             TestSqlHelper.EnsureTestDatabaseExists();
 

@@ -11,8 +11,8 @@ using NUnit.Framework;
 
 namespace d60.EventSorcerer.Tests.Contracts.Views
 {
-    [TestFixture(typeof(MongoDbCatchUpViewManagerFactory), Category = TestCategories.MongoDb)]
-    public class ViewLocators<TViewManagerFactory> : FixtureBase where TViewManagerFactory : ICatchUpViewManagerFactory, new()
+    [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
+    public class ViewLocators<TViewManagerFactory> : FixtureBase where TViewManagerFactory : IViewManagerFactory, new()
     {
         MongoDatabase _database;
         MongoDbEventStore _eventStore;

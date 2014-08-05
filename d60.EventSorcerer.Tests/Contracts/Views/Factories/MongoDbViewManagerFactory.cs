@@ -8,12 +8,12 @@ using MongoDB.Driver;
 
 namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
 {
-    class MongoDbCatchUpViewManagerFactory : ICatchUpViewManagerFactory
+    class MongoDbViewManagerFactory : IViewManagerFactory
     {
         readonly List<IViewManager> _viewManagers = new List<IViewManager>();
         readonly MongoDatabase _database;
 
-        public MongoDbCatchUpViewManagerFactory()
+        public MongoDbViewManagerFactory()
         {
             _database = Helper.InitializeTestDatabase();
         }

@@ -2,7 +2,7 @@
 
 namespace d60.EventSorcerer.Tests.Contracts.Views
 {
-    public interface ICatchUpViewManagerFactory
+    public interface IViewManagerFactory
     {
         IViewManager GetViewManagerFor<TView>() where TView : class, IView, ISubscribeTo, new();
 
