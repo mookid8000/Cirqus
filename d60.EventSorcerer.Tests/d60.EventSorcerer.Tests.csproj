@@ -55,7 +55,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggregates\TestLoading.cs" />
-    <Compile Include="Bugs\CannotFindCounterparty.cs" />
     <Compile Include="Commands\TestCommandProcessing.cs" />
     <Compile Include="Contracts\AggregateRootRepository\Factories\BasicAggregateRootRepositoryFactory.cs" />
     <Compile Include="Contracts\AggregateRootRepository\Factories\InMemoryAggregateRootRepositoryFactory.cs" />
@@ -100,7 +99,9 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Bugs\" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\d60.EventSorcerer.MongoDb\d60.EventSorcerer.MongoDb.csproj">
       <Project>{1ECCDCD5-DD78-4F9C-B0C3-BC083742CE99}</Project>

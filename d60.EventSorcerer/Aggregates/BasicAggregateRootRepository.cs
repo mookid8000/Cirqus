@@ -40,7 +40,8 @@ namespace d60.EventSorcerer.Aggregates
         {
             var aggregate = new TAggregate();
             
-            aggregate.Initialize(aggregateRootId, this);
+            aggregate.Initialize(aggregateRootId);
+            aggregate.AggregateRootRepository = this;
             
             return aggregate;
         }

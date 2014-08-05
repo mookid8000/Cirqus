@@ -22,7 +22,8 @@ namespace d60.EventSorcerer.Tests.Aggregates
                 EventCollector = new ConsoleOutEventCollector(),
                 SequenceNumberGenerator = new TestSequenceNumberGenerator()
             };
-            someAggregate.Initialize(Guid.NewGuid(), new InMemoryAggregateRootRepository());
+            someAggregate.Initialize(Guid.NewGuid());
+            someAggregate.AggregateRootRepository = new InMemoryAggregateRootRepository();
 
             someAggregate.DoSomething();
 
@@ -45,7 +46,8 @@ namespace d60.EventSorcerer.Tests.Aggregates
                 EventCollector = eventCollector,
                 SequenceNumberGenerator = sequenceNumberGenerator
             };
-            someAggregate.Initialize(aggregateRootId, new InMemoryAggregateRootRepository());
+            someAggregate.Initialize(aggregateRootId);
+            someAggregate.AggregateRootRepository = new InMemoryAggregateRootRepository();
 
             someAggregate.DoSomething();
 

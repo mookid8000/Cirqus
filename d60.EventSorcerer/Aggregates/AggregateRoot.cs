@@ -10,13 +10,12 @@ namespace d60.EventSorcerer.Aggregates
         internal IEventCollector EventCollector { get; set; }
         internal ISequenceNumberGenerator SequenceNumberGenerator { get; set; }
         internal IAggregateRootRepository AggregateRootRepository { get; set; }
-        public Guid Id { get; private set; }
-
-        internal void Initialize(Guid id, IAggregateRootRepository aggregateRootRepository)
+        internal void Initialize(Guid id)
         {
             Id = id;
-            AggregateRootRepository = aggregateRootRepository;
         }
+
+        public Guid Id { get; private set; }
 
         protected void Emit<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
         {

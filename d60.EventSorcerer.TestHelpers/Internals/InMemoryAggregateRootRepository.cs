@@ -22,7 +22,8 @@ namespace d60.EventSorcerer.TestHelpers.Internals
             if (!_aggregateRoots.TryGetValue(aggregateRootId, out toReturn))
             {
                 toReturn = new TAggregate();
-                toReturn.Initialize(aggregateRootId, this);
+                toReturn.Initialize(aggregateRootId);
+                toReturn.AggregateRootRepository = this;
                 _aggregateRoots[aggregateRootId] = toReturn;
                 return (TAggregate)toReturn;
             }
