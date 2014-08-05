@@ -50,16 +50,44 @@ namespace d60.EventSorcerer.Aggregates
         {
             var dynamicAggregate = (dynamic) aggregate;
 
-            foreach (var e in domainEventsForThisAggregate)
+            using (new ThrowingEventCollector(aggregate))
             {
-                try
+                foreach (var e in domainEventsForThisAggregate)
                 {
-                    dynamicAggregate.Apply((dynamic) e);
+                    try
+                    {
+                        dynamicAggregate.Apply((dynamic) e);
+                    }
+                    catch (Exception exception)
+                    {
+                        throw new ApplicationException(string.Format("Could not apply event {0} to {1}", e, aggregate),
+                            exception);
+                    }
                 }
-                catch (Exception exception)
-                {
-                    throw new ApplicationException(string.Format("Could not apply event {0} to {1}", e, aggregate), exception);
-                }
+            }
+        }
+
+        class ThrowingEventCollector : IEventCollector, IDisposable
+        {
+            readonly AggregateRoot _root;
+            readonly IEventCollector _originalEventCollector;
+
+            public ThrowingEventCollector(AggregateRoot root)
+            {
+                _root = root;
+                _originalEventCollector = _root.EventCollector;
+                _root.EventCollector = this;
+            }
+
+            public void Add(DomainEvent e)
+            {
+                throw new InvalidOperationException(string.Format("The aggregate root of type {0} with ID {1} attempted to emit event {2} while applying events, which is not allowed",
+                    _root.GetType(), _root.Id, e));
+            }
+
+            public void Dispose()
+            {
+                _root.EventCollector = _originalEventCollector;
             }
         }
     }
