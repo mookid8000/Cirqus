@@ -5,6 +5,7 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.Exceptions;
 using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.Views.Basic;
 
@@ -52,6 +53,37 @@ namespace d60.EventSorcerer.EntityFramework
 
         public void Initialize(IViewContext context, IEventStore eventStore, bool purgeExistingViews = false)
         {
+            PurgeViews();
+
+
+            var lastSeenMaxGlobalSequenceNumber = FindMax();
+
+            foreach (var batch in eventStore.Stream(lastSeenMaxGlobalSequenceNumber + 1).Batch(MaxDomainEventsBetweenFlush))
+            {
+                var eventsList = batch.ToList();
+                try
+                {
+                    using (var genericViewBasse = new GenericViewContext<TView>(_connectionStringOrName))
+                    {
+                        foreach (var e in eventsList)
+                        {
+                            DispatchEvent(e, genericViewBasse, context);
+                        }
+
+                        UpdateMax(eventsList.Last().GetGlobalSequenceNumber(), genericViewBasse);
+
+                        SaveChanges(genericViewBasse);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    RetryEvents(context, ex, eventsList);
+                }
+            }
+        }
+
+        private void PurgeViews()
+        {
             using (var dbContext = new GenericViewContext<TView>(_connectionStringOrName))
             {
                 var sql = "DELETE FROM " + dbContext.ViewTableName;
@@ -65,14 +97,16 @@ namespace d60.EventSorcerer.EntityFramework
 
                 dbContext.SaveChanges();
             }
+        }
 
+        public void Dispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events)
+        {
+            var eventsList = events.Where(e => e.GetGlobalSequenceNumber() > FindMax()).ToList();
 
-            var lastSeenMaxGlobalSequenceNumber = FindMax();
-
-            foreach (var batch in eventStore.Stream(lastSeenMaxGlobalSequenceNumber + 1).Batch(MaxDomainEventsBetweenFlush))
+            if(!eventsList.Any())return;
+            ;
+            try
             {
-                var eventsList = batch.ToList();
-
                 using (var genericViewBasse = new GenericViewContext<TView>(_connectionStringOrName))
                 {
                     foreach (var e in eventsList)
@@ -85,22 +119,35 @@ namespace d60.EventSorcerer.EntityFramework
                     SaveChanges(genericViewBasse);
                 }
             }
+            catch (Exception ex)
+            {
+                RetryEvents(context, ex, eventsList);
+            }
         }
 
-        public void Dispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events)
+        private void RetryEvents(IViewContext context, Exception ex, List<DomainEvent> eventsList)
         {
-            var eventsList = events.ToList();
-
-            using (var genericViewBasse = new GenericViewContext<TView>(_connectionStringOrName))
+            Console.WriteLine(ex);
+            try
             {
+                // make sure we flush after each single domain event
                 foreach (var e in eventsList)
                 {
-                    DispatchEvent(e, genericViewBasse, context);
-                }
-                SaveChanges(genericViewBasse);
-                UpdateMax(eventsList.Last().GetGlobalSequenceNumber(), genericViewBasse);
+                    using (var innerContext = new GenericViewContext<TView>(_connectionStringOrName))
+                    {
+                        DispatchEvent(e, innerContext, context);
+                        UpdateMax(e.GetGlobalSequenceNumber(), innerContext);
 
-                SaveChanges(genericViewBasse);
+                        SaveChanges(innerContext);
+                    }
+                }
+            }
+            catch (ConsistencyException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
             }
         }
 
@@ -141,6 +188,10 @@ namespace d60.EventSorcerer.EntityFramework
             var instance = genericViewBasse.ViewCollection.Find(id)
                            ?? CreateAndAddNewViewInstance(genericViewBasse, id);
 
+
+            var globalSequenceNumber = domainEvent.GetGlobalSequenceNumber();
+
+            if (globalSequenceNumber < FindMax()) return;
             _dispatcherHelper.DispatchToView(context, domainEvent, instance);
         }
 
