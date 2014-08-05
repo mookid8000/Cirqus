@@ -1,6 +1,5 @@
 ﻿using System;
 using d60.EventSorcerer.Aggregates;
-using d60.EventSorcerer.TestHelpers;
 using d60.EventSorcerer.TestHelpers.Internals;
 using NUnit.Framework;
 
@@ -12,7 +11,7 @@ namespace d60.EventSorcerer.Tests.Aggregates
         [Test]
         public void DefaultsToThrowingIfLoadedAggregateRootCannotBeFound()
         {
-            var someRoot = new BeetRoot {AggregateRootRepository = new InMemoryAggregateRootRepository()};
+            var someRoot = new BeetRoot {AggregateRootRepository = new BasicAggregateRootRepository(new InMemoryEventStore())};
 
             Assert.Throws<ArgumentException>(someRoot.LoadOtherBeetRootWithDefaultBehavior);
         }
@@ -20,7 +19,7 @@ namespace d60.EventSorcerer.Tests.Aggregates
         [Test]
         public void CanBeToldToIgnoreNonExistenceOfOtherAggregateRoot()
         {
-            var someRoot = new BeetRoot {AggregateRootRepository = new InMemoryAggregateRootRepository()};
+            var someRoot = new BeetRoot {AggregateRootRepository = new BasicAggregateRootRepository(new InMemoryEventStore())};
 
             Assert.DoesNotThrow(someRoot.LoadOtherBeetRootButOverrideBehavior);
         }

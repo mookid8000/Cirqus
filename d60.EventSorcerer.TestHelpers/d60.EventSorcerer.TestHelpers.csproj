@@ -39,7 +39,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Internals\InMemoryAggregateRootRepository.cs" />
     <Compile Include="Internals\InMemoryEventCollector.cs" />
     <Compile Include="Internals\InMemoryEventStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -14,14 +14,14 @@ namespace d60.EventSorcerer.Tests.Commands
     public class TestCustomMetadata : FixtureBase
     {
         EventSorcererConfig _eventSorcerer;
-        InMemoryAggregateRootRepository _aggregateRootRepository;
+        BasicAggregateRootRepository _aggregateRootRepository;
         InMemoryEventStore _eventStore;
 
         protected override void DoSetUp()
         {
             _eventStore = new InMemoryEventStore();
 
-            _aggregateRootRepository = new InMemoryAggregateRootRepository();
+            _aggregateRootRepository = new BasicAggregateRootRepository(_eventStore);
 
             var commandMapper = new CommandMapper()
                 .Map<TakeNextStepCommand, ProgrammerAggregate>((c, a) => a.TakeNextStep());

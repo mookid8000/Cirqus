@@ -23,13 +23,13 @@ namespace d60.EventSorcerer.Tests.Integration
     public class SimpleScenario : FixtureBase
     {
         EventSorcererConfig _eventSorcerer;
-        InMemoryAggregateRootRepository _aggregateRootRepository;
+        BasicAggregateRootRepository _aggregateRootRepository;
 
         protected override void DoSetUp()
         {
             var eventStore = new InMemoryEventStore();
             
-            _aggregateRootRepository = new InMemoryAggregateRootRepository();
+            _aggregateRootRepository = new BasicAggregateRootRepository(eventStore);
             
             var commandMapper = new CommandMapper()
                 .Map<TakeNextStepCommand, ProgrammerAggregate>((c, a) => a.TakeNextStep());

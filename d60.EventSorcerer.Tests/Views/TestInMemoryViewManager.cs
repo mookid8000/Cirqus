@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
+using d60.EventSorcerer.Aggregates;
 using d60.EventSorcerer.Events;
-using d60.EventSorcerer.TestHelpers;
 using d60.EventSorcerer.TestHelpers.Internals;
 using d60.EventSorcerer.Views.Basic;
 using d60.EventSorcerer.Views.Basic.Locators;
@@ -14,11 +14,13 @@ namespace d60.EventSorcerer.Tests.Views
     {
         InMemoryViewManager<SomeView> _viewManager;
         BasicEventDispatcher _eventDispatcher;
+        InMemoryEventStore _inMemoryEventStore;
 
         protected override void DoSetUp()
         {
             _viewManager = new InMemoryViewManager<SomeView>();
-            _eventDispatcher = new BasicEventDispatcher(new InMemoryAggregateRootRepository(), new IViewManager[] { _viewManager });
+            _inMemoryEventStore = new InMemoryEventStore();
+            _eventDispatcher = new BasicEventDispatcher(new BasicAggregateRootRepository(_inMemoryEventStore), new IViewManager[] { _viewManager });
         }
 
         [Test]
@@ -27,9 +29,9 @@ namespace d60.EventSorcerer.Tests.Views
             var firstRoot = Guid.NewGuid();
             var secondRoot = Guid.NewGuid();
 
-            _eventDispatcher.Dispatch(new InMemoryEventStore(),  new DomainEvent[] { EventFor(firstRoot) });
-            _eventDispatcher.Dispatch(new InMemoryEventStore(), new DomainEvent[] { EventFor(firstRoot) });
-            _eventDispatcher.Dispatch(new InMemoryEventStore(), new DomainEvent[] { EventFor(secondRoot) });
+            _eventDispatcher.Dispatch(_inMemoryEventStore,  new DomainEvent[] { EventFor(firstRoot) });
+            _eventDispatcher.Dispatch(_inMemoryEventStore, new DomainEvent[] { EventFor(firstRoot) });
+            _eventDispatcher.Dispatch(_inMemoryEventStore, new DomainEvent[] { EventFor(secondRoot) });
 
             var viewInstances = _viewManager.ToList();
 
@@ -64,7 +66,7 @@ namespace d60.EventSorcerer.Tests.Views
             var firstRoot = Guid.NewGuid();
 
             TakeTime("Dispatch " + numberOfEvents + " events",
-                () => numberOfEvents.Times(() => _eventDispatcher.Dispatch(new InMemoryEventStore(), new DomainEvent[] { EventFor(firstRoot) })));
+                () => numberOfEvents.Times(() => _eventDispatcher.Dispatch(_inMemoryEventStore, new DomainEvent[] { EventFor(firstRoot) })));
         }
 
 

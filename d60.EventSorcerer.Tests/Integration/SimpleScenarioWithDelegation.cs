@@ -5,6 +5,7 @@ using d60.EventSorcerer.Aggregates;
 using d60.EventSorcerer.Commands;
 using d60.EventSorcerer.Config;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.TestHelpers;
 using d60.EventSorcerer.TestHelpers.Internals;
 using NUnit.Framework;
@@ -27,20 +28,21 @@ namespace d60.EventSorcerer.Tests.Integration
     public class SimpleScenarioWithDelegation : FixtureBase
     {
         EventSorcererConfig _eventSorcerer;
-        InMemoryAggregateRootRepository _aggregateRootRepository;
+        BasicAggregateRootRepository _aggregateRootRepository;
+        InMemoryEventStore _eventStore;
 
         protected override void DoSetUp()
         {
-            var eventStore = new InMemoryEventStore();
+            _eventStore = new InMemoryEventStore();
 
-            _aggregateRootRepository = new InMemoryAggregateRootRepository();
+            _aggregateRootRepository = new BasicAggregateRootRepository(_eventStore);
 
             var commandMapper = new CommandMapper()
                 .Map<BearSomeChildrenCommand, ProgrammerAggregate>((c, a) => a.BearChildren(c.IdsOfChildren));
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _eventSorcerer = new EventSorcererConfig(eventStore, _aggregateRootRepository, commandMapper, viewManager);
+            _eventSorcerer = new EventSorcererConfig(_eventStore, _aggregateRootRepository, commandMapper, viewManager);
         }
 
         [Test]
@@ -53,15 +55,15 @@ namespace d60.EventSorcerer.Tests.Integration
 
             var grandChildId = Guid.NewGuid();
 
-            var initialState = _aggregateRootRepository.ToList();
+            var initialState = GetAllRoots();
 
             _eventSorcerer.ProcessCommand(new BearSomeChildrenCommand(firstAggregateRootId, new[] { firstChildId, secondChildId }));
 
-            var afterBearingTwoChildren = _aggregateRootRepository.ToList();
+            var afterBearingTwoChildren = GetAllRoots();
 
             _eventSorcerer.ProcessCommand(new BearSomeChildrenCommand(firstChildId, new[] { grandChildId }));
 
-            var afterBearingGrandChild = _aggregateRootRepository.ToList();
+            var afterBearingGrandChild = GetAllRoots();
 
             Assert.That(initialState.Count, Is.EqualTo(0), "No events yet, expected there to be zero agg roots in the repo");
 
@@ -82,6 +84,15 @@ namespace d60.EventSorcerer.Tests.Integration
                 .GetIdsOfChildren();
 
             Assert.That(idsOfGrandChildren, Is.EqualTo(new[] { grandChildId }));
+        }
+
+        List<AggregateRoot> GetAllRoots()
+        {
+            return _eventStore
+                .Select(e => e.GetAggregateRootId()).Distinct()
+                .Select(aggregateRootId => _aggregateRootRepository.Get<ProgrammerAggregate>(aggregateRootId))
+                .Cast<AggregateRoot>()
+                .ToList();
         }
 
         public class BearSomeChildrenCommand : Command<ProgrammerAggregate>

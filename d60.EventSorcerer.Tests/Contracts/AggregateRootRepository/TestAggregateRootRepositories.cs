@@ -7,7 +7,6 @@ using NUnit.Framework;
 namespace d60.EventSorcerer.Tests.Contracts.AggregateRootRepository
 {
     [TestFixture(typeof(BasicAggregateRootRepositoryFactory))]
-    [TestFixture(typeof(InMemoryAggregateRootRepositoryFactory))]
     public class TestAggregateRootRepositories<TAggregateRootRepositoryFactory> : FixtureBase where TAggregateRootRepositoryFactory : IAggregateRootRepositoryFactory, new()
     {
         TAggregateRootRepositoryFactory _factory;
