@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.Extensions;
 
 namespace d60.EventSorcerer.Views.Basic
 {
@@ -26,9 +27,9 @@ namespace d60.EventSorcerer.Views.Basic
                 _views.Clear();
             }
 
-            foreach (var e in eventStore.Stream())
+            foreach (var e in eventStore.Stream().Batch(100))
             {
-                Dispatch(context, eventStore, new[] { e });
+                Dispatch(context, eventStore, e);
             }
         }
 
@@ -36,7 +37,11 @@ namespace d60.EventSorcerer.Views.Basic
         {
             foreach (var e in events)
             {
-                var viewId = ViewLocator.GetLocatorFor<TView>().GetViewId(e);
+                var viewLocator = ViewLocator.GetLocatorFor<TView>();
+
+                if (!ViewLocator.IsRelevant<TView>(e)) continue;
+
+                var viewId = viewLocator.GetViewId(e);
 
                 _views.AddOrUpdate(viewId,
                     id =>

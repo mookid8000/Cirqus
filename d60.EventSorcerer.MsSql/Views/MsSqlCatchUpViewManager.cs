@@ -154,6 +154,8 @@ namespace d60.EventSorcerer.MsSql.Views
 
                 foreach (var e in batch)
                 {
+                    if (!ViewLocator.IsRelevant<TView>(e)) continue;
+
                     var viewId = locator.GetViewId(e);
                     var view = activeViewsById
                         .GetOrAdd(viewId, id => FindOneById(id, tx, conn)

@@ -95,6 +95,7 @@
     <Compile Include="TestHelpers\TestTestContext.cs" />
     <Compile Include="Views\TestInMemoryViewManager.cs" />
     <Compile Include="Views\TestLoadAggregatesFromView.cs" />
+    <Compile Include="Views\TestViewLocator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

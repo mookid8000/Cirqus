@@ -105,6 +105,8 @@ namespace d60.EventSorcerer.MongoDb.Views
 
             foreach (var e in batch)
             {
+                if (!ViewLocator.IsRelevant<TView>(e)) continue;
+
                 var viewId = locator.GetViewId(e);
                 var doc = activeViewDocsByid
                     .GetOrAdd(viewId, id => _viewCollection.FindOneById(id)

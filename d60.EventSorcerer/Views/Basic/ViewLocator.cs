@@ -11,12 +11,23 @@ namespace d60.EventSorcerer.Views.Basic
     public abstract class ViewLocator
     {
         static readonly ConcurrentDictionary<Type, ViewLocator> CachedViewLocators = new ConcurrentDictionary<Type, ViewLocator>();
+        static readonly ConcurrentDictionary<Type, ConcurrentDictionary<Type, bool>> CachedRelevancyChecks = new ConcurrentDictionary<Type, ConcurrentDictionary<Type, bool>>();
 
         public static ViewLocator GetLocatorFor<TView>()
         {
-            var viewType = typeof (TView);
+            var viewType = typeof(TView);
 
             return CachedViewLocators.GetOrAdd(viewType, t => ActivateNewViewLocatorInstanceFromClosingType(viewType));
+        }
+
+        public static bool IsRelevant<TView>(DomainEvent domainEvent) where TView : ISubscribeTo
+        {
+            var domainEventType = domainEvent.GetType();
+            var viewType = typeof(TView);
+            
+            return CachedRelevancyChecks
+                .GetOrAdd(viewType, key => new ConcurrentDictionary<Type, bool>())
+                .GetOrAdd(domainEventType, key => typeof(ISubscribeTo<>).MakeGenericType(domainEventType).IsAssignableFrom(viewType));
         }
 
         /// <summary>
@@ -31,7 +42,7 @@ namespace d60.EventSorcerer.Views.Basic
         {
             var genericViewType = viewType
                 .GetInterfaces()
-                .SingleOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof (IView<>));
+                .SingleOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IView<>));
 
             if (genericViewType == null)
             {
@@ -47,7 +58,7 @@ namespace d60.EventSorcerer.Views.Basic
 
             try
             {
-                return (ViewLocator) Activator.CreateInstance(viewLocatorType);
+                return (ViewLocator)Activator.CreateInstance(viewLocatorType);
             }
             catch (Exception exception)
             {
