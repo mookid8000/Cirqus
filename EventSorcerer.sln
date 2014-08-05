@@ -41,6 +41,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "core", "core", "{89F6887C-D
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integration", "integration", "{AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.EventSorcerer.EntityFramework", "d60.EventSorcerer.EntityFramework\d60.EventSorcerer.EntityFramework.csproj", "{925D8D5E-B695-4DC0-B1B6-66955C964576}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{44D72FC8-F786-47A7-8D83-3D926D4E7DB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{44D72FC8-F786-47A7-8D83-3D926D4E7DB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{44D72FC8-F786-47A7-8D83-3D926D4E7DB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{925D8D5E-B695-4DC0-B1B6-66955C964576}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{925D8D5E-B695-4DC0-B1B6-66955C964576}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{925D8D5E-B695-4DC0-B1B6-66955C964576}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{925D8D5E-B695-4DC0-B1B6-66955C964576}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -78,5 +84,6 @@ Global
 		{6EEBCA35-9B61-4A95-8E72-3AF583C14F32} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
 		{407E215D-36B1-46F9-A39F-39465ADC4F2D} = {53C890A9-D587-4BD6-B69C-5B01F64B39F1}
 		{44D72FC8-F786-47A7-8D83-3D926D4E7DB0} = {89F6887C-D659-4483-9BFC-DBC7C2BC29F8}
+		{925D8D5E-B695-4DC0-B1B6-66955C964576} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
 	EndGlobalSection
 EndGlobal

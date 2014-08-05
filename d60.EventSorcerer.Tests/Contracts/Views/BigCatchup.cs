@@ -15,6 +15,8 @@ using NUnit.Framework;
 namespace d60.EventSorcerer.Tests.Contracts.Views
 {
     [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
+    [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
+    [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql)]
     public class BigCatchup<TViewManagerFactory> : FixtureBase where TViewManagerFactory : IViewManagerFactory, new()
     {
         MongoDatabase _database;
@@ -98,7 +100,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 
         DomainEvent EventFor(Guid aggregateRootId, long seqNo)
         {
-            return new AnEvent
+            return new AnEventMore
             {
                 Meta =
                 {
@@ -109,22 +111,23 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             };
         }
 
-        class JustAnotherView : IView<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
+      
+    }
+    class JustAnotherView : IView<InstancePerAggregateRootLocator>, ISubscribeTo<AnEventMore>
+    {
+        public int EventCounter { get; set; }
+        public Guid AggregateRootId { get; set; }
+        public void Handle(IViewContext context, AnEventMore domainEvent)
         {
-            public int EventCounter { get; set; }
-            public Guid AggregateRootId { get; set; }
-            public void Handle(IViewContext context, AnEvent domainEvent)
-            {
-                AggregateRootId = domainEvent.GetAggregateRootId();
-                EventCounter++;
-            }
-
-            public string Id { get; set; }
+            AggregateRootId = domainEvent.GetAggregateRootId();
+            EventCounter++;
         }
 
-        class AnEvent : DomainEvent
-        {
-            public string SomeData { get; set; }
-        }
+        public string Id { get; set; }
+    }
+
+    class AnEventMore : DomainEvent
+    {
+        public string SomeData { get; set; }
     }
 }
