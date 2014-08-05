@@ -98,6 +98,8 @@ public void Apply({2} e)
             return string.Format("{0} ({1})", GetType().Name, Id);
         }
 
+        internal long GlobalSequenceNumberCutoff = int.MaxValue;
+
         protected TAggregateRoot Load<TAggregateRoot>(Guid id, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
         {
             if (AggregateRootRepository == null)
@@ -113,7 +115,7 @@ public void Apply({2} e)
                 throw new ArgumentException(string.Format("Aggregate root {0} with ID {1} does not exist!", typeof(TAggregateRoot), id), "id");
             }
 
-            var aggregateRoot = AggregateRootRepository.Get<TAggregateRoot>(id);
+            var aggregateRoot = AggregateRootRepository.Get<TAggregateRoot>(id, maxGlobalSequenceNumber: GlobalSequenceNumberCutoff);
             aggregateRoot.EventCollector = EventCollector;
             aggregateRoot.SequenceNumberGenerator = SequenceNumberGenerator;
             return aggregateRoot;

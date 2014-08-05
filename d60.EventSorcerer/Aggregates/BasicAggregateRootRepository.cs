@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.Extensions;
 
 namespace d60.EventSorcerer.Aggregates
 {
@@ -22,7 +23,7 @@ namespace d60.EventSorcerer.Aggregates
             var aggregate = CreateFreshAggregate<TAggregate>(aggregateRootId);
             var domainEventsForThisAggregate = _eventStore.Load(aggregateRootId);
 
-            ApplyEvents(aggregate, domainEventsForThisAggregate);
+            ApplyEvents(aggregate, domainEventsForThisAggregate.Where(e => e.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber));
 
             return aggregate;
         }
@@ -55,6 +56,8 @@ namespace d60.EventSorcerer.Aggregates
             {
                 foreach (var e in domainEventsForThisAggregate)
                 {
+                    aggregate.GlobalSequenceNumberCutoff = e.GetGlobalSequenceNumber();
+
                     try
                     {
                         dynamicAggregate.Apply((dynamic) e);
