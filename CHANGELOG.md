@@ -30,3 +30,7 @@
 ## 0.0.19
 
 * Added serializability check to all current event stores
+
+## 0.0.20
+
+* Fixed it so that loading an aggregate root during event application will result in loading the correct version of that aggregate root
