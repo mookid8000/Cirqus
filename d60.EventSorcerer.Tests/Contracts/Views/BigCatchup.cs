@@ -15,6 +15,8 @@ using NUnit.Framework;
 namespace d60.EventSorcerer.Tests.Contracts.Views
 {
     [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
+    [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
+    [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql)]
     public class BigCatchup<TViewManagerFactory> : FixtureBase where TViewManagerFactory : IViewManagerFactory, new()
     {
         MongoDatabase _database;

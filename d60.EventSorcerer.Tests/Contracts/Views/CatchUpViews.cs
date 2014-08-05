@@ -15,6 +15,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 {
     [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
     [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
+    [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql)]
     public class CatchUpViews<TViewManagerFactory> : FixtureBase where TViewManagerFactory : IViewManagerFactory, new()
     {
         MongoDatabase _database;
@@ -31,7 +32,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 
             _factory = new TViewManagerFactory();
 
-            _justAnotherViewViewManager = _factory.GetViewManagerFor<JustAnotherView>();
+            _justAnotherViewViewManager = _factory.GetViewManagerFor<JustAnotherViewOther>();
             _viewThatCanThrowViewManager = _factory.GetViewManagerFor<ViewThatCanThrow>();
         }
 
@@ -157,28 +158,6 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             Assert.That(view.EventsHandled, Is.EqualTo(2));
         }
 
-        class ViewThatCanThrow : IView<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
-        {
-            public ViewThatCanThrow()
-            {
-                JustSomeString = "needs to be set to something";
-            }
-            public static int ThrowAfterThisManyEvents { get; set; }
-            public string Id { get; set; }
-            public int EventsHandled { get; set; }
-            public string JustSomeString { get; set; }
-            public decimal Decimal { get; set; }
-            public void Handle(IViewContext context, AnEvent domainEvent)
-            {
-                EventsHandled++;
-
-                if (EventsHandled >= ThrowAfterThisManyEvents)
-                {
-                    throw new Exception("w00tadafook!?");
-                }
-            }
-        }
-
         [Test]
         public void CanGenerateViewFromNewEvents()
         {
@@ -193,10 +172,10 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
                 EventFor(rootId2, 0, 13),
             });
 
-            var firstView = _factory.Load<JustAnotherView>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var firstView = _factory.Load<JustAnotherViewOther>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
             Assert.That(firstView.EventCounter, Is.EqualTo(3));
 
-            var secondView = _factory.Load<JustAnotherView>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId2));
+            var secondView = _factory.Load<JustAnotherViewOther>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId2));
             Assert.That(secondView.EventCounter, Is.EqualTo(1));
         }
 
@@ -249,7 +228,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             // deliberately dispatch an out-of-sequence event
             _justAnotherViewViewManager.Dispatch(new ThrowingViewContext(), _eventStore, new[] { lastEvent });
 
-            var view = _factory.Load<JustAnotherView>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var view = _factory.Load<JustAnotherViewOther>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
 
             Assert.That(view.EventCounter, Is.EqualTo(3));
         }
@@ -272,23 +251,45 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 
             return e;
         }
+    }
 
-        class JustAnotherView : IView<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
+    class ViewThatCanThrow : IView<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
+    {
+        public ViewThatCanThrow()
         {
-            public int EventCounter { get; set; }
-            public void Handle(IViewContext context, AnEvent domainEvent)
+            JustSomeString = "needs to be set to something";
+        }
+        public static int ThrowAfterThisManyEvents { get; set; }
+        public string Id { get; set; }
+        public int EventsHandled { get; set; }
+        public string JustSomeString { get; set; }
+        public decimal Decimal { get; set; }
+        public void Handle(IViewContext context, AnEvent domainEvent)
+        {
+            EventsHandled++;
+
+            if (EventsHandled >= ThrowAfterThisManyEvents)
             {
-                EventCounter++;
-
-                Console.WriteLine("Event counter incremented to {0}", EventCounter);
+                throw new Exception("w00tadafook!?");
             }
-
-            public string Id { get; set; }
         }
+    }
 
-        class AnEvent : DomainEvent
+    class AnEvent : DomainEvent
+    {
+
+    }
+
+    class JustAnotherViewOther : IView<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
+    {
+        public int EventCounter { get; set; }
+        public void Handle(IViewContext context, AnEvent domainEvent)
         {
+            EventCounter++;
 
+            Console.WriteLine("Event counter incremented to {0}", EventCounter);
         }
+
+        public string Id { get; set; }
     }
 }
