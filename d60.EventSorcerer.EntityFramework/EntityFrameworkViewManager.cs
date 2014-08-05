@@ -67,6 +67,8 @@ namespace d60.EventSorcerer.EntityFramework
                     {
                         foreach (var e in eventsList)
                         {
+                            if (!ViewLocator.IsRelevant<TView>(e)) continue;
+
                             DispatchEvent(e, genericViewBasse, context);
                         }
 
@@ -103,14 +105,16 @@ namespace d60.EventSorcerer.EntityFramework
         {
             var eventsList = events.Where(e => e.GetGlobalSequenceNumber() > FindMax()).ToList();
 
-            if(!eventsList.Any())return;
-            ;
+            if (!eventsList.Any()) return;
+            
             try
             {
                 using (var genericViewBasse = new GenericViewContext<TView>(_connectionStringOrName))
                 {
                     foreach (var e in eventsList)
                     {
+                        if (!ViewLocator.IsRelevant<TView>(e)) continue;
+
                         DispatchEvent(e, genericViewBasse, context);
                     }
 

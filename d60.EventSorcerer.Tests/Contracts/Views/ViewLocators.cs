@@ -1,4 +1,5 @@
 ﻿using System;
+using d60.EventSorcerer.Aggregates;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.MongoDb.Events;
 using d60.EventSorcerer.Tests.Contracts.Views.Factories;
@@ -8,6 +9,7 @@ using d60.EventSorcerer.Views.Basic;
 using d60.EventSorcerer.Views.Basic.Locators;
 using MongoDB.Driver;
 using NUnit.Framework;
+using TestContext = d60.EventSorcerer.TestHelpers.TestContext;
 
 namespace d60.EventSorcerer.Tests.Contracts.Views
 {
@@ -22,6 +24,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
         IViewManager _globalInstanceViewManager;
         TViewManagerFactory _factory;
         IViewManager _instancePerAggregateRootViewManager;
+        TestContext _testContext;
 
         protected override void DoSetUp()
         {
@@ -32,29 +35,28 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 
             _globalInstanceViewManager = _factory.GetViewManagerFor<GlobalInstanceView>();
             _instancePerAggregateRootViewManager = _factory.GetViewManagerFor<InstancePerAggregateRootView>();
+
+            _testContext = new TestContext();
         }
 
 
         [Test]
         public void WorksWithInstancePerAggregateRootView()
         {
+            _testContext.AddViewManager(_instancePerAggregateRootViewManager);
+
             var rootId1 = Guid.NewGuid();
             var rootId2 = Guid.NewGuid();
 
-            var lastEventForRoot1 = EventFor(rootId1, 2);
-            var lastEventForRoot2 = EventFor(rootId2, 2);
+            _testContext.Save(rootId1, new AnEvent());
+            _testContext.Save(rootId1, new AnEvent());
+            _testContext.Save(rootId1, new AnEvent());
+            
+            _testContext.Save(rootId2, new AnEvent());
+            _testContext.Save(rootId2, new AnEvent());
+            _testContext.Save(rootId2, new AnEvent());
 
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 0) });
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 1) });
-            _eventStore.Save(Guid.NewGuid(), new[] { lastEventForRoot1 });
-
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId2, 0) });
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId2, 1) });
-            _eventStore.Save(Guid.NewGuid(), new[] { lastEventForRoot2 });
-
-            // deliberately dispatch an out-of-sequence event
-            _instancePerAggregateRootViewManager.Dispatch(new ThrowingViewContext(), _eventStore, new[] { lastEventForRoot1 });
-            _instancePerAggregateRootViewManager.Dispatch(new ThrowingViewContext(), _eventStore, new[] { lastEventForRoot2 });
+            _testContext.Commit();
 
             var view = _factory.Load<InstancePerAggregateRootView>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
             Assert.That(view.EventCounter, Is.EqualTo(3));
@@ -63,28 +65,67 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
         [Test]
         public void WorksWithGlobalInstanceView()
         {
+            _testContext.AddViewManager(_globalInstanceViewManager);
+
             var rootId1 = Guid.NewGuid();
             var rootId2 = Guid.NewGuid();
 
-            var lastEventForRoot1 = EventFor(rootId1, 2);
-            var lastEventForRoot2 = EventFor(rootId2, 2);
+            _testContext.Save(rootId1, new AnEvent());
+            _testContext.Save(rootId1, new AnEvent());
+            _testContext.Save(rootId1, new AnEvent());
+            
+            _testContext.Save(rootId2, new AnEvent());
+            _testContext.Save(rootId2, new AnEvent());
+            _testContext.Save(rootId2, new AnEvent());
 
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 0) });
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 1) });
-            _eventStore.Save(Guid.NewGuid(), new[] { lastEventForRoot1 });
-
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId2, 0) });
-            _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId2, 1) });
-            _eventStore.Save(Guid.NewGuid(), new[] { lastEventForRoot2 });
-
-            // deliberately dispatch an out-of-sequence event
-            _globalInstanceViewManager.Dispatch(new ThrowingViewContext(), _eventStore, new[] { lastEventForRoot1 });
-            _globalInstanceViewManager.Dispatch(new ThrowingViewContext(), _eventStore, new[] { lastEventForRoot2 });
+            _testContext.Commit();
 
             var view = _factory.Load<GlobalInstanceView>(GlobalInstanceLocator.GetViewInstanceId());
             Assert.That(view.EventCounter, Is.EqualTo(6));
         }
 
+        [Test]
+        public void DoesNotCallViewLocatorForIrrelevantEvents()
+        {
+            _testContext.AddViewManager(_globalInstanceViewManager);
+
+            _testContext.Save(Guid.NewGuid(), new JustAnEvent());
+            _testContext.Save(Guid.NewGuid(), new AnotherEvent());
+
+            Assert.DoesNotThrow(_testContext.Commit);
+        }
+
+        class MyView : IView<CustomizedViewLocator>, ISubscribeTo<JustAnEvent>
+        {
+            public string Id { get; set; }
+            public void Handle(IViewContext context, JustAnEvent domainEvent)
+            {
+
+            }
+        }
+        class CustomizedViewLocator : ViewLocator
+        {
+            public override string GetViewId(DomainEvent e)
+            {
+                if (e is AnEvent) return "yay";
+
+                throw new ApplicationException("oh noes!!!!");
+            }
+        }
+
+        class JustAnEvent : DomainEvent<Root>
+        {
+
+        }
+        class AnotherEvent : DomainEvent<Root>
+        {
+
+        }
+
+        class Root : AggregateRoot
+        {
+
+        }
         DomainEvent EventFor(Guid aggregateRootId, int seqNo)
         {
             return new AnEvent
@@ -118,9 +159,8 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             public string Id { get; set; }
         }
 
-        class AnEvent : DomainEvent
+        class AnEvent : DomainEvent<Root>
         {
-
         }
     }
 }

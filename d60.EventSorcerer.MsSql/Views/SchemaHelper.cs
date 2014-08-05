@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Reflection;
-using System.Security.Policy;
 
 namespace d60.EventSorcerer.MsSql.Views
 {
@@ -13,6 +11,8 @@ namespace d60.EventSorcerer.MsSql.Views
         static readonly Dictionary<Type, Tuple<SqlDbType, string>> DbTypes =
             new Dictionary<Type, Tuple<SqlDbType, string>>
             {
+                {typeof (Guid), Tuple.Create(SqlDbType.UniqueIdentifier, "")},
+
                 {typeof (short), Tuple.Create(SqlDbType.SmallInt, "")},
                 {typeof (int), Tuple.Create(SqlDbType.Int, "")},
                 {typeof (long), Tuple.Create(SqlDbType.BigInt, "")},

@@ -121,7 +121,6 @@ namespace d60.EventSorcerer.MsSql.Views
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
                 try
                 {
                     // make sure we flush after each single domain event
@@ -216,8 +215,6 @@ WHEN NOT MATCHED THEN
 
                         cmd.Parameters.AddWithValue(prop.SqlParameterName, value);
                     }
-
-                    Console.WriteLine(cmd.CommandText);
 
                     cmd.ExecuteNonQuery();
                 }
