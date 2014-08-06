@@ -32,7 +32,7 @@ this time by using actual MongoDB underneath
 
         protected override void DoSetUp()
         {
-            var mongoDatabase = Helper.InitializeTestDatabase();
+            var mongoDatabase = MongoHelper.InitializeTestDatabase();
             var eventStore = new MongoDbEventStore(mongoDatabase, "events", automaticallyCreateIndexes: true);
 
             _aggregateRootRepository = new BasicAggregateRootRepository(eventStore);

@@ -27,7 +27,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 
         protected override void DoSetUp()
         {
-            _database = Helper.InitializeTestDatabase();
+            _database = MongoHelper.InitializeTestDatabase();
             _eventStore = new MongoDbEventStore(_database, "events");
 
             _factory = new TViewManagerFactory();

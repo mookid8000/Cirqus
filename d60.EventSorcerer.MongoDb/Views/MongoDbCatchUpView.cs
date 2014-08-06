@@ -7,7 +7,7 @@ using d60.EventSorcerer.Views.Basic;
 
 namespace d60.EventSorcerer.MongoDb.Views
 {
-    class MongoDbCatchUpView<TView> where TView : IView, ISubscribeTo
+    class MongoDbCatchUpView<TView> : IMongoViewInstance<TView> where TView : IView, ISubscribeTo
     {
         protected readonly ViewDispatcherHelper<TView> Dispatcher = new ViewDispatcherHelper<TView>();
 
@@ -44,7 +44,7 @@ namespace d60.EventSorcerer.MongoDb.Views
                 if (missingEvent == null) break;
 
                 Dispatcher.DispatchToView(context, missingEvent, View);
-            
+
                 expectedNextSeqNo++;
                 MaxGlobalSeq = missingEvent.GetGlobalSequenceNumber();
             }
@@ -61,5 +61,10 @@ namespace d60.EventSorcerer.MongoDb.Views
             Pointers[aggIdString] = seqNo;
             MaxGlobalSeq = domainEvent.GetGlobalSequenceNumber();
         }
+    }
+
+    public interface IMongoViewInstance<TView> where TView : IView
+    {
+        TView View { get; }
     }
 }

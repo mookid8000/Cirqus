@@ -10,7 +10,7 @@ namespace d60.EventSorcerer.Tests.Contracts.EventStore.Factories
 
         public MongoDbEventStoreFactory()
         {
-            _eventStore = new MongoDbEventStore(Helper.InitializeTestDatabase(), "events");
+            _eventStore = new MongoDbEventStore(MongoHelper.InitializeTestDatabase(), "events");
         }
 
         public IEventStore GetEventStore()

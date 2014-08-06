@@ -14,7 +14,7 @@ namespace d60.EventSorcerer.Tests.MongoDb
         [TestCase(false, 100, 10*1000, Description = "NO indexes")]
         public void IndexSpeedTest(bool useIndexes, int numberOfQueries, int numberOfEvents)
         {
-            var database = Helper.InitializeTestDatabase();
+            var database = MongoHelper.InitializeTestDatabase();
             database.Drop();
             var eventStore = new MongoDbEventStore(database, "events", automaticallyCreateIndexes: useIndexes);
 

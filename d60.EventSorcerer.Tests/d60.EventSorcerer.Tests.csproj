@@ -88,7 +88,8 @@
     <Compile Include="Integration\SimpleScenarioWithConcurrency.cs" />
     <Compile Include="Integration\SimpleScenarioWithPersistence.cs" />
     <Compile Include="Integration\SimpleScenario.cs" />
-    <Compile Include="MongoDb\Helper.cs" />
+    <Compile Include="MongoDb\MongoHelper.cs" />
+    <Compile Include="MongoDb\TestMongoDbLinqProvider.cs" />
     <Compile Include="MongoDb\TestMongoDbSerializer.cs" />
     <Compile Include="MsSql\TestMsSqlEventStore.cs" />
     <Compile Include="MsSql\TestSqlHelper.cs" />

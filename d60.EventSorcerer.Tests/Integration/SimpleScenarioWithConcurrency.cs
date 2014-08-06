@@ -36,7 +36,7 @@ many time in parallel, and after some time the consistency of everything is veri
 
         protected override void DoSetUp()
         {
-            _mongoDatabase = Helper.InitializeTestDatabase();
+            _mongoDatabase = MongoHelper.InitializeTestDatabase();
             var eventStore = new MongoDbEventStore(_mongoDatabase, "events", automaticallyCreateIndexes: true);
 
             _aggregateRootRepository = new BasicAggregateRootRepository(eventStore);

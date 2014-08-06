@@ -7,6 +7,7 @@ using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.Views.Basic;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
+using MongoDB.Driver.Linq;
 
 namespace d60.EventSorcerer.MongoDb.Views
 {
@@ -19,6 +20,12 @@ namespace d60.EventSorcerer.MongoDb.Views
         {
             _viewCollection = database.GetCollection<MongoDbCatchUpView<TView>>(collectionName);
             _viewCollection.CreateIndex(IndexKeys<MongoDbCatchUpView<TView>>.Ascending(v => v.MaxGlobalSeq));
+        }
+
+        public IQueryable<IMongoViewInstance<TView>> Linq()
+        {
+            return _viewCollection
+                .AsQueryable<IMongoViewInstance<TView>>();
         }
 
         /// <summary>

@@ -15,7 +15,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
 
         public MongoDbViewManagerFactory()
         {
-            _database = Helper.InitializeTestDatabase();
+            _database = MongoHelper.InitializeTestDatabase();
         }
 
         public IViewManager GetViewManagerFor<TView>() where TView : class, IView, ISubscribeTo, new()

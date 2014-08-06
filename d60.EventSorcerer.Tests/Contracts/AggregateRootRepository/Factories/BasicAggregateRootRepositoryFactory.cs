@@ -13,7 +13,7 @@ namespace d60.EventSorcerer.Tests.Contracts.AggregateRootRepository.Factories
 
         public BasicAggregateRootRepositoryFactory()
         {
-            _eventStore = new MongoDbEventStore(Helper.InitializeTestDatabase(), "events");
+            _eventStore = new MongoDbEventStore(MongoHelper.InitializeTestDatabase(), "events");
             _basicAggregateRootRepository = new BasicAggregateRootRepository(_eventStore);
         }
 

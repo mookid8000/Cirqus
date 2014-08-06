@@ -2,7 +2,7 @@
 
 namespace d60.EventSorcerer.Tests.MongoDb
 {
-    public class Helper
+    public class MongoHelper
     {
         public static MongoDatabase InitializeTestDatabase()
         {
