@@ -1,13 +1,37 @@
 ﻿<Project DefaultTargets="build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup>
-  </ItemGroup>
+  <UsingTask TaskName="Microsoft.Build.Tasks.XmlPoke" AssemblyName="Microsoft.Build.Tasks.v4.0, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a"/>
 
   <PropertyGroup>
     <Root>.</Root>
     
     <BuildOutputFolder>$(Root)\deploy</BuildOutputFolder>
     <NuGetFolder>$(Root)\.nuget</NuGetFolder>
+    <NuSpecFolder>$(Root)\nuspec</NuSpecFolder>
+
+    <DefaultNuSpecVersion>VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT</DefaultNuSpecVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <NuSpecFiles Include="$(NuSpecFolder)\*.nuspec" />
+    <DependantNuSpecFiles Include="$(NuSpecFolder)\*.nuspec" Exclude="$(NuSpecFolder)\d60.EventSorcerer.nuspec" />
+  </ItemGroup>
+
+  <Target Name="PrintNuSpec">
+    <Message Text="NuSpecFiles: @(NuSpecFiles)"/>
+    <Message Text="DepNuSpecFiles: @(DependantNuSpecFiles)"/>
+  </Target>
+
+  <Target Name="release_packages">
+    <Error Condition="'$(Version)' == ''" Text="No version specified! The version parameter must be specified in order to build &amp; release NuGet packages"/>
+    <Message Text="Updating NuSpec version..."/>
+    <XmlPoke XmlInputPath="%(NuSpecFiles.FullPath)" Query="//version" Value="$(Version)" />
+    <XmlPoke XmlInputPath="%(DependantNuSpecFiles.FullPath)" Query="//dependency[@id='d60.EventSorcerer']/@version" Value="$(Version)" />
+    
+    <CallTarget Targets="publish_packages"/>
+    
+    <XmlPoke XmlInputPath="%(NuSpecFiles.FullPath)" Query="//version" Value="$(DefaultNuSpecVersion)" />
+    <XmlPoke XmlInputPath="%(DependantNuSpecFiles.FullPath)" Query="//dependency[@id='d60.EventSorcerer']/@version" Value="$(DefaultNuSpecVersion)" />
+  </Target>
 
   <Target Name="build" DependsOnTargets="clean_output_folder; build_solution" />
 
@@ -37,7 +61,6 @@
   </Target>
 
   <Target Name="publish_packages" DependsOnTargets="validate_nuget_environment_variable; create_packages">
-   
     <ItemGroup>
       <GeneratedPackages Include="$(BuildOutputFolder)/publish/*.nupkg"/>
     </ItemGroup>
