@@ -21,19 +21,19 @@ namespace d60.EventSorcerer.TestHelpers
         readonly InMemoryEventCollector _eventCollector = new InMemoryEventCollector();
         readonly InMemoryEventStore _eventStore = new InMemoryEventStore();
         readonly BasicAggregateRootRepository _aggregateRootRepository;
-        readonly TestEventDispatcher _eventDispatcher;
+        readonly BasicEventDispatcher _eventDispatcher;
         DateTime _currentTime = DateTime.MinValue;
         bool _initialized;
 
         public TestContext()
         {
             _aggregateRootRepository = new BasicAggregateRootRepository(_eventStore);
-            _eventDispatcher = new TestEventDispatcher(_aggregateRootRepository);
+            _eventDispatcher = new BasicEventDispatcher(_aggregateRootRepository);
         }
 
         public TestContext AddViewManager(IViewManager viewManager)
         {
-            _eventDispatcher.AddViewManager(viewManager);
+            _eventDispatcher.Add(viewManager);
             return this;
         }
 

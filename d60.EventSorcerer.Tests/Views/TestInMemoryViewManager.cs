@@ -90,6 +90,7 @@ namespace d60.EventSorcerer.Tests.Views
             }
 
             public string Id { get; set; }
+            public long LastGlobalSequenceNumber { get; set; }
 
             public Guid AggregateRootId { get; set; }
 

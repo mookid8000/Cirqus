@@ -6,18 +6,16 @@ using System.Linq;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Exceptions;
 using d60.EventSorcerer.Extensions;
-using d60.EventSorcerer.Serialization;
 using d60.EventSorcerer.Views.Basic;
 
 namespace d60.EventSorcerer.MsSql.Views
 {
-    public class MsSqlCatchUpViewManager<TView> : IViewManager where TView : class, IView, ISubscribeTo, new()
+    public class MsSqlCatchUpViewManager<TView> : IDirectDispatchViewManager, ICatchUpViewManager where TView : class, IView, ISubscribeTo, new()
     {
         const int PrimaryKeySize = 100;
         readonly string _tableName;
         readonly Func<SqlConnection> _connectionProvider;
         readonly Action<SqlConnection> _cleanupAction;
-        readonly Serializer _serializer = new Serializer("<events>");
         readonly Prop[] _schema;
         readonly ViewDispatcherHelper<TView> _dispatcher = new ViewDispatcherHelper<TView>();
         int _maxDomainEventsBetweenFlush;
@@ -52,6 +50,11 @@ namespace d60.EventSorcerer.MsSql.Views
                 Purge();
             }
 
+            CatchUp(context, eventStore, long.MaxValue);
+        }
+
+        public void CatchUp(IViewContext context, IEventStore eventStore, long lastGlobalSequenceNumber)
+        {
             var maxSequenceNumber = GetMaxSequenceNumber();
             var globalSequenceNumberCutoff = maxSequenceNumber + 1;
 
@@ -62,6 +65,8 @@ namespace d60.EventSorcerer.MsSql.Views
                 Dispatch(context, eventStore, partition);
             }
         }
+
+        public bool Stopped { get; set; }
 
         long GetMaxSequenceNumber()
         {
@@ -119,7 +124,7 @@ namespace d60.EventSorcerer.MsSql.Views
                     ProcessOneBatch(eventStore, batch, context);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 try
                 {

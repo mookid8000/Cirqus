@@ -10,12 +10,11 @@ using d60.EventSorcerer.Views.Basic;
 
 namespace d60.EventSorcerer.EntityFramework
 {
-    public class EntityFrameworkViewManager<TView> : IViewManager where TView : class,IView, ISubscribeTo, new()
+    public class EntityFrameworkViewManager<TView> : IDirectDispatchViewManager, ICatchUpViewManager where TView : class,IView, ISubscribeTo, new()
     {
-        private readonly string _connectionStringOrName;
-
-        private readonly ViewDispatcherHelper<TView> _dispatcherHelper = new ViewDispatcherHelper<TView>();
-        private int _maxDomainEventsBetweenFlush;
+        readonly string _connectionStringOrName;
+        readonly ViewDispatcherHelper<TView> _dispatcherHelper = new ViewDispatcherHelper<TView>();
+        int _maxDomainEventsBetweenFlush;
 
         public EntityFrameworkViewManager(string connectionStringOrName, bool createDatabaseIfnotExist = true)
         {
@@ -49,9 +48,17 @@ namespace d60.EventSorcerer.EntityFramework
 
         public void Initialize(IViewContext context, IEventStore eventStore, bool purgeExistingViews = false)
         {
-            PurgeViews();
+            if (purgeExistingViews)
+            {
+                PurgeViews();
+            }
 
 
+            CatchUp(context, eventStore, long.MaxValue);
+        }
+
+        public void CatchUp(IViewContext context, IEventStore eventStore, long lastGlobalSequenceNumber)
+        {
             var lastSeenMaxGlobalSequenceNumber = FindMax();
 
             foreach (var batch in eventStore.Stream(lastSeenMaxGlobalSequenceNumber + 1).Batch(MaxDomainEventsBetweenFlush))
@@ -79,6 +86,8 @@ namespace d60.EventSorcerer.EntityFramework
                 }
             }
         }
+
+        public bool Stopped { get; set; }
 
         private void PurgeViews()
         {
@@ -210,8 +219,6 @@ namespace d60.EventSorcerer.EntityFramework
                 var instance = context.Configurations.AsNoTracking().FirstOrDefault(c => c.Id == typeof(TView).FullName);
 
                 return instance == null ? -1 : instance.GlobalSequenceNumber;
-
-
             }
         }
 

@@ -124,6 +124,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
         }
 
         public string Id { get; set; }
+        public long LastGlobalSequenceNumber { get; set; }
     }
 
     class AnEventMore : DomainEvent

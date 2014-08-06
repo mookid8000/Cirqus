@@ -84,6 +84,7 @@ namespace d60.EventSorcerer.Tests.Views
                 Calls = new List<Tuple<int, int>>();
             }
             public string Id { get; set; }
+            public long LastGlobalSequenceNumber { get; set; }
             public List<Tuple<int,int>> Calls { get; set; }
             public void Handle(IViewContext context, AnEvent domainEvent)
             {

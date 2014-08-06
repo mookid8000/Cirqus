@@ -85,6 +85,7 @@ namespace d60.EventSorcerer.Tests.MsSql
                 HashOfInts = new HashSet<int> {9, 3};
             }
             public string Id { get; set; }
+            public long LastGlobalSequenceNumber { get; set; }
 
             // string
             public string String { get; set; }

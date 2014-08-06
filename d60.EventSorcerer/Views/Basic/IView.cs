@@ -8,6 +8,7 @@ namespace d60.EventSorcerer.Views.Basic
     public interface IView
     {
         string Id { get; set; }
+        long LastGlobalSequenceNumber { get; set; }
     }
 
     // ReSharper disable UnusedTypeParameter

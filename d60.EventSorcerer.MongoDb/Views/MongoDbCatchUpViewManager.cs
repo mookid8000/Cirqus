@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using d60.EventSorcerer.Events;
-using d60.EventSorcerer.Exceptions;
 using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.Views.Basic;
 using MongoDB.Driver;
@@ -11,21 +10,23 @@ using MongoDB.Driver.Linq;
 
 namespace d60.EventSorcerer.MongoDb.Views
 {
-    public class MongoDbCatchUpViewManager<TView> : IViewManager where TView : class, IView, ISubscribeTo, new()
+    public class MongoDbCatchUpViewManager<TView> : IDirectDispatchViewManager, ICatchUpViewManager where TView : class, IView, ISubscribeTo, new()
     {
-        readonly MongoCollection<MongoDbCatchUpView<TView>> _viewCollection;
+        readonly MongoCollection<TView> _viewCollection;
+        readonly ViewDispatcherHelper<TView> _dispatcherHelper = new ViewDispatcherHelper<TView>();
         int _maxDomainEventsBetweenFlush = 100;
+        long _lastGlobalSequenceNumberProcessed = -1;
 
         public MongoDbCatchUpViewManager(MongoDatabase database, string collectionName)
         {
-            _viewCollection = database.GetCollection<MongoDbCatchUpView<TView>>(collectionName);
-            _viewCollection.CreateIndex(IndexKeys<MongoDbCatchUpView<TView>>.Ascending(v => v.MaxGlobalSeq));
+            _viewCollection = database.GetCollection<TView>(collectionName);
+            _viewCollection.CreateIndex(IndexKeys<TView>.Ascending(v => v.LastGlobalSequenceNumber));
         }
 
-        public IQueryable<IMongoViewInstance<TView>> Linq()
+        public IQueryable<TView> Linq()
         {
             return _viewCollection
-                .AsQueryable<IMongoViewInstance<TView>>();
+                .AsQueryable();
         }
 
         /// <summary>
@@ -51,27 +52,30 @@ namespace d60.EventSorcerer.MongoDb.Views
                 Purge();
             }
 
+            // catch up with no limits :)
+            CatchUp(context, eventStore, long.MaxValue);
+        }
+
+        public void CatchUp(IViewContext context, IEventStore eventStore, long lastGlobalSequenceNumber)
+        {
+            if (lastGlobalSequenceNumber <= _lastGlobalSequenceNumberProcessed) return;
+
             var viewInstanceWithMaxGlobalSequenceNumber = _viewCollection
-                .FindAllAs<MongoDbCatchUpView<TView>>()
-                .SetSortOrder(SortBy<MongoDbCatchUpView<TView>>.Descending(v => v.MaxGlobalSeq))
+                .FindAllAs<TView>()
+                .SetSortOrder(SortBy<TView>.Descending(v => v.LastGlobalSequenceNumber))
                 .SetLimit(1)
                 .FirstOrDefault();
 
             var globalSequenceNumberCutoff = viewInstanceWithMaxGlobalSequenceNumber == null
                 ? 0
-                : viewInstanceWithMaxGlobalSequenceNumber.MaxGlobalSeq + 1;
+                : viewInstanceWithMaxGlobalSequenceNumber.LastGlobalSequenceNumber + 1;
 
             var batches = eventStore.Stream(globalSequenceNumberCutoff).Batch(1000);
 
-            foreach (var partition in batches)
+            foreach (var batch in batches)
             {
-                Dispatch(context, eventStore, partition);
+                Dispatch(context, eventStore, batch);
             }
-        }
-
-        public void Purge()
-        {
-            _viewCollection.Drop();
         }
 
         public void Dispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events)
@@ -82,68 +86,66 @@ namespace d60.EventSorcerer.MongoDb.Views
             {
                 foreach (var batch in eventsList.Batch(MaxDomainEventsBetweenFlush))
                 {
-                    ProcessOneBatch(eventStore, batch, context);
+                    ProcessOneBatch(batch, context);
                 }
             }
-            catch
+            catch (Exception)
             {
-                try
+                foreach (var batch in eventsList.Batch(1))
                 {
-                    // make sure we flush after each single domain event
-                    foreach (var e in eventsList)
-                    {
-                        ProcessOneBatch(eventStore, new[] {e}, context);
-                    }
+                    ProcessOneBatch(batch, context);
                 }
-                catch (ConsistencyException)
-                {
-                    throw;
-                }
-                catch
-                {
-                }
+
+                throw;
             }
         }
 
-        void ProcessOneBatch(IEventStore eventStore, IEnumerable<DomainEvent> batch, IViewContext context)
+        public void Purge()
+        {
+            _viewCollection.Drop();
+        }
+
+        public bool Stopped { get; set; }
+
+        void ProcessOneBatch(IEnumerable<DomainEvent> batch, IViewContext context)
         {
             var locator = ViewLocator.GetLocatorFor<TView>();
-            var activeViewDocsByid = new Dictionary<string, MongoDbCatchUpView<TView>>();
+            var activeViewDocsByid = new Dictionary<string, TView>();
 
             foreach (var e in batch)
             {
                 if (!ViewLocator.IsRelevant<TView>(e)) continue;
 
+                var globalSequenceNumberOfThisEvent = e.GetGlobalSequenceNumber();
+                
+                if (globalSequenceNumberOfThisEvent <= _lastGlobalSequenceNumberProcessed) continue;
+
                 var viewId = locator.GetViewId(e);
                 var doc = activeViewDocsByid
                     .GetOrAdd(viewId, id => _viewCollection.FindOneById(id)
-                                            ?? new MongoDbCatchUpView<TView>
-                                            {
-                                                Id = id,
-                                                View = new TView(),
-                                            });
+                                            ?? new TView { Id = id });
 
-                doc.DispatchAndResolve(eventStore, e, context);
+                _dispatcherHelper.DispatchToView(context, e, doc);
+
+                _lastGlobalSequenceNumberProcessed = globalSequenceNumberOfThisEvent;
             }
 
             Save(activeViewDocsByid.Values);
         }
 
-        void Save(IEnumerable<MongoDbCatchUpView<TView>> activeViewDocs)
+        void Save(IEnumerable<TView> activeViews)
         {
-            foreach (var doc in activeViewDocs)
+            foreach (var view in activeViews)
             {
-                _viewCollection.Save(doc);
+                _viewCollection.Save(view);
             }
         }
 
         public TView Load(string viewId)
         {
-            var doc = _viewCollection.FindOneById(viewId);
+            var view = _viewCollection.FindOneById(viewId);
 
-            return doc != null
-                ? doc.View
-                : null;
+            return view;
         }
     }
 }

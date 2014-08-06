@@ -3,7 +3,6 @@ using System.Linq;
 using d60.EventSorcerer.Aggregates;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.MongoDb.Views;
-using d60.EventSorcerer.Tests.Contracts.Views;
 using d60.EventSorcerer.Views.Basic;
 using d60.EventSorcerer.Views.Basic.Locators;
 using NUnit.Framework;
@@ -46,11 +45,11 @@ namespace d60.EventSorcerer.Tests.MongoDb
             Assert.That(view2.Name, Is.EqualTo("Claire"));
             Assert.That(view3.Name, Is.EqualTo("Doug"));
 
-            Console.WriteLine(string.Join(Environment.NewLine, _viewManager.Linq().ToList().Select(v => v.View.Name)));
+            Console.WriteLine(string.Join(Environment.NewLine, _viewManager.Linq().ToList().Select(v => v.Name)));
 
-            var francis = _viewManager.Linq().FirstOrDefault(v => v.View.Name == "Francis");
+            var francis = _viewManager.Linq().FirstOrDefault(v => v.Name == "Francis");
             Assert.That(francis, Is.Not.Null, "Expected to find view with Name == 'Francis'");
-            Assert.That(francis.View.Name, Is.EqualTo("Francis"));
+            Assert.That(francis.Name, Is.EqualTo("Francis"));
         }
     }
 
@@ -60,6 +59,7 @@ namespace d60.EventSorcerer.Tests.MongoDb
         ISubscribeTo<RootWasNamed>
     {
         public string Id { get; set; }
+        public long LastGlobalSequenceNumber { get; set; }
         public string Name { get; set; }
         public void Handle(IViewContext context, RootWasNamed domainEvent)
         {

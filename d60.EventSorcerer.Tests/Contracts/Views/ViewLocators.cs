@@ -97,6 +97,8 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
         class MyView : IView<CustomizedViewLocator>, ISubscribeTo<JustAnEvent>
         {
             public string Id { get; set; }
+            public long LastGlobalSequenceNumber { get; set; }
+
             public void Handle(IViewContext context, JustAnEvent domainEvent)
             {
 
@@ -131,6 +133,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
         }
 
         public string Id { get; set; }
+        public long LastGlobalSequenceNumber { get; set; }
     }
     class InstancePerAggregateRootView : IView<InstancePerAggregateRootLocator>, ISubscribeTo<ThisIsJustAnEvent>
     {
@@ -141,6 +144,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
         }
 
         public string Id { get; set; }
+        public long LastGlobalSequenceNumber { get; set; }
     }
 
     class ThisIsJustAnEvent : DomainEvent<Root>

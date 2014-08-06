@@ -74,6 +74,8 @@ namespace d60.EventSorcerer.Tests.TestHelpers
                 ReceivedDomainEvents.AddRange(eventStore.Stream().ToList());
             }
 
+            public bool Stopped { get; set; }
+
             public void Dispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events)
             {
                 ReceivedDomainEvents.AddRange(events);
