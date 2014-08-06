@@ -38,3 +38,4 @@
 ## 0.0.21
 
 * Made an explicit divide (made it possible, at least) between catch-up and direct-dispatch view managers
+* Added LINQ capabilities to MongoDB view manager
