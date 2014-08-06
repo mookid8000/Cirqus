@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
-using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Exceptions;
@@ -22,17 +21,14 @@ namespace d60.EventSorcerer.EntityFramework
         {
             _connectionStringOrName = connectionStringOrName;
 
-
             Database.SetInitializer(new CreateDatabaseIfNotExists<GenericViewContext<TView>>());
 
             if (createDatabaseIfnotExist)
             {
-
                 using (var context = new GenericViewContext<TView>(_connectionStringOrName))
                 {
                     //touch tables to create them
-                    context.ViewCollection.FirstOrDefault();
-                    context.Configurations.FirstOrDefault();
+                    context.Database.Initialize(true);
                 }
             }
 

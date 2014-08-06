@@ -11,14 +11,20 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
     public class EntityFrameworkViewManagerFactory : IViewManagerFactory
     {
         readonly List<IViewManager> _viewManagers = new List<IViewManager>();
+        readonly string _connectionString = SqlHelper.GetConnectionString(TestSqlHelper.ConnectionStringName);
+
+        public EntityFrameworkViewManagerFactory()
+        {
+            Console.WriteLine("Dropping migration history");
+            TestSqlHelper.DropTable(_connectionString, "__MigrationHistory");
+        }
 
         public IViewManager GetViewManagerFor<TView>() where TView : class, IView, ISubscribeTo, new()
         {
-            var connectionString = SqlHelper.GetConnectionString(TestSqlHelper.ConnectionStringName);
+            Console.WriteLine("Creating FRESH entity framework view manager for {0}", typeof(TView));
 
-            TestSqlHelper.DropTable(connectionString, typeof(TView).Name);
-            TestSqlHelper.DropTable(connectionString, typeof(TView).Name + "Configs");
-            TestSqlHelper.DropTable(connectionString, "__MigrationHistory");
+            TestSqlHelper.DropTable(_connectionString, typeof(TView).Name);
+            TestSqlHelper.DropTable(_connectionString, typeof(TView).Name + "Configs");
 
             var viewManager = new EntityFrameworkViewManager<TView>(TestSqlHelper.ConnectionStringName);
             MaxDomainEventsBetweenFlushSet += maxEvents => viewManager.MaxDomainEventsBetweenFlush = maxEvents;

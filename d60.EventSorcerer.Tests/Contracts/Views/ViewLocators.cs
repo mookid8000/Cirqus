@@ -4,7 +4,6 @@ using d60.EventSorcerer.Events;
 using d60.EventSorcerer.MongoDb.Events;
 using d60.EventSorcerer.Tests.Contracts.Views.Factories;
 using d60.EventSorcerer.Tests.MongoDb;
-using d60.EventSorcerer.Tests.Stubs;
 using d60.EventSorcerer.Views.Basic;
 using d60.EventSorcerer.Views.Basic.Locators;
 using MongoDB.Driver;
@@ -48,13 +47,13 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             var rootId1 = Guid.NewGuid();
             var rootId2 = Guid.NewGuid();
 
-            _testContext.Save(rootId1, new AnEvent());
-            _testContext.Save(rootId1, new AnEvent());
-            _testContext.Save(rootId1, new AnEvent());
-            
-            _testContext.Save(rootId2, new AnEvent());
-            _testContext.Save(rootId2, new AnEvent());
-            _testContext.Save(rootId2, new AnEvent());
+            _testContext.Save(rootId1, new ThisIsJustAnEvent());
+            _testContext.Save(rootId1, new ThisIsJustAnEvent());
+            _testContext.Save(rootId1, new ThisIsJustAnEvent());
+
+            _testContext.Save(rootId2, new ThisIsJustAnEvent());
+            _testContext.Save(rootId2, new ThisIsJustAnEvent());
+            _testContext.Save(rootId2, new ThisIsJustAnEvent());
 
             _testContext.Commit();
 
@@ -70,13 +69,13 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             var rootId1 = Guid.NewGuid();
             var rootId2 = Guid.NewGuid();
 
-            _testContext.Save(rootId1, new AnEvent());
-            _testContext.Save(rootId1, new AnEvent());
-            _testContext.Save(rootId1, new AnEvent());
-            
-            _testContext.Save(rootId2, new AnEvent());
-            _testContext.Save(rootId2, new AnEvent());
-            _testContext.Save(rootId2, new AnEvent());
+            _testContext.Save(rootId1, new ThisIsJustAnEvent());
+            _testContext.Save(rootId1, new ThisIsJustAnEvent());
+            _testContext.Save(rootId1, new ThisIsJustAnEvent());
+
+            _testContext.Save(rootId2, new ThisIsJustAnEvent());
+            _testContext.Save(rootId2, new ThisIsJustAnEvent());
+            _testContext.Save(rootId2, new ThisIsJustAnEvent());
 
             _testContext.Commit();
 
@@ -112,55 +111,39 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
                 throw new ApplicationException("oh noes!!!!");
             }
         }
+    }
 
-        class JustAnEvent : DomainEvent<Root>
+    class JustAnEvent : DomainEvent<Root>
+    {
+    }
+    class AnotherEvent : DomainEvent<Root>
+    {
+    }
+    class Root : AggregateRoot
+    {
+    }
+    class GlobalInstanceView : IView<GlobalInstanceLocator>, ISubscribeTo<ThisIsJustAnEvent>
+    {
+        public int EventCounter { get; set; }
+        public void Handle(IViewContext context, ThisIsJustAnEvent domainEvent)
         {
-
-        }
-        class AnotherEvent : DomainEvent<Root>
-        {
-
-        }
-
-        class Root : AggregateRoot
-        {
-
-        }
-        DomainEvent EventFor(Guid aggregateRootId, int seqNo)
-        {
-            return new AnEvent
-            {
-                Meta =
-                {
-                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId },
-                    { DomainEvent.MetadataKeys.SequenceNumber, seqNo },
-                }
-            };
+            EventCounter++;
         }
 
-        class GlobalInstanceView : IView<GlobalInstanceLocator>, ISubscribeTo<AnEvent>
+        public string Id { get; set; }
+    }
+    class InstancePerAggregateRootView : IView<InstancePerAggregateRootLocator>, ISubscribeTo<ThisIsJustAnEvent>
+    {
+        public int EventCounter { get; set; }
+        public void Handle(IViewContext context, ThisIsJustAnEvent domainEvent)
         {
-            public int EventCounter { get; set; }
-            public void Handle(IViewContext context, AnEvent domainEvent)
-            {
-                EventCounter++;
-            }
-
-            public string Id { get; set; }
-        }
-        class InstancePerAggregateRootView : IView<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
-        {
-            public int EventCounter { get; set; }
-            public void Handle(IViewContext context, AnEvent domainEvent)
-            {
-                EventCounter++;
-            }
-
-            public string Id { get; set; }
+            EventCounter++;
         }
 
-        class AnEvent : DomainEvent<Root>
-        {
-        }
+        public string Id { get; set; }
+    }
+
+    class ThisIsJustAnEvent : DomainEvent<Root>
+    {
     }
 }
