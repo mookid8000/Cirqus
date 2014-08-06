@@ -34,3 +34,7 @@
 ## 0.0.20
 
 * Fixed it so that loading an aggregate root during event application will result in loading the correct version of that aggregate root
+
+## 0.0.21
+
+* Made an explicit divide (made it possible, at least) between catch-up and direct-dispatch view managers
