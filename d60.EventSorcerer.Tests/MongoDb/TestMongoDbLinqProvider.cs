@@ -22,6 +22,8 @@ namespace d60.EventSorcerer.Tests.MongoDb
 
             _context = new TestContext()
                 .AddViewManager(_viewManager);
+
+            _viewManager.CreateIndex(v => v.Name);
         }
 
         [Test]
@@ -47,8 +49,8 @@ namespace d60.EventSorcerer.Tests.MongoDb
 
             Console.WriteLine(string.Join(Environment.NewLine, _viewManager.Linq().ToList().Select(v => v.Name)));
 
-            var francis = _viewManager.Linq().FirstOrDefault(v => v.Name == "Francis");
-            Assert.That(francis, Is.Not.Null, "Expected to find view with Name == 'Francis'");
+            var francis = _viewManager.Linq().First(v => v.Name == "Francis");
+            
             Assert.That(francis.Name, Is.EqualTo("Francis"));
         }
     }

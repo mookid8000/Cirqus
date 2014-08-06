@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.Views.Basic;
@@ -27,6 +28,15 @@ namespace d60.EventSorcerer.MongoDb.Views
         {
             return _viewCollection
                 .AsQueryable();
+        }
+
+        public void CreateIndex(Expression<Func<TView, object>> expression, bool ascending = true)
+        {
+            var indexKeys = ascending
+                ? IndexKeys<TView>.Ascending(expression)
+                : IndexKeys<TView>.Descending(expression);
+
+            _viewCollection.CreateIndex(indexKeys);
         }
 
         /// <summary>
