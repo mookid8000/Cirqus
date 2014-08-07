@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.Numbers;
 using Newtonsoft.Json;
 
 namespace d60.EventSorcerer.Serialization

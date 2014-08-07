@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using d60.EventSorcerer.Extensions;
-using d60.EventSorcerer.Numbers;
 
-namespace d60.EventSorcerer.Events
+namespace d60.EventSorcerer.Numbers
 {
     /// <summary>
     /// Metadata collection that stores a bunch of key-value pairs that can be used for

@@ -55,7 +55,7 @@
     <Compile Include="Config\EventSorcererConfig.cs" />
     <Compile Include="Config\EventSorcererOptions.cs" />
     <Compile Include="Config\Retryer.cs" />
-    <Compile Include="Config\CachingSequenceNumberGenerator.cs" />
+    <Compile Include="Numbers\CachingSequenceNumberGenerator.cs" />
     <Compile Include="Events\IEmit.cs" />
     <Compile Include="Exceptions\ConcurrencyException.cs" />
     <Compile Include="Events\IEventCollector.cs" />
@@ -69,7 +69,7 @@
     <Compile Include="Extensions\DomainEventExtensions.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Numbers\ISequenceNumberGenerator.cs" />
-    <Compile Include="Events\Metadata.cs" />
+    <Compile Include="Numbers\Metadata.cs" />
     <Compile Include="Numbers\Time.cs" />
     <Compile Include="Numbers\TimeMachine.cs" />
     <Compile Include="Numbers\MetaAttribute.cs" />

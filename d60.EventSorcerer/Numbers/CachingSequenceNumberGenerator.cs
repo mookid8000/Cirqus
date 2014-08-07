@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using d60.EventSorcerer.Events;
-using d60.EventSorcerer.Numbers;
 
-namespace d60.EventSorcerer.Config
+namespace d60.EventSorcerer.Numbers
 {
     class CachingSequenceNumberGenerator : ISequenceNumberGenerator
     {

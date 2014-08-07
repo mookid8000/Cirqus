@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.Numbers;
 using d60.EventSorcerer.Serialization;
 using MongoDB.Bson;
 using Newtonsoft.Json;
