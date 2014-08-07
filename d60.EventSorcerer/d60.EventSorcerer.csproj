@@ -72,7 +72,7 @@
     <Compile Include="Events\Metadata.cs" />
     <Compile Include="Numbers\Time.cs" />
     <Compile Include="Numbers\TimeMachine.cs" />
-    <Compile Include="Numbers\VersionAttribute.cs" />
+    <Compile Include="Numbers\MetaAttribute.cs" />
     <Compile Include="Serialization\Serializer.cs" />
     <Compile Include="Serialization\TypeAliasBinder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

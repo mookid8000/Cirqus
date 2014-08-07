@@ -111,9 +111,11 @@ namespace d60.EventSorcerer.TestHelpers
             domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId] = aggregateRootId;
             domainEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber] = _eventStore.GetNextSeqNo(aggregateRootId);
             domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = AggregateRoot.GetOwnerFromType(typeof(TAggregateRoot));
-            domainEvent.Meta[DomainEvent.MetadataKeys.Version] = domainEvent.GetType().GetFromAttributeOrDefault<VersionAttribute, int>(a => a.Number, 1);
             domainEvent.Meta[DomainEvent.MetadataKeys.TimeLocal] = now.ToLocalTime();
             domainEvent.Meta[DomainEvent.MetadataKeys.TimeUtc] = now;
+
+            domainEvent.Meta.TakeFromAttributes(domainEvent.GetType());
+            domainEvent.Meta.TakeFromAttributes(GetType());
 
             _serializer.EnsureSerializability(domainEvent);
 

@@ -56,7 +56,7 @@ namespace d60.EventSorcerer.Tests.Aggregates
             Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.TimeUtc], Is.EqualTo(now));
             Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.TimeLocal], Is.EqualTo(now.ToLocalTime()));
             Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.Owner], Is.EqualTo("SomeAggregate"));
-            Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.Version], Is.EqualTo(1));
+            Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.RootVersion], Is.EqualTo(1));
             Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber], Is.EqualTo(78));
             Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId], Is.EqualTo(aggregateRootId));
         }

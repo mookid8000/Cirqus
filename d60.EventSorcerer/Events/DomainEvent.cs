@@ -12,7 +12,8 @@ namespace d60.EventSorcerer.Events
             public const string TimeLocal = "time_local";
             public const string TimeUtc = "time_utc";
             public const string Owner = "owner";
-            public const string Version = "ver";
+            public const string RootVersion = "root_ver";
+            public const string EventVersion = "evt_ver";
         }
 
         public readonly Metadata Meta = new Metadata();

@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggregates\TestLoading.cs" />
+    <Compile Include="Aggregates\TestVersionAttributeApplication.cs" />
     <Compile Include="Aggregates\TestVersioningWhenLoadingAnotherAggregate.cs" />
     <Compile Include="Commands\TestCommandProcessing.cs" />
     <Compile Include="Contracts\AggregateRootRepository\Factories\BasicAggregateRootRepositoryFactory.cs" />

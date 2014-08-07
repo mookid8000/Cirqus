@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -18,6 +19,14 @@ namespace d60.EventSorcerer.Extensions
             var attribute = provider.GetAttributeOrDefault<TAttribute>();
 
             return attribute == null ? defaultValue : func(attribute);
+        }
+
+        public static IEnumerable<TAttribute> GetAttributes<TAttribute>(this ICustomAttributeProvider provider)
+            where TAttribute : Attribute
+        {
+            return provider
+                .GetCustomAttributes(typeof (TAttribute), true)
+                .Cast<TAttribute>();
         }
     }
 }

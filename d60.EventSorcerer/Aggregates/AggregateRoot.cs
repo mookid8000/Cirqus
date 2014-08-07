@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.Numbers;
@@ -65,7 +66,9 @@ namespace d60.EventSorcerer.Aggregates
             e.Meta[DomainEvent.MetadataKeys.TimeUtc] = now;
             e.Meta[DomainEvent.MetadataKeys.SequenceNumber] = sequenceNumber;
             e.Meta[DomainEvent.MetadataKeys.Owner] = GetOwnerFromType(GetType());
-            e.Meta[DomainEvent.MetadataKeys.Version] = eventType.GetFromAttributeOrDefault<VersionAttribute, int>(a => a.Number, 1);
+            
+            e.Meta.TakeFromAttributes(eventType);
+            e.Meta.TakeFromAttributes(GetType());
 
             try
             {
