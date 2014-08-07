@@ -101,7 +101,7 @@ namespace d60.EventSorcerer.Config
 
             aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);
 
-            unitOfWork.AddToCache(aggregateRoot);
+            unitOfWork.AddToCache(aggregateRoot, aggregateRootInfo.LastGlobalSeqNo);
 
             handler(command, aggregateRoot);
 

@@ -58,7 +58,7 @@ namespace d60.EventSorcerer.TestHelpers
             aggregateRoot.UnitOfWork = _unitOfWork;
             aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);
 
-            _unitOfWork.AddToCache(aggregateRoot);
+            _unitOfWork.AddToCache(aggregateRoot, aggregateRootInfo.LastGlobalSeqNo);
 
             if (aggregateRootInfo.IsNew)
             {
@@ -102,7 +102,7 @@ namespace d60.EventSorcerer.TestHelpers
         }
 
         /// <summary>
-        /// Saves the given domain event to the history - requires that the aggregate root ID has been added
+        /// Saves the given domain event to the history - requires that the aggregate root ID has been added in the event's metadata under the <see cref="DomainEvent.MetadataKeys.AggregateRootId"/> key
         /// </summary>
         public void Save<TAggregateRoot>(DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
         {

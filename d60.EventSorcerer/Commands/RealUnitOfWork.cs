@@ -20,7 +20,7 @@ namespace d60.EventSorcerer.Commands
             _emittedEvents.Add(e);
         }
 
-        public TAggregateRoot GetAggregateRootFromCache<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot
+        public TAggregateRoot GetAggregateRootFromCache<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
         {
             if (!_cachedAggregateRoots.ContainsKey(aggregateRootId)) return null;
 
@@ -36,7 +36,7 @@ namespace d60.EventSorcerer.Commands
             return (TAggregateRoot) aggregateRoot;
         }
 
-        public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot) where TAggregateRoot : AggregateRoot
+        public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
         {
             _cachedAggregateRoots[aggregateRoot.Id] = aggregateRoot;
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Extensions;
 
@@ -62,11 +63,13 @@ namespace d60.EventSorcerer.Aggregates
             where TAggregate : AggregateRoot, new()
         {
             var dynamicAggregate = (dynamic) aggregate;
+            var previousCutoff = aggregate.GlobalSequenceNumberCutoff;
 
             using (new ThrowingUnitOfWork(aggregate))
             {
                 foreach (var e in domainEventsForThisAggregate)
                 {
+                    // ensure that other aggregates loaded during event application are historic if that's required
                     aggregate.GlobalSequenceNumberCutoff = e.GetGlobalSequenceNumber();
 
                     try
@@ -80,6 +83,9 @@ namespace d60.EventSorcerer.Aggregates
                     }
                 }
             }
+
+            // restore the cutoff so we don't hinder the root's ability to load other aggregate roots from its emitter methods
+            aggregate.GlobalSequenceNumberCutoff = previousCutoff;
         }
 
         /// <summary>
@@ -95,10 +101,6 @@ namespace d60.EventSorcerer.Aggregates
             {
                 _root = root;
                 _originalUnitOfWork = _root.UnitOfWork;
-                if (_originalUnitOfWork == null)
-                {
-                    int a = 2;
-                }
                 _root.UnitOfWork = this;
             }
 
@@ -108,14 +110,14 @@ namespace d60.EventSorcerer.Aggregates
                     _root.GetType(), _root.Id, e));
             }
 
-            public TAggregateRoot GetAggregateRootFromCache<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot
+            public TAggregateRoot GetAggregateRootFromCache<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
             {
-                return _originalUnitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId);
+                return _originalUnitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
             }
 
-            public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot) where TAggregateRoot : AggregateRoot
+            public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
             {
-                _originalUnitOfWork.AddToCache(aggregateRoot);
+                _originalUnitOfWork.AddToCache(aggregateRoot, globalSequenceNumberCutoff);
             }
 
             public void Dispose()

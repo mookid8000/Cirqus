@@ -102,7 +102,7 @@ namespace d60.EventSorcerer.Aggregates
             return string.Format("{0} ({1})", GetType().Name, Id);
         }
 
-        internal long GlobalSequenceNumberCutoff = int.MaxValue;
+        internal long GlobalSequenceNumberCutoff = long.MaxValue;
 
         protected TAggregateRoot Load<TAggregateRoot>(Guid id, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
         {
@@ -122,7 +122,7 @@ namespace d60.EventSorcerer.Aggregates
                         typeof(TAggregateRoot), id, GetType()));
             }
 
-            var cachedAggregateRoot = UnitOfWork.GetAggregateRootFromCache<TAggregateRoot>(id);
+            var cachedAggregateRoot = UnitOfWork.GetAggregateRootFromCache<TAggregateRoot>(id, GlobalSequenceNumberCutoff);
 
             if (cachedAggregateRoot != null)
             {
@@ -139,7 +139,7 @@ namespace d60.EventSorcerer.Aggregates
 
             aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);
 
-            UnitOfWork.AddToCache(aggregateRoot);
+            UnitOfWork.AddToCache(aggregateRoot, aggregateRootInfo.LastGlobalSeqNo);
 
             return aggregateRoot;
         }

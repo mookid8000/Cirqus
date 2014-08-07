@@ -105,14 +105,14 @@ namespace d60.EventSorcerer.Views.Basic
                 throw new NotImplementedException("A view context cannot be used as a unit of work when emitting events");
             }
 
-            public TAggregateRoot GetAggregateRootFromCache<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot
+            public TAggregateRoot GetAggregateRootFromCache<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
             {
-                return _realUnitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId);
+                return _realUnitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
             }
 
-            public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot) where TAggregateRoot : AggregateRoot
+            public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
             {
-                _realUnitOfWork.AddToCache(aggregateRoot);
+                _realUnitOfWork.AddToCache(aggregateRoot, globalSequenceNumberCutoff);
             }
         }
 
