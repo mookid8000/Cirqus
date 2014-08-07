@@ -47,3 +47,4 @@
 ## 0.0.23
 
 * Made Entity Framework view manager support LINQ as well and removed the need for that silly global sequence numbers table
+* Entity Framework view manager automatically adds index to global sequence number column
