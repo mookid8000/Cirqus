@@ -9,17 +9,17 @@ namespace d60.EventSorcerer.Tests.Contracts.AggregateRootRepository.Factories
     public class BasicAggregateRootRepositoryFactory : IAggregateRootRepositoryFactory
     {
         readonly MongoDbEventStore _eventStore;
-        readonly BasicAggregateRootRepository _basicAggregateRootRepository;
+        readonly DefaultAggregateRootRepository _defaultAggregateRootRepository;
 
         public BasicAggregateRootRepositoryFactory()
         {
             _eventStore = new MongoDbEventStore(MongoHelper.InitializeTestDatabase(), "events");
-            _basicAggregateRootRepository = new BasicAggregateRootRepository(_eventStore);
+            _defaultAggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
         }
 
         public IAggregateRootRepository GetRepo()
         {
-            return _basicAggregateRootRepository;
+            return _defaultAggregateRootRepository;
         }
 
         public void SaveEvent<TDomainEvent, TAggregateRoot>(TDomainEvent e)

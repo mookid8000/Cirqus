@@ -27,7 +27,7 @@ this time by using actual MongoDB underneath
 ")]
     public class SimpleScenarioWithPersistence : FixtureBase
     {
-        BasicAggregateRootRepository _aggregateRootRepository;
+        DefaultAggregateRootRepository _aggregateRootRepository;
         EventSorcererConfig _eventSorcerer;
 
         protected override void DoSetUp()
@@ -35,7 +35,7 @@ this time by using actual MongoDB underneath
             var mongoDatabase = MongoHelper.InitializeTestDatabase();
             var eventStore = new MongoDbEventStore(mongoDatabase, "events", automaticallyCreateIndexes: true);
 
-            _aggregateRootRepository = new BasicAggregateRootRepository(eventStore);
+            _aggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
             var commandMapper = new CommandMapper()
                 .Map<TakeNextStepCommand, ProgrammerAggregate>((c, a) => a.TakeNextStep());
 
@@ -51,38 +51,38 @@ this time by using actual MongoDB underneath
             var nextAggregateRootId = Guid.NewGuid();
 
             // verify that fresh aggregates are delivered
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(firstAggregateRootId).GetCurrentState(), Is.EqualTo("Born"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(nextAggregateRootId).GetCurrentState(), Is.EqualTo("Born"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(firstAggregateRootId).AggregateRoot.GetCurrentState(), Is.EqualTo("Born"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(nextAggregateRootId).AggregateRoot.GetCurrentState(), Is.EqualTo("Born"));
 
             _eventSorcerer.ProcessCommand(new TakeNextStepCommand(firstAggregateRootId));
 
             // verify that the command hit the first aggregate
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(firstAggregateRootId).GetCurrentState(), Is.EqualTo("Educated"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(nextAggregateRootId).GetCurrentState(), Is.EqualTo("Born"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(firstAggregateRootId).AggregateRoot.GetCurrentState(), Is.EqualTo("Educated"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(nextAggregateRootId).AggregateRoot.GetCurrentState(), Is.EqualTo("Born"));
 
             _eventSorcerer.ProcessCommand(new TakeNextStepCommand(nextAggregateRootId));
 
             // verify that the command hit the other aggregate
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(firstAggregateRootId).GetCurrentState(), Is.EqualTo("Educated"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(nextAggregateRootId).GetCurrentState(), Is.EqualTo("Educated"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(firstAggregateRootId).AggregateRoot.GetCurrentState(), Is.EqualTo("Educated"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(nextAggregateRootId).AggregateRoot.GetCurrentState(), Is.EqualTo("Educated"));
 
             _eventSorcerer.ProcessCommand(new TakeNextStepCommand(nextAggregateRootId));
 
             // verify that the command hit the other aggregate
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(firstAggregateRootId).GetCurrentState(), Is.EqualTo("Educated"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(nextAggregateRootId).GetCurrentState(), Is.EqualTo("Knowing"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(firstAggregateRootId).AggregateRoot.GetCurrentState(), Is.EqualTo("Educated"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(nextAggregateRootId).AggregateRoot.GetCurrentState(), Is.EqualTo("Knowing"));
 
             _eventSorcerer.ProcessCommand(new TakeNextStepCommand(firstAggregateRootId));
 
             // verify that the command hit the first aggregate
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(firstAggregateRootId).GetCurrentState(), Is.EqualTo("Knowing"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(nextAggregateRootId).GetCurrentState(), Is.EqualTo("Knowing"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(firstAggregateRootId).AggregateRoot.GetCurrentState(), Is.EqualTo("Knowing"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(nextAggregateRootId).AggregateRoot.GetCurrentState(), Is.EqualTo("Knowing"));
 
             _eventSorcerer.ProcessCommand(new TakeNextStepCommand(firstAggregateRootId));
 
             // verify that we have hit the end state
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(firstAggregateRootId).GetCurrentState(), Is.EqualTo("Knowing"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(nextAggregateRootId).GetCurrentState(), Is.EqualTo("Knowing"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(firstAggregateRootId).AggregateRoot.GetCurrentState(), Is.EqualTo("Knowing"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(nextAggregateRootId).AggregateRoot.GetCurrentState(), Is.EqualTo("Knowing"));
         }
 
         public class TakeNextStepCommand : Command<ProgrammerAggregate>

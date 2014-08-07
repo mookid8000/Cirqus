@@ -7,34 +7,43 @@ using d60.EventSorcerer.Extensions;
 namespace d60.EventSorcerer.Aggregates
 {
     /// <summary>
-    /// Basic aggregate root repository that will return an aggregate root and always replay all events in order to bring it up-to-date
+    /// Standard replaying aggregate root repository that will return an aggregate root and always replay all events in order to bring it up-to-date
     /// </summary>
-    public class BasicAggregateRootRepository : IAggregateRootRepository
+    public class DefaultAggregateRootRepository : IAggregateRootRepository
     {
         readonly IEventStore _eventStore;
 
-        public BasicAggregateRootRepository(IEventStore eventStore)
+        public DefaultAggregateRootRepository(IEventStore eventStore)
         {
             _eventStore = eventStore;
         }
 
-        public TAggregate Get<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = int.MaxValue) where TAggregate : AggregateRoot, new()
+        public Root<TAggregate> Get<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue) where TAggregate : AggregateRoot, new()
         {
             var aggregate = CreateFreshAggregate<TAggregate>(aggregateRootId);
             var domainEventsForThisAggregate = _eventStore.Load(aggregateRootId);
 
-            ApplyEvents(aggregate, domainEventsForThisAggregate.Where(e => e.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber));
+            var eventsToApply = domainEventsForThisAggregate
+                .Where(e => e.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber)
+                .ToList();
 
-            return aggregate;
+            ApplyEvents(aggregate, eventsToApply);
+
+            if (!eventsToApply.Any())
+            {
+                return new Root<TAggregate>(aggregate, -1, -1);
+            }
+            
+            var last = eventsToApply.Last();
+
+            return new Root<TAggregate>(aggregate, last.GetSequenceNumber(), last.GetGlobalSequenceNumber());
         }
 
-        public bool Exists<TAggregate>(Guid aggregateRootId) where TAggregate : AggregateRoot
+        public bool Exists<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue) where TAggregate : AggregateRoot
         {
             var firstEvent = _eventStore.Load(aggregateRootId, 0, 1).FirstOrDefault();
 
-            return firstEvent != null
-                   && firstEvent.Meta.ContainsKey(DomainEvent.MetadataKeys.Owner)
-                   && firstEvent.Meta[DomainEvent.MetadataKeys.Owner].ToString() == AggregateRoot.GetOwnerFromType(typeof(TAggregate));
+            return firstEvent != null && firstEvent.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber;
         }
 
         TAggregate CreateFreshAggregate<TAggregate>(Guid aggregateRootId) where TAggregate : AggregateRoot, new()
@@ -71,6 +80,10 @@ namespace d60.EventSorcerer.Aggregates
             }
         }
 
+        /// <summary>
+        /// Sensitive <see cref="IEventCollector"/> stub that can be mounted on an aggregate root when it is in a state
+        /// where it is NOT allowed to emit events.
+        /// </summary>
         class ThrowingEventCollector : IEventCollector, IDisposable
         {
             readonly AggregateRoot _root;

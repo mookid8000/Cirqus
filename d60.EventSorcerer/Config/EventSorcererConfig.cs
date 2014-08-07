@@ -96,10 +96,11 @@ namespace d60.EventSorcerer.Config
         {
             var unitOfWork = new UnitOfWork();
             var handler = _commandMapper.GetHandlerFor<TCommand, TAggregateRoot>();
-            var aggregateRoot = _aggregateRootRepository.Get<TAggregateRoot>(command.AggregateRootId);
+            var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(command.AggregateRootId);
+            var aggregateRoot = aggregateRootInfo.AggregateRoot;
 
             aggregateRoot.EventCollector = unitOfWork;
-            aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(_eventStore);
+            aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);
 
             handler(command, aggregateRoot);
 

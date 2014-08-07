@@ -59,7 +59,7 @@ namespace d60.EventSorcerer.Aggregates
             }
 
             var now = Time.GetUtcNow();
-            var sequenceNumber = SequenceNumberGenerator.Next(Id);
+            var sequenceNumber = SequenceNumberGenerator.Next();
 
             e.Meta[DomainEvent.MetadataKeys.AggregateRootId] = Id;
             e.Meta[DomainEvent.MetadataKeys.TimeLocal] = now.ToLocalTime();
@@ -113,12 +113,13 @@ public void Apply({2} e)
                         typeof (TAggregateRoot), id, GetType()));
             }
 
-            if (!createIfNotExists && !AggregateRootRepository.Exists<TAggregateRoot>(id))
+            if (!createIfNotExists && !AggregateRootRepository.Exists<TAggregateRoot>(id, maxGlobalSequenceNumber: GlobalSequenceNumberCutoff))
             {
                 throw new ArgumentException(string.Format("Aggregate root {0} with ID {1} does not exist!", typeof(TAggregateRoot), id), "id");
             }
 
-            var aggregateRoot = AggregateRootRepository.Get<TAggregateRoot>(id, maxGlobalSequenceNumber: GlobalSequenceNumberCutoff);
+            var aggregateRootInfo = AggregateRootRepository.Get<TAggregateRoot>(id, maxGlobalSequenceNumber: GlobalSequenceNumberCutoff);
+            var aggregateRoot = aggregateRootInfo.AggregateRoot;
             aggregateRoot.EventCollector = EventCollector;
             aggregateRoot.SequenceNumberGenerator = SequenceNumberGenerator;
             return aggregateRoot;

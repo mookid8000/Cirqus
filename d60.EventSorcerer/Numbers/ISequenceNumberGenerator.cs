@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace d60.EventSorcerer.Numbers
+﻿namespace d60.EventSorcerer.Numbers
 {
     /// <summary>
     /// Implement this to provide logic on how stuff is sequentially numbered. Sequence number generators must ALWAYS start with the number 0 for each
@@ -8,6 +6,6 @@ namespace d60.EventSorcerer.Numbers
     /// </summary>
     public interface ISequenceNumberGenerator
     {
-        long Next(Guid aggregateRootId);
+        long Next();
     }
 }

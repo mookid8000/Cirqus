@@ -37,7 +37,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             _justAnotherViewViewManager = _factory.GetViewManagerFor<JustAnotherViewOther>();
             _viewThatCanThrowViewManager = _factory.GetViewManagerFor<ViewThatCanThrow>();
 
-            _eventDispatcher = new BasicEventDispatcher(new BasicAggregateRootRepository(_eventStore), _justAnotherViewViewManager, _viewThatCanThrowViewManager);
+            _eventDispatcher = new BasicEventDispatcher(new DefaultAggregateRootRepository(_eventStore), _justAnotherViewViewManager, _viewThatCanThrowViewManager);
         }
 
         [Test]

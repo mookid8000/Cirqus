@@ -20,7 +20,7 @@ namespace d60.EventSorcerer.Tests.Views
         {
             _viewManager = new InMemoryViewManager<SomeView>();
             _inMemoryEventStore = new InMemoryEventStore();
-            _eventDispatcher = new BasicEventDispatcher(new BasicAggregateRootRepository(_inMemoryEventStore), new IViewManager[] { _viewManager });
+            _eventDispatcher = new BasicEventDispatcher(new DefaultAggregateRootRepository(_inMemoryEventStore), new IViewManager[] { _viewManager });
         }
 
         [Test]

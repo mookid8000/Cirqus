@@ -11,7 +11,7 @@ namespace d60.EventSorcerer.Tests.Aggregates
         [Test]
         public void DefaultsToThrowingIfLoadedAggregateRootCannotBeFound()
         {
-            var someRoot = new BeetRoot {AggregateRootRepository = new BasicAggregateRootRepository(new InMemoryEventStore())};
+            var someRoot = new BeetRoot {AggregateRootRepository = new DefaultAggregateRootRepository(new InMemoryEventStore())};
 
             Assert.Throws<ArgumentException>(someRoot.LoadOtherBeetRootWithDefaultBehavior);
         }
@@ -19,7 +19,7 @@ namespace d60.EventSorcerer.Tests.Aggregates
         [Test]
         public void CanBeToldToIgnoreNonExistenceOfOtherAggregateRoot()
         {
-            var someRoot = new BeetRoot {AggregateRootRepository = new BasicAggregateRootRepository(new InMemoryEventStore())};
+            var someRoot = new BeetRoot {AggregateRootRepository = new DefaultAggregateRootRepository(new InMemoryEventStore())};
 
             Assert.DoesNotThrow(someRoot.LoadOtherBeetRootButOverrideBehavior);
         }

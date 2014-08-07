@@ -28,7 +28,7 @@ namespace d60.EventSorcerer.Tests.Contracts.AggregateRootRepository
             _factory.SaveEvent<SomeEvent, SomeRoot>(NewEvent(aggregateRootId, 3));
             _factory.SaveEvent<SomeEvent, SomeRoot>(NewEvent(aggregateRootId, 4));
 
-            var instance = _repo.Get<SomeRoot>(aggregateRootId);
+            var instance = _repo.Get<SomeRoot>(aggregateRootId).AggregateRoot;
 
             Assert.That(instance.EventCounter, Is.EqualTo(4));
         }

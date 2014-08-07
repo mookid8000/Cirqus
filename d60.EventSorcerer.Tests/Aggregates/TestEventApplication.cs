@@ -23,7 +23,7 @@ namespace d60.EventSorcerer.Tests.Aggregates
                 SequenceNumberGenerator = new TestSequenceNumberGenerator()
             };
             someAggregate.Initialize(Guid.NewGuid());
-            someAggregate.AggregateRootRepository = new BasicAggregateRootRepository(new InMemoryEventStore());
+            someAggregate.AggregateRootRepository = new DefaultAggregateRootRepository(new InMemoryEventStore());
 
             someAggregate.DoSomething();
 
@@ -47,7 +47,7 @@ namespace d60.EventSorcerer.Tests.Aggregates
                 SequenceNumberGenerator = sequenceNumberGenerator
             };
             someAggregate.Initialize(aggregateRootId);
-            someAggregate.AggregateRootRepository = new BasicAggregateRootRepository(new InMemoryEventStore());
+            someAggregate.AggregateRootRepository = new DefaultAggregateRootRepository(new InMemoryEventStore());
 
             someAggregate.DoSomething();
 
@@ -56,7 +56,6 @@ namespace d60.EventSorcerer.Tests.Aggregates
             Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.TimeUtc], Is.EqualTo(now));
             Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.TimeLocal], Is.EqualTo(now.ToLocalTime()));
             Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.Owner], Is.EqualTo("SomeAggregate"));
-            Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.RootVersion], Is.EqualTo(1));
             Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber], Is.EqualTo(78));
             Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId], Is.EqualTo(aggregateRootId));
         }

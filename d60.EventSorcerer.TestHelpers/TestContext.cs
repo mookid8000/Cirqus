@@ -20,14 +20,14 @@ namespace d60.EventSorcerer.TestHelpers
         readonly Serializer _serializer = new Serializer("<events>");
         readonly InMemoryEventCollector _eventCollector = new InMemoryEventCollector();
         readonly InMemoryEventStore _eventStore = new InMemoryEventStore();
-        readonly BasicAggregateRootRepository _aggregateRootRepository;
+        readonly DefaultAggregateRootRepository _aggregateRootRepository;
         readonly BasicEventDispatcher _eventDispatcher;
         DateTime _currentTime = DateTime.MinValue;
         bool _initialized;
 
         public TestContext()
         {
-            _aggregateRootRepository = new BasicAggregateRootRepository(_eventStore);
+            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
             _eventDispatcher = new BasicEventDispatcher(_aggregateRootRepository);
         }
 
@@ -44,10 +44,11 @@ namespace d60.EventSorcerer.TestHelpers
 
         public TAggregateRoot Get<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
-            var aggregateRoot = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId);
+            var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId);
+            var aggregateRoot = aggregateRootInfo.AggregateRoot;
 
             aggregateRoot.EventCollector = _eventCollector;
-            aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(_eventStore);
+            aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);
 
             return aggregateRoot;
         }

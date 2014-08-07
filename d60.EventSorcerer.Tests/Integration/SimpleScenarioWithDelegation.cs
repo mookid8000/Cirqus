@@ -28,14 +28,14 @@ namespace d60.EventSorcerer.Tests.Integration
     public class SimpleScenarioWithDelegation : FixtureBase
     {
         EventSorcererConfig _eventSorcerer;
-        BasicAggregateRootRepository _aggregateRootRepository;
+        DefaultAggregateRootRepository _aggregateRootRepository;
         InMemoryEventStore _eventStore;
 
         protected override void DoSetUp()
         {
             _eventStore = new InMemoryEventStore();
 
-            _aggregateRootRepository = new BasicAggregateRootRepository(_eventStore);
+            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
 
             var commandMapper = new CommandMapper()
                 .Map<BearSomeChildrenCommand, ProgrammerAggregate>((c, a) => a.BearChildren(c.IdsOfChildren));
@@ -90,7 +90,7 @@ namespace d60.EventSorcerer.Tests.Integration
         {
             return _eventStore
                 .Select(e => e.GetAggregateRootId()).Distinct()
-                .Select(aggregateRootId => _aggregateRootRepository.Get<ProgrammerAggregate>(aggregateRootId))
+                .Select(aggregateRootId => _aggregateRootRepository.Get<ProgrammerAggregate>(aggregateRootId).AggregateRoot)
                 .Cast<AggregateRoot>()
                 .ToList();
         }

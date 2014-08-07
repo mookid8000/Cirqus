@@ -25,7 +25,7 @@ namespace d60.EventSorcerer.Tests.Views
             var eventStore = new InMemoryEventStore();
             _viewManagers = new InMemoryViewManager<MyView>();
 
-            var basicAggregateRootRepository = new BasicAggregateRootRepository(eventStore);
+            var basicAggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
 
             _eventSorcerer = new EventSorcererConfig(eventStore, basicAggregateRootRepository, new CommandMapper(), new BasicEventDispatcher(basicAggregateRootRepository, _viewManagers));
         }

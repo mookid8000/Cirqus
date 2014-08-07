@@ -30,7 +30,7 @@ many time in parallel, and after some time the consistency of everything is veri
 ")]
     public class SimpleScenarioWithConcurrency : FixtureBase
     {
-        BasicAggregateRootRepository _aggregateRootRepository;
+        DefaultAggregateRootRepository _aggregateRootRepository;
         EventSorcererConfig _eventSorcerer;
         MongoDatabase _mongoDatabase;
 
@@ -39,7 +39,7 @@ many time in parallel, and after some time the consistency of everything is veri
             _mongoDatabase = MongoHelper.InitializeTestDatabase();
             var eventStore = new MongoDbEventStore(_mongoDatabase, "events", automaticallyCreateIndexes: true);
 
-            _aggregateRootRepository = new BasicAggregateRootRepository(eventStore);
+            _aggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
             var commandMapper = new CommandMapper()
                 .Map<TakeNextStepCommand, ProgrammerAggregate>((c, a) => a.TakeNextStep());
 

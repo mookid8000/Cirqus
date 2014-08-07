@@ -16,7 +16,7 @@ namespace d60.EventSorcerer.Tests.Commands
     {
         EventSorcererConfig _eventSorcerer;
         CommandMapper _commandMapper;
-        BasicAggregateRootRepository _aggregateRootRepository;
+        DefaultAggregateRootRepository _aggregateRootRepository;
         InMemoryEventStore _eventStore;
 
         protected override void DoSetUp()
@@ -24,7 +24,7 @@ namespace d60.EventSorcerer.Tests.Commands
             _eventStore = new InMemoryEventStore();
             var eventDispatcher = new ConsoleOutEventDispatcher();
 
-            _aggregateRootRepository = new BasicAggregateRootRepository(_eventStore);
+            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
             _commandMapper = new CommandMapper();
 
             _eventSorcerer = new EventSorcererConfig(_eventStore, _aggregateRootRepository, _commandMapper, eventDispatcher);

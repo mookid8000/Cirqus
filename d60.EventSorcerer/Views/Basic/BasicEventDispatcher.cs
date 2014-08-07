@@ -91,7 +91,9 @@ namespace d60.EventSorcerer.Views.Basic
 
             public TAggregateRoot Load<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
             {
-                return _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, maxGlobalSequenceNumber: globalSequenceNumber);
+                return _aggregateRootRepository
+                    .Get<TAggregateRoot>(aggregateRootId, maxGlobalSequenceNumber: globalSequenceNumber)
+                    .AggregateRoot;
             }
         }
 

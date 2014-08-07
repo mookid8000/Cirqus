@@ -46,7 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggregates\AggregateRoot.cs" />
-    <Compile Include="Aggregates\BasicAggregateRootRepository.cs" />
+    <Compile Include="Aggregates\DefaultAggregateRootRepository.cs" />
     <Compile Include="Aggregates\IAggregateRootRepository.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\CommandMapper.cs" />
