@@ -7,8 +7,11 @@
     <BuildOutputFolder>$(Root)\deploy</BuildOutputFolder>
     <NuGetFolder>$(Root)\.nuget</NuGetFolder>
     <NuSpecFolder>$(Root)\nuspec</NuSpecFolder>
+    <ToolsFolder>$(Root)\tools</ToolsFolder>
 
     <DefaultNuSpecVersion>VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT</DefaultNuSpecVersion>
+
+    <ReleaseMaster>$(ToolsFolder)\ReleaseMaster\ReleaseMaster.exe</ReleaseMaster>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +22,10 @@
   <Target Name="PrintNuSpec">
     <Message Text="NuSpecFiles: @(NuSpecFiles)"/>
     <Message Text="DepNuSpecFiles: @(DependantNuSpecFiles)"/>
+  </Target>
+
+  <Target Name="release">
+    <Exec Command="$(ReleaseMaster) &quot;$(Root)&quot; &quot;msbuild&quot; &quot;/t:release_packages /p:Version={version}&quot;"/>
   </Target>
 
   <Target Name="release_packages">
