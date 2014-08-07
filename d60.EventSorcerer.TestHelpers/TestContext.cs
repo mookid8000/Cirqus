@@ -115,7 +115,7 @@ namespace d60.EventSorcerer.TestHelpers
             domainEvent.Meta[DomainEvent.MetadataKeys.TimeUtc] = now;
 
             domainEvent.Meta.TakeFromAttributes(domainEvent.GetType());
-            domainEvent.Meta.TakeFromAttributes(GetType());
+            domainEvent.Meta.TakeFromAttributes(typeof(TAggregateRoot));
 
             _serializer.EnsureSerializability(domainEvent);
 

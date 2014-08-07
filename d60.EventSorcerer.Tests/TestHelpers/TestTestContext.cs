@@ -4,6 +4,7 @@ using System.Linq;
 using d60.EventSorcerer.Aggregates;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Extensions;
+using d60.EventSorcerer.Numbers;
 using d60.EventSorcerer.Views.Basic;
 using NUnit.Framework;
 using TestContext = d60.EventSorcerer.TestHelpers.TestContext;
@@ -19,6 +20,29 @@ namespace d60.EventSorcerer.Tests.TestHelpers
         {
             _context = new TestContext();
         }
+
+        [Test]
+        public void AlsoPicksUpMetadataFromAggregate()
+        {
+            // arrange
+            // act
+            _context.Save(Guid.NewGuid(), new EventForThatRoot());
+
+            // assert
+            var thatEvent = _context.History.Cast<EventForThatRoot>().Single();
+            Assert.That(thatEvent.Meta["root"], Is.EqualTo("bim"));
+            Assert.That(thatEvent.Meta["event"], Is.EqualTo("bom"));
+        }
+
+        [Meta("event", "bom")]
+        class EventForThatRoot : DomainEvent<RootWithMetadata> { }
+        
+        [Meta("root", "bim")]
+        class RootWithMetadata : AggregateRoot
+        {
+            
+        }
+
 
         [Test]
         public void CanDispatchToViews()
