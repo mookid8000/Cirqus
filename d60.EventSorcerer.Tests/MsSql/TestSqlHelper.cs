@@ -7,9 +7,7 @@ namespace d60.EventSorcerer.Tests.MsSql
 {
     public class TestSqlHelper
     {
-        const string ConnectionStringNamezzz = "testdb";
-
-        public static string ConnectionString = SqlHelper.GetConnectionString(ConnectionStringNamezzz);
+        public static string ConnectionString = SqlHelper.GetConnectionString("sqltestdb");
 
         public static void EnsureTestDatabaseExists()
         {
