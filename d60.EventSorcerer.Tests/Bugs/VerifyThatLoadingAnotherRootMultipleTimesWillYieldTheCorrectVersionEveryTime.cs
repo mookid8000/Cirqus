@@ -92,7 +92,9 @@ namespace d60.EventSorcerer.Tests.Bugs
 
             public void Apply(InformationGrabbedFrom e)
             {
-                _informationGrabbings.Add(Tuple.Create(e.OtherRootId, Load<Root>(e.OtherRootId).Name));
+                var name = Load<Root>(e.OtherRootId).Name;
+                Console.WriteLine("This is what I grabbed: {0}", name);
+                _informationGrabbings.Add(Tuple.Create(e.OtherRootId, name));
             }
 
             public void Apply(RootNamed e)

@@ -23,6 +23,12 @@ namespace d60.EventSorcerer.MongoDb.Views
             _viewCollection = database.GetCollection<TView>(collectionName);
             _viewCollection.CreateIndex(IndexKeys<TView>.Ascending(v => v.LastGlobalSequenceNumber));
         }
+        
+        public MongoDbCatchUpViewManager(MongoCollection<TView> viewCollection)
+        {
+            _viewCollection = viewCollection;
+            _viewCollection.CreateIndex(IndexKeys<TView>.Ascending(v => v.LastGlobalSequenceNumber));
+        }
 
         public IQueryable<TView> Linq()
         {
