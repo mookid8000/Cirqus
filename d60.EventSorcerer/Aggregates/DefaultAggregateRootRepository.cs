@@ -18,7 +18,7 @@ namespace d60.EventSorcerer.Aggregates
             _eventStore = eventStore;
         }
 
-        public Root<TAggregate> Get<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue) where TAggregate : AggregateRoot, new()
+        public AggregateRootInfo<TAggregate> Get<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue) where TAggregate : AggregateRoot, new()
         {
             var aggregate = CreateFreshAggregate<TAggregate>(aggregateRootId);
             var domainEventsForThisAggregate = _eventStore.Load(aggregateRootId);
@@ -31,12 +31,12 @@ namespace d60.EventSorcerer.Aggregates
 
             if (!eventsToApply.Any())
             {
-                return new Root<TAggregate>(aggregate, -1, -1);
+                return AggregateRootInfo<TAggregate>.New(aggregate);
             }
             
             var last = eventsToApply.Last();
 
-            return new Root<TAggregate>(aggregate, last.GetSequenceNumber(), last.GetGlobalSequenceNumber());
+            return AggregateRootInfo<TAggregate>.Old(aggregate, last.GetSequenceNumber(), last.GetGlobalSequenceNumber());
         }
 
         public bool Exists<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue) where TAggregate : AggregateRoot

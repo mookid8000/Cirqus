@@ -11,7 +11,7 @@ namespace d60.EventSorcerer.Aggregates
         /// Returns a fully hydrated and ready to use aggregate root instance of the specified type. Optionally, if <seealso cref="maxGlobalSequenceNumber"/> is set,
         /// only events up until (and including) the specified sequence number are applied.
         /// </summary>
-        Root<TAggregate> Get<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue) where TAggregate : AggregateRoot, new();
+        AggregateRootInfo<TAggregate> Get<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue) where TAggregate : AggregateRoot, new();
 
         /// <summary>
         /// Checks whether an aggregate root of the specified type with the specified ID exists. Optionally, if <seealso cref="maxGlobalSequenceNumber"/> is set,
@@ -20,9 +20,19 @@ namespace d60.EventSorcerer.Aggregates
         bool Exists<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue) where TAggregate : AggregateRoot;
     }
 
-    public class Root<TAggregate> where TAggregate : AggregateRoot
+    public class AggregateRootInfo<TAggregate> where TAggregate : AggregateRoot
     {
-        public Root(TAggregate aggregateRoot, long lastSeqNo, long lastGlobalSeqNo)
+        public static AggregateRootInfo<TAggregate> New(TAggregate aggregateRoot)
+        {
+            return new AggregateRootInfo<TAggregate>(aggregateRoot, -1, -1);
+        }
+
+        public static AggregateRootInfo<TAggregate> Old(TAggregate aggregateRoot, long lastSeqNo, long lastGlobalSeqNo)
+        {
+            return new AggregateRootInfo<TAggregate>(aggregateRoot, lastSeqNo, lastGlobalSeqNo);
+        }
+
+        AggregateRootInfo(TAggregate aggregateRoot, long lastSeqNo, long lastGlobalSeqNo)
         {
             AggregateRoot = aggregateRoot;
             LastSeqNo = lastSeqNo;
@@ -30,7 +40,14 @@ namespace d60.EventSorcerer.Aggregates
         }
 
         public TAggregate AggregateRoot { get; private set; }
+
         public long LastSeqNo { get; private set; }
+
         public long LastGlobalSeqNo { get; private set; }
+
+        public bool IsNew
+        {
+            get { return LastSeqNo == -1; }
+        }
     }
 }

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using d60.EventSorcerer.Events;
-using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.Numbers;
 
 namespace d60.EventSorcerer.Aggregates
@@ -15,8 +13,14 @@ namespace d60.EventSorcerer.Aggregates
         {
             Id = id;
         }
+        internal void InvokeCreated()
+        {
+            Created();
+        }
 
         public Guid Id { get; private set; }
+
+        protected virtual void Created() { }
 
         protected void Emit<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
         {
@@ -66,7 +70,7 @@ namespace d60.EventSorcerer.Aggregates
             e.Meta[DomainEvent.MetadataKeys.TimeUtc] = now;
             e.Meta[DomainEvent.MetadataKeys.SequenceNumber] = sequenceNumber;
             e.Meta[DomainEvent.MetadataKeys.Owner] = GetOwnerFromType(GetType());
-            
+
             e.Meta.TakeFromAttributes(eventType);
             e.Meta.TakeFromAttributes(GetType());
 
@@ -110,7 +114,7 @@ public void Apply({2} e)
                 throw new InvalidOperationException(
                     string.Format(
                         "Attempted to Load {0} with ID {1} from {2}, but it has not been initialize with an aggregate root repository!",
-                        typeof (TAggregateRoot), id, GetType()));
+                        typeof(TAggregateRoot), id, GetType()));
             }
 
             if (!createIfNotExists && !AggregateRootRepository.Exists<TAggregateRoot>(id, maxGlobalSequenceNumber: GlobalSequenceNumberCutoff))

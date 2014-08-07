@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using d60.EventSorcerer.Aggregates;
-using d60.EventSorcerer.Config;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.Numbers;
@@ -49,6 +48,11 @@ namespace d60.EventSorcerer.TestHelpers
 
             aggregateRoot.EventCollector = _eventCollector;
             aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);
+
+            if (aggregateRootInfo.IsNew)
+            {
+                aggregateRoot.InvokeCreated();
+            }
 
             return aggregateRoot;
         }
