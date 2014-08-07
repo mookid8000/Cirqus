@@ -39,3 +39,7 @@
 
 * Made an explicit divide (made it possible, at least) between catch-up and direct-dispatch view managers
 * Added LINQ capabilities to MongoDB view manager
+
+## 0.0.22
+
+* Introduced `Created` hook that can be overridden on aggregate roots, e.g. to emit the infamous `YayIWasCreated` event.
