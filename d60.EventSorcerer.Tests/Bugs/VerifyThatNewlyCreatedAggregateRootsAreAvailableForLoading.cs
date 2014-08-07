@@ -39,7 +39,6 @@ namespace d60.EventSorcerer.Tests.Bugs
             Assert.That(reloadedContract.AssignedCounterpartName, Is.EqualTo("muggie"));
         }
 
-
         public class Counterpart : AggregateRoot, IEmit<CounterpartNamed>
         {
             public string Name { get; private set; }
