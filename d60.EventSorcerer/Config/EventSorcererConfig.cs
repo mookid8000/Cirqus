@@ -94,13 +94,15 @@ namespace d60.EventSorcerer.Config
             where TCommand : Command<TAggregateRoot>
             where TAggregateRoot : AggregateRoot, new()
         {
-            var unitOfWork = new UnitOfWork();
+            var unitOfWork = new RealUnitOfWork();
             var handler = _commandMapper.GetHandlerFor<TCommand, TAggregateRoot>();
             var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(command.AggregateRootId);
             var aggregateRoot = aggregateRootInfo.AggregateRoot;
 
-            aggregateRoot.EventCollector = unitOfWork;
+            aggregateRoot.UnitOfWork = unitOfWork;
             aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);
+
+            unitOfWork.AddToCache(aggregateRoot);
 
             handler(command, aggregateRoot);
 

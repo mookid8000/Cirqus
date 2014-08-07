@@ -69,6 +69,7 @@
     <Compile Include="Aggregates\TestLoading.cs" />
     <Compile Include="Aggregates\TestVersionAttributeApplication.cs" />
     <Compile Include="Aggregates\TestVersioningWhenLoadingAnotherAggregate.cs" />
+    <Compile Include="Bugs\VerifyThatNewlyCreatedAggregateRootsAreAvailableForLoading.cs" />
     <Compile Include="Commands\TestCommandProcessing.cs" />
     <Compile Include="Contracts\AggregateRootRepository\Factories\BasicAggregateRootRepositoryFactory.cs" />
     <Compile Include="Contracts\AggregateRootRepository\IAggregateRootRepositoryFactory.cs" />
@@ -98,7 +99,7 @@
     <Compile Include="MsSql\TestEntityFrameworkViewManager.cs" />
     <Compile Include="MsSql\TestMsSqlEventStore.cs" />
     <Compile Include="MsSql\TestSqlHelper.cs" />
-    <Compile Include="Stubs\ConsoleOutEventCollector.cs" />
+    <Compile Include="Stubs\ConsoleOutUnitOfWork.cs" />
     <Compile Include="Stubs\ConsoleOutEventDispatcher.cs" />
     <Compile Include="Stubs\ThrowingViewContext.cs" />
     <Compile Include="TestCategories.cs" />

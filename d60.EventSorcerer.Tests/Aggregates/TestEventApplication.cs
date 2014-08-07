@@ -19,7 +19,7 @@ namespace d60.EventSorcerer.Tests.Aggregates
         {
             var someAggregate = new SomeAggregate
             {
-                EventCollector = new ConsoleOutEventCollector(),
+                UnitOfWork = new ConsoleOutUnitOfWork(),
                 SequenceNumberGenerator = new TestSequenceNumberGenerator()
             };
             someAggregate.Initialize(Guid.NewGuid());
@@ -38,12 +38,12 @@ namespace d60.EventSorcerer.Tests.Aggregates
             TimeMachine.FixCurrentTimeTo(now);
 
             var aggregateRootId = Guid.NewGuid();
-            var eventCollector = new InMemoryEventCollector();
+            var eventCollector = new InMemoryUnitOfWork();
             var sequenceNumberGenerator = new TestSequenceNumberGenerator(startWith: 78);
 
             var someAggregate = new SomeAggregate
             {
-                EventCollector = eventCollector,
+                UnitOfWork = eventCollector,
                 SequenceNumberGenerator = sequenceNumberGenerator
             };
             someAggregate.Initialize(aggregateRootId);

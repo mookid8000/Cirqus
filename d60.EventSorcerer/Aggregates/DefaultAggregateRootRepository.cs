@@ -61,7 +61,7 @@ namespace d60.EventSorcerer.Aggregates
         {
             var dynamicAggregate = (dynamic) aggregate;
 
-            using (new ThrowingEventCollector(aggregate))
+            using (new ThrowingUnitOfWork(aggregate))
             {
                 foreach (var e in domainEventsForThisAggregate)
                 {
@@ -81,30 +81,44 @@ namespace d60.EventSorcerer.Aggregates
         }
 
         /// <summary>
-        /// Sensitive <see cref="IEventCollector"/> stub that can be mounted on an aggregate root when it is in a state
+        /// Sensitive <see cref="IUnitOfWork"/> stub that can be mounted on an aggregate root when it is in a state
         /// where it is NOT allowed to emit events.
         /// </summary>
-        class ThrowingEventCollector : IEventCollector, IDisposable
+        class ThrowingUnitOfWork : IUnitOfWork, IDisposable
         {
             readonly AggregateRoot _root;
-            readonly IEventCollector _originalEventCollector;
+            readonly IUnitOfWork _originalUnitOfWork;
 
-            public ThrowingEventCollector(AggregateRoot root)
+            public ThrowingUnitOfWork(AggregateRoot root)
             {
                 _root = root;
-                _originalEventCollector = _root.EventCollector;
-                _root.EventCollector = this;
+                _originalUnitOfWork = _root.UnitOfWork;
+                if (_originalUnitOfWork == null)
+                {
+                    int a = 2;
+                }
+                _root.UnitOfWork = this;
             }
 
-            public void Add(DomainEvent e)
+            public void AddEmittedEvent(DomainEvent e)
             {
                 throw new InvalidOperationException(string.Format("The aggregate root of type {0} with ID {1} attempted to emit event {2} while applying events, which is not allowed",
                     _root.GetType(), _root.Id, e));
             }
 
+            public TAggregateRoot GetAggregateRootFromCache<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot
+            {
+                return _originalUnitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId);
+            }
+
+            public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot) where TAggregateRoot : AggregateRoot
+            {
+                _originalUnitOfWork.AddToCache(aggregateRoot);
+            }
+
             public void Dispose()
             {
-                _root.EventCollector = _originalEventCollector;
+                _root.UnitOfWork = _originalUnitOfWork;
             }
         }
     }

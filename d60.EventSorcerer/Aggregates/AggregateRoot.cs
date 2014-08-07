@@ -6,13 +6,17 @@ namespace d60.EventSorcerer.Aggregates
 {
     public abstract class AggregateRoot
     {
-        internal IEventCollector EventCollector { get; set; }
+        internal IUnitOfWork UnitOfWork { get; set; }
+
         internal ISequenceNumberGenerator SequenceNumberGenerator { get; set; }
+        
         internal IAggregateRootRepository AggregateRootRepository { get; set; }
+
         internal void Initialize(Guid id)
         {
             Id = id;
         }
+        
         internal void InvokeCreated()
         {
             Created();
@@ -45,7 +49,7 @@ namespace d60.EventSorcerer.Aggregates
 
             var eventType = e.GetType();
 
-            if (EventCollector == null)
+            if (UnitOfWork == null)
             {
                 throw new InvalidOperationException(string.Format("Attempted to emit event {0}, but the aggreate root does not have an event collector!", e));
             }
@@ -82,17 +86,10 @@ namespace d60.EventSorcerer.Aggregates
             }
             catch (Exception exception)
             {
-                throw new ApplicationException(string.Format(@"Could not apply event {0} to {1} - please make sure that the aggregate root type is public and contains an application method with the following signature:
-
-public void Apply({2} e)
-{{
-    // change aggregate root state in here
-}}
-
-", e, this, eventType.Name), exception);
+                throw new ApplicationException(string.Format(@"Could not apply event {0} to {1} - please check the inner exception, and/or make sure that the aggregate root type is PUBLIC", e, this), exception);
             }
 
-            EventCollector.Add(e);
+            UnitOfWork.AddEmittedEvent(e);
         }
 
         internal static string GetOwnerFromType(Type aggregateRootType)
@@ -117,6 +114,13 @@ public void Apply({2} e)
                         typeof(TAggregateRoot), id, GetType()));
             }
 
+            var cachedAggregateRoot = UnitOfWork.GetAggregateRootFromCache<TAggregateRoot>(id);
+
+            if (cachedAggregateRoot != null)
+            {
+                return cachedAggregateRoot;
+            }
+
             if (!createIfNotExists && !AggregateRootRepository.Exists<TAggregateRoot>(id, maxGlobalSequenceNumber: GlobalSequenceNumberCutoff))
             {
                 throw new ArgumentException(string.Format("Aggregate root {0} with ID {1} does not exist!", typeof(TAggregateRoot), id), "id");
@@ -124,8 +128,11 @@ public void Apply({2} e)
 
             var aggregateRootInfo = AggregateRootRepository.Get<TAggregateRoot>(id, maxGlobalSequenceNumber: GlobalSequenceNumberCutoff);
             var aggregateRoot = aggregateRootInfo.AggregateRoot;
-            aggregateRoot.EventCollector = EventCollector;
+            aggregateRoot.UnitOfWork = UnitOfWork;
             aggregateRoot.SequenceNumberGenerator = SequenceNumberGenerator;
+            
+            UnitOfWork.AddToCache(aggregateRoot);
+            
             return aggregateRoot;
         }
     }

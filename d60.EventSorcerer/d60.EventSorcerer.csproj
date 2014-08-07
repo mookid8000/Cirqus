@@ -58,8 +58,8 @@
     <Compile Include="Numbers\CachingSequenceNumberGenerator.cs" />
     <Compile Include="Events\IEmit.cs" />
     <Compile Include="Exceptions\ConcurrencyException.cs" />
-    <Compile Include="Events\IEventCollector.cs" />
-    <Compile Include="Commands\UnitOfWork.cs" />
+    <Compile Include="Events\IUnitOfWork.cs" />
+    <Compile Include="Commands\RealUnitOfWork.cs" />
     <Compile Include="Events\DomainEvent.cs" />
     <Compile Include="Events\IEventStore.cs" />
     <Compile Include="Events\EventValidation.cs" />

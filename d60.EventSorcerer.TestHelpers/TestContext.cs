@@ -17,7 +17,7 @@ namespace d60.EventSorcerer.TestHelpers
     public class TestContext
     {
         readonly Serializer _serializer = new Serializer("<events>");
-        readonly InMemoryEventCollector _eventCollector = new InMemoryEventCollector();
+        readonly InMemoryUnitOfWork _unitOfWork = new InMemoryUnitOfWork();
         readonly InMemoryEventStore _eventStore = new InMemoryEventStore();
         readonly DefaultAggregateRootRepository _aggregateRootRepository;
         readonly BasicEventDispatcher _eventDispatcher;
@@ -36,6 +36,15 @@ namespace d60.EventSorcerer.TestHelpers
             return this;
         }
 
+        public IEnumerable<AggregateRootTestInfo> AggregateRootsInHistory
+        {
+            get
+            {
+                return _eventStore.GroupBy(e => e.GetAggregateRootId())
+                    .Select(group => new AggregateRootTestInfo(group.Key, group.Max(g => g.GetSequenceNumber()), group.Max(g => g.GetGlobalSequenceNumber())));
+            }
+        }
+
         public void SetCurrentTime(DateTime fixedCurrentTime)
         {
             _currentTime = fixedCurrentTime;
@@ -46,8 +55,10 @@ namespace d60.EventSorcerer.TestHelpers
             var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId);
             var aggregateRoot = aggregateRootInfo.AggregateRoot;
 
-            aggregateRoot.EventCollector = _eventCollector;
+            aggregateRoot.UnitOfWork = _unitOfWork;
             aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);
+
+            _unitOfWork.AddToCache(aggregateRoot);
 
             if (aggregateRootInfo.IsNew)
             {
@@ -76,7 +87,7 @@ namespace d60.EventSorcerer.TestHelpers
 
             _eventStore.Save(Guid.NewGuid(), domainEvents);
 
-            _eventCollector.Clear();
+            _unitOfWork.Clear();
 
             _eventDispatcher.Dispatch(_eventStore, domainEvents);
         }
@@ -148,7 +159,7 @@ namespace d60.EventSorcerer.TestHelpers
         /// </summary>
         public IEnumerable<DomainEvent> UnitOfWork
         {
-            get { return _eventCollector.ToList(); }
+            get { return _unitOfWork.ToList(); }
         }
 
         /// <summary>
@@ -157,6 +168,27 @@ namespace d60.EventSorcerer.TestHelpers
         public IEnumerable<DomainEvent> History
         {
             get { return _eventStore.Stream().ToList(); }
+        }
+    }
+
+    public class AggregateRootTestInfo  
+    {
+        public AggregateRootTestInfo(Guid id, long seqNo, long globalSeqNo)
+        {
+            Id = id;
+            SeqNo = seqNo;
+            GlobalSeqNo = globalSeqNo;
+        }
+
+        public Guid Id { get; private set; }
+        
+        public long SeqNo { get; private set; }
+        
+        public long GlobalSeqNo { get; private set; }
+        public override string ToString()
+        
+        {
+            return string.Format("{0}: {1} ({2})", Id, SeqNo, GlobalSeqNo);
         }
     }
 }
