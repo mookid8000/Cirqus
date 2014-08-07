@@ -18,7 +18,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{756E55
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".solution items", ".solution items", "{53C890A9-D587-4BD6-B69C-5B01F64B39F1}"
 	ProjectSection(SolutionItems) = preProject
-		build.proj = build.proj
 		CHANGELOG.md = CHANGELOG.md
 		README.md = README.md
 	EndProjectSection
@@ -42,6 +41,13 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integration", "integration", "{AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.EventSorcerer.EntityFramework", "d60.EventSorcerer.EntityFramework\d60.EventSorcerer.EntityFramework.csproj", "{925D8D5E-B695-4DC0-B1B6-66955C964576}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{87D0C01A-A3ED-42DC-B173-B797F7717348}"
+	ProjectSection(SolutionItems) = preProject
+		build.bat = build.bat
+		build.proj = build.proj
+		release.bat = release.bat
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -85,5 +91,6 @@ Global
 		{407E215D-36B1-46F9-A39F-39465ADC4F2D} = {53C890A9-D587-4BD6-B69C-5B01F64B39F1}
 		{44D72FC8-F786-47A7-8D83-3D926D4E7DB0} = {89F6887C-D659-4483-9BFC-DBC7C2BC29F8}
 		{925D8D5E-B695-4DC0-B1B6-66955C964576} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
+		{87D0C01A-A3ED-42DC-B173-B797F7717348} = {53C890A9-D587-4BD6-B69C-5B01F64B39F1}
 	EndGlobalSection
 EndGlobal
