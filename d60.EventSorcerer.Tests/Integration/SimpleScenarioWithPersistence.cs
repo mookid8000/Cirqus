@@ -5,6 +5,7 @@ using d60.EventSorcerer.Config;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.MongoDb.Events;
 using d60.EventSorcerer.TestHelpers;
+using d60.EventSorcerer.Tests.Extensions;
 using d60.EventSorcerer.Tests.MongoDb;
 using NUnit.Framework;
 

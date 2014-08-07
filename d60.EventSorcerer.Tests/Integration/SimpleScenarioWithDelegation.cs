@@ -8,6 +8,7 @@ using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.TestHelpers;
 using d60.EventSorcerer.TestHelpers.Internals;
+using d60.EventSorcerer.Tests.Extensions;
 using NUnit.Framework;
 
 namespace d60.EventSorcerer.Tests.Integration

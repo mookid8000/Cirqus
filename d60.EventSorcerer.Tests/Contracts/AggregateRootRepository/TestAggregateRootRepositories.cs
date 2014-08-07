@@ -1,6 +1,7 @@
 ﻿using System;
 using d60.EventSorcerer.Aggregates;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.TestHelpers.Internals;
 using d60.EventSorcerer.Tests.Contracts.AggregateRootRepository.Factories;
 using NUnit.Framework;
 
@@ -28,7 +29,7 @@ namespace d60.EventSorcerer.Tests.Contracts.AggregateRootRepository
             _factory.SaveEvent<SomeEvent, SomeRoot>(NewEvent(aggregateRootId, 3));
             _factory.SaveEvent<SomeEvent, SomeRoot>(NewEvent(aggregateRootId, 4));
 
-            var instance = _repo.Get<SomeRoot>(aggregateRootId).AggregateRoot;
+            var instance = _repo.Get<SomeRoot>(aggregateRootId, new InMemoryUnitOfWork()).AggregateRoot;
 
             Assert.That(instance.EventCounter, Is.EqualTo(4));
         }

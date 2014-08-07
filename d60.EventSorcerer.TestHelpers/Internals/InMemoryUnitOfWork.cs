@@ -40,6 +40,7 @@ namespace d60.EventSorcerer.TestHelpers.Internals
         public void Clear()
         {
             _emittedEvents.Clear();
+            _cachedAggregateRoots.Clear();
         }
 
         public IEnumerator<DomainEvent> GetEnumerator()

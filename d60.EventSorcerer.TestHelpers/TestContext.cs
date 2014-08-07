@@ -52,7 +52,7 @@ namespace d60.EventSorcerer.TestHelpers
 
         public TAggregateRoot Get<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
-            var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId);
+            var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, _unitOfWork);
             var aggregateRoot = aggregateRootInfo.AggregateRoot;
 
             aggregateRoot.UnitOfWork = _unitOfWork;

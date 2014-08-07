@@ -9,14 +9,14 @@ namespace d60.EventSorcerer.Aggregates
         internal IUnitOfWork UnitOfWork { get; set; }
 
         internal ISequenceNumberGenerator SequenceNumberGenerator { get; set; }
-        
+
         internal IAggregateRootRepository AggregateRootRepository { get; set; }
 
         internal void Initialize(Guid id)
         {
             Id = id;
         }
-        
+
         internal void InvokeCreated()
         {
             Created();
@@ -110,7 +110,15 @@ namespace d60.EventSorcerer.Aggregates
             {
                 throw new InvalidOperationException(
                     string.Format(
-                        "Attempted to Load {0} with ID {1} from {2}, but it has not been initialize with an aggregate root repository!",
+                        "Attempted to Load {0} with ID {1} from {2}, but it has not been initialized with an aggregate root repository! The repository must be attached to the aggregate root in order to hydrate aggregate roots from events when they cannot be found in the current unit of work.",
+                        typeof(TAggregateRoot), id, GetType()));
+            }
+
+            if (UnitOfWork == null)
+            {
+                throw new InvalidOperationException(
+                    string.Format(
+                        "Attempted to Load {0} with ID {1} from {2}, but it has not been initialized with a unit of work! The unit of work must be attached to the aggregate root in order to cache hydrated aggregate roots within the current unit of work.",
                         typeof(TAggregateRoot), id, GetType()));
             }
 
@@ -126,13 +134,13 @@ namespace d60.EventSorcerer.Aggregates
                 throw new ArgumentException(string.Format("Aggregate root {0} with ID {1} does not exist!", typeof(TAggregateRoot), id), "id");
             }
 
-            var aggregateRootInfo = AggregateRootRepository.Get<TAggregateRoot>(id, maxGlobalSequenceNumber: GlobalSequenceNumberCutoff);
+            var aggregateRootInfo = AggregateRootRepository.Get<TAggregateRoot>(id, unitOfWork: UnitOfWork, maxGlobalSequenceNumber: GlobalSequenceNumberCutoff);
             var aggregateRoot = aggregateRootInfo.AggregateRoot;
-            aggregateRoot.UnitOfWork = UnitOfWork;
+            
             aggregateRoot.SequenceNumberGenerator = SequenceNumberGenerator;
-            
+
             UnitOfWork.AddToCache(aggregateRoot);
-            
+
             return aggregateRoot;
         }
     }

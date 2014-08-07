@@ -88,6 +88,7 @@
     <Compile Include="Contracts\Views\Factories\MongoDbViewManagerFactory.cs" />
     <Compile Include="Contracts\Views\BigCatchup.cs" />
     <Compile Include="Contracts\Views\ViewLocators.cs" />
+    <Compile Include="Extensions\Helpful.cs" />
     <Compile Include="FixtureBase.cs" />
     <Compile Include="Integration\SimpleScenarioWithDelegation.cs" />
     <Compile Include="Integration\SimpleScenarioWithConcurrency.cs" />

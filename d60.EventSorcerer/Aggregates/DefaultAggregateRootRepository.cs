@@ -18,7 +18,7 @@ namespace d60.EventSorcerer.Aggregates
             _eventStore = eventStore;
         }
 
-        public AggregateRootInfo<TAggregate> Get<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue) where TAggregate : AggregateRoot, new()
+        public AggregateRootInfo<TAggregate> Get<TAggregate>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue) where TAggregate : AggregateRoot, new()
         {
             var aggregate = CreateFreshAggregate<TAggregate>(aggregateRootId);
             var domainEventsForThisAggregate = _eventStore.Load(aggregateRootId);
@@ -26,6 +26,8 @@ namespace d60.EventSorcerer.Aggregates
             var eventsToApply = domainEventsForThisAggregate
                 .Where(e => e.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber)
                 .ToList();
+
+            aggregate.UnitOfWork = unitOfWork;
 
             ApplyEvents(aggregate, eventsToApply);
 
@@ -39,7 +41,7 @@ namespace d60.EventSorcerer.Aggregates
             return AggregateRootInfo<TAggregate>.Old(aggregate, last.GetSequenceNumber(), last.GetGlobalSequenceNumber());
         }
 
-        public bool Exists<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue) where TAggregate : AggregateRoot
+        public bool Exists<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue, IUnitOfWork unitOfWork = null) where TAggregate : AggregateRoot
         {
             var firstEvent = _eventStore.Load(aggregateRootId, 0, 1).FirstOrDefault();
 

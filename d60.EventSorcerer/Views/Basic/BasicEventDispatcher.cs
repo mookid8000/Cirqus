@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using d60.EventSorcerer.Aggregates;
+using d60.EventSorcerer.Commands;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Extensions;
 
@@ -26,11 +27,13 @@ namespace d60.EventSorcerer.Views.Basic
 
         public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
         {
+            var viewContext = new DefaultViewContext(_aggregateRootRepository);
+
             foreach (var manager in _viewManagers)
             {
                 try
                 {
-                    manager.Initialize(new DefaultViewContext(_aggregateRootRepository), eventStore, purgeExistingViews: purgeExistingViews);
+                    manager.Initialize(viewContext, eventStore, purgeExistingViews: purgeExistingViews);
 
                     HandleViewManagerSuccess(manager);
                 }
@@ -51,13 +54,13 @@ namespace d60.EventSorcerer.Views.Basic
                 {
                     if (viewManager is IDirectDispatchViewManager)
                     {
-                        ((IDirectDispatchViewManager) viewManager).Dispatch(new DefaultViewContext(_aggregateRootRepository),
+                        ((IDirectDispatchViewManager)viewManager).Dispatch(new DefaultViewContext(_aggregateRootRepository),
                             eventStore, eventList);
                     }
 
                     if (viewManager is ICatchUpViewManager)
                     {
-                        ((ICatchUpViewManager) viewManager).CatchUp(new DefaultViewContext(_aggregateRootRepository),
+                        ((ICatchUpViewManager)viewManager).CatchUp(new DefaultViewContext(_aggregateRootRepository),
                             eventStore, eventList.Last().GetGlobalSequenceNumber());
                     }
 
@@ -80,9 +83,10 @@ namespace d60.EventSorcerer.Views.Basic
             viewManager.Stopped = true;
         }
 
-        class DefaultViewContext : IViewContext
+        class DefaultViewContext : IViewContext, IUnitOfWork
         {
             readonly IAggregateRootRepository _aggregateRootRepository;
+            readonly RealUnitOfWork _realUnitOfWork = new RealUnitOfWork();
 
             public DefaultViewContext(IAggregateRootRepository aggregateRootRepository)
             {
@@ -92,8 +96,23 @@ namespace d60.EventSorcerer.Views.Basic
             public TAggregateRoot Load<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
             {
                 return _aggregateRootRepository
-                    .Get<TAggregateRoot>(aggregateRootId, maxGlobalSequenceNumber: globalSequenceNumber)
+                    .Get<TAggregateRoot>(aggregateRootId, this, maxGlobalSequenceNumber: globalSequenceNumber)
                     .AggregateRoot;
+            }
+
+            public void AddEmittedEvent(DomainEvent e)
+            {
+                throw new NotImplementedException("A view context cannot be used as a unit of work when emitting events");
+            }
+
+            public TAggregateRoot GetAggregateRootFromCache<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot
+            {
+                return _realUnitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId);
+            }
+
+            public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot) where TAggregateRoot : AggregateRoot
+            {
+                _realUnitOfWork.AddToCache(aggregateRoot);
             }
         }
 
