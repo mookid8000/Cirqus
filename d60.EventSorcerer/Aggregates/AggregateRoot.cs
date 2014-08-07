@@ -136,8 +136,8 @@ namespace d60.EventSorcerer.Aggregates
 
             var aggregateRootInfo = AggregateRootRepository.Get<TAggregateRoot>(id, unitOfWork: UnitOfWork, maxGlobalSequenceNumber: GlobalSequenceNumberCutoff);
             var aggregateRoot = aggregateRootInfo.AggregateRoot;
-            
-            aggregateRoot.SequenceNumberGenerator = SequenceNumberGenerator;
+
+            aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);
 
             UnitOfWork.AddToCache(aggregateRoot);
 
