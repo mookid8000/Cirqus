@@ -7,11 +7,13 @@ namespace d60.EventSorcerer.Tests.MsSql
 {
     public class TestSqlHelper
     {
-        public const string ConnectionStringName = "testdb";
+        const string ConnectionStringNamezzz = "testdb";
+
+        public static string ConnectionString = SqlHelper.GetConnectionString(ConnectionStringNamezzz);
 
         public static void EnsureTestDatabaseExists()
         {
-            var connectionString = SqlHelper.GetConnectionString(ConnectionStringName);
+            var connectionString = ConnectionString;
             var databaseName = SqlHelper.GetDatabaseName(connectionString);
             var masterConnectionString = connectionString.Replace(databaseName, "master");
 
@@ -44,11 +46,11 @@ END
             }
         }
 
-        public static void DropTable(string connectionString, string tableName)
+        public static void DropTable(string tableName)
         {
             try
             {
-                using (var conn = new SqlConnection(connectionString))
+                using (var conn = new SqlConnection(ConnectionString))
                 {
                     conn.Open();
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using d60.EventSorcerer.MsSql;
 using d60.EventSorcerer.MsSql.Views;
 using d60.EventSorcerer.Tests.MsSql;
 using d60.EventSorcerer.Views.Basic;
@@ -17,14 +16,14 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
         {
             TestSqlHelper.EnsureTestDatabaseExists();
 
-            _connectionString = SqlHelper.GetConnectionString(TestSqlHelper.ConnectionStringName);
+            _connectionString = TestSqlHelper.ConnectionString;
         }
 
         public IViewManager GetViewManagerFor<TView>() where TView : class, IView, ISubscribeTo, new()
         {
             var tableName = typeof(TView).Name;
 
-            TestSqlHelper.DropTable(_connectionString, tableName);
+            TestSqlHelper.DropTable(tableName);
 
             var viewManager = new MsSqlCatchUpViewManager<TView>(_connectionString, tableName);
 

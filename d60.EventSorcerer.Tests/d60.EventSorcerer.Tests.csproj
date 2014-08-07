@@ -94,6 +94,7 @@
     <Compile Include="MongoDb\MongoHelper.cs" />
     <Compile Include="MongoDb\TestMongoDbLinqProvider.cs" />
     <Compile Include="MongoDb\TestMongoDbSerializer.cs" />
+    <Compile Include="MsSql\TestEntityFrameworkViewManager.cs" />
     <Compile Include="MsSql\TestMsSqlEventStore.cs" />
     <Compile Include="MsSql\TestSqlHelper.cs" />
     <Compile Include="Stubs\ConsoleOutEventCollector.cs" />

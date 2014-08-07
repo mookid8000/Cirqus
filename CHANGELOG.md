@@ -43,3 +43,7 @@
 ## 0.0.22
 
 * Introduced `Created` hook that can be overridden on aggregate roots, e.g. to emit the infamous `YayIWasCreated` event.
+
+## 0.0.23
+
+* Made Entity Framework view manager support LINQ as well and removed the need for that silly global sequence numbers table

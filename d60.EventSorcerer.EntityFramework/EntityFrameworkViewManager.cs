@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Data.Entity.Migrations;
 using System.Linq;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Exceptions;
@@ -12,8 +13,8 @@ namespace d60.EventSorcerer.EntityFramework
 {
     public class EntityFrameworkViewManager<TView> : IDirectDispatchViewManager, ICatchUpViewManager where TView : class,IView, ISubscribeTo, new()
     {
-        readonly string _connectionStringOrName;
         readonly ViewDispatcherHelper<TView> _dispatcherHelper = new ViewDispatcherHelper<TView>();
+        readonly string _connectionStringOrName;
         int _maxDomainEventsBetweenFlush;
 
         public EntityFrameworkViewManager(string connectionStringOrName, bool createDatabaseIfnotExist = true)
@@ -21,6 +22,8 @@ namespace d60.EventSorcerer.EntityFramework
             _connectionStringOrName = connectionStringOrName;
 
             Database.SetInitializer(new CreateDatabaseIfNotExists<GenericViewContext<TView>>());
+            //DbConfiguration.Loaded += (o, ea) => ea.ReplaceService<IDbContextFactory<GenericViewContext<TView>>>((s,k) => new Factory<TView>(_connectionStringOrName));
+            //Database.SetInitializer(new MigrateDatabaseToLatestVersion<GenericViewContext<TView>, GenericMigrationsThingie>());
 
             if (createDatabaseIfnotExist)
             {
@@ -28,9 +31,39 @@ namespace d60.EventSorcerer.EntityFramework
                 {
                     //touch tables to create them
                     context.Database.Initialize(true);
+
+                    var tableName = context.ViewTableName;
+                    var indexName = "IDX_" + tableName + "_LastGlobalSequenceNumber";
+
+                    context.Database.ExecuteSqlCommand(string.Format(@"
+
+IF NOT EXISTS(SELECT * FROM sys.indexes WHERE name = '{0}' AND object_id = OBJECT_ID('{1}'))
+BEGIN
+	CREATE NONCLUSTERED INDEX [{0}] ON [dbo].[{1}]
+	(
+		[LastGlobalSequenceNumber] ASC
+	)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+END
+
+", indexName, tableName));
                 }
             }
+        }
 
+        class Factory<TView> : IDbContextFactory<GenericViewContext<TView>> where TView : class, IView
+        {
+            readonly string _connectionString;
+
+            public Factory(string connectionString)
+            {
+                Console.WriteLine("Whoaaaa, creating the factory!!!");
+                _connectionString = connectionString;
+            }
+
+            public GenericViewContext<TView> Create()
+            {
+                return new GenericViewContext<TView>(_connectionString);
+            }
         }
 
         public int MaxDomainEventsBetweenFlush
@@ -75,8 +108,6 @@ namespace d60.EventSorcerer.EntityFramework
                             DispatchEvent(e, genericViewBasse, context);
                         }
 
-                        UpdateMax(eventsList.Last().GetGlobalSequenceNumber(), genericViewBasse);
-
                         SaveChanges(genericViewBasse);
                     }
                 }
@@ -89,29 +120,27 @@ namespace d60.EventSorcerer.EntityFramework
 
         public bool Stopped { get; set; }
 
-        private void PurgeViews()
+        void PurgeViews()
         {
             using (var dbContext = new GenericViewContext<TView>(_connectionStringOrName))
             {
                 var sql = "DELETE FROM " + dbContext.ViewTableName;
 
                 dbContext.Database.ExecuteSqlCommand(sql);
-
-
-                var entityFrameworkConfiguration = dbContext.Configurations.Find(dbContext.ViewInstanceId);
-                if (entityFrameworkConfiguration != null)
-                    dbContext.Configurations.Remove(entityFrameworkConfiguration);
-
                 dbContext.SaveChanges();
             }
         }
 
         public void Dispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
-            var eventsList = events.Where(e => e.GetGlobalSequenceNumber() > FindMax()).ToList();
+            var lastSeenGlobalSequenceNumber = FindMax();
+
+            var eventsList = events
+                .Where(e => e.GetGlobalSequenceNumber() > lastSeenGlobalSequenceNumber)
+                .ToList();
 
             if (!eventsList.Any()) return;
-            
+
             try
             {
                 using (var genericViewBasse = new GenericViewContext<TView>(_connectionStringOrName))
@@ -123,8 +152,6 @@ namespace d60.EventSorcerer.EntityFramework
                         DispatchEvent(e, genericViewBasse, context);
                     }
 
-                    UpdateMax(eventsList.Last().GetGlobalSequenceNumber(), genericViewBasse);
-
                     SaveChanges(genericViewBasse);
                 }
             }
@@ -134,7 +161,7 @@ namespace d60.EventSorcerer.EntityFramework
             }
         }
 
-        private void RetryEvents(IViewContext context, Exception ex, List<DomainEvent> eventsList)
+        void RetryEvents(IViewContext context, Exception ex, List<DomainEvent> eventsList)
         {
             Console.WriteLine(ex);
             try
@@ -145,7 +172,6 @@ namespace d60.EventSorcerer.EntityFramework
                     using (var innerContext = new GenericViewContext<TView>(_connectionStringOrName))
                     {
                         DispatchEvent(e, innerContext, context);
-                        UpdateMax(e.GetGlobalSequenceNumber(), innerContext);
 
                         SaveChanges(innerContext);
                     }
@@ -160,7 +186,7 @@ namespace d60.EventSorcerer.EntityFramework
             }
         }
 
-        private static void SaveChanges(GenericViewContext<TView> genericViewBasse)
+        static void SaveChanges(GenericViewContext<TView> genericViewBasse)
         {
             try
             {
@@ -189,7 +215,7 @@ namespace d60.EventSorcerer.EntityFramework
             //}
         }
 
-        private void DispatchEvent(DomainEvent domainEvent, GenericViewContext<TView> genericViewBasse, IViewContext context)
+        void DispatchEvent(DomainEvent domainEvent, GenericViewContext<TView> genericViewBasse, IViewContext context)
         {
             var locator = ViewLocator.GetLocatorFor<TView>();
             var id = locator.GetViewId(domainEvent);
@@ -197,14 +223,15 @@ namespace d60.EventSorcerer.EntityFramework
             var instance = genericViewBasse.ViewCollection.Find(id)
                            ?? CreateAndAddNewViewInstance(genericViewBasse, id);
 
-
             var globalSequenceNumber = domainEvent.GetGlobalSequenceNumber();
 
-            if (globalSequenceNumber < FindMax()) return;
+            if (globalSequenceNumber < instance.LastGlobalSequenceNumber) return;
+
             _dispatcherHelper.DispatchToView(context, domainEvent, instance);
+            instance.LastGlobalSequenceNumber = globalSequenceNumber;
         }
 
-        private TView CreateAndAddNewViewInstance(GenericViewContext<TView> genericViewBasse, string id)
+        TView CreateAndAddNewViewInstance(GenericViewContext<TView> genericViewBasse, string id)
         {
             var instance = new TView();
             instance.Id = id;
@@ -212,27 +239,13 @@ namespace d60.EventSorcerer.EntityFramework
             return instance;
         }
 
-        private long FindMax()
+        long FindMax()
         {
             using (var context = new GenericViewContext<TView>(_connectionStringOrName))
             {
-                var instance = context.Configurations.AsNoTracking().FirstOrDefault(c => c.Id == typeof(TView).FullName);
-
-                return instance == null ? -1 : instance.GlobalSequenceNumber;
-            }
-        }
-
-        private void UpdateMax(long newMax, GenericViewContext<TView> context)
-        {
-            var instance = context.Configurations.FirstOrDefault(c => c.Id == typeof(TView).FullName);
-
-            if (instance == null)
-            {
-                context.Configurations.Add(new EntityFrameworkConfiguration() { Id = context.ViewInstanceId, GlobalSequenceNumber = newMax });
-            }
-            else
-            {
-                instance.GlobalSequenceNumber = newMax;
+                return context.ViewCollection.Any()
+                    ? context.ViewCollection.Max(v => v.LastGlobalSequenceNumber)
+                    : -1;
             }
         }
 
@@ -245,18 +258,21 @@ namespace d60.EventSorcerer.EntityFramework
 
             public DbSet<TView> ViewCollection { get; set; }
 
-            public DbSet<EntityFrameworkConfiguration> Configurations { get; set; }
-            public string ViewTableName = typeof(TView).Name;
-            public string ViewConfigName = typeof(TView).Name + "Configs";
-            public string ViewInstanceId = typeof(TView).FullName;
+            public readonly string ViewTableName = typeof(TView).Name;
             protected override void OnModelCreating(DbModelBuilder modelBuilder)
             {
                 modelBuilder.Entity<TView>().ToTable(ViewTableName);
                 modelBuilder.Entity<TView>().HasKey(v => v.Id);
 
-                modelBuilder.Entity<EntityFrameworkConfiguration>().ToTable(ViewConfigName);
-
                 base.OnModelCreating(modelBuilder);
+            }
+        }
+
+        class GenericMigrationsThingie : DbMigrationsConfiguration<GenericViewContext<TView>>
+        {
+            public GenericMigrationsThingie()
+            {
+                AutomaticMigrationsEnabled = true;
             }
         }
 
@@ -267,13 +283,35 @@ namespace d60.EventSorcerer.EntityFramework
                 return context.ViewCollection.AsNoTracking().FirstOrDefault(v => v.Id == id);
             }
         }
+
+        public ILinqContext<TView> Linq()
+        {
+            return new DisposableLinqContext<TView>(new GenericViewContext<TView>(_connectionStringOrName));
+        }
+
+        class DisposableLinqContext<TVIew> : ILinqContext<TVIew> where TVIew : class, IView
+        {
+            readonly GenericViewContext<TVIew> _context;
+
+            public DisposableLinqContext(GenericViewContext<TVIew> context)
+            {
+                _context = context;
+            }
+
+            public IQueryable<TVIew> Query()
+            {
+                return _context.ViewCollection;
+            }
+
+            public void Dispose()
+            {
+                _context.Dispose();
+            }
+        }
     }
 
-    class EntityFrameworkConfiguration
+    public interface ILinqContext<TView> : IDisposable
     {
-        [Key]
-        public string Id { get; set; }
-        [Required]
-        public long GlobalSequenceNumber { get; set; }
+        IQueryable<TView> Query();
     }
 }

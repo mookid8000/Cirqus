@@ -1,5 +1,4 @@
 using d60.EventSorcerer.Events;
-using d60.EventSorcerer.MsSql;
 using d60.EventSorcerer.MsSql.Events;
 using d60.EventSorcerer.Tests.MsSql;
 
@@ -13,11 +12,11 @@ namespace d60.EventSorcerer.Tests.Contracts.EventStore.Factories
         {
             TestSqlHelper.EnsureTestDatabaseExists();
 
-            var connectionString = SqlHelper.GetConnectionString(TestSqlHelper.ConnectionStringName);
+            var connectionString = TestSqlHelper.ConnectionString;
             
-            TestSqlHelper.DropTable(connectionString, "events");
+            TestSqlHelper.DropTable("events");
 
-            _eventStore = new MsSqlEventStore(TestSqlHelper.ConnectionStringName, "events");
+            _eventStore = new MsSqlEventStore(connectionString, "events");
             
             _eventStore.DropEvents();
         }

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using d60.EventSorcerer.Events;
-using d60.EventSorcerer.MsSql;
 using d60.EventSorcerer.MsSql.Views;
-using d60.EventSorcerer.TestHelpers;
 using d60.EventSorcerer.TestHelpers.Internals;
 using d60.EventSorcerer.Tests.Stubs;
 using d60.EventSorcerer.Views.Basic;
@@ -21,11 +19,11 @@ namespace d60.EventSorcerer.Tests.MsSql
         {
             TestSqlHelper.EnsureTestDatabaseExists();
 
-            var connectionString = SqlHelper.GetConnectionString(TestSqlHelper.ConnectionStringName);
+            var connectionString = TestSqlHelper.ConnectionString;
 
-            TestSqlHelper.DropTable(connectionString, "views");
+            TestSqlHelper.DropTable("views");
 
-            _viewManager = new MsSqlCatchUpViewManager<ViewWithManyPropertyTypes>(TestSqlHelper.ConnectionStringName, "views");
+            _viewManager = new MsSqlCatchUpViewManager<ViewWithManyPropertyTypes>(connectionString, "views");
         }
 
         [Test]
