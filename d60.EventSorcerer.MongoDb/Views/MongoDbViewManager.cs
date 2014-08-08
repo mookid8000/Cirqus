@@ -11,20 +11,20 @@ using MongoDB.Driver.Linq;
 
 namespace d60.EventSorcerer.MongoDb.Views
 {
-    public class MongoDbCatchUpViewManager<TView> : IDirectDispatchViewManager, ICatchUpViewManager where TView : class, IView, ISubscribeTo, new()
+    public class MongoDbViewManager<TView> : IDirectDispatchViewManager, ICatchUpViewManager where TView : class, IView, ISubscribeTo, new()
     {
         readonly MongoCollection<TView> _viewCollection;
         readonly ViewDispatcherHelper<TView> _dispatcherHelper = new ViewDispatcherHelper<TView>();
         int _maxDomainEventsBetweenFlush = 100;
         long _lastGlobalSequenceNumberProcessed = -1;
 
-        public MongoDbCatchUpViewManager(MongoDatabase database, string collectionName)
+        public MongoDbViewManager(MongoDatabase database, string collectionName)
         {
             _viewCollection = database.GetCollection<TView>(collectionName);
             _viewCollection.CreateIndex(IndexKeys<TView>.Ascending(v => v.LastGlobalSequenceNumber));
         }
         
-        public MongoDbCatchUpViewManager(MongoCollection<TView> viewCollection)
+        public MongoDbViewManager(MongoCollection<TView> viewCollection)
         {
             _viewCollection = viewCollection;
             _viewCollection.CreateIndex(IndexKeys<TView>.Ascending(v => v.LastGlobalSequenceNumber));

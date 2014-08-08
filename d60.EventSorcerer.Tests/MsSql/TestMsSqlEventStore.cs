@@ -13,7 +13,7 @@ namespace d60.EventSorcerer.Tests.MsSql
     [TestFixture]
     public class TestMsSqlEventStore : FixtureBase
     {
-        MsSqlCatchUpViewManager<ViewWithManyPropertyTypes> _viewManager;
+        MsSqlViewManager<ViewWithManyPropertyTypes> _viewManager;
 
         protected override void DoSetUp()
         {
@@ -23,7 +23,7 @@ namespace d60.EventSorcerer.Tests.MsSql
 
             TestSqlHelper.DropTable("views");
 
-            _viewManager = new MsSqlCatchUpViewManager<ViewWithManyPropertyTypes>(connectionString, "views");
+            _viewManager = new MsSqlViewManager<ViewWithManyPropertyTypes>(connectionString, "views");
         }
 
         [Test]

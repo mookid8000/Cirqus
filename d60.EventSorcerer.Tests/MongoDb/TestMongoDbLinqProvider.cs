@@ -14,11 +14,11 @@ namespace d60.EventSorcerer.Tests.MongoDb
     public class TestMongoDbLinqProvider : FixtureBase
     {
         TestContext _context;
-        MongoDbCatchUpViewManager<RootView> _viewManager;
+        MongoDbViewManager<RootView> _viewManager;
 
         protected override void DoSetUp()
         {
-            _viewManager = new MongoDbCatchUpViewManager<RootView>(MongoHelper.InitializeTestDatabase(), "rootViews");
+            _viewManager = new MongoDbViewManager<RootView>(MongoHelper.InitializeTestDatabase(), "rootViews");
 
             _context = new TestContext()
                 .AddViewManager(_viewManager);

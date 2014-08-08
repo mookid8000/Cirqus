@@ -10,7 +10,7 @@ using d60.EventSorcerer.Views.Basic;
 
 namespace d60.EventSorcerer.MsSql.Views
 {
-    public class MsSqlCatchUpViewManager<TView> : IDirectDispatchViewManager, ICatchUpViewManager where TView : class, IView, ISubscribeTo, new()
+    public class MsSqlViewManager<TView> : IDirectDispatchViewManager, ICatchUpViewManager where TView : class, IView, ISubscribeTo, new()
     {
         const int PrimaryKeySize = 100;
         readonly string _tableName;
@@ -20,7 +20,7 @@ namespace d60.EventSorcerer.MsSql.Views
         readonly ViewDispatcherHelper<TView> _dispatcher = new ViewDispatcherHelper<TView>();
         int _maxDomainEventsBetweenFlush;
 
-        public MsSqlCatchUpViewManager(string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true)
+        public MsSqlViewManager(string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true)
         {
             _tableName = tableName;
 

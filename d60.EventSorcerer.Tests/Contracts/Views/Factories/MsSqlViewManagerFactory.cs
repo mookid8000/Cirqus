@@ -25,7 +25,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
 
             TestSqlHelper.DropTable(tableName);
 
-            var viewManager = new MsSqlCatchUpViewManager<TView>(_connectionString, tableName);
+            var viewManager = new MsSqlViewManager<TView>(_connectionString, tableName);
 
             _viewManagers.Add(viewManager);
 
@@ -36,11 +36,11 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
 
         public TView Load<TView>(string id) where TView : class, IView, ISubscribeTo, new()
         {
-            var msSqlCatchUpViewManager = _viewManagers.OfType<MsSqlCatchUpViewManager<TView>>().FirstOrDefault();
+            var msSqlCatchUpViewManager = _viewManagers.OfType<MsSqlViewManager<TView>>().FirstOrDefault();
 
             if (msSqlCatchUpViewManager == null)
             {
-                throw new ApplicationException(string.Format("Could not find a view manager of type {0}", typeof(MsSqlCatchUpViewManager<TView>)));
+                throw new ApplicationException(string.Format("Could not find a view manager of type {0}", typeof(MsSqlViewManager<TView>)));
             }
 
             return msSqlCatchUpViewManager.Load(id);

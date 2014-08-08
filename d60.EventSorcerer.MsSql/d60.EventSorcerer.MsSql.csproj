@@ -43,7 +43,7 @@
     <Compile Include="Events\MsSqlEventStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlHelper.cs" />
-    <Compile Include="Views\MsSqlCatchUpViewManager.cs" />
+    <Compile Include="Views\MsSqlViewManager.cs" />
     <Compile Include="Views\SchemaHelper.cs" />
   </ItemGroup>
   <ItemGroup>

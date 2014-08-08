@@ -20,7 +20,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
 
         public IViewManager GetViewManagerFor<TView>() where TView : class, IView, ISubscribeTo, new()
         {
-            var viewManager = new MongoDbCatchUpViewManager<TView>(_database, typeof(TView).Name);
+            var viewManager = new MongoDbViewManager<TView>(_database, typeof(TView).Name);
 
             MaxDomainEventsBetweenFlushSet += maxEvents => viewManager.MaxDomainEventsBetweenFlush = maxEvents;
 
@@ -31,7 +31,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
 
         public TView Load<TView>(string id) where TView : class, IView, ISubscribeTo, new()
         {
-            var viewManager = _viewManagers.OfType<MongoDbCatchUpViewManager<TView>>().FirstOrDefault();
+            var viewManager = _viewManagers.OfType<MongoDbViewManager<TView>>().FirstOrDefault();
 
             if (viewManager == null)
             {
