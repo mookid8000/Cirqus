@@ -25,7 +25,7 @@
   </Target>
 
   <Target Name="release">
-    <Exec Command="$(ReleaseMaster) &quot;$(Root)&quot; &quot;msbuild&quot; &quot;/t:release_packages /p:Version={version}&quot;"/>
+    <Exec Command="$(ReleaseMaster) &quot;$(Root)&quot; &quot;msbuild&quot; &quot;build.proj /t:release_packages /p:Version={version}&quot;"/>
   </Target>
 
   <Target Name="release_packages">
