@@ -13,7 +13,7 @@ namespace d60.EventSorcerer.Tests.MsSql
     [TestFixture]
     public class TestMsSqlEventStore : FixtureBase
     {
-        MsSqlViewManager<ViewWithManyPropertyTypes> _viewManager;
+        MsSqlViewManager<ViewInstanceWithManyPropertyTypes> _viewManager;
 
         protected override void DoSetUp()
         {
@@ -23,7 +23,7 @@ namespace d60.EventSorcerer.Tests.MsSql
 
             TestSqlHelper.DropTable("views");
 
-            _viewManager = new MsSqlViewManager<ViewWithManyPropertyTypes>(connectionString, "views");
+            _viewManager = new MsSqlViewManager<ViewInstanceWithManyPropertyTypes>(connectionString, "views");
         }
 
         [Test]
@@ -62,9 +62,9 @@ namespace d60.EventSorcerer.Tests.MsSql
             };
         }
 
-        class ViewWithManyPropertyTypes : IView<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
+        class ViewInstanceWithManyPropertyTypes : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
         {
-            public ViewWithManyPropertyTypes()
+            public ViewInstanceWithManyPropertyTypes()
             {
                 String = "a string";
 

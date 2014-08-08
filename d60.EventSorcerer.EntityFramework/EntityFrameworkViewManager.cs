@@ -11,7 +11,7 @@ using d60.EventSorcerer.Views.Basic;
 
 namespace d60.EventSorcerer.EntityFramework
 {
-    public class EntityFrameworkViewManager<TView> : IPushViewManager, IPullViewManager where TView : class,IView, ISubscribeTo, new()
+    public class EntityFrameworkViewManager<TView> : IPushViewManager, IPullViewManager where TView : class,IViewInstance, ISubscribeTo, new()
     {
         readonly ViewDispatcherHelper<TView> _dispatcherHelper = new ViewDispatcherHelper<TView>();
         readonly string _connectionStringOrName;
@@ -50,7 +50,7 @@ END
             }
         }
 
-        class Factory<TView> : IDbContextFactory<GenericViewContext<TView>> where TView : class, IView
+        class Factory<TView> : IDbContextFactory<GenericViewContext<TView>> where TView : class, IViewInstance
         {
             readonly string _connectionString;
 
@@ -249,7 +249,7 @@ END
             }
         }
 
-        class GenericViewContext<TView> : DbContext where TView : class, IView
+        class GenericViewContext<TView> : DbContext where TView : class, IViewInstance
         {
             public GenericViewContext(string connectionstringOrName)
                 : base(connectionstringOrName)
@@ -289,7 +289,7 @@ END
             return new DisposableLinqContext<TView>(new GenericViewContext<TView>(_connectionStringOrName));
         }
 
-        class DisposableLinqContext<TVIew> : ILinqContext<TVIew> where TVIew : class, IView
+        class DisposableLinqContext<TVIew> : ILinqContext<TVIew> where TVIew : class, IViewInstance
         {
             readonly GenericViewContext<TVIew> _context;
 

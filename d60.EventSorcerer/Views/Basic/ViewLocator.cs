@@ -36,13 +36,13 @@ namespace d60.EventSorcerer.Views.Basic
         public abstract string GetViewId(DomainEvent e);
 
         /// <summary>
-        /// Looks at the type closing the implemented <see cref="IView{TViewLocator}"/> and returns a new instance of that type
+        /// Looks at the type closing the implemented <see cref="IViewInstance{TViewLocator}"/> and returns a new instance of that type
         /// </summary>
         static ViewLocator ActivateNewViewLocatorInstanceFromClosingType(Type viewType)
         {
             var genericViewType = viewType
                 .GetInterfaces()
-                .SingleOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IView<>));
+                .SingleOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IViewInstance<>));
 
             if (genericViewType == null)
             {

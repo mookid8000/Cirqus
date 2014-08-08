@@ -14,11 +14,11 @@ namespace d60.EventSorcerer.Tests.MongoDb
     public class TestMongoDbLinqProvider : FixtureBase
     {
         TestContext _context;
-        MongoDbViewManager<RootView> _viewManager;
+        MongoDbViewManager<RootViewInstance> _viewManager;
 
         protected override void DoSetUp()
         {
-            _viewManager = new MongoDbViewManager<RootView>(MongoHelper.InitializeTestDatabase(), "rootViews");
+            _viewManager = new MongoDbViewManager<RootViewInstance>(MongoHelper.InitializeTestDatabase(), "rootViews");
 
             _context = new TestContext()
                 .AddViewManager(_viewManager);
@@ -57,7 +57,7 @@ namespace d60.EventSorcerer.Tests.MongoDb
 
     class Root : AggregateRoot { }
     class RootWasNamed : DomainEvent<Root> { public string Name { get; set; } }
-    class RootView : IView<InstancePerAggregateRootLocator>,
+    class RootViewInstance : IViewInstance<InstancePerAggregateRootLocator>,
         ISubscribeTo<RootWasNamed>
     {
         public string Id { get; set; }

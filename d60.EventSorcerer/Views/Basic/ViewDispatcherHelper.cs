@@ -43,9 +43,9 @@ namespace d60.EventSorcerer.Views.Basic
         }
 
         // ReSharper disable UnusedMember.Local
-        void DispatchToViewGeneric<TDomainEvent>(IViewContext context, TDomainEvent domainEvent, IView view) where TDomainEvent : DomainEvent
+        void DispatchToViewGeneric<TDomainEvent>(IViewContext context, TDomainEvent domainEvent, IViewInstance viewInstance) where TDomainEvent : DomainEvent
         {
-            var handler = view as ISubscribeTo<TDomainEvent>;
+            var handler = viewInstance as ISubscribeTo<TDomainEvent>;
 
             if (handler == null) return;
 

@@ -12,13 +12,13 @@ namespace d60.EventSorcerer.Tests.Views
     [TestFixture]
     public class TestInMemoryViewManager : FixtureBase
     {
-        InMemoryViewManager<SomeView> _viewManager;
+        InMemoryViewManager<SomeViewInstance> _viewManager;
         BasicEventDispatcher _eventDispatcher;
         InMemoryEventStore _inMemoryEventStore;
 
         protected override void DoSetUp()
         {
-            _viewManager = new InMemoryViewManager<SomeView>();
+            _viewManager = new InMemoryViewManager<SomeViewInstance>();
             _inMemoryEventStore = new InMemoryEventStore();
             _eventDispatcher = new BasicEventDispatcher(new DefaultAggregateRootRepository(_inMemoryEventStore), new IViewManager[] { _viewManager });
         }
@@ -82,9 +82,9 @@ namespace d60.EventSorcerer.Tests.Views
 
         }
 
-        class SomeView : IView<InstancePerAggregateRootLocator>, ISubscribeTo<SomeEvent>
+        class SomeViewInstance : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<SomeEvent>
         {
-            public SomeView()
+            public SomeViewInstance()
             {
                 NumberOfEventsHandled = 0;
             }

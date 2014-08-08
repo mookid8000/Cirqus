@@ -11,7 +11,7 @@ using MongoDB.Driver.Linq;
 
 namespace d60.EventSorcerer.MongoDb.Views
 {
-    public class MongoDbViewManager<TView> : IPushViewManager, IPullViewManager where TView : class, IView, ISubscribeTo, new()
+    public class MongoDbViewManager<TView> : IPushViewManager, IPullViewManager where TView : class, IViewInstance, ISubscribeTo, new()
     {
         readonly MongoCollection<TView> _viewCollection;
         readonly ViewDispatcherHelper<TView> _dispatcherHelper = new ViewDispatcherHelper<TView>();

@@ -18,7 +18,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
             _database = MongoHelper.InitializeTestDatabase();
         }
 
-        public IViewManager GetViewManagerFor<TView>() where TView : class, IView, ISubscribeTo, new()
+        public IViewManager GetViewManagerFor<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
         {
             var viewManager = new MongoDbViewManager<TView>(_database, typeof(TView).Name);
 
@@ -29,7 +29,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
             return viewManager;
         }
 
-        public TView Load<TView>(string id) where TView : class, IView, ISubscribeTo, new()
+        public TView Load<TView>(string id) where TView : class, IViewInstance, ISubscribeTo, new()
         {
             var viewManager = _viewManagers.OfType<MongoDbViewManager<TView>>().FirstOrDefault();
 

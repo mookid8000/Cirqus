@@ -56,3 +56,7 @@
 ## 0.0.30
 
 * `Load<TAggregate>` on `AggregateRoot` now loads & caches in the current unit of work, loading & caching the right versions of aggregate roots as well.
+
+## 0.0.33
+
+* Renamed view managers

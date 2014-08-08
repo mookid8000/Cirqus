@@ -14,14 +14,14 @@ namespace d60.EventSorcerer.Tests.MsSql
     public class TestEntityFrameworkViewManager : FixtureBase
     {
         TestContext _context;
-        EntityFrameworkViewManager<View> _viewManager;
+        EntityFrameworkViewManager<ViewInstance> _viewManager;
 
         protected override void DoSetUp()
         {
             TestSqlHelper.DropTable("__MigrationHistory");
             TestSqlHelper.DropTable("View");
 
-            _viewManager = new EntityFrameworkViewManager<View>(TestSqlHelper.ConnectionString);
+            _viewManager = new EntityFrameworkViewManager<ViewInstance>(TestSqlHelper.ConnectionString);
             _context = new TestContext().AddViewManager(_viewManager);
         }
 
@@ -69,7 +69,7 @@ namespace d60.EventSorcerer.Tests.MsSql
             public int SomeNumber { get; set; }
         }
 
-        class View : IView<InstancePerAggregateRootLocator>, ISubscribeTo<Event>
+        class ViewInstance : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<Event>
         {
             public string Id { get; set; }
             public long LastGlobalSequenceNumber { get; set; }

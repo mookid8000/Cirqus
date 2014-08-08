@@ -5,7 +5,7 @@ namespace d60.EventSorcerer.Views.Basic
     /// <summary>
     /// Base interface of views
     /// </summary>
-    public interface IView
+    public interface IViewInstance
     {
         string Id { get; set; }
         long LastGlobalSequenceNumber { get; set; }
@@ -17,7 +17,7 @@ namespace d60.EventSorcerer.Views.Basic
     /// it can be determined which view instance that must be updated with the event.
     /// </summary>
     /// <typeparam name="TViewLocator">The type of view locator that will be used to determine the ID of the view to be updated</typeparam>
-    public interface IView<TViewLocator> : IView where TViewLocator : ViewLocator
+    public interface IViewInstance<TViewLocator> : IViewInstance where TViewLocator : ViewLocator
     {
     }
     // ReSharper restore UnusedTypeParameter

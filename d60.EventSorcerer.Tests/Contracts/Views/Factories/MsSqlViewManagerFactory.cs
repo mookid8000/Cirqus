@@ -19,7 +19,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
             _connectionString = TestSqlHelper.ConnectionString;
         }
 
-        public IViewManager GetViewManagerFor<TView>() where TView : class, IView, ISubscribeTo, new()
+        public IViewManager GetViewManagerFor<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
         {
             var tableName = typeof(TView).Name;
 
@@ -34,7 +34,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
             return viewManager;
         }
 
-        public TView Load<TView>(string id) where TView : class, IView, ISubscribeTo, new()
+        public TView Load<TView>(string id) where TView : class, IViewInstance, ISubscribeTo, new()
         {
             var msSqlCatchUpViewManager = _viewManagers.OfType<MsSqlViewManager<TView>>().FirstOrDefault();
 

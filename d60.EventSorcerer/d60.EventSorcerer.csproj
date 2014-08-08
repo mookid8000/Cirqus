@@ -84,7 +84,7 @@
     <Compile Include="Views\Basic\Locators\GlobalInstanceLocator.cs" />
     <Compile Include="Views\Basic\Locators\InstancePerAggregateRootLocator.cs" />
     <Compile Include="Views\Basic\ISubscribeTo.cs" />
-    <Compile Include="Views\Basic\IView.cs" />
+    <Compile Include="Views\Basic\IViewInstance.cs" />
     <Compile Include="Views\Basic\IViewManager.cs" />
     <Compile Include="Views\Basic\ViewDispatcherHelper.cs" />
     <Compile Include="Views\Basic\ViewLocator.cs" />

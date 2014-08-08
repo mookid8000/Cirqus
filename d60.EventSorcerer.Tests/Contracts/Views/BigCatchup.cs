@@ -33,7 +33,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 
             _factory = new TViewManagerFactory();
 
-            _viewManager = _factory.GetViewManagerFor<JustAnotherView>();
+            _viewManager = _factory.GetViewManagerFor<JustAnotherViewInstance>();
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 
             foreach (var id in aggregateRootIds)
             {
-                var view = _factory.Load<JustAnotherView>(InstancePerAggregateRootLocator.GetViewIdFromGuid(id));
+                var view = _factory.Load<JustAnotherViewInstance>(InstancePerAggregateRootLocator.GetViewIdFromGuid(id));
 
                 Assert.That(view.EventCounter, Is.EqualTo(seqNos[id]));
             }
@@ -113,7 +113,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 
       
     }
-    class JustAnotherView : IView<InstancePerAggregateRootLocator>, ISubscribeTo<AnEventMore>
+    class JustAnotherViewInstance : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<AnEventMore>
     {
         public int EventCounter { get; set; }
         public Guid AggregateRootId { get; set; }

@@ -34,8 +34,8 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 
             _factory = new TViewManagerFactory();
 
-            _justAnotherViewViewManager = _factory.GetViewManagerFor<JustAnotherViewOther>();
-            _viewThatCanThrowViewManager = _factory.GetViewManagerFor<ViewThatCanThrow>();
+            _justAnotherViewViewManager = _factory.GetViewManagerFor<JustAnotherViewInstanceOther>();
+            _viewThatCanThrowViewManager = _factory.GetViewManagerFor<ViewInstanceThatCanThrow>();
 
             _eventDispatcher = new BasicEventDispatcher(new DefaultAggregateRootRepository(_eventStore), _justAnotherViewViewManager, _viewThatCanThrowViewManager);
         }
@@ -44,7 +44,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
         public void IgnoresEventsWhenTheyHaveAlreadyBeenProcessed()
         {
             // arrange
-            ViewThatCanThrow.ThrowAfterThisManyEvents = int.MaxValue;
+            ViewInstanceThatCanThrow.ThrowAfterThisManyEvents = int.MaxValue;
             var rootId1 = Guid.NewGuid();
             var domainEvents = new[]
             {
@@ -59,7 +59,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             _eventDispatcher.Dispatch(_eventStore, domainEvents);
 
             // assert
-            var view = _factory.Load<ViewThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
 
             Assert.That(view.EventsHandled, Is.EqualTo(3));
         }
@@ -68,7 +68,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
         public void IgnoresEventsWhenTheyHaveAlreadyBeenProcessed_EnsureTailIsStillProcessed()
         {
             // arrange
-            ViewThatCanThrow.ThrowAfterThisManyEvents = int.MaxValue;
+            ViewInstanceThatCanThrow.ThrowAfterThisManyEvents = int.MaxValue;
             var rootId1 = Guid.NewGuid();
             var domainEvents = new[]
             {
@@ -86,7 +86,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             _eventDispatcher.Dispatch(_eventStore, domainEventsWithOneAdditionalEvent);
 
             // assert
-            var view = _factory.Load<ViewThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
 
             Assert.That(view.EventsHandled, Is.EqualTo(4));
         }
@@ -104,13 +104,13 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 4, 14) });
 
             _factory.SetMaxDomainEventsBetweenFlush(1);
-            ViewThatCanThrow.ThrowAfterThisManyEvents = 3;
+            ViewInstanceThatCanThrow.ThrowAfterThisManyEvents = 3;
 
             // act
             _eventDispatcher.Initialize(_eventStore);
 
             // assert
-            var view = _factory.Load<ViewThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
             Assert.That(view.EventsHandled, Is.EqualTo(2));
         }
 
@@ -130,13 +130,13 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             };
 
             _factory.SetMaxDomainEventsBetweenFlush(1);
-            ViewThatCanThrow.ThrowAfterThisManyEvents = 3;
+            ViewInstanceThatCanThrow.ThrowAfterThisManyEvents = 3;
 
             // act
             _eventDispatcher.Dispatch(_eventStore, events);
 
             // assert
-            var view = _factory.Load<ViewThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
             Assert.That(view.EventsHandled, Is.EqualTo(2));
         }
 
@@ -152,17 +152,17 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 4, 84) });
 
             _factory.SetMaxDomainEventsBetweenFlush(1);
-            ViewThatCanThrow.ThrowAfterThisManyEvents = 3;
+            ViewInstanceThatCanThrow.ThrowAfterThisManyEvents = 3;
             _eventDispatcher.Initialize(_eventStore);
 
             // don't throw anymore
-            ViewThatCanThrow.ThrowAfterThisManyEvents = int.MaxValue;
+            ViewInstanceThatCanThrow.ThrowAfterThisManyEvents = int.MaxValue;
 
             // act
             _eventDispatcher.Initialize(_eventStore);
 
             // assert
-            var view = _factory.Load<ViewThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
 
             Assert.That(view.EventsHandled, Is.EqualTo(5));
         }
@@ -180,13 +180,13 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 3, 53) });
             _eventStore.Save(Guid.NewGuid(), new[] { EventFor(rootId1, 4, 54) });
 
-            ViewThatCanThrow.ThrowAfterThisManyEvents = 3;
+            ViewInstanceThatCanThrow.ThrowAfterThisManyEvents = 3;
 
             // act
             _eventDispatcher.Initialize(_eventStore);
 
             // assert
-            var view = _factory.Load<ViewThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
             Assert.That(view.EventsHandled, Is.EqualTo(2));
         }
 
@@ -204,10 +204,10 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
                 EventFor(rootId2, 0, 13),
             });
 
-            var firstView = _factory.Load<JustAnotherViewOther>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var firstView = _factory.Load<JustAnotherViewInstanceOther>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
             Assert.That(firstView.EventCounter, Is.EqualTo(3));
 
-            var secondView = _factory.Load<JustAnotherViewOther>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId2));
+            var secondView = _factory.Load<JustAnotherViewInstanceOther>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId2));
             Assert.That(secondView.EventCounter, Is.EqualTo(1));
         }
 
@@ -231,9 +231,9 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
         }
     }
 
-    class ViewThatCanThrow : IView<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
+    class ViewInstanceThatCanThrow : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
     {
-        public ViewThatCanThrow()
+        public ViewInstanceThatCanThrow()
         {
             JustSomeString = "needs to be set to something";
         }
@@ -259,7 +259,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 
     }
 
-    class JustAnotherViewOther : IView<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
+    class JustAnotherViewInstanceOther : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
     {
         public int EventCounter { get; set; }
         public void Handle(IViewContext context, AnEvent domainEvent)

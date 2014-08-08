@@ -18,12 +18,12 @@ namespace d60.EventSorcerer.Tests.Views
     public class TestLoadAggregatesFromView : FixtureBase
     {
         EventSorcererConfig _eventSorcerer;
-        InMemoryViewManager<MyView> _viewManagers;
+        InMemoryViewManager<MyViewInstance> _viewManagers;
 
         protected override void DoSetUp()
         {
             var eventStore = new InMemoryEventStore();
-            _viewManagers = new InMemoryViewManager<MyView>();
+            _viewManagers = new InMemoryViewManager<MyViewInstance>();
 
             var basicAggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
 
@@ -77,9 +77,9 @@ namespace d60.EventSorcerer.Tests.Views
             public int EventNumber { get; set; }
         }
 
-        class MyView : IView<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
+        class MyViewInstance : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
         {
-            public MyView()
+            public MyViewInstance()
             {
                 Calls = new List<Tuple<int, int>>();
             }

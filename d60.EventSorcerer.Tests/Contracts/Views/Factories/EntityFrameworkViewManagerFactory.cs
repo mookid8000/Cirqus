@@ -18,7 +18,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
             TestSqlHelper.DropTable("__MigrationHistory");
         }
 
-        public IViewManager GetViewManagerFor<TView>() where TView : class, IView, ISubscribeTo, new()
+        public IViewManager GetViewManagerFor<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
         {
             Console.WriteLine("Creating FRESH entity framework view manager for {0}", typeof(TView));
 
@@ -31,7 +31,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
             return viewManager;
         }
 
-        public TView Load<TView>(string id) where TView : class, IView, ISubscribeTo, new()
+        public TView Load<TView>(string id) where TView : class, IViewInstance, ISubscribeTo, new()
         {
             var viewManager = _viewManagers.OfType<EntityFrameworkViewManager<TView>>().FirstOrDefault();
 

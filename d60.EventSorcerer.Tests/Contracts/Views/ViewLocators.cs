@@ -32,7 +32,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 
             _factory = new TViewManagerFactory();
 
-            _globalInstanceViewManager = _factory.GetViewManagerFor<GlobalInstanceView>();
+            _globalInstanceViewManager = _factory.GetViewManagerFor<GlobalInstanceViewInstance>();
             _instancePerAggregateRootViewManager = _factory.GetViewManagerFor<InstancePerAggregateRootView>();
 
             _testContext = new TestContext();
@@ -79,7 +79,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 
             _testContext.Commit();
 
-            var view = _factory.Load<GlobalInstanceView>(GlobalInstanceLocator.GetViewInstanceId());
+            var view = _factory.Load<GlobalInstanceViewInstance>(GlobalInstanceLocator.GetViewInstanceId());
             Assert.That(view.EventCounter, Is.EqualTo(6));
         }
 
@@ -94,7 +94,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             Assert.DoesNotThrow(_testContext.Commit);
         }
 
-        class MyView : IView<CustomizedViewLocator>, ISubscribeTo<JustAnEvent>
+        class MyViewInstance : IViewInstance<CustomizedViewLocator>, ISubscribeTo<JustAnEvent>
         {
             public string Id { get; set; }
             public long LastGlobalSequenceNumber { get; set; }
@@ -124,7 +124,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
     class Root : AggregateRoot
     {
     }
-    class GlobalInstanceView : IView<GlobalInstanceLocator>, ISubscribeTo<ThisIsJustAnEvent>
+    class GlobalInstanceViewInstance : IViewInstance<GlobalInstanceLocator>, ISubscribeTo<ThisIsJustAnEvent>
     {
         public int EventCounter { get; set; }
         public void Handle(IViewContext context, ThisIsJustAnEvent domainEvent)
@@ -135,7 +135,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
         public string Id { get; set; }
         public long LastGlobalSequenceNumber { get; set; }
     }
-    class InstancePerAggregateRootView : IView<InstancePerAggregateRootLocator>, ISubscribeTo<ThisIsJustAnEvent>
+    class InstancePerAggregateRootView : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<ThisIsJustAnEvent>
     {
         public int EventCounter { get; set; }
         public void Handle(IViewContext context, ThisIsJustAnEvent domainEvent)
