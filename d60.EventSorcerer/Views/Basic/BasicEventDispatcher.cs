@@ -52,15 +52,15 @@ namespace d60.EventSorcerer.Views.Basic
             {
                 try
                 {
-                    if (viewManager is IDirectDispatchViewManager)
+                    if (viewManager is IPushViewManager)
                     {
-                        ((IDirectDispatchViewManager)viewManager).Dispatch(new DefaultViewContext(_aggregateRootRepository),
+                        ((IPushViewManager)viewManager).Dispatch(new DefaultViewContext(_aggregateRootRepository),
                             eventStore, eventList);
                     }
 
-                    if (viewManager is ICatchUpViewManager)
+                    if (viewManager is IPullViewManager)
                     {
-                        ((ICatchUpViewManager)viewManager).CatchUp(new DefaultViewContext(_aggregateRootRepository),
+                        ((IPullViewManager)viewManager).CatchUp(new DefaultViewContext(_aggregateRootRepository),
                             eventStore, eventList.Last().GetGlobalSequenceNumber());
                     }
 

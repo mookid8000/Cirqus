@@ -6,7 +6,7 @@ using d60.EventSorcerer.Extensions;
 
 namespace d60.EventSorcerer.Views.Basic
 {
-    public class InMemoryViewManager<TView> : IEnumerable<TView>, IDirectDispatchViewManager where TView : class, IView, ISubscribeTo, new()
+    public class InMemoryViewManager<TView> : IEnumerable<TView>, IPushViewManager where TView : class, IView, ISubscribeTo, new()
     {
         readonly ConcurrentDictionary<string, TView> _views = new ConcurrentDictionary<string, TView>();
         readonly ViewDispatcherHelper<TView> _viewDispatcherHelper = new ViewDispatcherHelper<TView>();

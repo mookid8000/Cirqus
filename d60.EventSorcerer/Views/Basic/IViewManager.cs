@@ -13,7 +13,7 @@ namespace d60.EventSorcerer.Views.Basic
     /// Implement this to create a view manager that can catch up, possibly after having been left behind for some time.
     /// Thrown exceptions are handled by the <see cref="BasicEventDispatcher"/>
     /// </summary>
-    public interface ICatchUpViewManager : IViewManager
+    public interface IPullViewManager : IViewManager
     {
         void CatchUp(IViewContext context, IEventStore eventStore, long lastGlobalSequenceNumber);
     }
@@ -22,7 +22,7 @@ namespace d60.EventSorcerer.Views.Basic
     /// Implement this to create a view manager that can have events dispatched directly. Thrown exceptions are handled
     /// by the <see cref="BasicEventDispatcher"/> and the event dispatcher will not dispatch any more events to the view
     /// </summary>
-    public interface IDirectDispatchViewManager : IViewManager
+    public interface IPushViewManager : IViewManager
     {
         void Dispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events);
     }

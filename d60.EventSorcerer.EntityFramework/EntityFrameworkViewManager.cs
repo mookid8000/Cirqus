@@ -11,7 +11,7 @@ using d60.EventSorcerer.Views.Basic;
 
 namespace d60.EventSorcerer.EntityFramework
 {
-    public class EntityFrameworkViewManager<TView> : IDirectDispatchViewManager, ICatchUpViewManager where TView : class,IView, ISubscribeTo, new()
+    public class EntityFrameworkViewManager<TView> : IPushViewManager, IPullViewManager where TView : class,IView, ISubscribeTo, new()
     {
         readonly ViewDispatcherHelper<TView> _dispatcherHelper = new ViewDispatcherHelper<TView>();
         readonly string _connectionStringOrName;

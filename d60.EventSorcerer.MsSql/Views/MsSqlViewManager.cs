@@ -10,7 +10,7 @@ using d60.EventSorcerer.Views.Basic;
 
 namespace d60.EventSorcerer.MsSql.Views
 {
-    public class MsSqlViewManager<TView> : IDirectDispatchViewManager, ICatchUpViewManager where TView : class, IView, ISubscribeTo, new()
+    public class MsSqlViewManager<TView> : IPushViewManager, IPullViewManager where TView : class, IView, ISubscribeTo, new()
     {
         const int PrimaryKeySize = 100;
         readonly string _tableName;
