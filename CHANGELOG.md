@@ -53,6 +53,6 @@
 
 * Did some repair work and did some more stuff as well.
 
-## 0.0.28
+## 0.0.30
 
 * `Load<TAggregate>` on `AggregateRoot` now loads & caches in the current unit of work, loading & caching the right versions of aggregate roots as well.
