@@ -2,29 +2,31 @@
 using System.Collections.Generic;
 using d60.EventSorcerer.Aggregates;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.Extensions;
 
 namespace d60.EventSorcerer.Commands
 {
     public class RealUnitOfWork : IUnitOfWork
     {
-        readonly List<DomainEvent> _emittedEvents = new List<DomainEvent>();
-        readonly Dictionary<Guid, AggregateRoot> _cachedAggregateRoots = new Dictionary<Guid, AggregateRoot>();
+        protected readonly List<DomainEvent> Events = new List<DomainEvent>();
+        protected readonly Dictionary<long, Dictionary<Guid, AggregateRoot>> CachedAggregateRoots = new Dictionary<long, Dictionary<Guid, AggregateRoot>>();
 
         public IEnumerable<DomainEvent> EmittedEvents
         {
-            get { return _emittedEvents; }
+            get { return Events; }
         }
 
         public void AddEmittedEvent(DomainEvent e)
         {
-            _emittedEvents.Add(e);
+            Events.Add(e);
         }
 
         public TAggregateRoot GetAggregateRootFromCache<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
         {
-            if (!_cachedAggregateRoots.ContainsKey(aggregateRootId)) return null;
+            if (!CachedAggregateRoots.ContainsKey(globalSequenceNumberCutoff)) return null;
+            if (!CachedAggregateRoots[globalSequenceNumberCutoff].ContainsKey(aggregateRootId)) return null;
 
-            var aggregateRoot = _cachedAggregateRoots[aggregateRootId];
+            var aggregateRoot = CachedAggregateRoots[globalSequenceNumberCutoff][aggregateRootId];
 
             if (!(aggregateRoot is TAggregateRoot))
             {
@@ -38,7 +40,11 @@ namespace d60.EventSorcerer.Commands
 
         public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
         {
-            _cachedAggregateRoots[aggregateRoot.Id] = aggregateRoot;
+            Console.WriteLine("Adding {0} v {1}", aggregateRoot, globalSequenceNumberCutoff);
+
+            var cacheWithThisVersion = CachedAggregateRoots.GetOrAdd(globalSequenceNumberCutoff, cutoff => new Dictionary<Guid, AggregateRoot>());
+
+            cacheWithThisVersion[aggregateRoot.Id] = aggregateRoot;
         }
     }
 }

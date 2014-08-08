@@ -52,8 +52,16 @@ namespace d60.EventSorcerer.TestHelpers
 
         public TAggregateRoot Get<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
+            var aggregateRootFromCache = _unitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId, long.MaxValue);
+            if (aggregateRootFromCache != null)
+            {
+                return aggregateRootFromCache;
+            }
+
             var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, _unitOfWork);
             var aggregateRoot = aggregateRootInfo.AggregateRoot;
+
+            _unitOfWork.AddToCache(aggregateRoot, long.MaxValue);
 
             aggregateRoot.UnitOfWork = _unitOfWork;
             aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);

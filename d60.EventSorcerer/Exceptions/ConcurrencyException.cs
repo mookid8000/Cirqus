@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.Extensions;
 
 namespace d60.EventSorcerer.Exceptions
 {
@@ -23,10 +24,17 @@ namespace d60.EventSorcerer.Exceptions
 
         static string FormatErrorMessage(Guid batchId, IEnumerable<DomainEvent> involvedDomainEvents)
         {
-            var sequenceNumbers = involvedDomainEvents.Select(e => e.Meta[DomainEvent.MetadataKeys.SequenceNumber]);
-            var sequenceNumbersText = string.Join(", ", sequenceNumbers);
+            var sequenceNumbersText = string.Join(Environment.NewLine, involvedDomainEvents
+                .Select(e => string.Format("    {0} ({1} / {2})",
+                            e.Meta.ContainsKey(DomainEvent.MetadataKeys.GlobalSequenceNumber)
+                                ? e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber]
+                                : "?", e.GetSequenceNumber(), e.GetAggregateRootId())));
 
-            return string.Format("Could not save batch {0} containing {1} to the event store because someone else beat us to it", batchId, sequenceNumbersText);
+            return string.Format(@"Could not save batch {0} containing
+
+{1}
+
+to the event store because someone else beat us to it", batchId, sequenceNumbersText);
         }
     }
 }

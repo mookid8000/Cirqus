@@ -19,36 +19,88 @@ namespace d60.EventSorcerer.Tests.Bugs
         }
 
         [Test]
-        public void ItWorks()
+        public void ItWorksInTheSameUnitOfWork()
         {
             var root1Id = Guid.NewGuid();
             var root2Id = Guid.NewGuid();
 
+            Console.WriteLine("** Creating two aggregate roots **");
             _context.Get<Root>(root1Id);
             _context.Get<Root>(root2Id);
-            _context.Commit();
+            Commit();
 
+            Console.WriteLine("** Making 1 grab info from 2 **");
             // expected grabbing: "N/A"
             _context.Get<Root>(root1Id).GrabInformationFrom(root2Id);
-            _context.Commit();
+            Commit();
 
-            _context.Get<Root>(root2Id).SetName("I now have a name!");
-            _context.Commit();
-
-            // expected grabbing: "I now have a name!"
-            _context.Get<Root>(root1Id).GrabInformationFrom(root2Id);
-            _context.Commit();
-
-
+            Console.WriteLine("** Making 1 grab info from 2 **");
+            Console.WriteLine("** Setting name of 2 to 'I now have a NEW name!' **");
+            Console.WriteLine("** Making 1 grab info from 2 **");
             // expected grabbing: "I now have a NEW name!"
+            _context.Get<Root>(root1Id).GrabInformationFrom(root2Id);
             _context.Get<Root>(root2Id).SetName("I now have a NEW name!");
             _context.Get<Root>(root1Id).GrabInformationFrom(root2Id);
-            _context.Commit();
+            Commit();
 
             var rootWithGrabbings = _context.Get<Root>(root1Id);
             var grabbedNames = rootWithGrabbings.InformationGrabbings.Select(g => g.Item2).ToArray();
+            var expectedNames = new[] {"N/A", "N/A", "I now have a NEW name!"};
 
-            Assert.That(grabbedNames, Is.EqualTo(new[] {"N/A", "I now have a name!", "I now have a new name!"}));
+            Assert(grabbedNames, expectedNames);
+        }
+
+        [Test]
+        public void ItWorksAcrossUnitsOfWork()
+        {
+            var root1Id = Guid.NewGuid();
+            var root2Id = Guid.NewGuid();
+
+            Console.WriteLine("** Creating two aggregate roots **");
+            _context.Get<Root>(root1Id);
+            _context.Get<Root>(root2Id);
+            Commit();
+
+            Console.WriteLine("** Making 1 grab info from 2 **");
+            // expected grabbing: "N/A"
+            _context.Get<Root>(root1Id).GrabInformationFrom(root2Id);
+            Commit();
+
+            Console.WriteLine("** Setting name of 2 to 'I now have a name!' **");
+            _context.Get<Root>(root2Id).SetName("I now have a name!");
+            Commit();
+
+            Console.WriteLine("** Making 1 grab info from 2 **");
+            // expected grabbing: "I now have a name!"
+            _context.Get<Root>(root1Id).GrabInformationFrom(root2Id);
+            Commit();
+
+            var rootWithGrabbings = _context.Get<Root>(root1Id);
+            var grabbedNames = rootWithGrabbings.InformationGrabbings.Select(g => g.Item2).ToArray();
+            var expectedNames = new[] {"N/A", "I now have a name!"};
+
+            Assert(grabbedNames, expectedNames);
+        }
+
+        static void Assert(string[] grabbedNames, string[] expectedNames)
+        {
+            NUnit.Framework.Assert.That(grabbedNames, Is.EqualTo(expectedNames), @"
+Expected:
+
+    {0}
+
+Got
+
+    {1}
+
+", string.Join(", ", expectedNames), string.Join(", ", grabbedNames));
+        }
+
+        void Commit()
+        {
+            _context.Commit();
+            Console.WriteLine(" - committed - ");
+            Console.WriteLine();
         }
 
 
@@ -93,13 +145,31 @@ namespace d60.EventSorcerer.Tests.Bugs
             public void Apply(InformationGrabbedFrom e)
             {
                 var name = Load<Root>(e.OtherRootId).Name;
-                Console.WriteLine("This is what I grabbed: {0}", name);
+                Console.WriteLine("This is what I grabbed: {0} ({1})", name, ReplayState);
                 _informationGrabbings.Add(Tuple.Create(e.OtherRootId, name));
             }
 
             public void Apply(RootNamed e)
             {
                 _name = e.Name;
+            }
+
+            protected internal override void EventEmitted(DomainEvent e)
+            {
+                if (e is RootNamed)
+                {
+                    var named = (RootNamed)e;
+                    Console.WriteLine("> RootNamed({0})", named.Name);
+                    return;
+                }
+
+                if (e is InformationGrabbedFrom)
+                {
+                    var info = (InformationGrabbedFrom) e;
+                    Console.WriteLine("> InformationGrabbedFrom({0})", info.OtherRootId);
+                    return;
+                }
+                Console.WriteLine("> {0}", e.GetType().Name);
             }
         }
 

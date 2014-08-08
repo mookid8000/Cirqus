@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Extensions;
 
@@ -67,6 +66,8 @@ namespace d60.EventSorcerer.Aggregates
 
             using (new ThrowingUnitOfWork(aggregate))
             {
+                aggregate.ReplayState = ReplayState.ReplayApply;
+
                 foreach (var e in domainEventsForThisAggregate)
                 {
                     // ensure that other aggregates loaded during event application are historic if that's required
@@ -86,6 +87,7 @@ namespace d60.EventSorcerer.Aggregates
 
             // restore the cutoff so we don't hinder the root's ability to load other aggregate roots from its emitter methods
             aggregate.GlobalSequenceNumberCutoff = previousCutoff;
+            aggregate.ReplayState = ReplayState.None;
         }
 
         /// <summary>

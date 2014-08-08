@@ -22,6 +22,8 @@ namespace d60.EventSorcerer.Aggregates
             Created();
         }
 
+        internal protected virtual void EventEmitted(DomainEvent e) { }
+
         public Guid Id { get; private set; }
 
         protected virtual void Created() { }
@@ -80,9 +82,13 @@ namespace d60.EventSorcerer.Aggregates
 
             try
             {
+                ReplayState = ReplayState.EmitApply;
+
                 var dynamicThis = (dynamic)this;
 
                 dynamicThis.Apply((dynamic)e);
+
+                ReplayState = ReplayState.None;
             }
             catch (Exception exception)
             {
@@ -90,6 +96,7 @@ namespace d60.EventSorcerer.Aggregates
             }
 
             UnitOfWork.AddEmittedEvent(e);
+            EventEmitted(e);
         }
 
         internal static string GetOwnerFromType(Type aggregateRootType)
@@ -103,15 +110,16 @@ namespace d60.EventSorcerer.Aggregates
         }
 
         internal long GlobalSequenceNumberCutoff = long.MaxValue;
+        internal ReplayState ReplayState = ReplayState.None;
 
-        protected TAggregateRoot Load<TAggregateRoot>(Guid id, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
+        protected TAggregateRoot Load<TAggregateRoot>(Guid aggregateRootId, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
         {
             if (AggregateRootRepository == null)
             {
                 throw new InvalidOperationException(
                     string.Format(
                         "Attempted to Load {0} with ID {1} from {2}, but it has not been initialized with an aggregate root repository! The repository must be attached to the aggregate root in order to hydrate aggregate roots from events when they cannot be found in the current unit of work.",
-                        typeof(TAggregateRoot), id, GetType()));
+                        typeof(TAggregateRoot), aggregateRootId, GetType()));
             }
 
             if (UnitOfWork == null)
@@ -119,29 +127,74 @@ namespace d60.EventSorcerer.Aggregates
                 throw new InvalidOperationException(
                     string.Format(
                         "Attempted to Load {0} with ID {1} from {2}, but it has not been initialized with a unit of work! The unit of work must be attached to the aggregate root in order to cache hydrated aggregate roots within the current unit of work.",
-                        typeof(TAggregateRoot), id, GetType()));
+                        typeof(TAggregateRoot), aggregateRootId, GetType()));
             }
 
-            var cachedAggregateRoot = UnitOfWork.GetAggregateRootFromCache<TAggregateRoot>(id, GlobalSequenceNumberCutoff);
+            if (createIfNotExists && ReplayState != ReplayState.None)
+            {
+                throw new InvalidOperationException(string.Format("Attempted to load new aggregate root of type {0} with ID {1}, but cannot specify createIfNotExists = true when replay state is {2}",
+                    typeof(TAggregateRoot), aggregateRootId, ReplayState));
+            }
+
+            var globalSequenceNumberCutoffToLookFor = ReplayState == ReplayState.ReplayApply
+                ? GlobalSequenceNumberCutoff
+                : long.MaxValue;
+
+            var cachedAggregateRoot = UnitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoffToLookFor);
 
             if (cachedAggregateRoot != null)
             {
                 return cachedAggregateRoot;
             }
 
-            if (!createIfNotExists && !AggregateRootRepository.Exists<TAggregateRoot>(id, maxGlobalSequenceNumber: GlobalSequenceNumberCutoff))
+            if (!createIfNotExists && !AggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, maxGlobalSequenceNumber: globalSequenceNumberCutoffToLookFor))
             {
-                throw new ArgumentException(string.Format("Aggregate root {0} with ID {1} does not exist!", typeof(TAggregateRoot), id), "id");
+                throw new ArgumentException(string.Format("Aggregate root {0} with ID {1} does not exist!", typeof(TAggregateRoot), aggregateRootId), "aggregateRootId");
             }
 
-            var aggregateRootInfo = AggregateRootRepository.Get<TAggregateRoot>(id, unitOfWork: UnitOfWork, maxGlobalSequenceNumber: GlobalSequenceNumberCutoff);
+            var aggregateRootInfo = AggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, unitOfWork: UnitOfWork, maxGlobalSequenceNumber: globalSequenceNumberCutoffToLookFor);
             var aggregateRoot = aggregateRootInfo.AggregateRoot;
 
-            aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);
+            if (aggregateRoot.SequenceNumberGenerator == null)
+            {
+                switch (ReplayState)
+                {
+                    case ReplayState.None:
+                        aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);
+                        break;
+                    case ReplayState.EmitApply:
+                    case ReplayState.ReplayApply:
+                        aggregateRoot.SequenceNumberGenerator = new SequenceNumberGeneratorForFrozenAggregates<TAggregateRoot>(aggregateRootInfo);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
 
             UnitOfWork.AddToCache(aggregateRoot, aggregateRootInfo.LastGlobalSeqNo);
 
             return aggregateRoot;
+        }
+    }
+
+    class SequenceNumberGeneratorForFrozenAggregates<TAggregateRoot> : ISequenceNumberGenerator where TAggregateRoot : AggregateRoot
+    {
+        readonly AggregateRootInfo<TAggregateRoot> _aggregateRootInfo;
+
+        public SequenceNumberGeneratorForFrozenAggregates(AggregateRootInfo<TAggregateRoot> aggregateRootInfo)
+        {
+            _aggregateRootInfo = aggregateRootInfo;
+        }
+
+
+        public long Next()
+        {
+            var message = string.Format("Frozen aggregate root of type {0} with ID {1} (seq no: {2}, global seq no: {3}) attempted" +
+                                        " to get a sequence number for an event which is an implication that an operation was performed," +
+                                        " which is NOT allowed on frozen aggregates",
+                typeof (TAggregateRoot), _aggregateRootInfo.AggregateRoot.Id, _aggregateRootInfo.LastSeqNo, _aggregateRootInfo.LastGlobalSeqNo);
+
+            throw new InvalidOperationException(message);
         }
     }
 }

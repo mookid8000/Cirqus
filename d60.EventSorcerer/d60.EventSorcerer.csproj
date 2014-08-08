@@ -48,6 +48,7 @@
     <Compile Include="Aggregates\AggregateRoot.cs" />
     <Compile Include="Aggregates\DefaultAggregateRootRepository.cs" />
     <Compile Include="Aggregates\IAggregateRootRepository.cs" />
+    <Compile Include="Aggregates\ReplayState.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\CommandMapper.cs" />
     <Compile Include="Commands\ICommandMapper.cs" />
