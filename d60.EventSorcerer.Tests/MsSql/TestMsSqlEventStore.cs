@@ -24,6 +24,7 @@ namespace d60.EventSorcerer.Tests.MsSql
             TestSqlHelper.DropTable("views");
 
             _viewManager = new MsSqlViewManager<ViewInstanceWithManyPropertyTypes>(connectionString, "views");
+            _viewManager.Initialize(new ThrowingViewContext(), new InMemoryEventStore());
         }
 
         [Test]
