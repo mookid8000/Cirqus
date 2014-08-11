@@ -18,10 +18,32 @@ namespace d60.EventSorcerer.MsSql
                 ? connectionStringSettings.ConnectionString
                 : connectionStringOrConnectionStringName;
 
-            return connectionString;
+            var databaseName = GetDatabaseName(connectionString);
+            var databaseNameToUse = PossiblyAppendTeamcityAgentNumber(databaseName);
+
+            return connectionString.Replace(databaseName, databaseNameToUse);
         }
 
         public static string GetDatabaseName(string connectionString)
+        {
+            var originalDatabaseName = InnerGetDatabaseName(connectionString);
+            var databaseNameToUse = PossiblyAppendTeamcityAgentNumber(originalDatabaseName);
+
+            return databaseNameToUse;
+        }
+
+        static string PossiblyAppendTeamcityAgentNumber(string databaseName)
+        {
+            var teamCityAgentNumber = Environment.GetEnvironmentVariable("tcagent");
+            int number;
+
+            if (string.IsNullOrWhiteSpace(teamCityAgentNumber) || !int.TryParse(teamCityAgentNumber, out number))
+                return databaseName;
+
+            return string.Format("{0}_agent{1}", databaseName, number);
+        }
+
+        static string InnerGetDatabaseName(string connectionString)
         {
             var relevantSetting = connectionString
                 .Split(';')
