@@ -51,6 +51,7 @@
     <Compile Include="Aggregates\ReplayState.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\CommandMapper.cs" />
+    <Compile Include="Commands\CompositeCommand.cs" />
     <Compile Include="Commands\ICommandMapper.cs" />
     <Compile Include="Commands\MappedCommand.cs" />
     <Compile Include="Config\EventSorcererConfig.cs" />

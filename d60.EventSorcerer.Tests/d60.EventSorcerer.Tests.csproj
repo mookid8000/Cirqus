@@ -86,6 +86,7 @@
     <Compile Include="Contracts\Views\CatchUpViews.cs" />
     <Compile Include="Contracts\Views\DirectDispatch.cs" />
     <Compile Include="Contracts\Views\Factories\EntityFrameworkPullViewManagerFactory.cs" />
+    <Compile Include="Contracts\Views\Factories\InMemoryViewManagerFactory.cs" />
     <Compile Include="Contracts\Views\Factories\MsSqlPullViewManagerFactory.cs" />
     <Compile Include="Contracts\Views\IPullViewManagerFactory.cs" />
     <Compile Include="Contracts\Views\Factories\MongoDbPullViewManagerFactory.cs" />

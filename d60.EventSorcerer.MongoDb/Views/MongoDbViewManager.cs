@@ -15,6 +15,7 @@ namespace d60.EventSorcerer.MongoDb.Views
     {
         readonly MongoCollection<TView> _viewCollection;
         readonly ViewDispatcherHelper<TView> _dispatcherHelper = new ViewDispatcherHelper<TView>();
+        bool _initialized;
         int _maxDomainEventsBetweenFlush = 100;
         long _lastGlobalSequenceNumberProcessed = -1;
 
@@ -70,6 +71,8 @@ namespace d60.EventSorcerer.MongoDb.Views
 
             // catch up with no limits :)
             CatchUp(context, eventStore, long.MaxValue);
+
+            _initialized = true;
         }
 
         public void CatchUp(IViewContext context, IEventStore eventStore, long lastGlobalSequenceNumber)
@@ -96,6 +99,18 @@ namespace d60.EventSorcerer.MongoDb.Views
 
         public void Dispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
+            if (!_initialized)
+            {
+                var message =
+                    string.Format("The view manager for {0} has not been initialized! Please make sure that the view" +
+                                  " manager is properly initialized, either by initializing it manually, or by having" +
+                                  " the event dispatcher do it (which is the preferred way when you\'re working with" +
+                                  " an event dispatcher)",
+                        typeof(TView));
+
+                throw new InvalidOperationException(message);
+            }
+
             var eventsList = events.ToList();
 
             try

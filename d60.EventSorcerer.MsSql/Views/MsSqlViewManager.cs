@@ -19,6 +19,7 @@ namespace d60.EventSorcerer.MsSql.Views
         readonly Prop[] _schema;
         readonly ViewDispatcherHelper<TView> _dispatcher = new ViewDispatcherHelper<TView>();
         int _maxDomainEventsBetweenFlush;
+        bool _initialized;
 
         public MsSqlViewManager(string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true)
         {
@@ -51,6 +52,8 @@ namespace d60.EventSorcerer.MsSql.Views
             }
 
             CatchUp(context, eventStore, long.MaxValue);
+
+            _initialized = true;
         }
 
         public void CatchUp(IViewContext context, IEventStore eventStore, long lastGlobalSequenceNumber)
@@ -111,6 +114,18 @@ namespace d60.EventSorcerer.MsSql.Views
 
         public void Dispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
+            if (!_initialized)
+            {
+                var message =
+                    string.Format("The view manager for {0} has not been initialized! Please make sure that the view" +
+                                  " manager is properly initialized, either by initializing it manually, or by having" +
+                                  " the event dispatcher do it (which is the preferred way when you\'re working with" +
+                                  " an event dispatcher)",
+                        typeof(TView));
+
+                throw new InvalidOperationException(message);
+            }
+
             var maxGlobalSequenceNumber = GetMaxSequenceNumber();
 
             var eventsToDispatch = events

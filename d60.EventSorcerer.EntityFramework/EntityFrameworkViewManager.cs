@@ -16,6 +16,7 @@ namespace d60.EventSorcerer.EntityFramework
         readonly ViewDispatcherHelper<TView> _dispatcherHelper = new ViewDispatcherHelper<TView>();
         readonly string _connectionStringOrName;
         int _maxDomainEventsBetweenFlush;
+        bool _initialized;
 
         public EntityFrameworkViewManager(string connectionStringOrName, bool createDatabaseIfnotExist = true)
         {
@@ -86,8 +87,9 @@ END
                 PurgeViews();
             }
 
-
             CatchUp(context, eventStore, long.MaxValue);
+
+            _initialized = true;
         }
 
         public void CatchUp(IViewContext context, IEventStore eventStore, long lastGlobalSequenceNumber)
@@ -133,6 +135,18 @@ END
 
         public void Dispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
+            if (!_initialized)
+            {
+                var message =
+                    string.Format("The view manager for {0} has not been initialized! Please make sure that the view" +
+                                  " manager is properly initialized, either by initializing it manually, or by having" +
+                                  " the event dispatcher do it (which is the preferred way when you\'re working with" +
+                                  " an event dispatcher)",
+                        typeof(TView));
+
+                throw new InvalidOperationException(message);
+            }
+
             var lastSeenGlobalSequenceNumber = FindMax();
 
             var eventsList = events

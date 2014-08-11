@@ -47,7 +47,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
             return viewManager;
         }
 
-        public TView Load<TView>(string id) where TView : class, IViewInstance, ISubscribeTo, new()
+        public TView Load<TView>(string viewId) where TView : class, IViewInstance, ISubscribeTo, new()
         {
             var msSqlCatchUpViewManager = _viewManagers.OfType<MsSqlViewManager<TView>>().FirstOrDefault();
 
@@ -56,7 +56,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
                 throw new ApplicationException(string.Format("Could not find a view manager of type {0}", typeof(MsSqlViewManager<TView>)));
             }
 
-            return msSqlCatchUpViewManager.Load(id);
+            return msSqlCatchUpViewManager.Load(viewId);
         }
 
         event Action<int> MaxDomainEventsBetweenFlushSet = delegate { }; 

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using d60.EventSorcerer.Events;
@@ -10,6 +11,7 @@ namespace d60.EventSorcerer.Views.Basic
     {
         readonly ConcurrentDictionary<string, TView> _views = new ConcurrentDictionary<string, TView>();
         readonly ViewDispatcherHelper<TView> _viewDispatcherHelper = new ViewDispatcherHelper<TView>();
+        bool _initialized;
 
         public TView Load(string viewId)
         {
@@ -31,10 +33,24 @@ namespace d60.EventSorcerer.Views.Basic
             {
                 Dispatch(context, eventStore, e);
             }
+
+            _initialized = true;
         }
 
         public void Dispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
+            if (!_initialized)
+            {
+                var message =
+                    string.Format("The view manager for {0} has not been initialized! Please make sure that the view" +
+                                  " manager is properly initialized, either by initializing it manually, or by having" +
+                                  " the event dispatcher do it (which is the preferred way when you\'re working with" +
+                                  " an event dispatcher)",
+                        typeof (TView));
+
+                throw new InvalidOperationException(message);
+            }
+
             foreach (var e in events)
             {
                 var viewLocator = ViewLocator.GetLocatorFor<TView>();

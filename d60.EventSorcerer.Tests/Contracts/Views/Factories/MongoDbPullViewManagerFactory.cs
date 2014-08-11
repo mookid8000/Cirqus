@@ -42,7 +42,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
             return viewManager;
         }
 
-        public TView Load<TView>(string id) where TView : class, IViewInstance, ISubscribeTo, new()
+        public TView Load<TView>(string viewId) where TView : class, IViewInstance, ISubscribeTo, new()
         {
             var viewManager = _viewManagers.OfType<MongoDbViewManager<TView>>().FirstOrDefault();
 
@@ -51,7 +51,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
                 throw new ApplicationException(string.Format("Could not find view manager for views of type {0}", typeof(TView)));
             }
 
-            return viewManager.Load(id);
+            return viewManager.Load(viewId);
         }
 
         event Action<int> MaxDomainEventsBetweenFlushSet = delegate { }; 

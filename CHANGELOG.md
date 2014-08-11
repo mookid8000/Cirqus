@@ -60,3 +60,8 @@
 ## 0.0.33
 
 * Renamed view managers
+
+## 0.0.34
+
+* Divided view manager into push/pull view managers
+* Introduced composite command
