@@ -2,11 +2,12 @@
 
 namespace d60.EventSorcerer.Tests.Contracts.Views
 {
-    public interface IViewManagerFactory
+    public interface IPullViewManagerFactory
     {
-        IViewManager GetViewManagerFor<TView>() where TView : class, IViewInstance, ISubscribeTo, new();
+        IPullViewManager GetPullViewManager<TView>() where TView : class, IViewInstance, ISubscribeTo, new();
 
         TView Load<TView>(string id) where TView : class, IViewInstance, ISubscribeTo, new();
+        
         void SetMaxDomainEventsBetweenFlush(int value);
     }
 }

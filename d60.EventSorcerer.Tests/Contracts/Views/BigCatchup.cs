@@ -14,15 +14,15 @@ using NUnit.Framework;
 
 namespace d60.EventSorcerer.Tests.Contracts.Views
 {
-    [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
-    [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
-    [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql)]
-    public class BigCatchup<TViewManagerFactory> : FixtureBase where TViewManagerFactory : IViewManagerFactory, new()
+    [TestFixture(typeof(MongoDbPullViewManagerFactory), Category = TestCategories.MongoDb)]
+    [TestFixture(typeof(MsSqlPullViewManagerFactory), Category = TestCategories.MsSql)]
+    [TestFixture(typeof(EntityFrameworkPullViewManagerFactory), Category = TestCategories.MsSql)]
+    public class BigCatchup<TViewManagerFactory> : FixtureBase where TViewManagerFactory : IPullViewManagerFactory, new()
     {
         MongoDatabase _database;
         MongoDbEventStore _eventStore;
 
-        IViewManager _viewManager;
+        IPullViewManager _viewManager;
         TViewManagerFactory _factory;
 
         protected override void DoSetUp()
@@ -33,15 +33,9 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 
             _factory = new TViewManagerFactory();
 
-            _viewManager = _factory.GetViewManagerFor<JustAnotherViewInstance>();
+            _viewManager = _factory.GetPullViewManager<JustAnotherViewInstance>();
         }
 
-        /// <summary>
-        /// Catch-up involving 1000000 events - elapsed: 423.9 s
-        /// Catch-up involving 100000 events - elapsed: 30.2 s
-        /// 
-        /// 
-        /// </summary>
         [TestCase(1000, 100, 10)]
         [TestCase(100000, 1000, 20, Ignore = true)]
         [TestCase(1000000, 10000, 40, Ignore = true)]
@@ -110,9 +104,8 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
                 SomeData = new string('*', 1024)
             };
         }
-
-      
     }
+
     class JustAnotherViewInstance : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<AnEventMore>
     {
         public int EventCounter { get; set; }

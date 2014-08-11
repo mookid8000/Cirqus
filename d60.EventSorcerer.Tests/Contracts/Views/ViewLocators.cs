@@ -12,10 +12,10 @@ using TestContext = d60.EventSorcerer.TestHelpers.TestContext;
 
 namespace d60.EventSorcerer.Tests.Contracts.Views
 {
-    [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
-    [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
-    [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql)]
-    public class ViewLocators<TViewManagerFactory> : FixtureBase where TViewManagerFactory : IViewManagerFactory, new()
+    [TestFixture(typeof(MongoDbPullViewManagerFactory), Category = TestCategories.MongoDb)]
+    [TestFixture(typeof(MsSqlPullViewManagerFactory), Category = TestCategories.MsSql)]
+    [TestFixture(typeof(EntityFrameworkPullViewManagerFactory), Category = TestCategories.MsSql)]
+    public class ViewLocators<TViewManagerFactory> : FixtureBase where TViewManagerFactory : IPullViewManagerFactory, new()
     {
         MongoDatabase _database;
         MongoDbEventStore _eventStore;
@@ -32,8 +32,8 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 
             _factory = new TViewManagerFactory();
 
-            _globalInstanceViewManager = _factory.GetViewManagerFor<GlobalInstanceViewInstance>();
-            _instancePerAggregateRootViewManager = _factory.GetViewManagerFor<InstancePerAggregateRootView>();
+            _globalInstanceViewManager = _factory.GetPullViewManager<GlobalInstanceViewInstance>();
+            _instancePerAggregateRootViewManager = _factory.GetPullViewManager<InstancePerAggregateRootView>();
 
             _testContext = new TestContext();
         }

@@ -12,10 +12,10 @@ using NUnit.Framework;
 
 namespace d60.EventSorcerer.Tests.Contracts.Views
 {
-    [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
-    [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
-    [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql)]
-    public class CatchUpViews<TViewManagerFactory> : FixtureBase where TViewManagerFactory : IViewManagerFactory, new()
+    [TestFixture(typeof(MongoDbPullViewManagerFactory), Category = TestCategories.MongoDb)]
+    [TestFixture(typeof(MsSqlPullViewManagerFactory), Category = TestCategories.MsSql)]
+    [TestFixture(typeof(EntityFrameworkPullViewManagerFactory), Category = TestCategories.MsSql)]
+    public class CatchUpViews<TViewManagerFactory> : FixtureBase where TViewManagerFactory : IPullViewManagerFactory, new()
     {
         MongoDatabase _database;
         MongoDbEventStore _eventStore;
@@ -34,8 +34,8 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
 
             _factory = new TViewManagerFactory();
 
-            _justAnotherViewViewManager = _factory.GetViewManagerFor<JustAnotherViewInstanceOther>();
-            _viewThatCanThrowViewManager = _factory.GetViewManagerFor<ViewInstanceThatCanThrow>();
+            _justAnotherViewViewManager = _factory.GetPullViewManager<JustAnotherViewInstanceOther>();
+            _viewThatCanThrowViewManager = _factory.GetPullViewManager<ViewInstanceThatCanThrow>();
 
             _eventDispatcher = new BasicEventDispatcher(new DefaultAggregateRootRepository(_eventStore), _justAnotherViewViewManager, _viewThatCanThrowViewManager);
         }

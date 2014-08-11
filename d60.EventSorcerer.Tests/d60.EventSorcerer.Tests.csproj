@@ -84,11 +84,15 @@
     <Compile Include="Contracts\EventStore\Factories\MongoDbEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\Factories\MsSqlEventStoreFactory.cs" />
     <Compile Include="Contracts\Views\CatchUpViews.cs" />
-    <Compile Include="Contracts\Views\Factories\EntityFrameworkViewManagerFactory.cs" />
-    <Compile Include="Contracts\Views\Factories\MsSqlViewManagerFactory.cs" />
-    <Compile Include="Contracts\Views\IViewManagerFactory.cs" />
-    <Compile Include="Contracts\Views\Factories\MongoDbViewManagerFactory.cs" />
+    <Compile Include="Contracts\Views\DirectDispatch.cs" />
+    <Compile Include="Contracts\Views\Factories\EntityFrameworkPullViewManagerFactory.cs" />
+    <Compile Include="Contracts\Views\Factories\MsSqlPullViewManagerFactory.cs" />
+    <Compile Include="Contracts\Views\IPullViewManagerFactory.cs" />
+    <Compile Include="Contracts\Views\Factories\MongoDbPullViewManagerFactory.cs" />
     <Compile Include="Contracts\Views\BigCatchup.cs" />
+    <Compile Include="Contracts\Views\IPushViewManagerFactory.cs" />
+    <Compile Include="Contracts\Views\PullOnlyWrapper.cs" />
+    <Compile Include="Contracts\Views\PushOnlyWrapper.cs" />
     <Compile Include="Contracts\Views\ViewLocators.cs" />
     <Compile Include="Extensions\Helpful.cs" />
     <Compile Include="FixtureBase.cs" />
@@ -104,6 +108,7 @@
     <Compile Include="MsSql\TestSqlHelper.cs" />
     <Compile Include="Stubs\ConsoleOutUnitOfWork.cs" />
     <Compile Include="Stubs\ConsoleOutEventDispatcher.cs" />
+    <Compile Include="Stubs\TestNumberGenerator.cs" />
     <Compile Include="Stubs\ThrowingViewContext.cs" />
     <Compile Include="TestCategories.cs" />
     <Compile Include="TestExtensions.cs" />

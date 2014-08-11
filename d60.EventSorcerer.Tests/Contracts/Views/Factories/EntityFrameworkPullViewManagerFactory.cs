@@ -7,27 +7,40 @@ using d60.EventSorcerer.Views.Basic;
 
 namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
 {
-    public class EntityFrameworkViewManagerFactory : IViewManagerFactory
+    public class EntityFrameworkPullViewManagerFactory : IPullViewManagerFactory, IPushViewManagerFactory
     {
         readonly List<IViewManager> _viewManagers = new List<IViewManager>();
         readonly string _connectionString = TestSqlHelper.ConnectionString;
 
-        public EntityFrameworkViewManagerFactory()
+        public EntityFrameworkPullViewManagerFactory()
         {
             Console.WriteLine("Dropping migration history");
             TestSqlHelper.DropTable("__MigrationHistory");
         }
 
-        public IViewManager GetViewManagerFor<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
+        public IPullViewManager GetPullViewManager<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
         {
-            Console.WriteLine("Creating FRESH entity framework view manager for {0}", typeof(TView));
+            var viewManager = GetEntityFrameworkViewManager<TView>();
 
-            TestSqlHelper.DropTable(typeof(TView).Name);
-            TestSqlHelper.DropTable(typeof(TView).Name + "Configs");
+            return new PullOnlyWrapper(viewManager);
+        }
+
+        public IPushViewManager GetPushViewManager<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
+        {
+            var viewManager = GetEntityFrameworkViewManager<TView>();
+
+            return new PushOnlyWrapper(viewManager);
+        }
+
+        EntityFrameworkViewManager<TView> GetEntityFrameworkViewManager<TView>()
+            where TView : class, IViewInstance, ISubscribeTo, new()
+        {
+            TestSqlHelper.DropTable(typeof (TView).Name);
 
             var viewManager = new EntityFrameworkViewManager<TView>(_connectionString);
             MaxDomainEventsBetweenFlushSet += maxEvents => viewManager.MaxDomainEventsBetweenFlush = maxEvents;
             _viewManagers.Add(viewManager);
+
             return viewManager;
         }
 

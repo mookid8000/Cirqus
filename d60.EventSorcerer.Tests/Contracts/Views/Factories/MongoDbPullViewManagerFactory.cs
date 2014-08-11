@@ -8,24 +8,37 @@ using MongoDB.Driver;
 
 namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
 {
-    class MongoDbViewManagerFactory : IViewManagerFactory
+    class MongoDbPullViewManagerFactory : IPullViewManagerFactory, IPushViewManagerFactory
     {
         readonly List<IViewManager> _viewManagers = new List<IViewManager>();
         readonly MongoDatabase _database;
 
-        public MongoDbViewManagerFactory()
+        public MongoDbPullViewManagerFactory()
         {
             _database = MongoHelper.InitializeTestDatabase();
         }
 
-        public IViewManager GetViewManagerFor<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
+        public IPullViewManager GetPullViewManager<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
         {
-            var viewManager = new MongoDbViewManager<TView>(_database, typeof(TView).Name);
+            var viewManager = GetMongoDbViewManager<TView>();
+
+            return new PullOnlyWrapper(viewManager);
+        }
+
+        public IPushViewManager GetPushViewManager<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
+        {
+            var viewManager = GetMongoDbViewManager<TView>();
+
+            return new PushOnlyWrapper(viewManager);
+        }
+
+        MongoDbViewManager<TView> GetMongoDbViewManager<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
+        {
+            var viewManager = new MongoDbViewManager<TView>(_database, typeof (TView).Name);
 
             MaxDomainEventsBetweenFlushSet += maxEvents => viewManager.MaxDomainEventsBetweenFlush = maxEvents;
 
             _viewManagers.Add(viewManager);
-
             return viewManager;
         }
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using d60.EventSorcerer.Numbers;
 using NUnit.Framework;
 

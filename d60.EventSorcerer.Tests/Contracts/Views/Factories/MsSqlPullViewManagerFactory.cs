@@ -7,21 +7,35 @@ using d60.EventSorcerer.Views.Basic;
 
 namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
 {
-    public class MsSqlViewManagerFactory : IViewManagerFactory
+    public class MsSqlPullViewManagerFactory : IPullViewManagerFactory, IPushViewManagerFactory
     {
         readonly string _connectionString;
         readonly List<IViewManager> _viewManagers = new List<IViewManager>();
 
-        public MsSqlViewManagerFactory()
+        public MsSqlPullViewManagerFactory()
         {
             TestSqlHelper.EnsureTestDatabaseExists();
 
             _connectionString = TestSqlHelper.ConnectionString;
         }
 
-        public IViewManager GetViewManagerFor<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
+        public IPullViewManager GetPullViewManager<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
         {
-            var tableName = typeof(TView).Name;
+            var viewManager = GetMsSqlViewManager<TView>();
+
+            return new PullOnlyWrapper(viewManager);
+        }
+
+        public IPushViewManager GetPushViewManager<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
+        {
+            var viewManager = GetMsSqlViewManager<TView>();
+
+            return new PushOnlyWrapper(viewManager);
+        }
+
+        MsSqlViewManager<TView> GetMsSqlViewManager<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
+        {
+            var tableName = typeof (TView).Name;
 
             TestSqlHelper.DropTable(tableName);
 
@@ -30,7 +44,6 @@ namespace d60.EventSorcerer.Tests.Contracts.Views.Factories
             _viewManagers.Add(viewManager);
 
             MaxDomainEventsBetweenFlushSet += maxEvents => viewManager.MaxDomainEventsBetweenFlush = maxEvents;
-
             return viewManager;
         }
 
