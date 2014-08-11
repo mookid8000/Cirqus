@@ -93,7 +93,7 @@ namespace d60.EventSorcerer.MongoDb.Views
 
             foreach (var batch in batches)
             {
-                Dispatch(context, eventStore, batch);
+                InnerDispatch(context, batch);
             }
         }
 
@@ -111,6 +111,11 @@ namespace d60.EventSorcerer.MongoDb.Views
                 throw new InvalidOperationException(message);
             }
 
+            InnerDispatch(context, events);
+        }
+
+        void InnerDispatch(IViewContext context, IEnumerable<DomainEvent> events)
+        {
             var eventsList = events.ToList();
 
             try

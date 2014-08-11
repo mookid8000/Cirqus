@@ -65,7 +65,7 @@ namespace d60.EventSorcerer.MsSql.Views
 
             foreach (var partition in batches)
             {
-                Dispatch(context, eventStore, partition);
+                InnerDispatch(context, eventStore, partition);
             }
         }
 
@@ -126,6 +126,11 @@ namespace d60.EventSorcerer.MsSql.Views
                 throw new InvalidOperationException(message);
             }
 
+            InnerDispatch(context, eventStore, events);
+        }
+
+        void InnerDispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events)
+        {
             var maxGlobalSequenceNumber = GetMaxSequenceNumber();
 
             var eventsToDispatch = events
@@ -146,7 +151,7 @@ namespace d60.EventSorcerer.MsSql.Views
                     // make sure we flush after each single domain event
                     foreach (var e in eventsToDispatch)
                     {
-                        ProcessOneBatch(eventStore, new[] { e }, context);
+                        ProcessOneBatch(eventStore, new[] {e}, context);
                     }
                 }
                 catch (ConsistencyException)

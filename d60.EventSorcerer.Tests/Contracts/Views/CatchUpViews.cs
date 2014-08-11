@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using d60.EventSorcerer.Aggregates;
 using d60.EventSorcerer.Events;
@@ -53,10 +54,10 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
                 EventFor(rootId1, 2, 2),
             };
 
-            _eventDispatcher.Dispatch(_eventStore, domainEvents);
+            SaveAndDispatch(domainEvents);
 
             // act
-            _eventDispatcher.Dispatch(_eventStore, domainEvents);
+            SaveAndDispatch(domainEvents, saveEventsToEventStore: false);
 
             // assert
             var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
@@ -77,13 +78,18 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
                 EventFor(rootId1, 2, 2),
             };
 
-            _eventDispatcher.Dispatch(_eventStore, domainEvents);
+            SaveAndDispatch(domainEvents);
 
             // act
-            var domainEventsWithOneAdditionalEvent = domainEvents
-                .Concat(new[] { EventFor(rootId1, 3, 3) });
+            var additionalEvent = EventFor(rootId1, 3, 3);
 
-            _eventDispatcher.Dispatch(_eventStore, domainEventsWithOneAdditionalEvent);
+            var domainEventsWithOneAdditionalEvent = domainEvents
+                .Concat(new[] { additionalEvent });
+
+            //manually save extra event here
+            _eventStore.Save(Guid.NewGuid(), new[] { additionalEvent });
+
+            SaveAndDispatch(domainEventsWithOneAdditionalEvent, saveEventsToEventStore: false);
 
             // assert
             var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
@@ -133,7 +139,7 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             ViewInstanceThatCanThrow.ThrowAfterThisManyEvents = 3;
 
             // act
-            _eventDispatcher.Dispatch(_eventStore, events);
+            SaveAndDispatch(events);
 
             // assert
             var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
@@ -196,19 +202,33 @@ namespace d60.EventSorcerer.Tests.Contracts.Views
             var rootId1 = Guid.NewGuid();
             var rootId2 = Guid.NewGuid();
 
-            _eventDispatcher.Dispatch(_eventStore, new[]
+            var events = new[]
             {
                 EventFor(rootId1, 0, 10),
                 EventFor(rootId1, 1, 11),
                 EventFor(rootId1, 2, 12),
                 EventFor(rootId2, 0, 13),
-            });
+            };
+
+            SaveAndDispatch(events);
 
             var firstView = _factory.Load<JustAnotherViewInstanceOther>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
             Assert.That(firstView.EventCounter, Is.EqualTo(3));
 
             var secondView = _factory.Load<JustAnotherViewInstanceOther>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId2));
             Assert.That(secondView.EventCounter, Is.EqualTo(1));
+        }
+
+        void SaveAndDispatch(IEnumerable<DomainEvent> domainEvents, bool saveEventsToEventStore = true)
+        {
+            var list = domainEvents.ToList();
+
+            if (saveEventsToEventStore)
+            {
+                _eventStore.Save(Guid.NewGuid(), list);
+            }
+
+            _eventDispatcher.Dispatch(_eventStore, list);
         }
 
         DomainEvent EventFor(Guid aggregateRootId, int seqNo, int globalSeqNo)
