@@ -65,3 +65,7 @@
 
 * Divided view manager into push/pull view managers
 * Introduced composite command
+
+## 0.0.35
+
+* Moved event dispatch out of retry loop
