@@ -6,7 +6,6 @@ using d60.EventSorcerer.Commands;
 using d60.EventSorcerer.Config;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Extensions;
-using d60.EventSorcerer.TestHelpers;
 using d60.EventSorcerer.TestHelpers.Internals;
 using d60.EventSorcerer.Views.Basic;
 using d60.EventSorcerer.Views.Basic.Locators;
@@ -18,16 +17,18 @@ namespace d60.EventSorcerer.Tests.Views
     public class TestLoadAggregatesFromView : FixtureBase
     {
         EventSorcererConfig _eventSorcerer;
-        InMemoryViewManager<MyViewInstance> _viewManagers;
+        InMemoryViewManager<MyViewInstance> _viewManager;
 
         protected override void DoSetUp()
         {
             var eventStore = new InMemoryEventStore();
-            _viewManagers = new InMemoryViewManager<MyViewInstance>();
+            _viewManager = new InMemoryViewManager<MyViewInstance>();
 
             var basicAggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
 
-            _eventSorcerer = new EventSorcererConfig(eventStore, basicAggregateRootRepository, new CommandMapper(), new BasicEventDispatcher(basicAggregateRootRepository, _viewManagers));
+            _eventSorcerer = new EventSorcererConfig(eventStore, basicAggregateRootRepository, new CommandMapper(), new BasicEventDispatcher(basicAggregateRootRepository, _viewManager));
+
+            _eventSorcerer.Initialize();
         }
 
         [Test]
@@ -41,7 +42,7 @@ namespace d60.EventSorcerer.Tests.Views
             _eventSorcerer.ProcessCommand(new MyCommand(aggregateRootId));
             _eventSorcerer.ProcessCommand(new MyCommand(aggregateRootId));
 
-            var view = _viewManagers.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(aggregateRootId));
+            var view = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(aggregateRootId));
             
             Assert.That(view.Calls.All(c => c.Item1 == c.Item2), "Registered calls contained a call where the version of the loaded aggregate root did not correspond to the version of the event that the view got to process: {0}",
                 string.Join(", ", view.Calls.Select(c => string.Format("{0}/{1}", c.Item1, c.Item2))));

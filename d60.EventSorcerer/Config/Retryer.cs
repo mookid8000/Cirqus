@@ -6,17 +6,10 @@ namespace d60.EventSorcerer.Config
 {
     public class Retryer
     {
-        readonly int _maxAttempts;
-
         [ThreadStatic]
         static Random _randomizzle;
 
-        public Retryer(int maxAttempts)
-        {
-            _maxAttempts = maxAttempts;
-        }
-
-        public void RetryOn<TException>(Action action) where TException : Exception
+        public void RetryOn<TException>(Action action, int maxRetries = 10) where TException : Exception
         {
             bool retry;
             var caughtExceptions = new List<Exception>();
@@ -32,9 +25,9 @@ namespace d60.EventSorcerer.Config
                 {
                     caughtExceptions.Add(exception);
 
-                    if (caughtExceptions.Count >= _maxAttempts)
+                    if (caughtExceptions.Count >= maxRetries)
                     {
-                        throw new AggregateException(string.Format("Could not complete the call, even after {0} attempts", _maxAttempts), caughtExceptions);
+                        throw new AggregateException(string.Format("Could not complete the call, even after {0} attempts", maxRetries), caughtExceptions);
                     }
 
                     retry = true;

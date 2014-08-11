@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using d60.EventSorcerer.Aggregates;
 using d60.EventSorcerer.Commands;
 using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Exceptions;
+using d60.EventSorcerer.Extensions;
 using d60.EventSorcerer.Numbers;
 
 namespace d60.EventSorcerer.Config
@@ -22,7 +24,7 @@ namespace d60.EventSorcerer.Config
                 .SingleOrDefault(m => m.Name == InnerProcessMethodName && m.IsGenericMethod);
 
         readonly EventSorcererOptions _options = new EventSorcererOptions();
-        readonly Retryer _retryer = new Retryer(10);
+        readonly Retryer _retryer = new Retryer();
         readonly IEventStore _eventStore;
         readonly ICommandMapper _commandMapper;
         readonly IAggregateRootRepository _aggregateRootRepository;
@@ -39,6 +41,11 @@ namespace d60.EventSorcerer.Config
             _aggregateRootRepository = aggregateRootRepository;
             _commandMapper = commandMapper;
             _eventDispatcher = eventDispatcher;
+        }
+
+        public void Initialize()
+        {
+            _eventDispatcher.Initialize(_eventStore, Options.PurgeExistingViews);
         }
 
         public EventSorcererOptions Options
@@ -77,20 +84,46 @@ namespace d60.EventSorcerer.Config
             where TCommand : Command<TAggregateRoot>
             where TAggregateRoot : AggregateRoot, new()
         {
+            var emittedDomainEvents = new List<DomainEvent>();
+
             try
             {
                 var batchId = Guid.NewGuid();
 
-                _retryer.RetryOn<ConcurrencyException>(() => DoProcessCommand<TAggregateRoot, TCommand>(batchId, command));
+                _retryer.RetryOn<ConcurrencyException>(() =>
+                {
+                    var eventsFromThisUnitOfWork = DoProcessCommand<TAggregateRoot, TCommand>(batchId, command);
+
+                    emittedDomainEvents.AddRange(eventsFromThisUnitOfWork);
+                }, maxRetries: Options.MaxRetries);
             }
             catch (Exception exception)
             {
                 throw new ApplicationException(string.Format("An error occurred while processing command {0}", command), exception);
             }
+
+            if (!emittedDomainEvents.Any()) return;
+
+            try
+            {
+                // when we come to this place, we deliver the events to the view manager
+                _eventDispatcher.Dispatch(_eventStore, emittedDomainEvents);
+            }
+            catch (Exception exception)
+            {
+                var message =
+                    string.Format(
+                        "An error ocurred while dispatching events with global sequence numbers {0} to event dispatcher." +
+                        " The events were properly saved in the event store, but you might need to re-initialize the" +
+                        " event dispatcher",
+                        string.Join(", ", emittedDomainEvents.Select(e => e.GetGlobalSequenceNumber())));
+
+                throw new ApplicationException(message, exception);
+            }
         }
         // ReSharper restore UnusedMember.Local
 
-        void DoProcessCommand<TAggregateRoot, TCommand>(Guid batchId, TCommand command)
+        List<DomainEvent> DoProcessCommand<TAggregateRoot, TCommand>(Guid batchId, TCommand command)
             where TCommand : Command<TAggregateRoot>
             where TAggregateRoot : AggregateRoot, new()
         {
@@ -107,7 +140,7 @@ namespace d60.EventSorcerer.Config
 
             var emittedEvents = unitOfWork.EmittedEvents.ToList();
 
-            if (!emittedEvents.Any()) return;
+            if (!emittedEvents.Any()) return emittedEvents;
 
             foreach (var e in emittedEvents)
             {
@@ -117,8 +150,7 @@ namespace d60.EventSorcerer.Config
             // first: save the events
             _eventStore.Save(batchId, emittedEvents);
 
-            // when we come to this place, we deliver the events to the view manager
-            _eventDispatcher.Dispatch(_eventStore, emittedEvents);
+            return emittedEvents;
         }
 
         static Type GetAggregateRootType(Type commandType)
