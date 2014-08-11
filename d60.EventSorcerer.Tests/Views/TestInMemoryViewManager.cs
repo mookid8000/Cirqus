@@ -14,13 +14,14 @@ namespace d60.EventSorcerer.Tests.Views
     {
         InMemoryViewManager<SomeViewInstance> _viewManager;
         BasicEventDispatcher _eventDispatcher;
-        InMemoryEventStore _inMemoryEventStore;
+        InMemoryEventStore _eventStore;
 
         protected override void DoSetUp()
         {
             _viewManager = new InMemoryViewManager<SomeViewInstance>();
-            _inMemoryEventStore = new InMemoryEventStore();
-            _eventDispatcher = new BasicEventDispatcher(new DefaultAggregateRootRepository(_inMemoryEventStore), new IViewManager[] { _viewManager });
+            _eventStore = new InMemoryEventStore();
+            _eventDispatcher = new BasicEventDispatcher(new DefaultAggregateRootRepository(_eventStore), new IViewManager[] { _viewManager });
+            _eventDispatcher.Initialize(_eventStore);
         }
 
         [Test]
@@ -29,9 +30,9 @@ namespace d60.EventSorcerer.Tests.Views
             var firstRoot = Guid.NewGuid();
             var secondRoot = Guid.NewGuid();
 
-            _eventDispatcher.Dispatch(_inMemoryEventStore,  new DomainEvent[] { EventFor(firstRoot) });
-            _eventDispatcher.Dispatch(_inMemoryEventStore, new DomainEvent[] { EventFor(firstRoot) });
-            _eventDispatcher.Dispatch(_inMemoryEventStore, new DomainEvent[] { EventFor(secondRoot) });
+            _eventDispatcher.Dispatch(_eventStore,  new DomainEvent[] { EventFor(firstRoot) });
+            _eventDispatcher.Dispatch(_eventStore, new DomainEvent[] { EventFor(firstRoot) });
+            _eventDispatcher.Dispatch(_eventStore, new DomainEvent[] { EventFor(secondRoot) });
 
             var viewInstances = _viewManager.ToList();
 
@@ -66,7 +67,7 @@ namespace d60.EventSorcerer.Tests.Views
             var firstRoot = Guid.NewGuid();
 
             TakeTime("Dispatch " + numberOfEvents + " events",
-                () => numberOfEvents.Times(() => _eventDispatcher.Dispatch(_inMemoryEventStore, new DomainEvent[] { EventFor(firstRoot) })));
+                () => numberOfEvents.Times(() => _eventDispatcher.Dispatch(_eventStore, new DomainEvent[] { EventFor(firstRoot) })));
         }
 
 
