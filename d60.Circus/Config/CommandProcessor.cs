@@ -49,9 +49,10 @@ namespace d60.Circus.Config
         /// <summary>
         /// Initializes the views, giving them a chance to catch up to the current state
         /// </summary>
-        public void Initialize()
+        public CommandProcessor Initialize()
         {
             _eventDispatcher.Initialize(_eventStore, Options.PurgeExistingViews);
+            return this;
         }
 
         public Options Options

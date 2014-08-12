@@ -25,6 +25,8 @@ namespace d60.Circus.MsSql.Views
                 
                 {typeof (List<string>), Tuple.Create(SqlDbType.NVarChar, "max")},
                 {typeof (List<int>), Tuple.Create(SqlDbType.NVarChar, "max")},
+                {typeof (List<double>), Tuple.Create(SqlDbType.NVarChar, "max")},
+                {typeof (List<decimal>), Tuple.Create(SqlDbType.NVarChar, "max")},
                 {typeof (HashSet<string>), Tuple.Create(SqlDbType.NVarChar, "max")},
                 {typeof (HashSet<int>), Tuple.Create(SqlDbType.NVarChar, "max")},
             };
@@ -74,6 +76,18 @@ namespace d60.Circus.MsSql.Views
 
                 valueToSet = tokens.ToList();
             }
+            else if (propertyInfo.PropertyType == typeof(List<double>))
+            {
+                var tokens = ((string)value).Split(';').Select(double.Parse);
+
+                valueToSet = tokens.ToList();
+            }
+            else if (propertyInfo.PropertyType == typeof(List<decimal>))
+            {
+                var tokens = ((string)value).Split(';').Select(decimal.Parse);
+
+                valueToSet = tokens.ToList();
+            }
             else if (propertyInfo.PropertyType == typeof(HashSet<string>))
             {
                 var tokens = ((string)value).Split(';');
@@ -106,6 +120,20 @@ namespace d60.Circus.MsSql.Views
             if (propertyInfo.PropertyType == typeof(List<int>))
             {
                 var stringList = (List<int>)propertyInfo.GetValue(instance);
+
+                return string.Join(";", stringList);
+            }
+
+            if (propertyInfo.PropertyType == typeof(List<double>))
+            {
+                var stringList = (List<double>)propertyInfo.GetValue(instance);
+
+                return string.Join(";", stringList);
+            }
+
+            if (propertyInfo.PropertyType == typeof(List<decimal>))
+            {
+                var stringList = (List<decimal>)propertyInfo.GetValue(instance);
 
                 return string.Join(";", stringList);
             }

@@ -46,6 +46,8 @@ namespace d60.Circus.Tests.MsSql
             Assert.That(view.Float, Is.EqualTo(1.2f));
             Assert.That(view.ListOfString, Is.EqualTo(new List<string> { "hello", "there" }));
             Assert.That(view.ListOfInt, Is.EqualTo(new List<int> { 6, 7 }));
+            Assert.That(view.ListOfDouble, Is.EqualTo(new List<double> { 6, 7 }));
+            Assert.That(view.ListOfDecimal, Is.EqualTo(new List<decimal> { 6, 7 }));
             Assert.That(view.HashOfStrings, Is.EqualTo(new HashSet<string> { "bim", "bom" }));
             Assert.That(view.HashOfInts, Is.EqualTo(new HashSet<int> { 9,3 }));
         }
@@ -79,6 +81,8 @@ namespace d60.Circus.Tests.MsSql
 
                 ListOfString = new List<string> { "hello", "there" };
                 ListOfInt = new List<int> { 6, 7 };
+                ListOfDouble = new List<double> { 6, 7 };
+                ListOfDecimal = new List<decimal> { 6, 7 };
 
                 HashOfStrings = new HashSet<string> {"bim", "bom"};
                 HashOfInts = new HashSet<int> {9, 3};
@@ -102,6 +106,8 @@ namespace d60.Circus.Tests.MsSql
             // special treatment
             public List<string> ListOfString { get; set; }
             public List<int> ListOfInt { get; set; }
+            public List<double> ListOfDouble { get; set; }
+            public List<decimal> ListOfDecimal { get; set; }
             public HashSet<string> HashOfStrings { get; set; }
             public HashSet<int> HashOfInts { get; set; }
 

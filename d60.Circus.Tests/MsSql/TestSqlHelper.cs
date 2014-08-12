@@ -7,7 +7,32 @@ namespace d60.Circus.Tests.MsSql
 {
     public class TestSqlHelper
     {
-        public static string ConnectionString = SqlHelper.GetConnectionString("sqltestdb");
+        public static string ConnectionString
+        {
+            get
+            {
+                var connectionString = SqlHelper.GetConnectionString("sqltestdb");
+
+                var configuredDatabaseName = SqlHelper.GetDatabaseName(connectionString);
+
+                var databaseNameToUse = PossiblyAppendTeamcityAgentNumber(configuredDatabaseName);
+
+                Console.WriteLine("Using test SQL database '{0}'", databaseNameToUse);
+
+                return connectionString.Replace(configuredDatabaseName, databaseNameToUse);
+            }
+        } 
+
+        static string PossiblyAppendTeamcityAgentNumber(string databaseName)
+        {
+            var teamCityAgentNumber = Environment.GetEnvironmentVariable("tcagent");
+            int number;
+
+            if (string.IsNullOrWhiteSpace(teamCityAgentNumber) || !int.TryParse(teamCityAgentNumber, out number))
+                return databaseName;
+
+            return string.Format("{0}_agent{1}", databaseName, number);
+        }
 
         public static void EnsureTestDatabaseExists()
         {

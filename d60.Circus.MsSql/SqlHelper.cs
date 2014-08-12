@@ -18,34 +18,10 @@ namespace d60.Circus.MsSql
                 ? connectionStringSettings.ConnectionString
                 : connectionStringOrConnectionStringName;
 
-            var databaseName = GetDatabaseName(connectionString);
-            var databaseNameToUse = PossiblyAppendTeamcityAgentNumber(databaseName);
-
-            Console.WriteLine("Using SQL database for testing: '{0}'", databaseNameToUse);
-
-            return connectionString.Replace(databaseName, databaseNameToUse);
+            return connectionString;
         }
 
         public static string GetDatabaseName(string connectionString)
-        {
-            var originalDatabaseName = InnerGetDatabaseName(connectionString);
-            var databaseNameToUse = PossiblyAppendTeamcityAgentNumber(originalDatabaseName);
-
-            return databaseNameToUse;
-        }
-
-        static string PossiblyAppendTeamcityAgentNumber(string databaseName)
-        {
-            var teamCityAgentNumber = Environment.GetEnvironmentVariable("tcagent");
-            int number;
-
-            if (string.IsNullOrWhiteSpace(teamCityAgentNumber) || !int.TryParse(teamCityAgentNumber, out number))
-                return databaseName;
-
-            return string.Format("{0}_agent{1}", databaseName, number);
-        }
-
-        static string InnerGetDatabaseName(string connectionString)
         {
             var relevantSetting = connectionString
                 .Split(';')
