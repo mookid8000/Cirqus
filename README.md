@@ -1,4 +1,4 @@
-# d60 Event Sorcerer
+# d60 Circus
 
 Simple but powerful event sourcing + CQRS kit.
 
@@ -6,11 +6,11 @@ Simple but powerful event sourcing + CQRS kit.
 
 You do this:
 
-    var sorcerer = new EventSorcererConfig(...);
+    var processor = new CommandProcessor(...);
 
 (of course satisfying the config's few dependencies), and then you can do this:
 
-    sorcerer.ProcessCommand(myCommand);
+    processor.ProcessCommand(myCommand);
 
 and then everything will flow from there.
 

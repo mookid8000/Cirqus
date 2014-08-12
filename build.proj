@@ -3,20 +3,17 @@
 
   <PropertyGroup>
     <Root>.</Root>
-    
     <BuildOutputFolder>$(Root)\deploy</BuildOutputFolder>
     <NuGetFolder>$(Root)\.nuget</NuGetFolder>
     <NuSpecFolder>$(Root)\nuspec</NuSpecFolder>
     <ToolsFolder>$(Root)\tools</ToolsFolder>
-
     <DefaultNuSpecVersion>VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT</DefaultNuSpecVersion>
-
     <ReleaseMaster>$(ToolsFolder)\ReleaseMaster\ReleaseMaster.exe</ReleaseMaster>
   </PropertyGroup>
 
   <ItemGroup>
     <NuSpecFiles Include="$(NuSpecFolder)\*.nuspec" />
-    <DependantNuSpecFiles Include="$(NuSpecFolder)\*.nuspec" Exclude="$(NuSpecFolder)\d60.EventSorcerer.nuspec" />
+    <DependantNuSpecFiles Include="$(NuSpecFolder)\*.nuspec" Exclude="$(NuSpecFolder)\d60.Circus.nuspec" />
   </ItemGroup>
 
   <Target Name="PrintNuSpec">
@@ -32,12 +29,12 @@
     <Error Condition="'$(Version)' == ''" Text="No version specified! The version parameter must be specified in order to build &amp; release NuGet packages"/>
     <Message Text="Updating NuSpec version..."/>
     <XmlPoke XmlInputPath="%(NuSpecFiles.FullPath)" Query="//version" Value="$(Version)" />
-    <XmlPoke XmlInputPath="%(DependantNuSpecFiles.FullPath)" Query="//dependency[@id='d60.EventSorcerer']/@version" Value="$(Version)" />
+    <XmlPoke XmlInputPath="%(DependantNuSpecFiles.FullPath)" Query="//dependency[@id='d60.Circus']/@version" Value="$(Version)" />
     
     <CallTarget Targets="publish_packages"/>
     
     <XmlPoke XmlInputPath="%(NuSpecFiles.FullPath)" Query="//version" Value="$(DefaultNuSpecVersion)" />
-    <XmlPoke XmlInputPath="%(DependantNuSpecFiles.FullPath)" Query="//dependency[@id='d60.EventSorcerer']/@version" Value="$(DefaultNuSpecVersion)" />
+    <XmlPoke XmlInputPath="%(DependantNuSpecFiles.FullPath)" Query="//dependency[@id='d60.Circus']/@version" Value="$(DefaultNuSpecVersion)" />
   </Target>
 
   <Target Name="build" DependsOnTargets="clean_output_folder; build_solution" />
@@ -50,7 +47,7 @@
   <Target Name="build_solution">
     <Message Text="Building everything"/>
 
-    <MSBuild Projects="EventSorcerer.sln" Targets="rebuild" StopOnFirstFailure="true" Properties="Configuration=Release">
+    <MSBuild Projects="Circus.sln" Targets="rebuild" StopOnFirstFailure="true" Properties="Configuration=Release">
       <Output TaskParameter="TargetOutputs" ItemName="AssembliesBuilt" />
     </MSBuild>
   </Target>

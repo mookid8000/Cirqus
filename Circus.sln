@@ -1,0 +1,96 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30501.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{756E55BA-35D2-4281-BE7E-05E23444136E}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".solution items", ".solution items", "{53C890A9-D587-4BD6-B69C-5B01F64B39F1}"
+	ProjectSection(SolutionItems) = preProject
+		CHANGELOG.md = CHANGELOG.md
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspec", "nuspec", "{407E215D-36B1-46F9-A39F-39465ADC4F2D}"
+	ProjectSection(SolutionItems) = preProject
+		nuspec\d60.Circus.MongoDb.nuspec = nuspec\d60.Circus.MongoDb.nuspec
+		nuspec\d60.Circus.MsSql.nuspec = nuspec\d60.Circus.MsSql.nuspec
+		nuspec\d60.Circus.nuspec = nuspec\d60.Circus.nuspec
+		nuspec\d60.Circus.TestHelpers.nuspec = nuspec\d60.Circus.TestHelpers.nuspec
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B7EFFA50-A51B-4D7D-A264-07151A10F9D8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "core", "core", "{89F6887C-D659-4483-9BFC-DBC7C2BC29F8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integration", "integration", "{AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{87D0C01A-A3ED-42DC-B173-B797F7717348}"
+	ProjectSection(SolutionItems) = preProject
+		build.bat = build.bat
+		build.proj = build.proj
+		release.bat = release.bat
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Circus", "d60.Circus\d60.Circus.csproj", "{8E2DF6B4-A4DF-495E-8D74-5DCE6B333FB4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Circus.TestHelpers", "d60.Circus.TestHelpers\d60.Circus.TestHelpers.csproj", "{44D72FC8-F786-47A7-8D83-3D926D4E7DB0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Circus.EntityFramework", "d60.Circus.EntityFramework\d60.Circus.EntityFramework.csproj", "{925D8D5E-B695-4DC0-B1B6-66955C964576}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Circus.MongoDb", "d60.Circus.MongoDb\d60.Circus.MongoDb.csproj", "{1ECCDCD5-DD78-4F9C-B0C3-BC083742CE99}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Circus.MsSql", "d60.Circus.MsSql\d60.Circus.MsSql.csproj", "{6EEBCA35-9B61-4A95-8E72-3AF583C14F32}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Circus.Tests", "d60.Circus.Tests\d60.Circus.Tests.csproj", "{7624F47B-B53F-40C6-B211-19288E814F86}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8E2DF6B4-A4DF-495E-8D74-5DCE6B333FB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E2DF6B4-A4DF-495E-8D74-5DCE6B333FB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E2DF6B4-A4DF-495E-8D74-5DCE6B333FB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E2DF6B4-A4DF-495E-8D74-5DCE6B333FB4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44D72FC8-F786-47A7-8D83-3D926D4E7DB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44D72FC8-F786-47A7-8D83-3D926D4E7DB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44D72FC8-F786-47A7-8D83-3D926D4E7DB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44D72FC8-F786-47A7-8D83-3D926D4E7DB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{925D8D5E-B695-4DC0-B1B6-66955C964576}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{925D8D5E-B695-4DC0-B1B6-66955C964576}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{925D8D5E-B695-4DC0-B1B6-66955C964576}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{925D8D5E-B695-4DC0-B1B6-66955C964576}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1ECCDCD5-DD78-4F9C-B0C3-BC083742CE99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1ECCDCD5-DD78-4F9C-B0C3-BC083742CE99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1ECCDCD5-DD78-4F9C-B0C3-BC083742CE99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1ECCDCD5-DD78-4F9C-B0C3-BC083742CE99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6EEBCA35-9B61-4A95-8E72-3AF583C14F32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EEBCA35-9B61-4A95-8E72-3AF583C14F32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EEBCA35-9B61-4A95-8E72-3AF583C14F32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EEBCA35-9B61-4A95-8E72-3AF583C14F32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7624F47B-B53F-40C6-B211-19288E814F86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7624F47B-B53F-40C6-B211-19288E814F86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7624F47B-B53F-40C6-B211-19288E814F86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7624F47B-B53F-40C6-B211-19288E814F86}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{407E215D-36B1-46F9-A39F-39465ADC4F2D} = {53C890A9-D587-4BD6-B69C-5B01F64B39F1}
+		{87D0C01A-A3ED-42DC-B173-B797F7717348} = {53C890A9-D587-4BD6-B69C-5B01F64B39F1}
+		{8E2DF6B4-A4DF-495E-8D74-5DCE6B333FB4} = {89F6887C-D659-4483-9BFC-DBC7C2BC29F8}
+		{44D72FC8-F786-47A7-8D83-3D926D4E7DB0} = {89F6887C-D659-4483-9BFC-DBC7C2BC29F8}
+		{925D8D5E-B695-4DC0-B1B6-66955C964576} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
+		{1ECCDCD5-DD78-4F9C-B0C3-BC083742CE99} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
+		{6EEBCA35-9B61-4A95-8E72-3AF583C14F32} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
+		{7624F47B-B53F-40C6-B211-19288E814F86} = {B7EFFA50-A51B-4D7D-A264-07151A10F9D8}
+	EndGlobalSection
+EndGlobal

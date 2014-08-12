@@ -1,4 +1,4 @@
-# d60 Event Sorcerer
+# d60 Circus
 
 ## 0.0.5
 
@@ -69,3 +69,7 @@
 ## 0.0.35
 
 * Moved event dispatch out of retry loop
+
+## 0.1.0
+
+* Renamed to "Circus" ;) - because when you say "CQRS" fast enough, that's what it sounds like
