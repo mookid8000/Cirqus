@@ -103,7 +103,7 @@ many time in parallel, and after some time the consistency of everything is veri
             }
         }
 
-        public class ProgrammerAggregate : AggregateRoot, IEmit<FinishedEducation>, IEmit<LearnedAboutFunctionalProgramming>
+        public class ProgrammerAggregate : AggregateRoot, IEmit<FinishedEducation>, IEmit<LearnedAboutFunctionalProgramming>, IEmit<IncreasedKnowledge>
         {
             enum ProgrammerState
             {
