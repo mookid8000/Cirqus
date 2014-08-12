@@ -28,6 +28,8 @@ namespace d60.Circus.AzureServiceBus
             _workerThread = new Thread(DoWork);
         }
 
+        public event Action<Exception> Error = delegate { }; 
+
         public void Initialize(bool purgeExistingViews = false)
         {
             _innerEventDispatcher.Initialize(_eventStore, purgeExistingViews: purgeExistingViews);
@@ -37,7 +39,6 @@ namespace d60.Circus.AzureServiceBus
 
         void DoWork()
         {
-            Console.WriteLine("Starting worker thread...");
             while (_keepWorking)
             {
                 try
@@ -51,11 +52,10 @@ namespace d60.Circus.AzureServiceBus
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    Error(e);
                     Thread.Sleep(2000);
                 }
             }
-            Console.WriteLine("Worker thread stopped");
         }
 
         public void Dispose()

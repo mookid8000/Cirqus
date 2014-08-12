@@ -40,8 +40,6 @@ namespace d60.Circus.Commands
 
         public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
         {
-            Console.WriteLine("Adding {0} v {1}", aggregateRoot, globalSequenceNumberCutoff);
-
             var cacheWithThisVersion = CachedAggregateRoots.GetOrAdd(globalSequenceNumberCutoff, cutoff => new Dictionary<Guid, AggregateRoot>());
 
             cacheWithThisVersion[aggregateRoot.Id] = aggregateRoot;
