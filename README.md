@@ -22,19 +22,23 @@ and then everything will flow from there.
 This is how you can set up a fully functioning command processor, including a view:
 
     // this is the origin of truth - let's keep it in SQL Server!
-    var eventStore = new MsSqlEventStore("sqltestdb", "events", automaticallyCreateSchema: true);
+    var eventStore = new MsSqlEventStore("sqltestdb", "events", 
+                                         automaticallyCreateSchema: true);
 
-    // aggregate roots are simply built when needed by replaying events for the requested root
-    var aggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
+    // aggregate roots are simply built when needed by replaying events
+    // for the requested root
+    var repository = new DefaultAggregateRootRepository(eventStore);
 
     // configure one single view manager in another table in our SQL Server
-    var viewManager = new MsSqlViewManager<CounterView>("sqltestdb", "counters", automaticallyCreateSchema: true);
+    var viewManager = new MsSqlViewManager<CounterView>("sqltestdb", "counters", 
+                                                        automaticallyCreateSchema: true);
 
-    // Circus will deliver emitted events to the event dispatcher when they have been persisted
-    var eventDispatcher = new BasicEventDispatcher(aggregateRootRepository, viewManager);
+    // Circus will deliver emitted events to the event dispatcher when they have
+    //  been persisted
+    var eventDispatcher = new BasicEventDispatcher(repository, viewManager);
 
     // we can create the processor now
-    var processor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher);
+    var processor = new CommandProcessor(eventStore, repository, eventDispatcher);
 
 This is an example of a command whose purpose it is to instruct the `Counter` aggregate root to increment itself by
 some specific value, as indicated by the given `delta` parameter:
