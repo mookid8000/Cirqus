@@ -37,12 +37,10 @@ this time by using actual MongoDB underneath
             var eventStore = new MongoDbEventStore(mongoDatabase, "events", automaticallyCreateIndexes: true);
 
             _aggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
-            var commandMapper = new CommandMapper()
-                .Map<TakeNextStepCommand, ProgrammerAggregate>((c, a) => a.TakeNextStep());
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _circus = new CommandProcessor(eventStore, _aggregateRootRepository, commandMapper, viewManager);
+            _circus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager);
         }
 
         [Test]

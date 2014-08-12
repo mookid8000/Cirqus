@@ -40,12 +40,10 @@ many time in parallel, and after some time the consistency of everything is veri
             var eventStore = new MongoDbEventStore(_mongoDatabase, "events", automaticallyCreateIndexes: true);
 
             _aggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
-            var commandMapper = new CommandMapper()
-                .Map<TakeNextStepCommand, ProgrammerAggregate>((c, a) => a.TakeNextStep());
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _circus = new CommandProcessor(eventStore, _aggregateRootRepository, commandMapper, viewManager);
+            _circus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager);
         }
 
         [TestCase(1, 1000, 40)]

@@ -7,7 +7,6 @@ using d60.Circus.Events;
 using d60.Circus.Exceptions;
 using d60.Circus.TestHelpers.Internals;
 using d60.Circus.Tests.Stubs;
-using MongoDB.Driver.Linq;
 using NUnit.Framework;
 
 namespace d60.Circus.Tests.Commands
@@ -16,7 +15,6 @@ namespace d60.Circus.Tests.Commands
     public class TestCommandProcessing : FixtureBase
     {
         CommandProcessor _circus;
-        CommandMapper _commandMapper;
         DefaultAggregateRootRepository _aggregateRootRepository;
         InMemoryEventStore _eventStore;
 
@@ -26,9 +24,8 @@ namespace d60.Circus.Tests.Commands
             var eventDispatcher = new ConsoleOutEventDispatcher();
 
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
-            _commandMapper = new CommandMapper();
 
-            _circus = new CommandProcessor(_eventStore, _aggregateRootRepository, _commandMapper, eventDispatcher);
+            _circus = new CommandProcessor(_eventStore, _aggregateRootRepository, eventDispatcher);
         }
 
         [Test]
@@ -96,7 +93,6 @@ namespace d60.Circus.Tests.Commands
         [Test]
         public void CanProcessOrdinaryCommand()
         {
-            _commandMapper.Map<OrdinaryCommand, Root>((c, r) => r.Inc());
             var aggregateRootId = Guid.NewGuid();
 
             _circus.ProcessCommand(new OrdinaryCommand(aggregateRootId));

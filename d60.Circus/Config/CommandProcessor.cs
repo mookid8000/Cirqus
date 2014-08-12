@@ -25,16 +25,15 @@ namespace d60.Circus.Config
 
         readonly Options _options = new Options();
         readonly Retryer _retryer = new Retryer();
+        readonly ICommandMapper _commandMapper = new CommandMapper();
         readonly IEventStore _eventStore;
-        readonly ICommandMapper _commandMapper;
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventDispatcher _eventDispatcher;
 
-        public CommandProcessor(IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, ICommandMapper commandMapper, IEventDispatcher eventDispatcher)
+        public CommandProcessor(IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, IEventDispatcher eventDispatcher)
         {
             if (eventStore == null) throw new ArgumentNullException("eventStore");
             if (aggregateRootRepository == null) throw new ArgumentNullException("aggregateRootRepository");
-            if (commandMapper == null) throw new ArgumentNullException("commandMapper");
             if (eventDispatcher == null) throw new ArgumentNullException("eventDispatcher");
 
             if (CommandProcessorMethod == null)
@@ -44,7 +43,6 @@ namespace d60.Circus.Config
 
             _eventStore = eventStore;
             _aggregateRootRepository = aggregateRootRepository;
-            _commandMapper = commandMapper;
             _eventDispatcher = eventDispatcher;
         }
 

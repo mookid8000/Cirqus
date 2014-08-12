@@ -26,7 +26,7 @@ namespace d60.Circus.Tests.Views
 
             var basicAggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
 
-            _circus = new CommandProcessor(eventStore, basicAggregateRootRepository, new CommandMapper(), new BasicEventDispatcher(basicAggregateRootRepository, _viewManager));
+            _circus = new CommandProcessor(eventStore, basicAggregateRootRepository, new BasicEventDispatcher(basicAggregateRootRepository, _viewManager));
 
             _circus.Initialize();
         }

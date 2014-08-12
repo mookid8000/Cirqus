@@ -38,12 +38,9 @@ namespace d60.Circus.Tests.Integration
 
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
 
-            var commandMapper = new CommandMapper()
-                .Map<BearSomeChildrenCommand, ProgrammerAggregate>((c, a) => a.BearChildren(c.IdsOfChildren));
-
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _circus = new CommandProcessor(_eventStore, _aggregateRootRepository, commandMapper, viewManager);
+            _circus = new CommandProcessor(_eventStore, _aggregateRootRepository, viewManager);
         }
 
         [Test]

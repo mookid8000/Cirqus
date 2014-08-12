@@ -23,12 +23,9 @@ namespace d60.Circus.Tests.Commands
 
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
 
-            var commandMapper = new CommandMapper()
-                .Map<TakeNextStepCommand, ProgrammerAggregate>((c, a) => a.TakeNextStep());
-
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _circus = new CommandProcessor(_eventStore, _aggregateRootRepository, commandMapper, viewManager);
+            _circus = new CommandProcessor(_eventStore, _aggregateRootRepository, viewManager);
         }
 
         [Test]
