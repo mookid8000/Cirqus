@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using d60.Circus.Events;
 using d60.Circus.Extensions;
-using d60.Circus.Views.Basic;
+using d60.Circus.Views.ViewManagers;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using MongoDB.Driver.Linq;

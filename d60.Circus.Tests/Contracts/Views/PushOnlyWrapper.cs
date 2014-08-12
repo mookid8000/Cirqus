@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using d60.Circus.Events;
-using d60.Circus.Views.Basic;
+using d60.Circus.Views.ViewManagers;
 
 namespace d60.Circus.Tests.Contracts.Views
 {

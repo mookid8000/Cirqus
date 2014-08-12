@@ -3,8 +3,8 @@ using System.Linq;
 using d60.Circus.Aggregates;
 using d60.Circus.Events;
 using d60.Circus.TestHelpers.Internals;
-using d60.Circus.Views.Basic;
-using d60.Circus.Views.Basic.Locators;
+using d60.Circus.Views.ViewManagers;
+using d60.Circus.Views.ViewManagers.Locators;
 using NUnit.Framework;
 
 namespace d60.Circus.Tests.Views
@@ -13,14 +13,14 @@ namespace d60.Circus.Tests.Views
     public class TestInMemoryViewManager : FixtureBase
     {
         InMemoryViewManager<SomeViewInstance> _viewManager;
-        BasicEventDispatcher _eventDispatcher;
+        ViewManagerEventDispatcher _eventDispatcher;
         InMemoryEventStore _eventStore;
 
         protected override void DoSetUp()
         {
             _viewManager = new InMemoryViewManager<SomeViewInstance>();
             _eventStore = new InMemoryEventStore();
-            _eventDispatcher = new BasicEventDispatcher(new DefaultAggregateRootRepository(_eventStore), new IViewManager[] { _viewManager });
+            _eventDispatcher = new ViewManagerEventDispatcher(new DefaultAggregateRootRepository(_eventStore), new IViewManager[] { _viewManager });
             _eventDispatcher.Initialize(_eventStore);
         }
 

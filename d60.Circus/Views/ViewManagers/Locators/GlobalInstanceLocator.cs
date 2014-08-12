@@ -1,6 +1,6 @@
 ﻿using d60.Circus.Events;
 
-namespace d60.Circus.Views.Basic.Locators
+namespace d60.Circus.Views.ViewManagers.Locators
 {
     public class GlobalInstanceLocator : ViewLocator
     {

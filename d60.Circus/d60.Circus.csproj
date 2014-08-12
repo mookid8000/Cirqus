@@ -79,17 +79,18 @@
     <Compile Include="Serialization\Serializer.cs" />
     <Compile Include="Serialization\TypeAliasBinder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Views\Basic\AggregateRootResolver.cs" />
-    <Compile Include="Views\Basic\BasicEventDispatcher.cs" />
-    <Compile Include="Views\Basic\InMemoryViewManager.cs" />
-    <Compile Include="Views\Basic\IViewContext.cs" />
-    <Compile Include="Views\Basic\Locators\GlobalInstanceLocator.cs" />
-    <Compile Include="Views\Basic\Locators\InstancePerAggregateRootLocator.cs" />
-    <Compile Include="Views\Basic\ISubscribeTo.cs" />
-    <Compile Include="Views\Basic\IViewInstance.cs" />
-    <Compile Include="Views\Basic\IViewManager.cs" />
-    <Compile Include="Views\Basic\ViewDispatcherHelper.cs" />
-    <Compile Include="Views\Basic\ViewLocator.cs" />
+    <Compile Include="Views\CompositeEventDispatcher.cs" />
+    <Compile Include="Views\ViewManagers\AggregateRootResolver.cs" />
+    <Compile Include="Views\ViewManagers\ViewManagerEventDispatcher.cs" />
+    <Compile Include="Views\ViewManagers\InMemoryViewManager.cs" />
+    <Compile Include="Views\ViewManagers\IViewContext.cs" />
+    <Compile Include="Views\ViewManagers\Locators\GlobalInstanceLocator.cs" />
+    <Compile Include="Views\ViewManagers\Locators\InstancePerAggregateRootLocator.cs" />
+    <Compile Include="Views\ViewManagers\ISubscribeTo.cs" />
+    <Compile Include="Views\ViewManagers\IViewInstance.cs" />
+    <Compile Include="Views\ViewManagers\IViewManager.cs" />
+    <Compile Include="Views\ViewManagers\ViewDispatcherHelper.cs" />
+    <Compile Include="Views\ViewManagers\ViewLocator.cs" />
     <Compile Include="Events\IEventDispatcher.cs" />
   </ItemGroup>
   <ItemGroup>

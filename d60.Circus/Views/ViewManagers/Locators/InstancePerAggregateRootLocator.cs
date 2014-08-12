@@ -2,7 +2,7 @@
 using d60.Circus.Aggregates;
 using d60.Circus.Events;
 
-namespace d60.Circus.Views.Basic.Locators
+namespace d60.Circus.Views.ViewManagers.Locators
 {
     /// <summary>
     /// Scopes the view instance to the aggregate root

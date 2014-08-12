@@ -1,6 +1,6 @@
 ﻿using d60.Circus.Events;
 
-namespace d60.Circus.Views.Basic
+namespace d60.Circus.Views.ViewManagers
 {
     /// <summary>
     /// Base interface of views

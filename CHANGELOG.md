@@ -73,3 +73,8 @@
 ## 0.1.0
 
 * Renamed to "Circus" ;) - because when you say "CQRS" fast enough, that's what it sounds like
+
+## 0.1.1
+
+* Renamed existing event dispatcher to `ViewManagerEventDispatcher` because it can dispatch events to view managers - that's what makes it special :)
+

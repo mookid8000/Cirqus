@@ -5,7 +5,7 @@ using d60.Circus.Aggregates;
 using d60.Circus.Events;
 using d60.Circus.Extensions;
 using d60.Circus.Numbers;
-using d60.Circus.Views.Basic;
+using d60.Circus.Views.ViewManagers;
 using NUnit.Framework;
 using TestContext = d60.Circus.TestHelpers.TestContext;
 

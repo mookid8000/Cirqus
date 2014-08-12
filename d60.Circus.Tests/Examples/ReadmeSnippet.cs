@@ -8,8 +8,8 @@ using d60.Circus.Extensions;
 using d60.Circus.MsSql.Events;
 using d60.Circus.MsSql.Views;
 using d60.Circus.Tests.MsSql;
-using d60.Circus.Views.Basic;
-using d60.Circus.Views.Basic.Locators;
+using d60.Circus.Views.ViewManagers;
+using d60.Circus.Views.ViewManagers.Locators;
 using NUnit.Framework;
 
 namespace d60.Circus.Tests.Examples
@@ -32,7 +32,7 @@ namespace d60.Circus.Tests.Examples
             var aggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
             var viewManager = new MsSqlViewManager<CounterView>(TestSqlHelper.ConnectionString, "counters", automaticallyCreateSchema: true);
 
-            var eventDispatcher = new BasicEventDispatcher(aggregateRootRepository, viewManager);
+            var eventDispatcher = new ViewManagerEventDispatcher(aggregateRootRepository, viewManager);
 
             var processor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher);
             

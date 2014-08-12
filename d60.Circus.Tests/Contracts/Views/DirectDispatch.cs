@@ -5,8 +5,8 @@ using d60.Circus.MongoDb.Events;
 using d60.Circus.Tests.Contracts.Views.Factories;
 using d60.Circus.Tests.MongoDb;
 using d60.Circus.Tests.Stubs;
-using d60.Circus.Views.Basic;
-using d60.Circus.Views.Basic.Locators;
+using d60.Circus.Views.ViewManagers;
+using d60.Circus.Views.ViewManagers.Locators;
 using MongoDB.Driver;
 using NUnit.Framework;
 
@@ -20,7 +20,7 @@ namespace d60.Circus.Tests.Contracts.Views
     {
         IPushViewManager _viewManager;
         TViewManagerFactory _viewManagerFactory;
-        BasicEventDispatcher _eventDispatcher;
+        ViewManagerEventDispatcher _eventDispatcher;
         MongoDatabase _database;
         MongoDbEventStore _eventStore;
 
@@ -37,7 +37,7 @@ namespace d60.Circus.Tests.Contracts.Views
 
             _viewManager = _viewManagerFactory.GetPushViewManager<SomeView>();
 
-            _eventDispatcher = new BasicEventDispatcher(new DefaultAggregateRootRepository(_eventStore), _viewManager);
+            _eventDispatcher = new ViewManagerEventDispatcher(new DefaultAggregateRootRepository(_eventStore), _viewManager);
         }
 
         [Test]

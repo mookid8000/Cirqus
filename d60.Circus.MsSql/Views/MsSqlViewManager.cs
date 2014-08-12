@@ -6,7 +6,7 @@ using System.Linq;
 using d60.Circus.Events;
 using d60.Circus.Exceptions;
 using d60.Circus.Extensions;
-using d60.Circus.Views.Basic;
+using d60.Circus.Views.ViewManagers;
 
 namespace d60.Circus.MsSql.Views
 {

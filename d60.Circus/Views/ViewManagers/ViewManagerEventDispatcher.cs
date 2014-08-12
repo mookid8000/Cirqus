@@ -7,19 +7,23 @@ using d60.Circus.Commands;
 using d60.Circus.Events;
 using d60.Circus.Extensions;
 
-namespace d60.Circus.Views.Basic
+namespace d60.Circus.Views.ViewManagers
 {
-    public class BasicEventDispatcher : IEventDispatcher, IEnumerable<IViewManager>
+    /// <summary>
+    /// Event dispatcher that can dispatch events to any number of view managers based on <see cref="IViewManager"/>,
+    /// either <see cref="IPushViewManager"/> or <see cref="IPullViewManager"/>.
+    /// </summary>
+    public class ViewManagerEventDispatcher : IEventDispatcher, IEnumerable<IViewManager>
     {
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly List<IViewManager> _viewManagers;
 
-        public BasicEventDispatcher(IAggregateRootRepository aggregateRootRepository, params IViewManager[] viewManagers)
+        public ViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, params IViewManager[] viewManagers)
             : this(aggregateRootRepository, (IEnumerable<IViewManager>)viewManagers)
         {
         }
 
-        public BasicEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEnumerable<IViewManager> viewManagers)
+        public ViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEnumerable<IViewManager> viewManagers)
         {
             _aggregateRootRepository = aggregateRootRepository;
             _viewManagers = viewManagers.ToList();

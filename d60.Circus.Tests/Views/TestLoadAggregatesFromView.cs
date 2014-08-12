@@ -7,8 +7,8 @@ using d60.Circus.Config;
 using d60.Circus.Events;
 using d60.Circus.Extensions;
 using d60.Circus.TestHelpers.Internals;
-using d60.Circus.Views.Basic;
-using d60.Circus.Views.Basic.Locators;
+using d60.Circus.Views.ViewManagers;
+using d60.Circus.Views.ViewManagers.Locators;
 using NUnit.Framework;
 
 namespace d60.Circus.Tests.Views
@@ -26,7 +26,7 @@ namespace d60.Circus.Tests.Views
 
             var basicAggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
 
-            _circus = new CommandProcessor(eventStore, basicAggregateRootRepository, new BasicEventDispatcher(basicAggregateRootRepository, _viewManager));
+            _circus = new CommandProcessor(eventStore, basicAggregateRootRepository, new ViewManagerEventDispatcher(basicAggregateRootRepository, _viewManager));
 
             _circus.Initialize();
         }

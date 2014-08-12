@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using d60.Circus.Events;
 
-namespace d60.Circus.Views.Basic
+namespace d60.Circus.Views.ViewManagers
 {
     public interface IViewManager
     {
@@ -11,7 +11,7 @@ namespace d60.Circus.Views.Basic
 
     /// <summary>
     /// Implement this to create a view manager that can catch up, possibly after having been left behind for some time.
-    /// Thrown exceptions are handled by the <see cref="BasicEventDispatcher"/>
+    /// Thrown exceptions are handled by the <see cref="ViewManagerEventDispatcher"/>
     /// </summary>
     public interface IPullViewManager : IViewManager
     {
@@ -20,7 +20,7 @@ namespace d60.Circus.Views.Basic
 
     /// <summary>
     /// Implement this to create a view manager that can have events dispatched directly. Thrown exceptions are handled
-    /// by the <see cref="BasicEventDispatcher"/> and the event dispatcher will not dispatch any more events to the view
+    /// by the <see cref="ViewManagerEventDispatcher"/> and the event dispatcher will not dispatch any more events to the view
     /// </summary>
     public interface IPushViewManager : IViewManager
     {

@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using d60.Circus.Events;
 
-namespace d60.Circus.Views.Basic
+namespace d60.Circus.Views.ViewManagers
 {
     /// <summary>
     /// Abstracts away the logic of determining the scope of view instances by mapping from a <see cref="DomainEvent"/> to a view id

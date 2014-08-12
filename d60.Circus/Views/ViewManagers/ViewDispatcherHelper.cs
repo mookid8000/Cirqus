@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using d60.Circus.Events;
 
-namespace d60.Circus.Views.Basic
+namespace d60.Circus.Views.ViewManagers
 {
     /// <summary>
     /// Helper that can dispatch events to an instance of a class that implements any number of

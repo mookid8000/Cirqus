@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using d60.Circus.MsSql.Views;
 using d60.Circus.Tests.MsSql;
-using d60.Circus.Views.Basic;
+using d60.Circus.Views.ViewManagers;
 
 namespace d60.Circus.Tests.Contracts.Views.Factories
 {

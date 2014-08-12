@@ -1,7 +1,7 @@
 ﻿using System;
 using d60.Circus.Aggregates;
 
-namespace d60.Circus.Views.Basic
+namespace d60.Circus.Views.ViewManagers
 {
     public interface IViewContext
     {

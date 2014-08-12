@@ -6,8 +6,8 @@ using d60.Circus.Events;
 using d60.Circus.MongoDb.Events;
 using d60.Circus.Tests.Contracts.Views.Factories;
 using d60.Circus.Tests.MongoDb;
-using d60.Circus.Views.Basic;
-using d60.Circus.Views.Basic.Locators;
+using d60.Circus.Views.ViewManagers;
+using d60.Circus.Views.ViewManagers.Locators;
 using MongoDB.Driver;
 using NUnit.Framework;
 
@@ -24,7 +24,7 @@ namespace d60.Circus.Tests.Contracts.Views
         IViewManager _justAnotherViewViewManager;
         IViewManager _viewThatCanThrowViewManager;
 
-        BasicEventDispatcher _eventDispatcher;
+        ViewManagerEventDispatcher _eventDispatcher;
 
         TViewManagerFactory _factory;
 
@@ -38,7 +38,7 @@ namespace d60.Circus.Tests.Contracts.Views
             _justAnotherViewViewManager = _factory.GetPullViewManager<JustAnotherViewInstanceOther>();
             _viewThatCanThrowViewManager = _factory.GetPullViewManager<ViewInstanceThatCanThrow>();
 
-            _eventDispatcher = new BasicEventDispatcher(new DefaultAggregateRootRepository(_eventStore), _justAnotherViewViewManager, _viewThatCanThrowViewManager);
+            _eventDispatcher = new ViewManagerEventDispatcher(new DefaultAggregateRootRepository(_eventStore), _justAnotherViewViewManager, _viewThatCanThrowViewManager);
         }
 
         [Test]

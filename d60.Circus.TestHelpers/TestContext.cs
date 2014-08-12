@@ -7,7 +7,7 @@ using d60.Circus.Extensions;
 using d60.Circus.Numbers;
 using d60.Circus.Serialization;
 using d60.Circus.TestHelpers.Internals;
-using d60.Circus.Views.Basic;
+using d60.Circus.Views.ViewManagers;
 
 namespace d60.Circus.TestHelpers
 {
@@ -20,14 +20,14 @@ namespace d60.Circus.TestHelpers
         readonly InMemoryUnitOfWork _unitOfWork = new InMemoryUnitOfWork();
         readonly InMemoryEventStore _eventStore = new InMemoryEventStore();
         readonly DefaultAggregateRootRepository _aggregateRootRepository;
-        readonly BasicEventDispatcher _eventDispatcher;
+        readonly ViewManagerEventDispatcher _eventDispatcher;
         DateTime _currentTime = DateTime.MinValue;
         bool _initialized;
 
         public TestContext()
         {
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
-            _eventDispatcher = new BasicEventDispatcher(_aggregateRootRepository);
+            _eventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository);
         }
 
         public TestContext AddViewManager(IViewManager viewManager)

@@ -3,8 +3,8 @@ using System.Linq;
 using d60.Circus.Aggregates;
 using d60.Circus.EntityFramework;
 using d60.Circus.Events;
-using d60.Circus.Views.Basic;
-using d60.Circus.Views.Basic.Locators;
+using d60.Circus.Views.ViewManagers;
+using d60.Circus.Views.ViewManagers.Locators;
 using NUnit.Framework;
 using TestContext = d60.Circus.TestHelpers.TestContext;
 

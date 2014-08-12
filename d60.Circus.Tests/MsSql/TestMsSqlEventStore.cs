@@ -4,8 +4,8 @@ using d60.Circus.Events;
 using d60.Circus.MsSql.Views;
 using d60.Circus.TestHelpers.Internals;
 using d60.Circus.Tests.Stubs;
-using d60.Circus.Views.Basic;
-using d60.Circus.Views.Basic.Locators;
+using d60.Circus.Views.ViewManagers;
+using d60.Circus.Views.ViewManagers.Locators;
 using NUnit.Framework;
 
 namespace d60.Circus.Tests.MsSql

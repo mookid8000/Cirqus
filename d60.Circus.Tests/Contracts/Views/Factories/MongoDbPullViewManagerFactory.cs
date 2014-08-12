@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using d60.Circus.MongoDb.Views;
 using d60.Circus.Tests.MongoDb;
-using d60.Circus.Views.Basic;
+using d60.Circus.Views.ViewManagers;
 using MongoDB.Driver;
 
 namespace d60.Circus.Tests.Contracts.Views.Factories
