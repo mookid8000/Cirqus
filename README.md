@@ -17,6 +17,10 @@ You do this:
 
 and then everything will flow from there.
 
+### More docs
+
+Check out [the official documentation wiki](https://github.com/d60/Circus/wiki).
+
 ### Full example
 
 This is how you can set up a fully functioning command processor, including a view:
