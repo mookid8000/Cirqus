@@ -78,3 +78,7 @@
 
 * Renamed existing event dispatcher to `ViewManagerEventDispatcher` because it can dispatch events to view managers - that's what makes it special :)
 
+## 0.1.2
+
+* Added Azure Service Bus event dispatcher + nuspec
+
