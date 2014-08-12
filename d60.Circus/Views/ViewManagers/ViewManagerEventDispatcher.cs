@@ -52,20 +52,24 @@ namespace d60.Circus.Views.ViewManagers
         {
             var eventList = events.ToList();
 
+            var viewContext = new DefaultViewContext(_aggregateRootRepository);
+
             foreach (var viewManager in _viewManagers)
             {
                 try
                 {
                     if (viewManager is IPushViewManager)
                     {
-                        ((IPushViewManager)viewManager).Dispatch(new DefaultViewContext(_aggregateRootRepository),
-                            eventStore, eventList);
+                        var pushViewManager = ((IPushViewManager)viewManager);
+
+                        pushViewManager.Dispatch(viewContext, eventStore, eventList);
                     }
 
                     if (viewManager is IPullViewManager)
                     {
-                        ((IPullViewManager)viewManager).CatchUp(new DefaultViewContext(_aggregateRootRepository),
-                            eventStore, eventList.Last().GetGlobalSequenceNumber());
+                        var pullViewManager = ((IPullViewManager)viewManager);
+
+                        pullViewManager.CatchUp(viewContext, eventStore, eventList.Last().GetGlobalSequenceNumber());
                     }
 
                     HandleViewManagerSuccess(viewManager);
