@@ -113,7 +113,8 @@ between the counter's value and π, depending on whether the counter's value is 
 
 Lastly, we have set up a `MsSqlViewManager` that operates on a `CounterView` that looks like this:
 
-    public class CounterView : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<CounterIncremented>
+    public class CounterView : IViewInstance<InstancePerAggregateRootLocator>,
+        ISubscribeTo<CounterIncremented>
     {
         public CounterView()
         {
@@ -134,7 +135,9 @@ Lastly, we have set up a `MsSqlViewManager` that operates on a `CounterView` tha
         {
             CurrentValue += domainEvent.Delta;
 
-            var counter = context.Load<Counter>(domainEvent.GetAggregateRootId(), domainEvent.GetGlobalSequenceNumber());
+            var id = domainEvent.GetAggregateRootId();
+            var version = domainEvent.GetGlobalSequenceNumber();
+            var counter = context.Load<Counter>(id, version);
 
             SecretBizValue = counter.GetSecretBizValue();
 
@@ -154,10 +157,12 @@ In order to actually get to receive events, the view class must implement one or
 we subscribe to `CounterIncremented` which requires that we implement the `Handle` method.
 
 In addition to the two required properties, `Id` and `LastGLobalSequenceNumber`, we've added a property for the current value
-of the counter, a property for the secret business value, and a list that can contain the 10 most recent business value.
+of the counter (`CurrentValue`), a property for the secret business value (`SecretBizValue`), and a list that can contain the 
+10 most recent business values (`SomeRecentBizValues`).
 
 Note how the `IViewContext` gives access to a `Load` method that can be used by the view to load aggregate roots if it needs to invoke
-domain logic to extract certain values out of the domain (like e.g. our secret business value). Note also how
-an aggregate root must be loaded by specifying a global sequence number which will serve as a "roof" for applied event, thus
-ensuring that the loaded aggregate root has the version that corresponds to the time when the event was emitted, thus allowing for
-consistent replaying of events. It also allows for poking back and forth in time ;)  (but that's another story....)
+domain logic to extract certain values out of the domain (like e.g. our secret business value). 
+
+Note also how an aggregate root must be loaded by specifying a global sequence number which will serve as a "roof" for applied event, 
+thus ensuring that the loaded aggregate root has the version that corresponds to the time when the event was emitted, thus allowing for
+eternally consistent replay of events. It also allows for peeking back and forth in time, but that's a story for another time... ;)
