@@ -101,6 +101,11 @@ many time in parallel, and after some time the consistency of everything is veri
                 : base(aggregateRootId)
             {
             }
+
+            public override void Execute(ProgrammerAggregate aggregateRoot)
+            {
+                aggregateRoot.TakeNextStep();
+            }
         }
 
         public class ProgrammerAggregate : AggregateRoot, IEmit<FinishedEducation>, IEmit<LearnedAboutFunctionalProgramming>, IEmit<IncreasedKnowledge>

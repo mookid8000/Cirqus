@@ -68,6 +68,11 @@ namespace d60.Circus.Tests.Commands
                 : base(aggregateRootId)
             {
             }
+
+            public override void Execute(ProgrammerAggregate aggregateRoot)
+            {
+                aggregateRoot.TakeNextStep();
+            }
         }
 
         public class ProgrammerAggregate : AggregateRoot, 

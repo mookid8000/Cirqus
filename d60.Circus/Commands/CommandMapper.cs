@@ -21,12 +21,12 @@ namespace d60.Circus.Commands
             where TCommand : Command<TAggregateRoot>
             where TAggregateRoot : AggregateRoot
         {
-            if (typeof(MappedCommand<TAggregateRoot>).IsAssignableFrom(typeof(TCommand)))
+            if (typeof(Command<TAggregateRoot>).IsAssignableFrom(typeof(TCommand)))
             {
                 return (command, root) =>
                 {
                     // for some reason, an unconditional cast cannot be performed here - therefore:
-                    var autoMapCommand = command as MappedCommand<TAggregateRoot>;
+                    var autoMapCommand = command as Command<TAggregateRoot>;
 
                     if (autoMapCommand == null)
                     {

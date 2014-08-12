@@ -104,6 +104,11 @@ namespace d60.Circus.Tests.Integration
             {
                 IdsOfChildren = idsOfChildren;
             }
+
+            public override void Execute(ProgrammerAggregate aggregateRoot)
+            {
+                aggregateRoot.BearChildren(IdsOfChildren);
+            }
         }
 
         public class ProgrammerAggregate : AggregateRoot, IEmit<HadChildren>, IEmit<WasBorn>

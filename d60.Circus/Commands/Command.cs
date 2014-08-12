@@ -5,17 +5,16 @@ using d60.Circus.Numbers;
 namespace d60.Circus.Commands
 {
     /// <summary>
-    /// Ultimate command base class - don't derive off of this one directly, use either <see cref="Command{TAggregateRoot}"/> or <see cref="MappedCommand{TAggregateRoot}"/>
+    /// Ultimate command base class - don't derive off of this one directly, use <see cref="Command{TAggregateRoot}"/>
     /// </summary>
     public abstract class Command
     {
     }
 
     /// <summary>
-    /// Command base class that works with an externally defined command mapping. Requires that the command mapper is configured to map the derived command type to an operation on an aggregate root
+    /// Command base class that is mapped to one specific aggregate root instance for which the <seealso cref="Execute"/> method will be invoked
     /// </summary>
     /// <typeparam name="TAggregateRoot">Specifies the type of aggregate root that this command targets</typeparam>
-    // ReSharper disable UnusedTypeParameter
     public abstract class Command<TAggregateRoot> : Command where TAggregateRoot : AggregateRoot
     {
         protected Command(Guid aggregateRootId)
@@ -28,10 +27,11 @@ namespace d60.Circus.Commands
         
         public Guid AggregateRootId { get; private set; }
 
+        public abstract void Execute(TAggregateRoot aggregateRoot);
+
         public override string ToString()
         {
             return string.Format("{0} ({1})", typeof(TAggregateRoot), AggregateRootId);
         }
     }
-    // ReSharper restore UnusedTypeParameter
 }

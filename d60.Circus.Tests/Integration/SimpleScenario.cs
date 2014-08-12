@@ -87,6 +87,11 @@ namespace d60.Circus.Tests.Integration
             public TakeNextStepCommand(Guid aggregateRootId) : base(aggregateRootId)
             {
             }
+
+            public override void Execute(ProgrammerAggregate aggregateRoot)
+            {
+                aggregateRoot.TakeNextStep();
+            }
         }
 
         public class ProgrammerAggregate : AggregateRoot, IEmit<FinishedEducation>, IEmit<LearnedAboutFunctionalProgramming>

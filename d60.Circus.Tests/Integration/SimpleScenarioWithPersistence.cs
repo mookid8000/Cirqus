@@ -91,6 +91,11 @@ this time by using actual MongoDB underneath
             public TakeNextStepCommand(Guid aggregateRootId) : base(aggregateRootId)
             {
             }
+
+            public override void Execute(ProgrammerAggregate aggregateRoot)
+            {
+                aggregateRoot.TakeNextStep();
+            }
         }
 
         public class ProgrammerAggregate : AggregateRoot, IEmit<FinishedEducation>, IEmit<LearnedAboutFunctionalProgramming>

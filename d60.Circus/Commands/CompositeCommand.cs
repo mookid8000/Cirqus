@@ -8,11 +8,11 @@ namespace d60.Circus.Commands
     /// <summary>
     /// Composite command that allows for packing up multiple commands and have them executed in one single unit of work
     /// </summary>
-    public class CompositeCommand<TAggregateRoot> : MappedCommand<TAggregateRoot> where TAggregateRoot : AggregateRoot, new()
+    public class CompositeCommand<TAggregateRoot> : Command<TAggregateRoot> where TAggregateRoot : AggregateRoot, new()
     {
-        public List<MappedCommand<TAggregateRoot>> Commands { get; set; }
+        public List<Command<TAggregateRoot>> Commands { get; set; }
 
-        public CompositeCommand(params MappedCommand<TAggregateRoot>[] commands)
+        public CompositeCommand(params Command<TAggregateRoot>[] commands)
             : base(commands.First().AggregateRootId)
         {
             var addressedAggregateRoots = commands.Select(c => c.AggregateRootId).Distinct().ToList();
@@ -48,9 +48,9 @@ namespace d60.Circus.Commands
 
     public class CompositeCommandBuilder<TAggregateRoot> where TAggregateRoot : AggregateRoot, new()
     {
-        readonly List<MappedCommand<TAggregateRoot>> _commands = new List<MappedCommand<TAggregateRoot>>();
+        readonly List<Command<TAggregateRoot>> _commands = new List<Command<TAggregateRoot>>();
 
-        public CompositeCommandBuilder<TAggregateRoot> With(MappedCommand<TAggregateRoot> command)
+        public CompositeCommandBuilder<TAggregateRoot> With(Command<TAggregateRoot> command)
         {
             _commands.Add(command);
             return this;

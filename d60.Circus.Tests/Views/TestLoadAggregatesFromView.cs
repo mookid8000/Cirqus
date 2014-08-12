@@ -48,7 +48,7 @@ namespace d60.Circus.Tests.Views
                 string.Join(", ", view.Calls.Select(c => string.Format("{0}/{1}", c.Item1, c.Item2))));
         }
 
-        class MyCommand : MappedCommand<MyRoot>
+        class MyCommand : Command<MyRoot>
         {
             public MyCommand(Guid aggregateRootId) : base(aggregateRootId)
             {

@@ -7,6 +7,7 @@ using d60.Circus.Events;
 using d60.Circus.Exceptions;
 using d60.Circus.TestHelpers.Internals;
 using d60.Circus.Tests.Stubs;
+using MongoDB.Driver.Linq;
 using NUnit.Framework;
 
 namespace d60.Circus.Tests.Commands
@@ -34,11 +35,11 @@ namespace d60.Circus.Tests.Commands
         public void CanLetSpecificExceptionTypesThrough()
         {
             _circus.Options.AddDomainException<InvalidOperationException>();
-            
+
             var unwrappedException = Assert.Throws<InvalidOperationException>(() => _circus.ProcessCommand(new ErronousCommand(Guid.NewGuid())));
 
             Console.WriteLine(unwrappedException);
-   
+
             Assert.That(unwrappedException, Is.TypeOf<InvalidOperationException>());
             Assert.That(unwrappedException.Message, Contains.Substring("oh no, you cannot do that"));
         }
@@ -51,14 +52,15 @@ namespace d60.Circus.Tests.Commands
             Console.WriteLine(appEx);
 
             var inner = appEx.InnerException;
-            
+
             Assert.That(inner, Is.TypeOf<InvalidOperationException>());
             Assert.That(inner.Message, Contains.Substring("oh no, you cannot do that"));
         }
 
-        class ErronousCommand : MappedCommand<Root>
+        class ErronousCommand : Command<Root>
         {
-            public ErronousCommand(Guid aggregateRootId) : base(aggregateRootId)
+            public ErronousCommand(Guid aggregateRootId)
+                : base(aggregateRootId)
             {
             }
 
@@ -78,7 +80,7 @@ namespace d60.Circus.Tests.Commands
             Assert.That(Enumerable.ToList<DomainEvent>(_eventStore).Count, Is.EqualTo(1));
         }
 
-        class MappedCommand : MappedCommand<Root>
+        class MappedCommand : Command<Root>
         {
             public MappedCommand(Guid aggregateRootId)
                 : base(aggregateRootId)
@@ -99,13 +101,19 @@ namespace d60.Circus.Tests.Commands
 
             _circus.ProcessCommand(new OrdinaryCommand(aggregateRootId));
 
-            Assert.That(Enumerable.ToList<DomainEvent>(_eventStore).Count, Is.EqualTo(1));
+            Assert.That(_eventStore.ToList().Count, Is.EqualTo(1));
         }
 
         class OrdinaryCommand : Command<Root>
         {
-            public OrdinaryCommand(Guid aggregateRootId) : base(aggregateRootId)
+            public OrdinaryCommand(Guid aggregateRootId)
+                : base(aggregateRootId)
             {
+            }
+
+            public override void Execute(Root aggregateRoot)
+            {
+                aggregateRoot.Inc();
             }
         }
 
@@ -115,9 +123,16 @@ namespace d60.Circus.Tests.Commands
             Assert.Throws<CommandProcessingException>(() => _circus.ProcessCommand(new AnotherCommand(Guid.NewGuid())));
         }
 
-        class AnotherCommand : Command<Root> {
-            public AnotherCommand(Guid aggregateRootId) : base(aggregateRootId)
+        class AnotherCommand : Command<Root>
+        {
+            public AnotherCommand(Guid aggregateRootId)
+                : base(aggregateRootId)
             {
+            }
+
+            public override void Execute(Root aggregateRoot)
+            {
+                throw new NotImplementedException("huigehugiehwugiehw hugehugeiwgh hugiewhugie whguiohwugewgoewa huigehugiehwugiehw hugehugeiwgh hugiewhugie whguiohwugewgoewa");
             }
         }
 
@@ -145,7 +160,7 @@ namespace d60.Circus.Tests.Commands
 
         class SomeCommand : Command
         {
-            
+
         }
     }
 }
