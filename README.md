@@ -1,6 +1,9 @@
 # d60 Circus
 
-Simple but powerful event sourcing + CQRS kit.
+Simple but powerful event sourcing + CQRS kit. 
+
+Provides a model for creating commands, aggregate roots, events, and views,
+tying it all up in one simple and neat `CommandProcessor`.
 
 ### How simple?
 
