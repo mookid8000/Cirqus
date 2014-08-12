@@ -21,6 +21,8 @@ namespace d60.EventSorcerer.MsSql
             var databaseName = GetDatabaseName(connectionString);
             var databaseNameToUse = PossiblyAppendTeamcityAgentNumber(databaseName);
 
+            Console.WriteLine("Using SQL database for testing: '{0}'", databaseNameToUse);
+
             return connectionString.Replace(databaseName, databaseNameToUse);
         }
 

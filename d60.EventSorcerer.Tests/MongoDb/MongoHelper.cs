@@ -18,6 +18,7 @@ namespace d60.EventSorcerer.Tests.MongoDb
             var databaseName = GetDatabaseName(url);
             var database = new MongoClient(url).GetServer().GetDatabase(databaseName);
 
+            Console.WriteLine("Dropping Mongo database '{0}'", databaseName);
             database.Drop();
             
             return database;
