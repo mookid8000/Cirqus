@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 using MongoDB.Driver;
 
 namespace d60.EventSorcerer.Tests.MongoDb
@@ -14,11 +15,25 @@ namespace d60.EventSorcerer.Tests.MongoDb
             }
             
             var url = new MongoUrl(connectionStringSettings.ConnectionString);
-            var database = new MongoClient(url).GetServer().GetDatabase(url.DatabaseName);
-            
+            var databaseName = GetDatabaseName(url);
+            var database = new MongoClient(url).GetServer().GetDatabase(databaseName);
+
             database.Drop();
             
             return database;
-        } 
+        }
+
+        static string GetDatabaseName(MongoUrl url)
+        {
+            var databaseName = url.DatabaseName;
+
+            var teamCityAgentNumber = Environment.GetEnvironmentVariable("tcagent");
+            int number;
+
+            if (string.IsNullOrWhiteSpace(teamCityAgentNumber) || !int.TryParse(teamCityAgentNumber, out number))
+                return databaseName;
+
+            return string.Format("{0}_{1}", databaseName, number);
+        }
     }
 }
