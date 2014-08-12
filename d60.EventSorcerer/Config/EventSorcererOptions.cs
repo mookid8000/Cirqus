@@ -1,8 +1,13 @@
-﻿namespace d60.EventSorcerer.Config
+﻿using System;
+using System.Collections.Generic;
+
+namespace d60.EventSorcerer.Config
 {
     public class EventSorcererOptions
     {
         public const int DefaultMaxRetries = 10;
+
+        readonly HashSet<Type> _domainExceptionTypes = new HashSet<Type>();
 
         public EventSorcererOptions()
         {
@@ -19,5 +24,19 @@
         /// Configures the number of retries when processing commands.
         /// </summary>
         public int MaxRetries { get; set; }
+
+        /// <summary>
+        /// Gets the registered domain exception types
+        /// </summary>
+        public IEnumerable<Type> DomainExceptionTypes { get { return _domainExceptionTypes; } }
+
+        /// <summary>
+        /// Registers the given exception type as a "domain exception", meaning that it will be passed
+        /// directly to the caller of <seealso cref="EventSorcererConfig.ProcessCommand"/>
+        /// </summary>
+        public void AddDomainException<TException>() where TException : Exception
+        {
+            _domainExceptionTypes.Add(typeof (TException));
+        }
     }
 }

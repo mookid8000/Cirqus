@@ -57,6 +57,8 @@
     <Compile Include="Config\EventSorcererConfig.cs" />
     <Compile Include="Config\EventSorcererOptions.cs" />
     <Compile Include="Config\Retryer.cs" />
+    <Compile Include="Exceptions\CommandProcessingException.cs" />
+    <Compile Include="Extensions\ExceptionExtensions.cs" />
     <Compile Include="Numbers\CachingSequenceNumberGenerator.cs" />
     <Compile Include="Events\IEmit.cs" />
     <Compile Include="Exceptions\ConcurrencyException.cs" />

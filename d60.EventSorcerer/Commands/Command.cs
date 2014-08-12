@@ -1,6 +1,5 @@
 ﻿using System;
 using d60.EventSorcerer.Aggregates;
-using d60.EventSorcerer.Events;
 using d60.EventSorcerer.Numbers;
 
 namespace d60.EventSorcerer.Commands
@@ -26,7 +25,13 @@ namespace d60.EventSorcerer.Commands
         }
 
         public Metadata Meta { get; private set; }
+        
         public Guid AggregateRootId { get; private set; }
+
+        public override string ToString()
+        {
+            return string.Format("{0} ({1})", typeof(TAggregateRoot), AggregateRootId);
+        }
     }
     // ReSharper restore UnusedTypeParameter
 }

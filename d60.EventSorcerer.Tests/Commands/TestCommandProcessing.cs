@@ -4,9 +4,9 @@ using d60.EventSorcerer.Aggregates;
 using d60.EventSorcerer.Commands;
 using d60.EventSorcerer.Config;
 using d60.EventSorcerer.Events;
+using d60.EventSorcerer.Exceptions;
 using d60.EventSorcerer.TestHelpers;
 using d60.EventSorcerer.TestHelpers.Internals;
-using MongoDB.Driver.Linq;
 using NUnit.Framework;
 
 namespace d60.EventSorcerer.Tests.Commands
@@ -28,6 +28,44 @@ namespace d60.EventSorcerer.Tests.Commands
             _commandMapper = new CommandMapper();
 
             _eventSorcerer = new EventSorcererConfig(_eventStore, _aggregateRootRepository, _commandMapper, eventDispatcher);
+        }
+
+        [Test]
+        public void CanLetSpecificExceptionTypesThrough()
+        {
+            _eventSorcerer.Options.AddDomainException<InvalidOperationException>();
+            
+            var unwrappedException = Assert.Throws<InvalidOperationException>(() => _eventSorcerer.ProcessCommand(new ErronousCommand(Guid.NewGuid())));
+
+            Console.WriteLine(unwrappedException);
+   
+            Assert.That(unwrappedException, Is.TypeOf<InvalidOperationException>());
+            Assert.That(unwrappedException.Message, Contains.Substring("oh no, you cannot do that"));
+        }
+
+        [Test]
+        public void GeneratesPrettyException()
+        {
+            var appEx = Assert.Throws<CommandProcessingException>(() => _eventSorcerer.ProcessCommand(new ErronousCommand(Guid.NewGuid())));
+
+            Console.WriteLine(appEx);
+
+            var inner = appEx.InnerException;
+            
+            Assert.That(inner, Is.TypeOf<InvalidOperationException>());
+            Assert.That(inner.Message, Contains.Substring("oh no, you cannot do that"));
+        }
+
+        class ErronousCommand : MappedCommand<Root>
+        {
+            public ErronousCommand(Guid aggregateRootId) : base(aggregateRootId)
+            {
+            }
+
+            public override void Execute(Root aggregateRoot)
+            {
+                throw new InvalidOperationException("oh no, you cannot do that");
+            }
         }
 
         [Test]
@@ -74,7 +112,7 @@ namespace d60.EventSorcerer.Tests.Commands
         [Test]
         public void ThrowsNiceExceptionForCommandThatHasNotBeenMapped()
         {
-            Assert.Throws<ApplicationException>(() => _eventSorcerer.ProcessCommand(new AnotherCommand(Guid.NewGuid())));
+            Assert.Throws<CommandProcessingException>(() => _eventSorcerer.ProcessCommand(new AnotherCommand(Guid.NewGuid())));
         }
 
         class AnotherCommand : Command<Root> {

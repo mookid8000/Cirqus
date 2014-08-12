@@ -67,12 +67,11 @@ namespace d60.EventSorcerer.Config
                     .MakeGenericMethod(aggregateRootType, commandType)
                     .Invoke(this, new object[] { command });
             }
-            catch (Exception exception)
+            catch (TargetInvocationException exception)
             {
-                var errorMessage = string.Format("Could not process command {0} when attempting to dispatch dynamically to InnerProcessCommand<{1}, {2}>(command)",
-                    command, aggregateRootType.Name, commandType.Name);
-
-                throw new ApplicationException(errorMessage, exception);
+                var inner = exception.InnerException;
+                inner.PreserveStackTrace();
+                throw inner;
             }
         }
 
@@ -99,7 +98,13 @@ namespace d60.EventSorcerer.Config
             }
             catch (Exception exception)
             {
-                throw new ApplicationException(string.Format("An error occurred while processing command {0}", command), exception);
+                // ordinary re-throw if exception is a domain exception
+                if (Options.DomainExceptionTypes.Contains(exception.GetType()))
+                {
+                    throw;
+                }
+
+                throw CommandProcessingException.Create(command, exception);
             }
 
             if (!emittedDomainEvents.Any()) return;
@@ -123,7 +128,7 @@ namespace d60.EventSorcerer.Config
         }
         // ReSharper restore UnusedMember.Local
 
-        List<DomainEvent> DoProcessCommand<TAggregateRoot, TCommand>(Guid batchId, TCommand command)
+        IEnumerable<DomainEvent> DoProcessCommand<TAggregateRoot, TCommand>(Guid batchId, TCommand command)
             where TCommand : Command<TAggregateRoot>
             where TAggregateRoot : AggregateRoot, new()
         {
