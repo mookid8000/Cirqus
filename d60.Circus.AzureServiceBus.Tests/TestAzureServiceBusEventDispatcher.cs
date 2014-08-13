@@ -11,7 +11,7 @@ using NUnit.Framework;
 
 namespace d60.Circus.AzureServiceBus.Tests
 {
-    [TestFixture]
+    [TestFixture, Category(TestCategories.Azure)]
     public class TestAzureServiceBusEventDispatcher : FixtureBase, IEventDispatcher
     {
         const string TopicName = "circus";

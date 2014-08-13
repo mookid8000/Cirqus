@@ -242,7 +242,6 @@ END
             if (globalSequenceNumber < instance.LastGlobalSequenceNumber) return;
 
             _dispatcherHelper.DispatchToView(context, domainEvent, instance);
-            instance.LastGlobalSequenceNumber = globalSequenceNumber;
         }
 
         TView CreateAndAddNewViewInstance(GenericViewContext<TView> genericViewBasse, string id)

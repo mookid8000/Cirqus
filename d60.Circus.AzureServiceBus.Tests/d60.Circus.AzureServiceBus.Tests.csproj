@@ -57,6 +57,7 @@
     <Compile Include="TestAzureServiceBusEventDispatcher.cs" />
     <Compile Include="FixtureBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestCategories.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\d60.Circus.AzureServiceBus\d60.Circus.AzureServiceBus.csproj">

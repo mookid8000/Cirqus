@@ -162,8 +162,6 @@ namespace d60.Circus.MongoDb.Views
                                             ?? new TView { Id = id });
 
                 _dispatcherHelper.DispatchToView(context, e, doc);
-
-                _lastGlobalSequenceNumberProcessed = globalSequenceNumberOfThisEvent;
             }
 
             Save(activeViewDocsByid.Values);
@@ -171,9 +169,11 @@ namespace d60.Circus.MongoDb.Views
 
         void Save(IEnumerable<TView> activeViews)
         {
-            foreach (var view in activeViews)
+            foreach (var view in activeViews.OrderBy(v => v.LastGlobalSequenceNumber))
             {
                 _viewCollection.Save(view);
+
+                _lastGlobalSequenceNumberProcessed = view.LastGlobalSequenceNumber;
             }
         }
 

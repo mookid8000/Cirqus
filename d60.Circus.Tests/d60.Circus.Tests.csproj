@@ -105,6 +105,7 @@
     <Compile Include="MongoDb\MongoHelper.cs" />
     <Compile Include="MongoDb\TestMongoDbLinqProvider.cs" />
     <Compile Include="MongoDb\TestMongoDbSerializer.cs" />
+    <Compile Include="MongoDb\TestMongoDbViewManager.cs" />
     <Compile Include="MsSql\TestEntityFrameworkViewManager.cs" />
     <Compile Include="MsSql\TestMsSqlEventStore.cs" />
     <Compile Include="MsSql\TestSqlHelper.cs" />

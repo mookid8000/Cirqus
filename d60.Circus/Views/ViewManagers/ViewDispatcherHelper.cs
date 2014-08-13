@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using d60.Circus.Events;
+using d60.Circus.Extensions;
 
 namespace d60.Circus.Views.ViewManagers
 {
@@ -9,7 +10,7 @@ namespace d60.Circus.Views.ViewManagers
     /// Helper that can dispatch events to an instance of a class that implements any number of
     /// <see cref="ISubscribeTo{TDomainEvent}"/> interfaces
     /// </summary>
-    public class ViewDispatcherHelper<TView> where TView : ISubscribeTo
+    public class ViewDispatcherHelper<TView> where TView : ISubscribeTo, IViewInstance
     {
         readonly ConcurrentDictionary<Type, MethodInfo> _dispatcherMethods = new ConcurrentDictionary<Type, MethodInfo>();
         readonly MethodInfo _dispatchToViewGenericMethod;
@@ -35,6 +36,8 @@ namespace d60.Circus.Views.ViewManagers
             try
             {
                 dispatcherMethod.Invoke(this, new object[] { context, domainEvent, view });
+
+                view.LastGlobalSequenceNumber = domainEvent.GetGlobalSequenceNumber();
             }
             catch (Exception exception)
             {

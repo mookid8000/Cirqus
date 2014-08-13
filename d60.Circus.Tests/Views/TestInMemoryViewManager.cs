@@ -15,6 +15,7 @@ namespace d60.Circus.Tests.Views
         InMemoryViewManager<SomeViewInstance> _viewManager;
         ViewManagerEventDispatcher _eventDispatcher;
         InMemoryEventStore _eventStore;
+        long _currentSequenceNumber;
 
         protected override void DoSetUp()
         {
@@ -70,11 +71,11 @@ namespace d60.Circus.Tests.Views
                 () => numberOfEvents.Times(() => _eventDispatcher.Dispatch(_eventStore, new DomainEvent[] { EventFor(firstRoot) })));
         }
 
-
-        static SomeEvent EventFor(Guid newGuid)
+        SomeEvent EventFor(Guid newGuid)
         {
             var e = new SomeEvent();
             e.Meta[DomainEvent.MetadataKeys.AggregateRootId] = newGuid;
+            e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = _currentSequenceNumber++;
             return e;
         }
 
