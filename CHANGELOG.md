@@ -105,3 +105,7 @@
 ## 0.2.4
 
 * Added asynchronous event dispatcher - can be configured by going `.Asynchronous()` on any ordinary dispatcher
+
+## 0.2.5
+
+* Improved async event dispatcher to use one worker thread per inner dispatcher
