@@ -15,7 +15,7 @@ namespace d60.Cirqus.Config
     /// <summary>
     /// Main command processor event emitter thing - if you can successfully create this bad boy, you have a fully functioning event sourcing thing going for you
     /// </summary>
-    public class CommandProcessor
+    public class CommandProcessor : ICommandProcessor
     {
         static Logger _logger;
 
