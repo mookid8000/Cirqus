@@ -94,3 +94,7 @@
 
 * Introduced logging + added `ProcessCommand` method to `TestContext`
 
+## 0.2.2
+
+* Some more logging
+
