@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using d60.Cirqus.Logging;
 
 namespace d60.Cirqus.Config
 {
@@ -21,14 +22,23 @@ namespace d60.Cirqus.Config
         public bool PurgeExistingViews { get; set; }
 
         /// <summary>
-        /// Configures the number of retries when processing commands.
+        /// Configures the number of retries to perform when processing commands.
         /// </summary>
         public int MaxRetries { get; set; }
 
         /// <summary>
         /// Gets the registered domain exception types
         /// </summary>
-        public IEnumerable<Type> DomainExceptionTypes { get { return _domainExceptionTypes; } }
+        public ICollection<Type> DomainExceptionTypes { get { return _domainExceptionTypes; } }
+
+        /// <summary>
+        /// Gets/sets the global logger factory. THIS SETTING AFFECTS HOW CIRQUS LOGS, IMMEDIATELY AND GLOBALLY. The setting is here for convenience
+        /// </summary>
+        public CirqusLoggerFactory GlobalLoggerFactory
+        {
+            get { return CirqusLoggerFactory.Current; }
+            set { CirqusLoggerFactory.Current = value; }
+        }
 
         /// <summary>
         /// Registers the given exception type as a "domain exception", meaning that it will be passed

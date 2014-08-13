@@ -3,6 +3,8 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Config;
 using d60.Cirqus.Events;
+using d60.Cirqus.Logging;
+using d60.Cirqus.Logging.Console;
 using d60.Cirqus.TestHelpers.Internals;
 using d60.Cirqus.Tests.Extensions;
 using d60.Cirqus.Tests.Stubs;
@@ -29,12 +31,27 @@ namespace d60.Cirqus.Tests.Integration
         protected override void DoSetUp()
         {
             var eventStore = new InMemoryEventStore();
-            
+
             _aggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
-            
+
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager);
+            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager)
+            {
+                Options =
+                {
+                    MaxRetries = 3,
+
+                    PurgeExistingViews = true,
+
+                    GlobalLoggerFactory = new ConsoleLoggerFactory(minLevel: Logger.Level.Warn),
+
+                    DomainExceptionTypes =
+                    {
+                        typeof(ApplicationException)
+                    },
+                }
+            };
         }
 
         [Test]
@@ -80,7 +97,8 @@ namespace d60.Cirqus.Tests.Integration
 
         public class TakeNextStepCommand : Command<ProgrammerAggregate>
         {
-            public TakeNextStepCommand(Guid aggregateRootId) : base(aggregateRootId)
+            public TakeNextStepCommand(Guid aggregateRootId)
+                : base(aggregateRootId)
             {
             }
 
@@ -136,12 +154,12 @@ namespace d60.Cirqus.Tests.Integration
 
         public class FinishedEducation : DomainEvent<ProgrammerAggregate>
         {
-            
+
         }
 
         public class LearnedAboutFunctionalProgramming : DomainEvent<ProgrammerAggregate>
         {
-            
+
         }
     }
 }

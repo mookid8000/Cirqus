@@ -98,3 +98,6 @@
 
 * Some more logging
 
+## 0.2.3
+
+* Added NLog integration and added configuration option on `Options` to allow for configuring logging
