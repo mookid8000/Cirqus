@@ -89,3 +89,8 @@
 ## 0.2.0
 
 * Renamed to "Cirqus" - the name that just gets better and better!
+
+## 0.2.1
+
+* Introduced logging + added `ProcessCommand` method to `TestContext`
+
