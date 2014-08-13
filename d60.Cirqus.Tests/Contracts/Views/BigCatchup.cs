@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Logging;
+using d60.Cirqus.Logging.Console;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.Tests.Contracts.Views.Factories;
 using d60.Cirqus.Tests.MongoDb;
@@ -27,12 +29,12 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
         protected override void DoSetUp()
         {
-            _database = MongoHelper.InitializeTestDatabase();
+            CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel: Logger.Level.Info);
 
+            _database = MongoHelper.InitializeTestDatabase();
             _eventStore = new MongoDbEventStore(_database, "events");
 
             _factory = new TViewManagerFactory();
-
             _viewManager = _factory.GetPullViewManager<JustAnotherViewInstance>();
         }
 
