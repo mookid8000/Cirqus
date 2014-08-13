@@ -101,3 +101,7 @@
 ## 0.2.3
 
 * Added NLog integration and added configuration option on `Options` to allow for configuring logging
+
+## 0.2.4
+
+* Added asynchronous event dispatcher - can be configured by going `.Asynchronous()` on any ordinary dispatcher
