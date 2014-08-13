@@ -43,7 +43,6 @@ namespace d60.Cirqus.Tests.Integration
             var firstAggregateRootId = Guid.NewGuid();
             var nextAggregateRootId = Guid.NewGuid();
 
-
             // verify that fresh aggregates are delivered
             Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(firstAggregateRootId).AggregateRoot.GetCurrentState(), Is.EqualTo("Born"));
             Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>(nextAggregateRootId).AggregateRoot.GetCurrentState(), Is.EqualTo("Born"));

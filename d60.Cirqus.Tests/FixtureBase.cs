@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Timers;
+using d60.Cirqus.Logging;
+using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Numbers;
 using NUnit.Framework;
 
@@ -12,6 +14,7 @@ namespace d60.Cirqus.Tests
         public void TestFixtureSetUp()
         {
             TimeMachine.Reset();
+            CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel: Logger.Level.Debug);
         }
 
         [SetUp]
@@ -26,10 +29,10 @@ namespace d60.Cirqus.Tests
             DoTearDown();
         }
 
-        protected virtual  void DoSetUp()
+        protected virtual void DoSetUp()
         {
         }
-        protected virtual  void DoTearDown()
+        protected virtual void DoTearDown()
         {
         }
 

@@ -7,6 +7,7 @@ using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Logging;
 using d60.Cirqus.Numbers;
 
 namespace d60.Cirqus.Config
@@ -16,6 +17,13 @@ namespace d60.Cirqus.Config
     /// </summary>
     public class CommandProcessor
     {
+        static Logger _logger;
+
+        static CommandProcessor()
+        {
+            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+        }
+
         const string InnerProcessMethodName = "InnerProcessCommand";
 
         static readonly MethodInfo CommandProcessorMethod =
@@ -51,6 +59,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public CommandProcessor Initialize()
         {
+            _logger.Info("Initializing event dispatcher");
             _eventDispatcher.Initialize(_eventStore, Options.PurgeExistingViews);
             return this;
         }
@@ -65,6 +74,8 @@ namespace d60.Cirqus.Config
         /// </summary>
         public void ProcessCommand(Command command)
         {
+            _logger.Debug("Processing command: {0}", command);
+
             var commandType = command.GetType();
             var aggregateRootType = GetAggregateRootType(commandType);
 

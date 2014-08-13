@@ -58,6 +58,11 @@
     <Compile Include="Config\Retryer.cs" />
     <Compile Include="Exceptions\CommandProcessingException.cs" />
     <Compile Include="Extensions\ExceptionExtensions.cs" />
+    <Compile Include="Logging\CirqusLoggerFactory.cs" />
+    <Compile Include="Logging\Console\ConsoleLogger.cs" />
+    <Compile Include="Logging\Console\ConsoleLoggerFactory.cs" />
+    <Compile Include="Logging\Logger.cs" />
+    <Compile Include="Logging\Null\NullLoggerFactory.cs" />
     <Compile Include="Numbers\CachingSequenceNumberGenerator.cs" />
     <Compile Include="Events\IEmit.cs" />
     <Compile Include="Exceptions\ConcurrencyException.cs" />
@@ -96,9 +101,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Logging\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
