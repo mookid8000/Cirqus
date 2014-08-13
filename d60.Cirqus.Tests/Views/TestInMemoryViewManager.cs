@@ -2,6 +2,8 @@
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
+using d60.Cirqus.Logging;
+using d60.Cirqus.Logging.Console;
 using d60.Cirqus.TestHelpers.Internals;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
@@ -65,6 +67,8 @@ namespace d60.Cirqus.Tests.Views
         [TestCase(1000000, Ignore = false, Description = "chill, dude")]
         public void CheckPerformance(int numberOfEvents)
         {
+            CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel: Logger.Level.Info);
+
             var firstRoot = Guid.NewGuid();
 
             TakeTime("Dispatch " + numberOfEvents + " events",

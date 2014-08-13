@@ -6,6 +6,7 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Logging;
 
 namespace d60.Cirqus.Views.ViewManagers
 {
@@ -15,6 +16,13 @@ namespace d60.Cirqus.Views.ViewManagers
     /// </summary>
     public class ViewManagerEventDispatcher : IEventDispatcher, IEnumerable<IViewManager>
     {
+        static Logger _logger;
+
+        static ViewManagerEventDispatcher()
+        {
+            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+        }
+
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly List<IViewManager> _viewManagers;
 
@@ -37,6 +45,8 @@ namespace d60.Cirqus.Views.ViewManagers
             {
                 try
                 {
+                    _logger.Info("Initializing view manager {0}", manager);
+
                     manager.Initialize(viewContext, eventStore, purgeExistingViews: purgeExistingViews);
 
                     HandleViewManagerSuccess(manager);
@@ -62,6 +72,8 @@ namespace d60.Cirqus.Views.ViewManagers
                     {
                         var pushViewManager = ((IPushViewManager)viewManager);
 
+                        _logger.Debug("Dispatching {0} events directly to {1}", eventList.Count, viewManager);
+
                         pushViewManager.Dispatch(viewContext, eventStore, eventList);
                     }
 
@@ -69,7 +81,11 @@ namespace d60.Cirqus.Views.ViewManagers
                     {
                         var pullViewManager = ((IPullViewManager)viewManager);
 
-                        pullViewManager.CatchUp(viewContext, eventStore, eventList.Last().GetGlobalSequenceNumber());
+                        var lastGlobalSequenceNumber = eventList.Last().GetGlobalSequenceNumber();
+
+                        _logger.Debug("Asking {0} to catch up to {1}", viewManager, lastGlobalSequenceNumber);
+
+                        pullViewManager.CatchUp(viewContext, eventStore, lastGlobalSequenceNumber);
                     }
 
                     HandleViewManagerSuccess(viewManager);
@@ -83,11 +99,18 @@ namespace d60.Cirqus.Views.ViewManagers
 
         void HandleViewManagerSuccess(IViewManager manager)
         {
+            if (manager.Stopped)
+            {
+                _logger.Info("View manager {0} was stopped, but it seems to have recovered and resumed with success", manager);
+            }
+
             manager.Stopped = false;
         }
 
         void HandleViewManagerError(IViewManager viewManager, Exception exception)
         {
+            _logger.Warn("An error occurred in the view manager {0}: {1} - setting Stopped = true", viewManager, exception);
+
             viewManager.Stopped = true;
         }
 

@@ -129,6 +129,8 @@ namespace d60.Cirqus.Config
 
             try
             {
+                _logger.Debug("Delivering {0} events to the dispatcher", emittedDomainEvents.Count);
+
                 // when we come to this place, we deliver the events to the view manager
                 _eventDispatcher.Dispatch(_eventStore, emittedDomainEvents);
             }
@@ -169,6 +171,8 @@ namespace d60.Cirqus.Config
             {
                 e.Meta.Merge(command.Meta);
             }
+
+            _logger.Debug("Saving batch {0} with {1} events", batchId, emittedEvents.Count);
 
             // first: save the events
             _eventStore.Save(batchId, emittedEvents);
