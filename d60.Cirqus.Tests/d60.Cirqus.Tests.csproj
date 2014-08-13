@@ -111,6 +111,7 @@
     <Compile Include="MsSql\TestSqlHelper.cs" />
     <Compile Include="Stubs\ConsoleOutUnitOfWork.cs" />
     <Compile Include="Stubs\ConsoleOutEventDispatcher.cs" />
+    <Compile Include="Stubs\ListLoggerFactory.cs" />
     <Compile Include="Stubs\TestNumberGenerator.cs" />
     <Compile Include="Stubs\ThrowingViewContext.cs" />
     <Compile Include="TestCategories.cs" />

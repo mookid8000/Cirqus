@@ -23,6 +23,8 @@ namespace d60.Cirqus.Views.ViewManagers
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
         }
 
+        public event Action<IViewManager, Exception> Error = delegate { }; 
+
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly List<IViewManager> _viewManagers;
 
@@ -112,6 +114,8 @@ namespace d60.Cirqus.Views.ViewManagers
             _logger.Warn("An error occurred in the view manager {0}: {1} - setting Stopped = true", viewManager, exception);
 
             viewManager.Stopped = true;
+
+            Error(viewManager, exception);
         }
 
         class DefaultViewContext : IViewContext, IUnitOfWork
