@@ -24,7 +24,7 @@ namespace d60.Cirqus.MongoDb.Views
             _viewCollection = database.GetCollection<TView>(collectionName);
             _viewCollection.CreateIndex(IndexKeys<TView>.Ascending(v => v.LastGlobalSequenceNumber));
         }
-        
+
         public MongoDbViewManager(MongoCollection<TView> viewCollection)
         {
             _viewCollection = viewCollection;
@@ -153,7 +153,7 @@ namespace d60.Cirqus.MongoDb.Views
                 if (!ViewLocator.IsRelevant<TView>(e)) continue;
 
                 var globalSequenceNumberOfThisEvent = e.GetGlobalSequenceNumber();
-                
+
                 if (globalSequenceNumberOfThisEvent <= _lastGlobalSequenceNumberProcessed) continue;
 
                 var viewId = locator.GetViewId(e);

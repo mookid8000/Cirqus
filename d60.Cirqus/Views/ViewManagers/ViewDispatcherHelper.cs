@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Logging;
 
 namespace d60.Cirqus.Views.ViewManagers
 {
@@ -12,6 +13,13 @@ namespace d60.Cirqus.Views.ViewManagers
     /// </summary>
     public class ViewDispatcherHelper<TView> where TView : ISubscribeTo, IViewInstance
     {
+        static Logger _logger;
+
+        static ViewDispatcherHelper()
+        {
+            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+        }
+
         readonly ConcurrentDictionary<Type, MethodInfo> _dispatcherMethods = new ConcurrentDictionary<Type, MethodInfo>();
         readonly MethodInfo _dispatchToViewGenericMethod;
 
@@ -35,9 +43,13 @@ namespace d60.Cirqus.Views.ViewManagers
 
             try
             {
+                var lastGlobalSequenceNumber = domainEvent.GetGlobalSequenceNumber();
+
+                _logger.Debug("Dispatching event {0} to {1} with ID {2}", lastGlobalSequenceNumber, view, view.Id);
+
                 dispatcherMethod.Invoke(this, new object[] { context, domainEvent, view });
 
-                view.LastGlobalSequenceNumber = domainEvent.GetGlobalSequenceNumber();
+                view.LastGlobalSequenceNumber = lastGlobalSequenceNumber;
             }
             catch (Exception exception)
             {

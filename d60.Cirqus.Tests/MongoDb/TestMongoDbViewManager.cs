@@ -4,6 +4,8 @@ using System.Linq;
 using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Logging;
+using d60.Cirqus.Logging.Console;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.MongoDb.Views;
 using d60.Cirqus.Tests.Stubs;
@@ -27,6 +29,8 @@ namespace d60.Cirqus.Tests.MongoDb
 
         protected override void DoSetUp()
         {
+            CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel: Logger.Level.Warn);
+
             _aggregateRootIds = Enumerable.Range(0, 1000).Select(i => Guid.NewGuid()).ToArray();
 
             _database = MongoHelper.InitializeTestDatabase();
