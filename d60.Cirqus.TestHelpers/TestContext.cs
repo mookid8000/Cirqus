@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Aggregates;
+using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
@@ -34,6 +35,13 @@ namespace d60.Cirqus.TestHelpers
         {
             _eventDispatcher.Add(viewManager);
             return this;
+        }
+
+        public void ProcessCommand<TAggregateRoot>(Command<TAggregateRoot> command) where TAggregateRoot : AggregateRoot, new()
+        {
+            var aggregateRoot = Get<TAggregateRoot>(command.AggregateRootId);
+            
+            command.Execute(aggregateRoot);
         }
 
         public IEnumerable<AggregateRootTestInfo> AggregateRootsInHistory
@@ -155,7 +163,7 @@ namespace d60.Cirqus.TestHelpers
             }
 
             var timeToReturn = _currentTime.ToUniversalTime();
-            
+
             // simulate time progressing
             _currentTime = _currentTime.AddTicks(1);
 
@@ -179,7 +187,7 @@ namespace d60.Cirqus.TestHelpers
         }
     }
 
-    public class AggregateRootTestInfo  
+    public class AggregateRootTestInfo
     {
         public AggregateRootTestInfo(Guid id, long seqNo, long globalSeqNo)
         {
@@ -189,12 +197,11 @@ namespace d60.Cirqus.TestHelpers
         }
 
         public Guid Id { get; private set; }
-        
+
         public long SeqNo { get; private set; }
-        
+
         public long GlobalSeqNo { get; private set; }
         public override string ToString()
-        
         {
             return string.Format("{0}: {1} ({2})", Id, SeqNo, GlobalSeqNo);
         }
