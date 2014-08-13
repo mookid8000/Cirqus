@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>d60.Cirqus.NLog</id>
+    <version>VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT</version>
+    <title>d60.Cirqus.NLog</title>
+    <authors>Mogens Heller Grabe</authors>
+    <owners>mookid8000</owners>
+    <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Test helpers for d60 event sourcing + cqrs kit</description>
+    <dependencies>
+      <dependency id="d60.Cirqus" version="VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT" />
+      <dependency id="NLog" version="2.0.1.2" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\d60.Cirqus.NLog\bin\Release\d60.Cirqus.NLog.dll" target="lib\NET45" />
+  </files>
+</package>
