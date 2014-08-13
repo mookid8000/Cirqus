@@ -1,4 +1,4 @@
-# d60 Circus
+# d60 Cirqus
 
 Simple but powerful event sourcing + CQRS kit. 
 
@@ -19,7 +19,7 @@ and then everything will flow from there.
 
 ### More docs
 
-Check out [the official documentation wiki](https://github.com/d60/Circus/wiki).
+Check out [the official documentation wiki](https://github.com/d60/Cirqus/wiki).
 
 ### Full example
 
@@ -37,7 +37,7 @@ This is how you can set up a fully functioning command processor, including a vi
     var viewManager = new MsSqlViewManager<CounterView>("sqltestdb", "counters", 
                                                         automaticallyCreateSchema: true);
 
-    // Circus will deliver emitted events to the event dispatcher when they have
+    // Cirqus will deliver emitted events to the event dispatcher when they have
     //  been persisted
     var eventDispatcher = new BasicEventDispatcher(repository, viewManager);
 

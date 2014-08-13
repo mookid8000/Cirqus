@@ -1,4 +1,4 @@
-# d60 Circus
+# d60 Cirqus
 
 ## 0.0.5
 
@@ -85,3 +85,7 @@
 ## 0.1.3
 
 * Fixed bug in view managers that could "forget" to update `LastGlobalSequenceNumber` on a view - not that will be automatically done by the `ViewDispatcherHelper`
+
+## 0.2.0
+
+* Renamed to "Cirqus" - the name that just gets better and better!
