@@ -82,3 +82,6 @@
 
 * Added Azure Service Bus event dispatcher + nuspec
 
+## 0.1.3
+
+* Fixed bug in view managers that could "forget" to update `LastGlobalSequenceNumber` on a view - not that will be automatically done by the `ViewDispatcherHelper`
