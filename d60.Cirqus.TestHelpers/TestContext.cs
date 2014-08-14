@@ -53,23 +53,18 @@ namespace d60.Cirqus.TestHelpers
             return new TestUnitOfWork(this, _aggregateRootRepository, _eventStore, _eventDispatcher);
         }
 
-        public IEnumerable<AggregateRootTestInfo> AggregateRootsInHistory
-        {
-            get
-            {
-                return _eventStore.GroupBy(e => e.GetAggregateRootId())
-                    .Select(group => new AggregateRootTestInfo(group.Key, group.Max(g => g.GetSequenceNumber()), group.Max(g => g.GetGlobalSequenceNumber())));
-            }
-        }
-
         public void SetCurrentTime(DateTime fixedCurrentTime)
         {
             _currentTime = fixedCurrentTime;
         }
 
-        public void Initialize()
+        public IEnumerable<AggregateRootTestInfo> AggregateRootsInHistory
         {
-            EnsureInitialized();
+            get
+            {
+                return _eventStore.GroupBy(e => e.GetAggregateRootId())
+                    .Select(group => new AggregateRootTestInfo(@group.Key, @group.Max(g => g.GetSequenceNumber()), @group.Max(g => g.GetGlobalSequenceNumber())));
+            }
         }
 
         void EnsureInitialized()
@@ -102,6 +97,8 @@ namespace d60.Cirqus.TestHelpers
         /// </summary>
         public void Save<TAggregateRoot>(Guid aggregateRootId, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
         {
+            EnsureInitialized();
+
             SetMetadata(aggregateRootId, domainEvent);
 
             var domainEvents = new[] { domainEvent };

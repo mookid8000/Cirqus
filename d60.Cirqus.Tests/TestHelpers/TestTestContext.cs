@@ -85,7 +85,7 @@ namespace d60.Cirqus.Tests.TestHelpers
         }
 
 
-        class SillyViewManager : IViewManager
+        class SillyViewManager : IPushViewManager
         {
             public SillyViewManager()
             {
