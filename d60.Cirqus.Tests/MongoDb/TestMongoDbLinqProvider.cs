@@ -37,7 +37,6 @@ namespace d60.Cirqus.Tests.MongoDb
             _context.Save(root1, new RootWasNamed { Name = "Francis" });
             _context.Save(root2, new RootWasNamed { Name = "Claire" });
             _context.Save(root3, new RootWasNamed { Name = "Doug" });
-            _context.Commit();
 
             var view1 = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(root1));
             var view2 = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(root2));

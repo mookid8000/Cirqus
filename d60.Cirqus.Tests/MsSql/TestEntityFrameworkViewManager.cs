@@ -34,12 +34,15 @@ namespace d60.Cirqus.Tests.MsSql
             var root3Id = Guid.NewGuid();
             var root4Id = Guid.NewGuid();
             var root5Id = Guid.NewGuid();
-            _context.Get<Root>(root1Id).ThisIsTheNumber(1);
-            _context.Get<Root>(root2Id).ThisIsTheNumber(2);
-            _context.Get<Root>(root3Id).ThisIsTheNumber(43);
-            _context.Get<Root>(root4Id).ThisIsTheNumber(43);
-            _context.Get<Root>(root5Id).ThisIsTheNumber(43);
-            _context.Commit();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                uow.Get<Root>(root1Id).ThisIsTheNumber(1);
+                uow.Get<Root>(root2Id).ThisIsTheNumber(2);
+                uow.Get<Root>(root3Id).ThisIsTheNumber(43);
+                uow.Get<Root>(root4Id).ThisIsTheNumber(43);
+                uow.Get<Root>(root5Id).ThisIsTheNumber(43);
+                uow.Commit();
+            }
 
             // act
             // assert

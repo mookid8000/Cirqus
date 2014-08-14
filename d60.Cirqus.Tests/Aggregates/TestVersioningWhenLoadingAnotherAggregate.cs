@@ -22,19 +22,28 @@ namespace d60.Cirqus.Tests.Aggregates
             var counterpartyId = Guid.NewGuid();
             var contractId = Guid.NewGuid();
 
-            var counterparty = _context.Get<Counterparty>(counterpartyId);
-            counterparty.SetName("joe");
-            _context.Commit();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                var counterparty = uow.Get<Counterparty>(counterpartyId);
+                counterparty.SetName("joe");
+                uow.Commit();
+            }
 
-            var contract = _context.Get<Contract>(contractId);
-            contract.AssignToCounterparty(counterpartyId);
-            _context.Commit();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                var contract = uow.Get<Contract>(contractId);
+                contract.AssignToCounterparty(counterpartyId);
+                uow.Commit();
+            }
 
-            counterparty = _context.Get<Counterparty>(counterpartyId);
-            counterparty.SetName("moe");
-            _context.Commit();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                var counterparty = uow.Get<Counterparty>(counterpartyId);
+                counterparty.SetName("moe");
+                uow.Commit();
+            }
 
-            var loadedContract = _context.Get<Contract>(contractId);
+            var loadedContract = _context.BeginUnitOfWork().Get<Contract>(contractId);
             Assert.That(loadedContract.NameOfCounterparty, Is.EqualTo("joe"));
         }
 

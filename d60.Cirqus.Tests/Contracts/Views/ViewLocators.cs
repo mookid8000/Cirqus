@@ -55,8 +55,6 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _testContext.Save(rootId2, new ThisIsJustAnEvent());
             _testContext.Save(rootId2, new ThisIsJustAnEvent());
 
-            _testContext.Commit();
-
             var view = _factory.Load<InstancePerAggregateRootView>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
             Assert.That(view.EventCounter, Is.EqualTo(3));
         }
@@ -77,8 +75,6 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _testContext.Save(rootId2, new ThisIsJustAnEvent());
             _testContext.Save(rootId2, new ThisIsJustAnEvent());
 
-            _testContext.Commit();
-
             var view = _factory.Load<GlobalInstanceViewInstance>(GlobalInstanceLocator.GetViewInstanceId());
             Assert.That(view.EventCounter, Is.EqualTo(6));
         }
@@ -88,10 +84,9 @@ namespace d60.Cirqus.Tests.Contracts.Views
         {
             _testContext.AddViewManager(_globalInstanceViewManager);
 
-            _testContext.Save(Guid.NewGuid(), new JustAnEvent());
-            _testContext.Save(Guid.NewGuid(), new AnotherEvent());
-
-            Assert.DoesNotThrow(_testContext.Commit);
+            Assert.DoesNotThrow(() => _testContext.Save(Guid.NewGuid(), new JustAnEvent()));
+         
+            Assert.DoesNotThrow(() => _testContext.Save(Guid.NewGuid(), new AnotherEvent()));
         }
 
         class MyViewInstance : IViewInstance<CustomizedViewLocator>, ISubscribeTo<JustAnEvent>

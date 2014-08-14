@@ -24,8 +24,11 @@ namespace d60.Cirqus.Tests.Aggregates
             var rootId = Guid.NewGuid();
 
             // act
-            _context.Get<Root>(rootId).DoSomething();
-            _context.Commit();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                uow.Get<Root>(rootId).DoSomething();
+                uow.Commit();
+            }
 
             // assert
             var expectedSequenceOfEvents = new[] { typeof(RootCreated), typeof(RootDidSomething) };
@@ -41,12 +44,21 @@ namespace d60.Cirqus.Tests.Aggregates
             var rootId = Guid.NewGuid();
 
             // act
-            _context.Get<Root>(rootId).DoSomething();
-            _context.Commit();
-            _context.Get<Root>(rootId).DoSomething();
-            _context.Commit();
-            _context.Get<Root>(rootId).DoSomething();
-            _context.Commit();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                uow.Get<Root>(rootId).DoSomething();
+                uow.Commit();
+            }
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                uow.Get<Root>(rootId).DoSomething();
+                uow.Commit();
+            }
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                uow.Get<Root>(rootId).DoSomething();
+                uow.Commit();
+            }
 
             // assert
             var expectedSequenceOfEvents = new[]

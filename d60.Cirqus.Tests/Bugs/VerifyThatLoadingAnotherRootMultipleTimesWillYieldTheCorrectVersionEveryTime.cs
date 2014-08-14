@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
+using d60.Cirqus.TestHelpers;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.TestHelpers.TestContext;
 
@@ -24,30 +25,42 @@ namespace d60.Cirqus.Tests.Bugs
             var root1Id = Guid.NewGuid();
             var root2Id = Guid.NewGuid();
 
-            Console.WriteLine("** Creating two aggregate roots **");
-            _context.Get<Root>(root1Id);
-            _context.Get<Root>(root2Id);
-            Commit();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                Console.WriteLine("** Creating two aggregate roots **");
+                uow.Get<Root>(root1Id);
+                uow.Get<Root>(root2Id);
+                Commit(uow);
+            }
 
-            Console.WriteLine("** Making 1 grab info from 2 **");
-            // expected grabbing: "N/A"
-            _context.Get<Root>(root1Id).GrabInformationFrom(root2Id);
-            Commit();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                Console.WriteLine("** Making 1 grab info from 2 **");
+                // expected grabbing: "N/A"
+                uow.Get<Root>(root1Id).GrabInformationFrom(root2Id);
+                Commit(uow);
+            }
 
-            Console.WriteLine("** Making 1 grab info from 2 **");
-            Console.WriteLine("** Setting name of 2 to 'I now have a NEW name!' **");
-            Console.WriteLine("** Making 1 grab info from 2 **");
-            // expected grabbing: "I now have a NEW name!"
-            _context.Get<Root>(root1Id).GrabInformationFrom(root2Id);
-            _context.Get<Root>(root2Id).SetName("I now have a NEW name!");
-            _context.Get<Root>(root1Id).GrabInformationFrom(root2Id);
-            Commit();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                Console.WriteLine("** Making 1 grab info from 2 **");
+                Console.WriteLine("** Setting name of 2 to 'I now have a NEW name!' **");
+                Console.WriteLine("** Making 1 grab info from 2 **");
+                // expected grabbing: "I now have a NEW name!"
+                uow.Get<Root>(root1Id).GrabInformationFrom(root2Id);
+                uow.Get<Root>(root2Id).SetName("I now have a NEW name!");
+                uow.Get<Root>(root1Id).GrabInformationFrom(root2Id);
+                Commit(uow);
+            }
 
-            var rootWithGrabbings = _context.Get<Root>(root1Id);
-            var grabbedNames = rootWithGrabbings.InformationGrabbings.Select(g => g.Item2).ToArray();
-            var expectedNames = new[] {"N/A", "N/A", "I now have a NEW name!"};
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                var rootWithGrabbings = uow.Get<Root>(root1Id);
+                var grabbedNames = rootWithGrabbings.InformationGrabbings.Select(g => g.Item2).ToArray();
+                var expectedNames = new[] {"N/A", "N/A", "I now have a NEW name!"};
 
-            Assert(grabbedNames, expectedNames);
+                Assert(grabbedNames, expectedNames);
+            }
         }
 
         [Test]
@@ -56,30 +69,45 @@ namespace d60.Cirqus.Tests.Bugs
             var root1Id = Guid.NewGuid();
             var root2Id = Guid.NewGuid();
 
-            Console.WriteLine("** Creating two aggregate roots **");
-            _context.Get<Root>(root1Id);
-            _context.Get<Root>(root2Id);
-            Commit();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                Console.WriteLine("** Creating two aggregate roots **");
+                uow.Get<Root>(root1Id);
+                uow.Get<Root>(root2Id);
+                Commit(uow);
+            }
 
-            Console.WriteLine("** Making 1 grab info from 2 **");
-            // expected grabbing: "N/A"
-            _context.Get<Root>(root1Id).GrabInformationFrom(root2Id);
-            Commit();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                Console.WriteLine("** Making 1 grab info from 2 **");
+                // expected grabbing: "N/A"
+                uow.Get<Root>(root1Id).GrabInformationFrom(root2Id);
+                Commit(uow);
+            }
 
-            Console.WriteLine("** Setting name of 2 to 'I now have a name!' **");
-            _context.Get<Root>(root2Id).SetName("I now have a name!");
-            Commit();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                Console.WriteLine("** Setting name of 2 to 'I now have a name!' **");
+                uow.Get<Root>(root2Id).SetName("I now have a name!");
+                Commit(uow);
+            }
 
-            Console.WriteLine("** Making 1 grab info from 2 **");
-            // expected grabbing: "I now have a name!"
-            _context.Get<Root>(root1Id).GrabInformationFrom(root2Id);
-            Commit();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                Console.WriteLine("** Making 1 grab info from 2 **");
+                // expected grabbing: "I now have a name!"
+                uow.Get<Root>(root1Id).GrabInformationFrom(root2Id);
+                Commit(uow);
+            }
 
-            var rootWithGrabbings = _context.Get<Root>(root1Id);
-            var grabbedNames = rootWithGrabbings.InformationGrabbings.Select(g => g.Item2).ToArray();
-            var expectedNames = new[] {"N/A", "I now have a name!"};
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                var rootWithGrabbings = uow.Get<Root>(root1Id);
+                var grabbedNames = rootWithGrabbings.InformationGrabbings.Select(g => g.Item2).ToArray();
+                var expectedNames = new[] {"N/A", "I now have a name!"};
 
-            Assert(grabbedNames, expectedNames);
+                Assert(grabbedNames, expectedNames);
+            }
         }
 
         static void Assert(string[] grabbedNames, string[] expectedNames)
@@ -96,9 +124,9 @@ Got
 ", string.Join(", ", expectedNames), string.Join(", ", grabbedNames));
         }
 
-        void Commit()
+        void Commit(TestUnitOfWork uow)
         {
-            _context.Commit();
+            uow.Commit();
             Console.WriteLine(" - committed - ");
             Console.WriteLine();
         }

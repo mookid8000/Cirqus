@@ -52,7 +52,6 @@ namespace d60.Cirqus.Tests.TestHelpers
             var aggregateRootId = Guid.NewGuid();
 
             _context.Save(aggregateRootId, new AnEvent());
-            _context.Commit();
 
             Assert.That(viewMan.ReceivedDomainEvents.Count, Is.EqualTo(1));
         }
@@ -118,7 +117,7 @@ namespace d60.Cirqus.Tests.TestHelpers
             _context.Save(rootId, new AnEvent());
 
             // act
-            var firstInstance = _context.Get<AnAggregate>(rootId);
+            var firstInstance = _context.BeginUnitOfWork().Get<AnAggregate>(rootId);
 
             // assert
             Assert.That(firstInstance.ProcessedEvents, Is.EqualTo(3));
@@ -129,14 +128,15 @@ namespace d60.Cirqus.Tests.TestHelpers
         {
             // arrange
             var rootId = Guid.NewGuid();
-            var root = _context.Get<AnAggregate>(rootId);
+            var uow = _context.BeginUnitOfWork();
+            var root = uow.Get<AnAggregate>(rootId);
 
             // act
             root.DoStuff();
 
             // assert
-            Assert.That(_context.UnitOfWork.Cast<AnEvent>().Single(), Is.TypeOf<AnEvent>());
-            Assert.That(_context.UnitOfWork.Cast<AnEvent>().Single().GetAggregateRootId(), Is.EqualTo(rootId));
+            Assert.That(uow.EmittedEvents.Cast<AnEvent>().Single(), Is.TypeOf<AnEvent>());
+            Assert.That(uow.EmittedEvents.Cast<AnEvent>().Single().GetAggregateRootId(), Is.EqualTo(rootId));
         }
 
         [Test]
@@ -144,14 +144,15 @@ namespace d60.Cirqus.Tests.TestHelpers
         {
             // arrange
             var rootId = Guid.NewGuid();
-            var root = _context.Get<AnAggregate>(rootId);
+            var uow = _context.BeginUnitOfWork();
+            var root = uow.Get<AnAggregate>(rootId);
             root.DoStuff();
 
             // act
-            _context.Commit();
+            uow.Commit();
 
             // assert
-            Assert.That(_context.UnitOfWork.Count(), Is.EqualTo(0));
+            Assert.That(uow.EmittedEvents.Count(), Is.EqualTo(0));
             Assert.That(_context.History.Cast<AnEvent>().Single(), Is.TypeOf<AnEvent>());
             Assert.That(_context.History.Cast<AnEvent>().Single().GetAggregateRootId(), Is.EqualTo(rootId));
         }

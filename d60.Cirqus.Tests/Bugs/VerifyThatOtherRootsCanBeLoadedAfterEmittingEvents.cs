@@ -23,13 +23,19 @@ namespace d60.Cirqus.Tests.Bugs
             var root1Id = Guid.NewGuid();
             var root2Id = Guid.NewGuid();
 
-            _context.Get<Root>(root1Id);
-            _context.Commit();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                uow.Get<Root>(root1Id);
+                uow.Commit();
+            }
 
-            _context.Get<Root>(root2Id);
-            _context.Commit();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                uow.Get<Root>(root2Id);
+                uow.Commit();
+            }
 
-            Assert.DoesNotThrow(() => _context.Get<Root>(root1Id).AssociateWith(root2Id));
+            Assert.DoesNotThrow(() => _context.BeginUnitOfWork().Get<Root>(root1Id).AssociateWith(root2Id));
         }
 
 

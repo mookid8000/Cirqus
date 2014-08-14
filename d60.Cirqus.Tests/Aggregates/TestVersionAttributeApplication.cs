@@ -23,13 +23,14 @@ namespace d60.Cirqus.Tests.Aggregates
         public void AggregateVersionIsAppliedToEmittedEvents()
         {
             // arrange
-            var root = _context.Get<Root>(Guid.NewGuid());
+            var uow = _context.BeginUnitOfWork();
+            var root = uow.Get<Root>(Guid.NewGuid());
 
             // act
             root.DoStuff();
 
             // assert
-            var emittedEvent = _context.UnitOfWork.Cast<Event>().Single();
+            var emittedEvent = uow.EmittedEvents.Cast<Event>().Single();
             Console.WriteLine(emittedEvent.Meta);
 
             Assert.That(emittedEvent.Meta[DomainEvent.MetadataKeys.RootVersion], Is.EqualTo(EmittedVersion));

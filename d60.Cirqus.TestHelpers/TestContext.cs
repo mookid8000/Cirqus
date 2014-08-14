@@ -18,7 +18,6 @@ namespace d60.Cirqus.TestHelpers
     public class TestContext
     {
         readonly Serializer _serializer = new Serializer("<events>");
-        readonly InMemoryUnitOfWork _unitOfWork = new InMemoryUnitOfWork();
         readonly InMemoryEventStore _eventStore = new InMemoryEventStore();
         readonly DefaultAggregateRootRepository _aggregateRootRepository;
         readonly ViewManagerEventDispatcher _eventDispatcher;
@@ -39,9 +38,19 @@ namespace d60.Cirqus.TestHelpers
 
         public void ProcessCommand<TAggregateRoot>(Command<TAggregateRoot> command) where TAggregateRoot : AggregateRoot, new()
         {
-            var aggregateRoot = Get<TAggregateRoot>(command.AggregateRootId);
+            var unitOfWork = BeginUnitOfWork();
+            var aggregateRoot = unitOfWork.Get<TAggregateRoot>(command.AggregateRootId);
             
             command.Execute(aggregateRoot);
+
+            unitOfWork.Commit();
+        }
+
+        public TestUnitOfWork BeginUnitOfWork()
+        {
+            EnsureInitialized();
+
+            return new TestUnitOfWork(this, _aggregateRootRepository, _eventStore, _eventDispatcher);
         }
 
         public IEnumerable<AggregateRootTestInfo> AggregateRootsInHistory
@@ -58,54 +67,9 @@ namespace d60.Cirqus.TestHelpers
             _currentTime = fixedCurrentTime;
         }
 
-        public TAggregateRoot Get<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
-        {
-            var aggregateRootFromCache = _unitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId, long.MaxValue);
-            if (aggregateRootFromCache != null)
-            {
-                return aggregateRootFromCache;
-            }
-
-            var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, _unitOfWork);
-            var aggregateRoot = aggregateRootInfo.AggregateRoot;
-
-            _unitOfWork.AddToCache(aggregateRoot, long.MaxValue);
-
-            aggregateRoot.UnitOfWork = _unitOfWork;
-            aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);
-
-            _unitOfWork.AddToCache(aggregateRoot, aggregateRootInfo.LastGlobalSeqNo);
-
-            if (aggregateRootInfo.IsNew)
-            {
-                aggregateRoot.InvokeCreated();
-            }
-
-            return aggregateRoot;
-        }
-
         public void Initialize()
         {
             EnsureInitialized();
-        }
-
-        /// <summary>
-        /// Commits the current unit of work (i.e. emitted events from <see cref="UnitOfWork"/> are saved
-        /// to the history and will be used to hydrate aggregate roots from now on.
-        /// </summary>
-        public void Commit()
-        {
-            EnsureInitialized();
-
-            var domainEvents = UnitOfWork.ToList();
-
-            if (!domainEvents.Any()) return;
-
-            _eventStore.Save(Guid.NewGuid(), domainEvents);
-
-            _unitOfWork.Clear();
-
-            _eventDispatcher.Dispatch(_eventStore, domainEvents);
         }
 
         void EnsureInitialized()
@@ -138,24 +102,29 @@ namespace d60.Cirqus.TestHelpers
         /// </summary>
         public void Save<TAggregateRoot>(Guid aggregateRootId, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
         {
-            var now = GetNow();
-
-            domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId] = aggregateRootId;
-            domainEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber] = _eventStore.GetNextSeqNo(aggregateRootId);
-            domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = AggregateRoot.GetOwnerFromType(typeof(TAggregateRoot));
-            domainEvent.Meta[DomainEvent.MetadataKeys.TimeLocal] = now.ToLocalTime();
-            domainEvent.Meta[DomainEvent.MetadataKeys.TimeUtc] = now;
-
-            domainEvent.Meta.TakeFromAttributes(domainEvent.GetType());
-            domainEvent.Meta.TakeFromAttributes(typeof(TAggregateRoot));
-
-            _serializer.EnsureSerializability(domainEvent);
+            SetMetadata(aggregateRootId, domainEvent);
 
             var domainEvents = new[] { domainEvent };
 
             _eventStore.Save(Guid.NewGuid(), domainEvents);
-
+            
             _eventDispatcher.Dispatch(_eventStore, domainEvents);
+        }
+
+        void SetMetadata<TAggregateRoot>(Guid aggregateRootId, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
+        {
+            var now = GetNow();
+
+            domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId] = aggregateRootId;
+            domainEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber] = _eventStore.GetNextSeqNo(aggregateRootId);
+            domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = AggregateRoot.GetOwnerFromType(typeof (TAggregateRoot));
+            domainEvent.Meta[DomainEvent.MetadataKeys.TimeLocal] = now.ToLocalTime();
+            domainEvent.Meta[DomainEvent.MetadataKeys.TimeUtc] = now;
+
+            domainEvent.Meta.TakeFromAttributes(domainEvent.GetType());
+            domainEvent.Meta.TakeFromAttributes(typeof (TAggregateRoot));
+
+            _serializer.EnsureSerializability(domainEvent);
         }
 
 
@@ -175,19 +144,84 @@ namespace d60.Cirqus.TestHelpers
         }
 
         /// <summary>
-        /// Gets the events collected in the current unit of work
-        /// </summary>
-        public IEnumerable<DomainEvent> UnitOfWork
-        {
-            get { return _unitOfWork.ToList(); }
-        }
-
-        /// <summary>
         /// Gets the entire history of commited events from the event store
         /// </summary>
         public IEnumerable<DomainEvent> History
         {
             get { return _eventStore.Stream().ToList(); }
+        }
+    }
+
+    public class TestUnitOfWork : IDisposable
+    {
+        readonly RealUnitOfWork _unitOfWork = new RealUnitOfWork();
+        readonly IAggregateRootRepository _aggregateRootRepository;
+        readonly IEventStore _eventStore;
+        readonly IEventDispatcher _eventDispatcher;
+        readonly TestContext _context;
+
+        public TestUnitOfWork(TestContext context, IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IEventDispatcher eventDispatcher)
+        {
+            _context = context;
+            _aggregateRootRepository = aggregateRootRepository;
+            _eventStore = eventStore;
+            _eventDispatcher = eventDispatcher;
+        }
+
+        public TAggregateRoot Get<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        {
+            var aggregateRootFromCache = _unitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId, long.MaxValue);
+            if (aggregateRootFromCache != null)
+            {
+                return aggregateRootFromCache;
+            }
+
+            var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, _unitOfWork);
+            var aggregateRoot = aggregateRootInfo.AggregateRoot;
+
+            _unitOfWork.AddToCache(aggregateRoot, long.MaxValue);
+
+            aggregateRoot.UnitOfWork = _unitOfWork;
+            aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);
+
+            _unitOfWork.AddToCache(aggregateRoot, aggregateRootInfo.LastGlobalSeqNo);
+
+            if (aggregateRootInfo.IsNew)
+            {
+                aggregateRoot.InvokeCreated();
+            }
+
+            return aggregateRoot;
+        }
+
+        /// <summary>
+        /// Gets the events collected in the current unit of work
+        /// </summary>
+        public IEnumerable<DomainEvent> EmittedEvents
+        {
+            get { return _unitOfWork.EmittedEvents.ToList(); }
+        }
+
+        /// <summary>
+        /// Commits the current unit of work (i.e. emitted events from <see cref="EmittedEvents"/> are saved
+        /// to the history and will be used to hydrate aggregate roots from now on.
+        /// </summary>
+        public void Commit()
+        {
+            var domainEvents = EmittedEvents.ToList();
+
+            if (!domainEvents.Any()) return;
+
+            _eventStore.Save(Guid.NewGuid(), domainEvents);
+
+            _eventDispatcher.Dispatch(_eventStore, domainEvents);
+        }
+
+        public void Dispose()
+        {
+            if (!EmittedEvents.Any()) return;
+
+            Console.WriteLine("Unit of work was disposed with {0} events", EmittedEvents.Count());
         }
     }
 
@@ -205,6 +239,7 @@ namespace d60.Cirqus.TestHelpers
         public long SeqNo { get; private set; }
 
         public long GlobalSeqNo { get; private set; }
+
         public override string ToString()
         {
             return string.Format("{0}: {1} ({2})", Id, SeqNo, GlobalSeqNo);
