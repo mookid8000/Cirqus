@@ -109,3 +109,8 @@
 ## 0.2.5
 
 * Improved async event dispatcher to use one worker thread per inner dispatcher
+
+## 0.3.0
+
+* Improved `IViewContext` by adding some more context to it (+ ability to load "current" version of an aggregate root - i.e. the global sequence number "roof" is automatically deducted from the domain event currently being handled)
+

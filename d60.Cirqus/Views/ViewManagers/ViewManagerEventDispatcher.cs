@@ -128,12 +128,27 @@ namespace d60.Cirqus.Views.ViewManagers
                 _aggregateRootRepository = aggregateRootRepository;
             }
 
+            public TAggregateRoot Load<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+            {
+                if (CurrentEvent == null)
+                {
+                    throw new InvalidOperationException(
+                        string.Format(
+                            "Attempted to load aggregate root {0} with ID {1} in snapshot at the time of the current event, but there was no current event on the context!",
+                            typeof (TAggregateRoot), aggregateRootId));
+                }
+
+                return Load<TAggregateRoot>(aggregateRootId, CurrentEvent.GetGlobalSequenceNumber());
+            }
+
             public TAggregateRoot Load<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
             {
                 return _aggregateRootRepository
                     .Get<TAggregateRoot>(aggregateRootId, this, maxGlobalSequenceNumber: globalSequenceNumber)
                     .AggregateRoot;
             }
+
+            public DomainEvent CurrentEvent { get; set; }
 
             public void AddEmittedEvent(DomainEvent e)
             {

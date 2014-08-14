@@ -4,11 +4,19 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Logging;
 
 namespace d60.Cirqus.Views.ViewManagers
 {
     public class InMemoryViewManager<TView> : IEnumerable<TView>, IPushViewManager where TView : class, IViewInstance, ISubscribeTo, new()
     {
+        static Logger _logger;
+
+        static InMemoryViewManager()
+        {
+            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+        }
+
         readonly ConcurrentDictionary<string, TView> _views = new ConcurrentDictionary<string, TView>();
         readonly ViewDispatcherHelper<TView> _viewDispatcherHelper = new ViewDispatcherHelper<TView>();
         bool _initialized;

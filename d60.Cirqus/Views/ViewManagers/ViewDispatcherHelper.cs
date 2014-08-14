@@ -47,6 +47,8 @@ namespace d60.Cirqus.Views.ViewManagers
 
                 _logger.Debug("Dispatching event {0} to {1} with ID {2}", lastGlobalSequenceNumber, view, view.Id);
 
+                context.CurrentEvent = domainEvent;
+
                 dispatcherMethod.Invoke(this, new object[] { context, domainEvent, view });
 
                 view.LastGlobalSequenceNumber = lastGlobalSequenceNumber;
