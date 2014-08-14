@@ -64,7 +64,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Aggregates\TestCreationHook.cs" />
+    <Compile Include="Aggregates\TestCreationHookWithRealCommandProcessor.cs" />
+    <Compile Include="Aggregates\TestCreationHookWithTestContext.cs" />
     <Compile Include="Aggregates\TestDefaultAggregateRootRepository.cs" />
     <Compile Include="Aggregates\TestLoading.cs" />
     <Compile Include="Aggregates\TestVersionAttributeApplication.cs" />
@@ -73,7 +74,7 @@
     <Compile Include="Bugs\VerifyThatNewlyCreatedAggregateRootsAreAvailableForLoading.cs" />
     <Compile Include="Bugs\VerifyThatOtherRootsCanBeLoadedAfterEmittingEvents.cs" />
     <Compile Include="Commands\TestCommandProcessing.cs" />
-    <Compile Include="Contracts\AggregateRootRepository\Factories\BasicAggregateRootRepositoryFactory.cs" />
+    <Compile Include="Contracts\AggregateRootRepository\Factories\DefaultAggregateRootRepositoryFactory.cs" />
     <Compile Include="Contracts\AggregateRootRepository\IAggregateRootRepositoryFactory.cs" />
     <Compile Include="Contracts\AggregateRootRepository\TestAggregateRootRepositories.cs" />
     <Compile Include="Aggregates\TestEventApplication.cs" />

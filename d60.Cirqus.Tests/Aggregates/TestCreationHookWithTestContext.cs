@@ -8,7 +8,7 @@ using TestContext = d60.Cirqus.TestHelpers.TestContext;
 namespace d60.Cirqus.Tests.Aggregates
 {
     [TestFixture]
-    public class TestCreationHook : FixtureBase
+    public class TestCreationHookWithTestContext : FixtureBase
     {
         TestContext _context;
 

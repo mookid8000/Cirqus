@@ -118,3 +118,6 @@
 
 * Changed `TestContext` to provide a more explicit model for simulating a proper unit of work - can now be accessed by going `BeginUnitOfWork` and going all `Commit` and stuff
 
+## 0.4.1
+
+* Fixed bug that would result in "forgetting" to invoke the `Created` hook on a new aggregate root when running with the real command processor

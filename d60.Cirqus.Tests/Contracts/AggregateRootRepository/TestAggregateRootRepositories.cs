@@ -7,7 +7,7 @@ using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Contracts.AggregateRootRepository
 {
-    [TestFixture(typeof(BasicAggregateRootRepositoryFactory))]
+    [TestFixture(typeof(DefaultAggregateRootRepositoryFactory))]
     public class TestAggregateRootRepositories<TAggregateRootRepositoryFactory> : FixtureBase where TAggregateRootRepositoryFactory : IAggregateRootRepositoryFactory, new()
     {
         TAggregateRootRepositoryFactory _factory;

@@ -6,12 +6,12 @@ using d60.Cirqus.Tests.MongoDb;
 
 namespace d60.Cirqus.Tests.Contracts.AggregateRootRepository.Factories
 {
-    public class BasicAggregateRootRepositoryFactory : IAggregateRootRepositoryFactory
+    public class DefaultAggregateRootRepositoryFactory : IAggregateRootRepositoryFactory
     {
         readonly MongoDbEventStore _eventStore;
         readonly DefaultAggregateRootRepository _defaultAggregateRootRepository;
 
-        public BasicAggregateRootRepositoryFactory()
+        public DefaultAggregateRootRepositoryFactory()
         {
             _eventStore = new MongoDbEventStore(MongoHelper.InitializeTestDatabase(), "events");
             _defaultAggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);

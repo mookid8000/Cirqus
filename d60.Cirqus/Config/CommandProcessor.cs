@@ -161,6 +161,11 @@ namespace d60.Cirqus.Config
 
             unitOfWork.AddToCache(aggregateRoot, aggregateRootInfo.LastGlobalSeqNo);
 
+            if (aggregateRootInfo.IsNew)
+            {
+                aggregateRoot.InvokeCreated();
+            }
+
             handler(command, aggregateRoot);
 
             var emittedEvents = unitOfWork.EmittedEvents.ToList();
