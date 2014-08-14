@@ -134,7 +134,7 @@ namespace d60.Cirqus.TestHelpers
         }
 
         /// <summary>
-        /// Saves the given domain event to the history as if it was emitted by the specified aggregate root
+        /// Saves the given domain event to the history as if it was emitted by the specified aggregate root, immediately dispatching the event to the event dispatcher
         /// </summary>
         public void Save<TAggregateRoot>(Guid aggregateRootId, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
         {
@@ -151,7 +151,11 @@ namespace d60.Cirqus.TestHelpers
 
             _serializer.EnsureSerializability(domainEvent);
 
-            _eventStore.Save(Guid.NewGuid(), new[] { domainEvent });
+            var domainEvents = new[] { domainEvent };
+
+            _eventStore.Save(Guid.NewGuid(), domainEvents);
+
+            _eventDispatcher.Dispatch(_eventStore, domainEvents);
         }
 
 
