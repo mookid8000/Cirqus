@@ -50,7 +50,7 @@ namespace d60.Cirqus.TestHelpers
         {
             EnsureInitialized();
 
-            return new TestUnitOfWork(this, _aggregateRootRepository, _eventStore, _eventDispatcher);
+            return new TestUnitOfWork(_aggregateRootRepository, _eventStore, _eventDispatcher);
         }
 
         public void SetCurrentTime(DateTime fixedCurrentTime)
@@ -155,11 +155,9 @@ namespace d60.Cirqus.TestHelpers
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventStore _eventStore;
         readonly IEventDispatcher _eventDispatcher;
-        readonly TestContext _context;
 
-        public TestUnitOfWork(TestContext context, IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IEventDispatcher eventDispatcher)
+        public TestUnitOfWork(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IEventDispatcher eventDispatcher)
         {
-            _context = context;
             _aggregateRootRepository = aggregateRootRepository;
             _eventStore = eventStore;
             _eventDispatcher = eventDispatcher;

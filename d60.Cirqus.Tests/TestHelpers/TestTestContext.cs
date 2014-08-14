@@ -45,7 +45,7 @@ namespace d60.Cirqus.Tests.TestHelpers
 
 
         [Test]
-        public void CanDispatchToViews()
+        public void CanDispatchToViewsImmediatelyOnSave()
         {
             var viewMan = new SillyViewManager();
             _context.AddViewManager(viewMan);
@@ -54,18 +54,6 @@ namespace d60.Cirqus.Tests.TestHelpers
             _context.Save(aggregateRootId, new AnEvent());
 
             Assert.That(viewMan.ReceivedDomainEvents.Count, Is.EqualTo(1));
-        }
-
-        [Test]
-        public void UncommittedEventsAreNotDispatchedToViews()
-        {
-            var viewMan = new SillyViewManager();
-            _context.AddViewManager(viewMan);
-            var aggregateRootId = Guid.NewGuid();
-
-            _context.Save(aggregateRootId, new AnEvent());
-
-            Assert.That(viewMan.ReceivedDomainEvents.Count, Is.EqualTo(0));
         }
 
         [Test]
@@ -144,17 +132,50 @@ namespace d60.Cirqus.Tests.TestHelpers
         {
             // arrange
             var rootId = Guid.NewGuid();
-            var uow = _context.BeginUnitOfWork();
-            var root = uow.Get<AnAggregate>(rootId);
-            root.DoStuff();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                var root = uow.Get<AnAggregate>(rootId);
+                root.DoStuff();
 
-            // act
-            uow.Commit();
+                // act
+                uow.Commit();
 
-            // assert
-            Assert.That(uow.EmittedEvents.Count(), Is.EqualTo(0));
-            Assert.That(_context.History.Cast<AnEvent>().Single(), Is.TypeOf<AnEvent>());
-            Assert.That(_context.History.Cast<AnEvent>().Single().GetAggregateRootId(), Is.EqualTo(rootId));
+                // assert
+                Assert.That(_context.History.Cast<AnEvent>().Single(), Is.TypeOf<AnEvent>());
+                Assert.That(_context.History.Cast<AnEvent>().Single().GetAggregateRootId(), Is.EqualTo(rootId));
+            }
+        }
+
+        [Test]
+        public void EventsAreNotAppendedToHistoryBeforeCommit()
+        {
+            // arrange
+            var rootId = Guid.NewGuid();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                var root = uow.Get<AnAggregate>(rootId);
+                root.DoStuff();
+
+                Assert.That(_context.History.Count(), Is.EqualTo(0));
+            }
+        }
+
+        [Test]
+        public void CommittedEventsAreStillAvailableInUnitOfWorkAfterCommit()
+        {
+            // arrange
+            var rootId = Guid.NewGuid();
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                var root = uow.Get<AnAggregate>(rootId);
+                root.DoStuff();
+
+                // act
+                uow.Commit();
+
+                // assert
+                Assert.That(uow.EmittedEvents.Count(), Is.EqualTo(1));
+            }
         }
     }
 
