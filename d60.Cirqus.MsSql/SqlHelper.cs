@@ -1,6 +1,4 @@
-﻿using System;
-using System.Configuration;
-using System.Linq;
+﻿using System.Configuration;
 
 namespace d60.Cirqus.MsSql
 {
@@ -19,25 +17,6 @@ namespace d60.Cirqus.MsSql
                 : connectionStringOrConnectionStringName;
 
             return connectionString;
-        }
-
-        public static string GetDatabaseName(string connectionString)
-        {
-            var relevantSetting = connectionString
-                .Split(';')
-                .Select(kvp =>
-                {
-                    var tokens = kvp.Split('=');
-
-                    return new
-                    {
-                        Key = tokens[0],
-                        Value = tokens.Length > 0 ? tokens[1] : null
-                    };
-                })
-                .FirstOrDefault(a => string.Equals(a.Key, "database", StringComparison.InvariantCultureIgnoreCase));
-
-            return relevantSetting != null ? relevantSetting.Value : null;
         }
     }
 }

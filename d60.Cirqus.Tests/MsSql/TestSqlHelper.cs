@@ -13,7 +13,7 @@ namespace d60.Cirqus.Tests.MsSql
             {
                 var connectionString = SqlHelper.GetConnectionString("sqltestdb");
 
-                var configuredDatabaseName = SqlHelper.GetDatabaseName(connectionString);
+                var configuredDatabaseName = GetDatabaseName(connectionString);
 
                 var databaseNameToUse = PossiblyAppendTeamcityAgentNumber(configuredDatabaseName);
 
@@ -37,7 +37,7 @@ namespace d60.Cirqus.Tests.MsSql
         public static void EnsureTestDatabaseExists()
         {
             var connectionString = ConnectionString;
-            var databaseName = SqlHelper.GetDatabaseName(connectionString);
+            var databaseName = GetDatabaseName(connectionString);
             var masterConnectionString = connectionString.Replace(databaseName, "master");
 
             try
@@ -100,5 +100,23 @@ END
             }
         }
 
+        public static string GetDatabaseName(string connectionString)
+        {
+            var relevantSetting = connectionString
+                .Split(';')
+                .Select(kvp =>
+                {
+                    var tokens = kvp.Split('=');
+
+                    return new
+                    {
+                        Key = tokens[0],
+                        Value = tokens.Length > 0 ? tokens[1] : null
+                    };
+                })
+                .FirstOrDefault(a => string.Equals(a.Key, "database", StringComparison.InvariantCultureIgnoreCase));
+
+            return relevantSetting != null ? relevantSetting.Value : null;
+        }
     }
 }
