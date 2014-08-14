@@ -114,3 +114,7 @@
 
 * Improved `IViewContext` by adding some more context to it (+ ability to load "current" version of an aggregate root - i.e. the global sequence number "roof" is automatically deducted from the domain event currently being handled)
 
+## 0.4.0
+
+* Changed `TestContext` to provide a more explicit model for simulating a proper unit of work - can now be accessed by going `BeginUnitOfWork` and going all `Commit` and stuff
+
