@@ -65,7 +65,8 @@ some specific value, as indicated by the given `delta` parameter:
 
 Note how the command indicates the type and ID of the aggregate root to address, as well as an `Execute` method that
 will be invoked by the framework. Let's take a look at `Counter` - aggregate roots must be based on the
-`AggregateRoot` base class and must of course follow the _emit/apply_ pattern for mutating themselves - it looks like this:
+`AggregateRoot` base class and must of course follow the [_emit/apply_ pattern](https://github.com/d60/Cirqus/wiki/Emit-Apply-Pattern)
+ for mutating themselves - it looks like this:
 
     public class Counter : AggregateRoot, IEmit<CounterIncremented>
     {
