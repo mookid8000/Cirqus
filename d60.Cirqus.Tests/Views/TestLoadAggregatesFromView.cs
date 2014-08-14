@@ -6,7 +6,9 @@ using d60.Cirqus.Commands;
 using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Logging;
 using d60.Cirqus.TestHelpers.Internals;
+using d60.Cirqus.Tests.Stubs;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
@@ -19,19 +21,45 @@ namespace d60.Cirqus.Tests.Views
         CommandProcessor _cirqus;
         InMemoryViewManager<MyViewInstance> _viewManager1;
         InMemoryViewManager<MyViewInstanceImplicit> _viewManager2;
+        InMemoryViewManager<MyViewInstanceEmitting> _viewManager3;
 
         protected override void DoSetUp()
         {
             var eventStore = new InMemoryEventStore();
             _viewManager1 = new InMemoryViewManager<MyViewInstance>();
             _viewManager2 = new InMemoryViewManager<MyViewInstanceImplicit>();
+            _viewManager3 = new InMemoryViewManager<MyViewInstanceEmitting>();
 
             var basicAggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
 
-            _cirqus = new CommandProcessor(eventStore, basicAggregateRootRepository, new ViewManagerEventDispatcher(basicAggregateRootRepository, _viewManager1, _viewManager2));
+            _cirqus = new CommandProcessor(eventStore, basicAggregateRootRepository, new ViewManagerEventDispatcher(basicAggregateRootRepository, _viewManager1, _viewManager2, _viewManager3));
 
             _cirqus.Initialize();
         }
+
+        [Test]
+        public void ExceptionIsThrownIfAggregateRootEmitsFromView()
+        {
+            var listLoggerFactory = new ListLoggerFactory();
+            CirqusLoggerFactory.Current = listLoggerFactory;
+            var aggregateRootId = Guid.NewGuid();
+
+            _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
+
+            var relevantLines = listLoggerFactory
+                .LoggedLines
+                .Where(l => l.Level > Logger.Level.Info)
+                .ToList();
+
+            var stringWithTheLines = string.Join(Environment.NewLine, relevantLines);
+
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine(stringWithTheLines);
+            Console.WriteLine("---------------------------------------------");
+
+            Assert.That(stringWithTheLines.ToLowerInvariant(), Contains.Substring("frozen"));
+        }
+
 
         [Test]
         public void CanAccessAggregateRootInView()
@@ -45,7 +73,7 @@ namespace d60.Cirqus.Tests.Views
             _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
 
             var view = _viewManager1.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(aggregateRootId));
-            
+
             Assert.That(view.Calls.All(c => c.Item1 == c.Item2), "Registered calls contained a call where the version of the loaded aggregate root did not correspond to the version of the event that the view got to process: {0}",
                 string.Join(", ", view.Calls.Select(c => string.Format("{0}/{1}", c.Item1, c.Item2))));
         }
@@ -62,7 +90,7 @@ namespace d60.Cirqus.Tests.Views
             _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
 
             var view = _viewManager2.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(aggregateRootId));
-            
+
             Assert.That(view, Is.Not.Null);
 
             Assert.That(view.Calls.All(c => c.Item1 == c.Item2), "Registered calls contained a call where the version of the loaded aggregate root did not correspond to the version of the event that the view got to process: {0}",
@@ -71,7 +99,8 @@ namespace d60.Cirqus.Tests.Views
 
         class MyCommand : Command<MyRoot>
         {
-            public MyCommand(Guid aggregateRootId) : base(aggregateRootId)
+            public MyCommand(Guid aggregateRootId)
+                : base(aggregateRootId)
             {
             }
 
@@ -81,11 +110,11 @@ namespace d60.Cirqus.Tests.Views
             }
         }
 
-        public class MyRoot : AggregateRoot, IEmit<AnEvent> 
+        public class MyRoot : AggregateRoot, IEmit<AnEvent>
         {
             public void DoStuff()
             {
-                Emit(new AnEvent {EventNumber = LastEmittedEventNumber + 1});
+                Emit(new AnEvent { EventNumber = LastEmittedEventNumber + 1 });
             }
             public int LastEmittedEventNumber { get; set; }
             public void Apply(AnEvent e)
@@ -107,7 +136,7 @@ namespace d60.Cirqus.Tests.Views
             }
             public string Id { get; set; }
             public long LastGlobalSequenceNumber { get; set; }
-            public List<Tuple<int,int>> Calls { get; set; }
+            public List<Tuple<int, int>> Calls { get; set; }
             public void Handle(IViewContext context, AnEvent domainEvent)
             {
                 var myRoot = context.Load<MyRoot>(domainEvent.GetAggregateRootId(), domainEvent.GetGlobalSequenceNumber());
@@ -124,12 +153,24 @@ namespace d60.Cirqus.Tests.Views
             }
             public string Id { get; set; }
             public long LastGlobalSequenceNumber { get; set; }
-            public List<Tuple<int,int>> Calls { get; set; }
+            public List<Tuple<int, int>> Calls { get; set; }
             public void Handle(IViewContext context, AnEvent domainEvent)
             {
                 var myRoot = context.Load<MyRoot>(domainEvent.GetAggregateRootId());
 
                 Calls.Add(Tuple.Create(myRoot.LastEmittedEventNumber, domainEvent.EventNumber));
+            }
+        }
+
+        class MyViewInstanceEmitting : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
+        {
+            public string Id { get; set; }
+            public long LastGlobalSequenceNumber { get; set; }
+            public void Handle(IViewContext context, AnEvent domainEvent)
+            {
+                var root = context.Load<MyRoot>(domainEvent.GetAggregateRootId());
+
+                root.DoStuff();
             }
         }
     }

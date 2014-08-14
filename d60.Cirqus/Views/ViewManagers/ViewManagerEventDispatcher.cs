@@ -7,6 +7,7 @@ using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
+using d60.Cirqus.Numbers;
 
 namespace d60.Cirqus.Views.ViewManagers
 {
@@ -23,7 +24,7 @@ namespace d60.Cirqus.Views.ViewManagers
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
         }
 
-        public event Action<IViewManager, Exception> Error = delegate { }; 
+        public event Action<IViewManager, Exception> Error = delegate { };
 
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly List<IViewManager> _viewManagers;
@@ -135,7 +136,7 @@ namespace d60.Cirqus.Views.ViewManagers
                     throw new InvalidOperationException(
                         string.Format(
                             "Attempted to load aggregate root {0} with ID {1} in snapshot at the time of the current event, but there was no current event on the context!",
-                            typeof (TAggregateRoot), aggregateRootId));
+                            typeof(TAggregateRoot), aggregateRootId));
                 }
 
                 return Load<TAggregateRoot>(aggregateRootId, CurrentEvent.GetGlobalSequenceNumber());
@@ -143,9 +144,53 @@ namespace d60.Cirqus.Views.ViewManagers
 
             public TAggregateRoot Load<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
             {
-                return _aggregateRootRepository
-                    .Get<TAggregateRoot>(aggregateRootId, this, maxGlobalSequenceNumber: globalSequenceNumber)
-                    .AggregateRoot;
+                var aggregateRootInfo = _aggregateRootRepository
+                    .Get<TAggregateRoot>(aggregateRootId, this, maxGlobalSequenceNumber: globalSequenceNumber);
+
+                var aggregateRoot = aggregateRootInfo.AggregateRoot;
+
+                var frozen = new FrozenAggregateRootService<TAggregateRoot>(aggregateRootInfo, _realUnitOfWork);
+                aggregateRoot.SequenceNumberGenerator = frozen;
+                aggregateRoot.UnitOfWork = frozen;
+                aggregateRoot.AggregateRootRepository = _aggregateRootRepository;
+
+                return aggregateRoot;
+            }
+
+            class FrozenAggregateRootService<TAggregateRoot> : ISequenceNumberGenerator, IUnitOfWork where TAggregateRoot : AggregateRoot, new()
+            {
+                readonly AggregateRootInfo<TAggregateRoot> _aggregateRootInfo;
+                readonly RealUnitOfWork _realUnitOfWork;
+
+                public FrozenAggregateRootService(AggregateRootInfo<TAggregateRoot> aggregateRootInfo, RealUnitOfWork realUnitOfWork)
+                {
+                    _aggregateRootInfo = aggregateRootInfo;
+                    _realUnitOfWork = realUnitOfWork;
+                }
+
+                public long Next()
+                {
+                    throw new InvalidOperationException(
+                        string.Format("Aggregate root {0} with ID {1} attempted to emit an event, but that cannot be done when the root instance is frozen! (global sequence number: {2})",
+                            typeof (TAggregateRoot), _aggregateRootInfo.AggregateRoot.Id, _aggregateRootInfo.LastGlobalSeqNo));
+                }
+
+                public void AddEmittedEvent(DomainEvent e)
+                {
+                    throw new InvalidOperationException(
+                        string.Format("Aggregate root {0} with ID {1} attempted to emit event {2}, but that cannot be done when the root instance is frozen! (global sequence number: {3})",
+                            typeof(TAggregateRoot), _aggregateRootInfo.AggregateRoot.Id, e, _aggregateRootInfo.LastGlobalSeqNo));
+                }
+
+                public TAggregateRoot GetAggregateRootFromCache<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+                {
+                    return _realUnitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
+                }
+
+                public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+                {
+                    _realUnitOfWork.AddToCache<TAggregateRoot>(aggregateRoot, globalSequenceNumberCutoff);
+                }
             }
 
             public DomainEvent CurrentEvent { get; set; }
