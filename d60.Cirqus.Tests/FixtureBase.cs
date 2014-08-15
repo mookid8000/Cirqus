@@ -14,12 +14,13 @@ namespace d60.Cirqus.Tests
         public void TestFixtureSetUp()
         {
             TimeMachine.Reset();
-            CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel: Logger.Level.Debug);
         }
 
         [SetUp]
         public void SetUp()
         {
+            CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel: Logger.Level.Debug);
+
             DoSetUp();
         }
 

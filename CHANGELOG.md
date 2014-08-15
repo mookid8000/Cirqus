@@ -121,3 +121,7 @@
 ## 0.4.1
 
 * Fixed bug that would result in "forgetting" to invoke the `Created` hook on a new aggregate root when running with the real command processor
+
+## 0.4.2
+
+* Added MongoDB logger factory
