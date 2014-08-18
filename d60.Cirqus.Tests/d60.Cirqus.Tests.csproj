@@ -112,6 +112,8 @@
     <Compile Include="MsSql\TestMsSqlEventStore.cs" />
     <Compile Include="MsSql\TestSqlHelper.cs" />
     <Compile Include="Playground\TestTypeHashCodes.cs" />
+    <Compile Include="Snapshotting\TestInMemorySnapshotCache.cs" />
+    <Compile Include="Snapshotting\TestSnapshottingWithFairlyHistory.cs" />
     <Compile Include="Stubs\ConsoleOutUnitOfWork.cs" />
     <Compile Include="Stubs\ConsoleOutEventDispatcher.cs" />
     <Compile Include="Stubs\ListLoggerFactory.cs" />

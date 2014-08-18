@@ -45,7 +45,7 @@ namespace d60.Cirqus.Views
             while (true)
             {
                 var action = _work.Take();
-                Console.WriteLine("Got action, executing!");
+
                 action();
             }
         }
