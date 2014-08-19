@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
@@ -20,6 +22,39 @@ namespace d60.Cirqus.Tests.TestHelpers
         {
             _context = new TestContext();
         }
+
+        [Test]
+        public void CanWriteEventHistory()
+        {
+            var aggregateRoot1Id = new Guid("03af8b3e-1f9f-4143-90ad-c22bb978210f");
+            var aggregateRoot2Id = new Guid("82d07316-4891-4806-96cf-c42d2e011df3");
+
+            _context.Save(aggregateRoot1Id, new EventForThatRoot());
+            
+            _context.Save(aggregateRoot2Id, new EventForThatRoot());
+            _context.Save(aggregateRoot2Id, new EventForThatRoot());
+
+            var builder = new StringBuilder();
+            _context.History.WriteTo(new StringWriter(builder));
+
+            var linesWithRootIds = builder.ToString()
+                .Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries)
+                .Where(line => line.Contains(DomainEvent.MetadataKeys.AggregateRootId))
+                .Select(line => line.Trim().Replace(" ", "").Replace(",", ""))
+                .ToArray();
+
+            _context.History.WriteTo(Console.Out);
+
+            Console.WriteLine(string.Join(Environment.NewLine, linesWithRootIds));
+
+            Assert.That(linesWithRootIds, Is.EqualTo(new[]
+            {
+                @"""root_id"":""03af8b3e-1f9f-4143-90ad-c22bb978210f""",
+                @"""root_id"":""82d07316-4891-4806-96cf-c42d2e011df3""",
+                @"""root_id"":""82d07316-4891-4806-96cf-c42d2e011df3""",
+            }));
+        }
+
 
         [Test]
         public void AlsoPicksUpMetadataFromAggregate()

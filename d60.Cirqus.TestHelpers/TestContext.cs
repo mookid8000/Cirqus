@@ -5,7 +5,6 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
-using d60.Cirqus.Numbers;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.TestHelpers.Internals;
 using d60.Cirqus.Views.ViewManagers;
@@ -21,6 +20,7 @@ namespace d60.Cirqus.TestHelpers
         readonly InMemoryEventStore _eventStore = new InMemoryEventStore();
         readonly DefaultAggregateRootRepository _aggregateRootRepository;
         readonly ViewManagerEventDispatcher _eventDispatcher;
+
         DateTime _currentTime = DateTime.MinValue;
         bool _initialized;
 
@@ -143,101 +143,9 @@ namespace d60.Cirqus.TestHelpers
         /// <summary>
         /// Gets the entire history of commited events from the event store
         /// </summary>
-        public IEnumerable<DomainEvent> History
+        public EventCollection History
         {
-            get { return _eventStore.Stream().ToList(); }
-        }
-    }
-
-    public class TestUnitOfWork : IDisposable
-    {
-        readonly RealUnitOfWork _unitOfWork = new RealUnitOfWork();
-        readonly IAggregateRootRepository _aggregateRootRepository;
-        readonly IEventStore _eventStore;
-        readonly IEventDispatcher _eventDispatcher;
-
-        public TestUnitOfWork(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IEventDispatcher eventDispatcher)
-        {
-            _aggregateRootRepository = aggregateRootRepository;
-            _eventStore = eventStore;
-            _eventDispatcher = eventDispatcher;
-        }
-
-        public TAggregateRoot Get<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
-        {
-            var aggregateRootFromCache = _unitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId, long.MaxValue);
-            if (aggregateRootFromCache != null)
-            {
-                return aggregateRootFromCache;
-            }
-
-            var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, _unitOfWork);
-            var aggregateRoot = aggregateRootInfo.AggregateRoot;
-
-            _unitOfWork.AddToCache(aggregateRoot, long.MaxValue);
-
-            aggregateRoot.UnitOfWork = _unitOfWork;
-            aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);
-
-            _unitOfWork.AddToCache(aggregateRoot, aggregateRootInfo.LastGlobalSeqNo);
-
-            if (aggregateRootInfo.IsNew)
-            {
-                aggregateRoot.InvokeCreated();
-            }
-
-            return aggregateRoot;
-        }
-
-        /// <summary>
-        /// Gets the events collected in the current unit of work
-        /// </summary>
-        public IEnumerable<DomainEvent> EmittedEvents
-        {
-            get { return _unitOfWork.EmittedEvents.ToList(); }
-        }
-
-        /// <summary>
-        /// Commits the current unit of work (i.e. emitted events from <see cref="EmittedEvents"/> are saved
-        /// to the history and will be used to hydrate aggregate roots from now on.
-        /// </summary>
-        public void Commit()
-        {
-            var domainEvents = EmittedEvents.ToList();
-
-            if (!domainEvents.Any()) return;
-
-            _eventStore.Save(Guid.NewGuid(), domainEvents);
-
-            _eventDispatcher.Dispatch(_eventStore, domainEvents);
-        }
-
-        public void Dispose()
-        {
-            if (!EmittedEvents.Any()) return;
-
-            Console.WriteLine("Unit of work was disposed with {0} events", EmittedEvents.Count());
-        }
-    }
-
-    public class AggregateRootTestInfo
-    {
-        public AggregateRootTestInfo(Guid id, long seqNo, long globalSeqNo)
-        {
-            Id = id;
-            SeqNo = seqNo;
-            GlobalSeqNo = globalSeqNo;
-        }
-
-        public Guid Id { get; private set; }
-
-        public long SeqNo { get; private set; }
-
-        public long GlobalSeqNo { get; private set; }
-
-        public override string ToString()
-        {
-            return string.Format("{0}: {1} ({2})", Id, SeqNo, GlobalSeqNo);
+            get { return new EventCollection(_eventStore.Stream()); }
         }
     }
 }

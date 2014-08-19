@@ -125,3 +125,7 @@
 ## 0.4.2
 
 * Added MongoDB logger factory
+
+## 0.4.3
+
+* Added method to the test context that can print the accumulated event history and the emitted events to a text writter, formatted as plain old JSON objects
