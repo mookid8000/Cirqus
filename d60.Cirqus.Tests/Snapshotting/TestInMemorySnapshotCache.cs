@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Snapshotting;
 using NUnit.Framework;
@@ -10,22 +11,96 @@ namespace d60.Cirqus.Tests.Snapshotting
     [TestFixture]
     public class TestInMemorySnapshotCache : FixtureBase
     {
-        [Test]
-        public void CanCloneDeepAndGood()
+        [TestCase(typeof(SimpleRootWithOrdinaryField))]
+        [TestCase(typeof(SimpleRootWithProperty))]
+        [TestCase(typeof(SomeRootWithVariousDifficultThingsGoingOnForIt))]
+        public void CanCloneDeepAndGoodWithMyRootsSerializationRoundtrip(Type rootType)
+        {
+            GetType()
+                .GetMethod("RunSerializationRoundtripTestWith", BindingFlags.Instance | BindingFlags.NonPublic)
+                .MakeGenericMethod(rootType)
+                .Invoke(this, new object[0]);
+        }
+
+        [TestCase(typeof(SimpleRootWithOrdinaryField))]
+        [TestCase(typeof(SimpleRootWithProperty))]
+        [TestCase(typeof(SomeRootWithVariousDifficultThingsGoingOnForIt))]
+        public void CanCloneDeepAndGoodWithMyRootsHashCodes(Type rootType)
+        {
+            GetType()
+                .GetMethod("RunHashCodeTestWith", BindingFlags.Instance | BindingFlags.NonPublic)
+                .MakeGenericMethod(rootType)
+                .Invoke(this, new object[0]);
+        }
+
+        public class SimpleRootWithOrdinaryField : AggregateRoot
+        {
+            readonly string _thisIsAllIHave;
+
+            public SimpleRootWithOrdinaryField()
+            {
+                _thisIsAllIHave = "hej";
+            }
+
+            public override int GetHashCode()
+            {
+                return _thisIsAllIHave.GetHashCode();
+            }
+        }
+
+        public class SimpleRootWithProperty : AggregateRoot
+        {
+            public SimpleRootWithProperty()
+            {
+                ThisIsAllIHave = "hej";
+            }
+
+            public string ThisIsAllIHave { get; set; }
+
+            public override int GetHashCode()
+            {
+                return ThisIsAllIHave.GetHashCode();
+            }
+        }
+
+        // ReSharper disable UnusedMember.Local
+        void RunSerializationRoundtripTestWith<TAggregateRoot>() where TAggregateRoot : AggregateRoot, new()
         {
             var id = Guid.NewGuid();
-            var instance = new SomeRootWithVariousDifficultThingsGoingOnForIt {Id = id};
+            var instance = new TAggregateRoot { Id = id };
             Console.WriteLine(instance.GetHashCode());
 
-            var cache = new InMemorySnapshotCache();
-            cache.PutCloneToCache(AggregateRootInfo<SomeRootWithVariousDifficultThingsGoingOnForIt>.Old(instance, 0, 0));
+            var firstSerialization = InMemorySnapshotCache.CacheEntry.SerializeObject(instance);
+            var roundtrippedSerialization = InMemorySnapshotCache.CacheEntry.SerializeObject(InMemorySnapshotCache.CacheEntry.DeserializeObject(firstSerialization));
 
-            var rootInfo = cache.GetCloneFromCache<SomeRootWithVariousDifficultThingsGoingOnForIt>(id, 0);
+            if (firstSerialization != roundtrippedSerialization)
+            {
+                throw new AssertionException(string.Format(@"Oh noes!!
+
+{0}
+
+{1}", firstSerialization, roundtrippedSerialization));
+            }
+        }
+        // ReSharper restore UnusedMember.Local
+
+        // ReSharper disable UnusedMember.Local
+        void RunHashCodeTestWith<TAggregateRoot>() where TAggregateRoot : AggregateRoot, new()
+        {
+            var id = Guid.NewGuid();
+            var instance = new TAggregateRoot { Id = id };
+
+            var cache = new InMemorySnapshotCache();
+            cache.PutCloneToCache(AggregateRootInfo<TAggregateRoot>.Old(instance, 0, 0));
+
+            var rootInfo = cache.GetCloneFromCache<TAggregateRoot>(id, 0);
             var frozenInstance = rootInfo.AggregateRoot;
+
+            cache.PutCloneToCache(AggregateRootInfo<TAggregateRoot>.Old(frozenInstance, 0, 0));
 
             Assert.That(frozenInstance.GetHashCode(), Is.EqualTo(instance.GetHashCode()));
         }
-
+        // ReSharper restore UnusedMember.Local
 
         public class SomeRootWithVariousDifficultThingsGoingOnForIt : AggregateRoot
         {

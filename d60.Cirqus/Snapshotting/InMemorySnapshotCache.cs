@@ -24,13 +24,30 @@ namespace d60.Cirqus.Snapshotting
         /// </summary>
         class JohnnyDeep : DefaultContractResolver
         {
+            static readonly string[] IngoredPropertyNames =
+            {
+                "UnitOfWork",
+                "AggregateRootRepository"
+            };
+
             protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
             {
+                return type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                    .Select(f =>
+                    {
+                        var jsonProperty = base.CreateProperty(f, memberSerialization);
+                        jsonProperty.Writable =
+                            jsonProperty.Readable = true;
+                        return jsonProperty;
+                    })
+                    .ToList();
+
                 var props = type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                                .Select(p => base.CreateProperty(p, memberSerialization))
-                            .Union(type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                                       .Select(f => base.CreateProperty(f, memberSerialization)))
-                            .ToList();
+                    .Where(p => !IngoredPropertyNames.Contains(p.Name))
+                    .Select(p => base.CreateProperty(p, memberSerialization))
+                    .Union(type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                        .Select(f => base.CreateProperty(f, memberSerialization)))
+                    .ToList();
                 props.ForEach(p => { p.Writable = true; p.Readable = true; });
                 return props;
             }
@@ -40,12 +57,13 @@ namespace d60.Cirqus.Snapshotting
         {
             ContractResolver = new JohnnyDeep(),
             TypeNameHandling = TypeNameHandling.All,
-            Formatting = Formatting.Indented
+            Formatting = Formatting.Indented,
+            ObjectCreationHandling = ObjectCreationHandling.Replace
         };
 
         readonly ConcurrentDictionary<Guid, ConcurrentDictionary<long, CacheEntry>> _cacheEntries = new ConcurrentDictionary<Guid, ConcurrentDictionary<long, CacheEntry>>();
 
-        class CacheEntry
+        internal class CacheEntry
         {
             CacheEntry()
             {
@@ -63,7 +81,7 @@ namespace d60.Cirqus.Snapshotting
                     rootInstance.AggregateRootRepository = null;
                     rootInstance.UnitOfWork = null;
 
-                    var data = JsonConvert.SerializeObject(rootInstance, SerializerSettings);
+                    var data = SerializeObject(rootInstance);
 
                     return new CacheEntry
                     {
@@ -79,6 +97,11 @@ namespace d60.Cirqus.Snapshotting
                     rootInstance.AggregateRootRepository = aggregateRootRepository;
                     rootInstance.UnitOfWork = unitOfWork;
                 }
+            }
+
+            internal static string SerializeObject(object rootInstance)
+            {
+                return JsonConvert.SerializeObject(rootInstance, SerializerSettings);
             }
 
             public string Data { get; set; }
@@ -99,9 +122,14 @@ namespace d60.Cirqus.Snapshotting
 
             public AggregateRootInfo<TAggregateRoot> GetCloneAs<TAggregateRoot>() where TAggregateRoot : AggregateRoot
             {
-                var instance = JsonConvert.DeserializeObject<TAggregateRoot>(Data, SerializerSettings);
+                var instance = (TAggregateRoot)DeserializeObject(Data);
 
                 return AggregateRootInfo<TAggregateRoot>.Old(instance, SequenceNumber, GlobalSequenceNumber);
+            }
+
+            internal static object DeserializeObject(string data)
+            {
+                return JsonConvert.DeserializeObject(data, SerializerSettings);
             }
         }
 
