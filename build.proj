@@ -27,6 +27,10 @@
 
   <Target Name="release_packages">
     <Error Condition="'$(Version)' == ''" Text="No version specified! The version parameter must be specified in order to build &amp; release NuGet packages"/>
+
+    <Error Condition="'$(NuggieRepoPath)' == ''"
+           Text="Cannot publish packages because the NuggieRepoPath environment variable has not been set."/>
+    
     <Message Text="Updating NuSpec version..."/>
     <XmlPoke XmlInputPath="%(NuSpecFiles.FullPath)" Query="//version" Value="$(Version)" />
     <XmlPoke XmlInputPath="%(DependantNuSpecFiles.FullPath)" Query="//dependency[@id='d60.Cirqus']/@version" Value="$(Version)" />
@@ -65,15 +69,12 @@
   </Target>
 
   <Target Name="publish_packages" DependsOnTargets="validate_nuget_environment_variable; create_packages">
-    <Error Condition="'$(NuggieRepoPath)' == ''"
-           Text="Cannot publish packages because the NuggieRepoPath environment variable has not been set."/>
-
     <ItemGroup>
       <GeneratedPackages Include="$(BuildOutputFolder)/publish/*.nupkg"/>
     </ItemGroup>
 
     <Message Text="Pushing NuGet packages to NuGet.org..." />
-    <Exec Command="$(NuGet) push %(GeneratedPackages.FullPath)" />
+    <Exec Command="$(NuGetFolder)\nuget.exe push %(GeneratedPackages.FullPath)" />
 
     <Message Text="Pushing NuGet packages to d60 Nuggie Repo..." Condition="'$(NuggieRepoPath)' != ''"/>
     <Copy SourceFiles="@(GeneratedPackages)" DestinationFolder="$(NuggieRepoPath)" Condition="'$(NuggieRepoPath)' != ''"/>
