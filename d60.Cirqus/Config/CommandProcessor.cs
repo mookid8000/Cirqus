@@ -157,8 +157,6 @@ namespace d60.Cirqus.Config
             var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(command.AggregateRootId, unitOfWork: unitOfWork);
             var aggregateRoot = aggregateRootInfo.AggregateRoot;
 
-            aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);
-
             unitOfWork.AddToCache(aggregateRoot, aggregateRootInfo.LastGlobalSeqNo);
 
             if (aggregateRootInfo.IsNew)

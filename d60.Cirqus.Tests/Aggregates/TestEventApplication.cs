@@ -19,7 +19,6 @@ namespace d60.Cirqus.Tests.Aggregates
             var someAggregate = new SomeAggregate
             {
                 UnitOfWork = new ConsoleOutUnitOfWork(),
-                SequenceNumberGenerator = new TestSequenceNumberGenerator()
             };
             someAggregate.Initialize(Guid.NewGuid());
             someAggregate.AggregateRootRepository = new DefaultAggregateRootRepository(new InMemoryEventStore());
@@ -33,30 +32,43 @@ namespace d60.Cirqus.Tests.Aggregates
         [Test]
         public void ProvidesSuitableMetadataOnEvents()
         {
-            var now = new DateTime(1979, 3, 19, 19, 0, 0, DateTimeKind.Utc);
-            TimeMachine.FixCurrentTimeTo(now);
+            var timeForFirstEvent = new DateTime(1979, 3, 19, 19, 0, 0, DateTimeKind.Utc);
+            var timeForNextEvent = timeForFirstEvent.AddMilliseconds(2);
 
             var aggregateRootId = Guid.NewGuid();
             var eventCollector = new InMemoryUnitOfWork();
-            var sequenceNumberGenerator = new TestSequenceNumberGenerator(startWith: 78);
 
             var someAggregate = new SomeAggregate
             {
                 UnitOfWork = eventCollector,
-                SequenceNumberGenerator = sequenceNumberGenerator
             };
             someAggregate.Initialize(aggregateRootId);
             someAggregate.AggregateRootRepository = new DefaultAggregateRootRepository(new InMemoryEventStore());
 
+            TimeMachine.FixCurrentTimeTo(timeForFirstEvent);
+
             someAggregate.DoSomething();
 
-            var someEvent = Enumerable.Cast<SomeEvent>(eventCollector).Single();
+            TimeMachine.FixCurrentTimeTo(timeForNextEvent);
 
-            Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.TimeUtc], Is.EqualTo(now));
-            Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.TimeLocal], Is.EqualTo(now.ToLocalTime()));
-            Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.Owner], Is.EqualTo("SomeAggregate"));
-            Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber], Is.EqualTo(78));
-            Assert.That(someEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId], Is.EqualTo(aggregateRootId));
+            someAggregate.DoSomething();
+
+            var events = eventCollector.Cast<SomeEvent>().ToList();
+            var firstEvent = events[0];
+
+            Assert.That(firstEvent.Meta[DomainEvent.MetadataKeys.TimeUtc], Is.EqualTo(timeForFirstEvent));
+            Assert.That(firstEvent.Meta[DomainEvent.MetadataKeys.TimeLocal], Is.EqualTo(timeForFirstEvent.ToLocalTime()));
+            Assert.That(firstEvent.Meta[DomainEvent.MetadataKeys.Owner], Is.EqualTo("SomeAggregate"));
+            Assert.That(firstEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber], Is.EqualTo(0));
+            Assert.That(firstEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId], Is.EqualTo(aggregateRootId));
+
+            var nextEvent = events[1];
+
+            Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.TimeUtc], Is.EqualTo(timeForNextEvent));
+            Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.TimeLocal], Is.EqualTo(timeForNextEvent.ToLocalTime()));
+            Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.Owner], Is.EqualTo("SomeAggregate"));
+            Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber], Is.EqualTo(1));
+            Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId], Is.EqualTo(aggregateRootId));
         }
 
 

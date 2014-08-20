@@ -76,6 +76,7 @@ namespace d60.Cirqus.Aggregates
                     try
                     {
                         dynamicAggregate.Apply((dynamic) e);
+                        aggregate.CurrentSequenceNumber = e.GetSequenceNumber();
                     }
                     catch (Exception exception)
                     {

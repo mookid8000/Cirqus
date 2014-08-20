@@ -8,8 +8,6 @@ namespace d60.Cirqus.Aggregates
     {
         internal IUnitOfWork UnitOfWork { get; set; }
 
-        internal ISequenceNumberGenerator SequenceNumberGenerator { get; set; }
-
         internal IAggregateRootRepository AggregateRootRepository { get; set; }
 
         internal void Initialize(Guid id)
@@ -56,9 +54,9 @@ namespace d60.Cirqus.Aggregates
                 throw new InvalidOperationException(string.Format("Attempted to emit event {0}, but the aggreate root does not have an event collector!", e));
             }
 
-            if (SequenceNumberGenerator == null)
+            if (ReplayState != ReplayState.None)
             {
-                throw new InvalidOperationException(string.Format("Attempted to emit event {0}, but the aggreate root does not have a sequence number generator!", e));
+                
             }
 
             if (typeof(TAggregateRoot) != GetType())
@@ -69,7 +67,7 @@ namespace d60.Cirqus.Aggregates
             }
 
             var now = Time.GetUtcNow();
-            var sequenceNumber = SequenceNumberGenerator.Next();
+            var sequenceNumber = ++CurrentSequenceNumber;
 
             e.Meta[DomainEvent.MetadataKeys.AggregateRootId] = Id;
             e.Meta[DomainEvent.MetadataKeys.TimeLocal] = now.ToLocalTime();
@@ -109,6 +107,7 @@ namespace d60.Cirqus.Aggregates
             return string.Format("{0} ({1})", GetType().Name, Id);
         }
 
+        internal long CurrentSequenceNumber = -1;
         internal long GlobalSequenceNumberCutoff = long.MaxValue;
 
         internal ReplayState ReplayState = ReplayState.None;
@@ -156,23 +155,11 @@ namespace d60.Cirqus.Aggregates
             var aggregateRootInfo = AggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, unitOfWork: UnitOfWork, maxGlobalSequenceNumber: globalSequenceNumberCutoffToLookFor);
             var aggregateRoot = aggregateRootInfo.AggregateRoot;
 
-            if (aggregateRoot.SequenceNumberGenerator == null)
-            {
-                switch (ReplayState)
-                {
-                    case ReplayState.None:
-                        aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);
-                        break;
-                    case ReplayState.EmitApply:
-                    case ReplayState.ReplayApply:
-                        aggregateRoot.SequenceNumberGenerator = new SequenceNumberGeneratorForFrozenAggregates<TAggregateRoot>(aggregateRootInfo);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
+            var globalSequenceNumberToSaveUnder = ReplayState == ReplayState.None
+                ? long.MaxValue
+                : aggregateRootInfo.LastGlobalSeqNo;
 
-            UnitOfWork.AddToCache(aggregateRoot, aggregateRootInfo.LastGlobalSeqNo);
+            UnitOfWork.AddToCache(aggregateRoot, globalSequenceNumberToSaveUnder);
 
             return aggregateRoot;
         }

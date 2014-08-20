@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using d60.Cirqus.Events;
-using d60.Cirqus.Extensions;
 
 namespace d60.Cirqus.Exceptions
 {
@@ -25,10 +24,7 @@ namespace d60.Cirqus.Exceptions
         static string FormatErrorMessage(Guid batchId, IEnumerable<DomainEvent> involvedDomainEvents)
         {
             var sequenceNumbersText = string.Join(Environment.NewLine, involvedDomainEvents
-                .Select(e => string.Format("    {0} ({1} / {2})",
-                            e.Meta.ContainsKey(DomainEvent.MetadataKeys.GlobalSequenceNumber)
-                                ? e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber]
-                                : "?", e.GetSequenceNumber(), e.GetAggregateRootId())));
+                .Select(e => "    " + e));
 
             return string.Format(@"Could not save batch {0} containing
 

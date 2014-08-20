@@ -70,6 +70,7 @@
     <Compile Include="Aggregates\TestLoading.cs" />
     <Compile Include="Aggregates\TestVersionAttributeApplication.cs" />
     <Compile Include="Aggregates\TestVersioningWhenLoadingAnotherAggregate.cs" />
+    <Compile Include="Bugs\VerifyThatDuplicateSequenceNumbersAreNotAssigned.cs" />
     <Compile Include="Bugs\VerifyThatLoadingAnotherRootMultipleTimesWillYieldTheCorrectVersionEveryTime.cs" />
     <Compile Include="Bugs\VerifyThatNewlyCreatedAggregateRootsAreAvailableForLoading.cs" />
     <Compile Include="Bugs\VerifyThatOtherRootsCanBeLoadedAfterEmittingEvents.cs" />
@@ -124,7 +125,6 @@
     <Compile Include="MongoDb\TestMongoDbEventStoreIndexPerf.cs" />
     <Compile Include="Events\TestSerialization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Stubs\TestSequenceNumberGenerator.cs" />
     <Compile Include="TestHelpers\TestTestContext.cs" />
     <Compile Include="Views\TestAsyncEventDispatcher.cs" />
     <Compile Include="Views\TestInMemoryViewManager.cs" />

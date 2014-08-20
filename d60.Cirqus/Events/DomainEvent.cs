@@ -26,10 +26,11 @@ namespace d60.Cirqus.Events
 
         public override string ToString()
         {
-            return string.Format("{0} ({1}/{2})", 
+            return string.Format("{0} ({1}/{2}/{3})", 
                 GetType().Name, 
                 Meta.ContainsKey(MetadataKeys.AggregateRootId) ? Meta[MetadataKeys.AggregateRootId] : "?",
-                Meta.ContainsKey(MetadataKeys.SequenceNumber) ? Meta[MetadataKeys.SequenceNumber] : "?");
+                Meta.ContainsKey(MetadataKeys.SequenceNumber) ? Meta[MetadataKeys.SequenceNumber] : "?",
+                Meta.ContainsKey(MetadataKeys.GlobalSequenceNumber) ? Meta[MetadataKeys.GlobalSequenceNumber] : "?");
         }
     }
 

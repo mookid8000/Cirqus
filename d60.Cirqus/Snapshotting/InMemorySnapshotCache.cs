@@ -55,14 +55,12 @@ namespace d60.Cirqus.Snapshotting
                 where TAggregateRoot : AggregateRoot
             {
                 var rootInstance = aggregateRootInfo.AggregateRoot;
-                var sequenceNumberGenerator = rootInstance.SequenceNumberGenerator;
                 var aggregateRootRepository = rootInstance.AggregateRootRepository;
                 var unitOfWork = rootInstance.UnitOfWork;
                 try
                 {
 
                     rootInstance.AggregateRootRepository = null;
-                    rootInstance.SequenceNumberGenerator = null;
                     rootInstance.UnitOfWork = null;
 
                     var data = JsonConvert.SerializeObject(rootInstance, SerializerSettings);
@@ -79,7 +77,6 @@ namespace d60.Cirqus.Snapshotting
                 finally
                 {
                     rootInstance.AggregateRootRepository = aggregateRootRepository;
-                    rootInstance.SequenceNumberGenerator = sequenceNumberGenerator;
                     rootInstance.UnitOfWork = unitOfWork;
                 }
             }

@@ -129,3 +129,12 @@
 ## 0.4.3
 
 * Added method to the test context that can print the accumulated event history and the emitted events to a text writter, formatted as plain old JSON objects
+
+## 0.4.4
+
+* MIT licensed everything.
+
+## 0.5.0
+
+* Fixed bug that would result in not getting a cache hit on 2nd load of the same root from unit of work
+
