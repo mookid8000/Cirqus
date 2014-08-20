@@ -33,6 +33,14 @@ namespace d60.Cirqus.TestHelpers.Internals
             {
                 foreach (var tuple in tuplesInBatch)
                 {
+                    if (_idAndSeqNoTuples.ContainsKey(tuple))
+                    {
+                        throw new InvalidOperationException(string.Format("Found duplicate: {0}", tuple));
+                    }
+                }
+
+                foreach (var tuple in tuplesInBatch)
+                {
                     _idAndSeqNoTuples.Add(tuple, null);
                 }
             }

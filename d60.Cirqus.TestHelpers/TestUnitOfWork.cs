@@ -35,7 +35,6 @@ namespace d60.Cirqus.TestHelpers
             _unitOfWork.AddToCache(aggregateRoot, long.MaxValue);
 
             aggregateRoot.UnitOfWork = _unitOfWork;
-            aggregateRoot.SequenceNumberGenerator = new CachingSequenceNumberGenerator(aggregateRootInfo.LastSeqNo + 1);
 
             _unitOfWork.AddToCache(aggregateRoot, aggregateRootInfo.LastGlobalSeqNo);
 

@@ -133,3 +133,8 @@
 ## 0.4.4
 
 * MIT licensed everything.
+
+## 0.5.0
+
+* Fixed bug that would result in not getting a cache hit on 2nd load of the same root from unit of work
+

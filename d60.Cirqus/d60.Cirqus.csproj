@@ -64,7 +64,6 @@
     <Compile Include="Logging\Console\ConsoleLoggerFactory.cs" />
     <Compile Include="Logging\Logger.cs" />
     <Compile Include="Logging\Null\NullLoggerFactory.cs" />
-    <Compile Include="Numbers\CachingSequenceNumberGenerator.cs" />
     <Compile Include="Events\IEmit.cs" />
     <Compile Include="Exceptions\ConcurrencyException.cs" />
     <Compile Include="Events\IUnitOfWork.cs" />
@@ -77,7 +76,6 @@
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\DomainEventExtensions.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
-    <Compile Include="Numbers\ISequenceNumberGenerator.cs" />
     <Compile Include="Numbers\Metadata.cs" />
     <Compile Include="Numbers\Time.cs" />
     <Compile Include="Numbers\TimeMachine.cs" />

@@ -150,14 +150,13 @@ namespace d60.Cirqus.Views.ViewManagers
                 var aggregateRoot = aggregateRootInfo.AggregateRoot;
 
                 var frozen = new FrozenAggregateRootService<TAggregateRoot>(aggregateRootInfo, _realUnitOfWork);
-                aggregateRoot.SequenceNumberGenerator = frozen;
                 aggregateRoot.UnitOfWork = frozen;
                 aggregateRoot.AggregateRootRepository = _aggregateRootRepository;
 
                 return aggregateRoot;
             }
 
-            class FrozenAggregateRootService<TAggregateRoot> : ISequenceNumberGenerator, IUnitOfWork where TAggregateRoot : AggregateRoot, new()
+            class FrozenAggregateRootService<TAggregateRoot> : IUnitOfWork where TAggregateRoot : AggregateRoot, new()
             {
                 readonly AggregateRootInfo<TAggregateRoot> _aggregateRootInfo;
                 readonly RealUnitOfWork _realUnitOfWork;
@@ -166,13 +165,6 @@ namespace d60.Cirqus.Views.ViewManagers
                 {
                     _aggregateRootInfo = aggregateRootInfo;
                     _realUnitOfWork = realUnitOfWork;
-                }
-
-                public long Next()
-                {
-                    throw new InvalidOperationException(
-                        string.Format("Aggregate root {0} with ID {1} attempted to emit an event, but that cannot be done when the root instance is frozen! (global sequence number: {2})",
-                            typeof (TAggregateRoot), _aggregateRootInfo.AggregateRoot.Id, _aggregateRootInfo.LastGlobalSeqNo));
                 }
 
                 public void AddEmittedEvent(DomainEvent e)

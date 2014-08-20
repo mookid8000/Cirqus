@@ -42,18 +42,25 @@ namespace d60.Cirqus.Tests.Bugs
         {
             // arrange
             var context = new TestContext();
-            var root1Id = Guid.NewGuid();
-            var root2Id = Guid.NewGuid();
 
-            // make sure all roots exist
-            Console.WriteLine("Processing initial two commands");
-            context.ProcessCommand(new DoSomethingToABunchOfRootsCommand(root1Id));
-            context.ProcessCommand(new DoSomethingToABunchOfRootsCommand(root2Id));
+            try
+            {
+                var root1Id = Guid.NewGuid();
+                var root2Id = Guid.NewGuid();
 
-            // act
-            Console.WriteLine("\r\n\r\nActing...");
-            context.ProcessCommand(new DoSomethingToABunchOfRootsCommand(root1Id, root2Id));
+                // make sure all roots exist
+                Console.WriteLine("Processing initial two commands");
+                context.ProcessCommand(new DoSomethingToABunchOfRootsCommand(root1Id));
+                context.ProcessCommand(new DoSomethingToABunchOfRootsCommand(root2Id));
 
+                // act
+                Console.WriteLine("\r\n\r\nActing...");
+                context.ProcessCommand(new DoSomethingToABunchOfRootsCommand(root1Id, root2Id));
+            }
+            finally
+            {
+                context.History.WriteTo(Console.Out);
+            }
             // assert
         }
 
