@@ -65,11 +65,18 @@
   </Target>
 
   <Target Name="publish_packages" DependsOnTargets="validate_nuget_environment_variable; create_packages">
+    <Error Condition="'$(NuggieRepoPath)' == ''"
+           Text="Cannot publish packages because the NuggieRepoPath environment variable has not been set."/>
+
     <ItemGroup>
       <GeneratedPackages Include="$(BuildOutputFolder)/publish/*.nupkg"/>
     </ItemGroup>
-    
-    <Copy SourceFiles="@(GeneratedPackages)" DestinationFolder="$(NuggieRepoPath)"/>
+
+    <Message Text="Pushing NuGet packages to NuGet.org..." />
+    <Exec Command="$(NuGet) push %(GeneratedPackages.FullPath)" />
+
+    <Message Text="Pushing NuGet packages to d60 Nuggie Repo..." Condition="'$(NuggieRepoPath)' != ''"/>
+    <Copy SourceFiles="@(GeneratedPackages)" DestinationFolder="$(NuggieRepoPath)" Condition="'$(NuggieRepoPath)' != ''"/>
   </Target>
 
   <Target Name="validate_nuget_environment_variable">
