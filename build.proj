@@ -76,8 +76,8 @@
     <Message Text="Pushing NuGet packages to NuGet.org..." />
     <Exec Command="$(NuGetFolder)\nuget.exe push %(GeneratedPackages.FullPath)" />
 
-    <Message Text="Pushing NuGet packages to d60 Nuggie Repo..." Condition="'$(NuggieRepoPath)' != ''"/>
-    <Copy SourceFiles="@(GeneratedPackages)" DestinationFolder="$(NuggieRepoPath)" Condition="'$(NuggieRepoPath)' != ''"/>
+    <!--<Message Text="Pushing NuGet packages to d60 Nuggie Repo..." Condition="'$(NuggieRepoPath)' != ''"/>
+    <Copy SourceFiles="@(GeneratedPackages)" DestinationFolder="$(NuggieRepoPath)" Condition="'$(NuggieRepoPath)' != ''"/>-->
   </Target>
 
   <Target Name="validate_nuget_environment_variable">
