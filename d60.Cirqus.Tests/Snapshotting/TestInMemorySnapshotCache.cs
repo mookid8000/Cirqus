@@ -13,14 +13,17 @@ namespace d60.Cirqus.Tests.Snapshotting
         [Test]
         public void CanCloneDeepAndGood()
         {
-            var instance = new SomeRootWithVariousDifficultThingsGoingOnForIt();
+            var id = Guid.NewGuid();
+            var instance = new SomeRootWithVariousDifficultThingsGoingOnForIt {Id = id};
             Console.WriteLine(instance.GetHashCode());
 
             var cache = new InMemorySnapshotCache();
             cache.PutCloneToCache(AggregateRootInfo<SomeRootWithVariousDifficultThingsGoingOnForIt>.Old(instance, 0, 0));
 
-            var rootInfo = cache.GetCloneFromCache<SomeRootWithVariousDifficultThingsGoingOnForIt>(Guid.Empty, 0);
-            Assert.That(rootInfo.AggregateRoot.GetHashCode(), Is.EqualTo(instance.GetHashCode()));
+            var rootInfo = cache.GetCloneFromCache<SomeRootWithVariousDifficultThingsGoingOnForIt>(id, 0);
+            var frozenInstance = rootInfo.AggregateRoot;
+
+            Assert.That(frozenInstance.GetHashCode(), Is.EqualTo(instance.GetHashCode()));
         }
 
 
@@ -56,9 +59,13 @@ namespace d60.Cirqus.Tests.Snapshotting
 
             public override int GetHashCode()
             {
-                return _nestedBadBoys
-                    .Aggregate(_nestedBadBoys.Count.GetHashCode(),
-                        (value, badBoy) => value ^ badBoy.GetHashCode())
+                return Id.GetHashCode()
+
+                       ^
+
+                       _nestedBadBoys
+                           .Aggregate(_nestedBadBoys.Count.GetHashCode(),
+                               (value, badBoy) => value ^ badBoy.GetHashCode())
 
                        ^
 
