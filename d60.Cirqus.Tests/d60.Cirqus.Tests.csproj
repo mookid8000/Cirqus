@@ -115,7 +115,7 @@
     <Compile Include="Playground\TestTypeHashCodes.cs" />
     <Compile Include="Snapshotting\ChallengingSnapshotSpeciments.cs" />
     <Compile Include="Snapshotting\TestInMemorySnapshotCache.cs" />
-    <Compile Include="Snapshotting\TestSnapshottingWithFairlyHistory.cs" />
+    <Compile Include="Snapshotting\TestSnapshottingWithFairlyLongHistory.cs" />
     <Compile Include="Snapshotting\TestSturdylizer.cs" />
     <Compile Include="Stubs\ConsoleOutUnitOfWork.cs" />
     <Compile Include="Stubs\ConsoleOutEventDispatcher.cs" />

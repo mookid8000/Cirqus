@@ -19,7 +19,7 @@ using NUnit.Framework;
 namespace d60.Cirqus.Tests.Snapshotting
 {
     [TestFixture, Category(TestCategories.MongoDb)]
-    public class TestSnapshottingWithFairlyHistory : FixtureBase
+    public class TestSnapshottingWithFairlyLongHistory : FixtureBase
     {
         MongoDatabase _database;
         TimeTaker _timeTaker;
@@ -28,7 +28,7 @@ namespace d60.Cirqus.Tests.Snapshotting
         {
             _database = MongoHelper.InitializeTestDatabase();
 
-            CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel:Logger.Level.Warn);
+            CirqusLoggerFactory.Current = new ConsoleLoggerFactory(Logger.Level.Warn);
         }
 
         /// <summary>
