@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Logging;
 
@@ -83,7 +84,15 @@ namespace d60.Cirqus.Snapshotting
 
             CacheEntry entry;
 
-            if (!entriesForThisRoot.TryGetValue(globalSequenceNumber, out entry))
+            var availableSequenceNumbersForThisRoot = entriesForThisRoot
+                .Where(e => e.Value.GlobalSequenceNumber <= globalSequenceNumber)
+                .Select(e => e.Value.GlobalSequenceNumber)
+                .ToArray();
+
+            if (!availableSequenceNumbersForThisRoot.Any()) return null;
+
+            var highestSequenceNumberAvailableForThisRoot = availableSequenceNumbersForThisRoot.Max();
+            if (!entriesForThisRoot.TryGetValue(highestSequenceNumberAvailableForThisRoot, out entry))
                 return null;
 
             var aggregateRootInfoToReturn = entry.GetCloneAs<TAggregateRoot>();

@@ -6,6 +6,8 @@ namespace d60.Cirqus.Aggregates
 {
     public abstract class AggregateRoot
     {
+        internal const int InitialAggregateRootSequenceNumber = -1;
+
         internal IUnitOfWork UnitOfWork { get; set; }
 
         internal IAggregateRootRepository AggregateRootRepository { get; set; }
@@ -24,7 +26,7 @@ namespace d60.Cirqus.Aggregates
 
         public Guid Id { get; internal set; }
 
-        internal long CurrentSequenceNumber = -1;
+        internal long CurrentSequenceNumber = InitialAggregateRootSequenceNumber;
 
         internal long GlobalSequenceNumberCutoff = long.MaxValue;
 
@@ -57,7 +59,7 @@ namespace d60.Cirqus.Aggregates
 
             if (UnitOfWork == null)
             {
-                throw new InvalidOperationException(string.Format("Attempted to emit event {0}, but the aggreate root does not have an event collector!", e));
+                throw new InvalidOperationException(string.Format("Attempted to emit event {0}, but the aggreate root does not have a unit of work!", e));
             }
 
             if (ReplayState != ReplayState.None)

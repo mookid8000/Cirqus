@@ -39,8 +39,11 @@ namespace d60.Cirqus.Tests.Snapshotting
         /// 
         /// 
         /// </summary>
-        [TestCase(false, 100, 10000)]
-        [TestCase(true, 100, 10000)]
+        //[TestCase(false, 100, 10000)]
+        //[TestCase(true, 100, 10000)]
+        //[TestCase(true, 1, 10)]
+        //[TestCase(false, 1, 10)]
+        [TestCase(true, 1, 5)]
         public void RunTest(bool useCaching, int numberOfRoots, int numberOfCommands)
         {
             var aggregateRootIds = Enumerable.Range(0, numberOfRoots).Select(i => Guid.NewGuid()).ToArray();
@@ -86,7 +89,7 @@ caching in use: {3}",
 
             if (useCaching)
             {
-                aggregateRootRepository = new CachingAggregateRootRepository(aggregateRootRepository, new InMemorySnapshotCache());
+                aggregateRootRepository = new CachingAggregateRootRepository(aggregateRootRepository, new InMemorySnapshotCache(), eventStore);
             }
 
             _timeTaker.InnerAggregateRootRepository = aggregateRootRepository;
