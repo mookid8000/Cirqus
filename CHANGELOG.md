@@ -138,3 +138,6 @@
 
 * Fixed bug that would result in not getting a cache hit on 2nd load of the same root from unit of work
 
+## 0.6.0
+
+* Fixed potential odd behavior by having in-mem event store save cloned events instead of the original objects.

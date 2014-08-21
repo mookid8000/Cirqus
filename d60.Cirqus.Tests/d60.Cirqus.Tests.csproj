@@ -97,6 +97,7 @@
     <Compile Include="Contracts\Views\PullOnlyWrapper.cs" />
     <Compile Include="Contracts\Views\PushOnlyWrapper.cs" />
     <Compile Include="Contracts\Views\ViewLocators.cs" />
+    <Compile Include="Events\TestInMemoryEventStore.cs" />
     <Compile Include="Examples\ReadmeSnippet.cs" />
     <Compile Include="Extensions\Helpful.cs" />
     <Compile Include="FixtureBase.cs" />
