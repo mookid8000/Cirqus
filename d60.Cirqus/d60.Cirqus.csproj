@@ -87,6 +87,7 @@
     <Compile Include="Snapshotting\CachingAggregateRootRepository.cs" />
     <Compile Include="Snapshotting\InMemorySnapshotCache.cs" />
     <Compile Include="Snapshotting\ISnapshotCache.cs" />
+    <Compile Include="Snapshotting\Sturdylizer.cs" />
     <Compile Include="Views\AsyncEventDispatcher.cs" />
     <Compile Include="Views\CompositeEventDispatcher.cs" />
     <Compile Include="Views\ViewManagers\AggregateRootResolver.cs" />
