@@ -13,6 +13,7 @@ namespace d60.Cirqus.Tests.Snapshotting
     {
         [TestCase(typeof(SimpleRootWithOrdinaryField))]
         [TestCase(typeof(SimpleRootWithProperty))]
+        [TestCase(typeof(SimpleRootWithPublicField))]
         [TestCase(typeof(SomeRootWithVariousDifficultThingsGoingOnForIt))]
         public void CanCloneDeepAndGoodWithMyRootsSerializationRoundtrip(Type rootType)
         {
@@ -24,6 +25,7 @@ namespace d60.Cirqus.Tests.Snapshotting
 
         [TestCase(typeof(SimpleRootWithOrdinaryField))]
         [TestCase(typeof(SimpleRootWithProperty))]
+        [TestCase(typeof(SimpleRootWithPublicField))]
         [TestCase(typeof(SomeRootWithVariousDifficultThingsGoingOnForIt))]
         public void CanCloneDeepAndGoodWithMyRootsHashCodes(Type rootType)
         {
@@ -31,6 +33,24 @@ namespace d60.Cirqus.Tests.Snapshotting
                 .GetMethod("RunHashCodeTestWith", BindingFlags.Instance | BindingFlags.NonPublic)
                 .MakeGenericMethod(rootType)
                 .Invoke(this, new object[0]);
+        }
+
+        public class SimpleRootWithPublicField : AggregateRoot
+        {
+            public readonly string ThisIsAllIHave;
+
+            public SimpleRootWithPublicField()
+            {
+                ThisIsAllIHave = "hej";
+            }
+
+            public override int GetHashCode()
+            {
+                return CurrentSequenceNumber.GetHashCode()
+                       ^ GlobalSequenceNumberCutoff.GetHashCode()
+                       ^ Id.GetHashCode()
+                       ^ ThisIsAllIHave.GetHashCode();
+            }
         }
 
         public class SimpleRootWithOrdinaryField : AggregateRoot
@@ -44,7 +64,10 @@ namespace d60.Cirqus.Tests.Snapshotting
 
             public override int GetHashCode()
             {
-                return _thisIsAllIHave.GetHashCode();
+                return CurrentSequenceNumber.GetHashCode()
+                       ^ GlobalSequenceNumberCutoff.GetHashCode()
+                       ^ Id.GetHashCode()
+                       ^ _thisIsAllIHave.GetHashCode();
             }
         }
 
@@ -59,7 +82,10 @@ namespace d60.Cirqus.Tests.Snapshotting
 
             public override int GetHashCode()
             {
-                return ThisIsAllIHave.GetHashCode();
+                return CurrentSequenceNumber.GetHashCode()
+                       ^ GlobalSequenceNumberCutoff.GetHashCode()
+                       ^ Id.GetHashCode()
+                       ^ ThisIsAllIHave.GetHashCode();
             }
         }
 

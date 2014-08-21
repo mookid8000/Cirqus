@@ -24,6 +24,12 @@ namespace d60.Cirqus.Aggregates
 
         public Guid Id { get; internal set; }
 
+        internal long CurrentSequenceNumber = -1;
+
+        internal long GlobalSequenceNumberCutoff = long.MaxValue;
+
+        internal ReplayState ReplayState = ReplayState.None;
+
         protected virtual void Created() { }
 
         protected void Emit<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
@@ -106,11 +112,6 @@ namespace d60.Cirqus.Aggregates
         {
             return string.Format("{0} ({1})", GetType().Name, Id);
         }
-
-        internal long CurrentSequenceNumber = -1;
-        internal long GlobalSequenceNumberCutoff = long.MaxValue;
-
-        internal ReplayState ReplayState = ReplayState.None;
 
         protected TAggregateRoot Load<TAggregateRoot>(Guid aggregateRootId, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
         {

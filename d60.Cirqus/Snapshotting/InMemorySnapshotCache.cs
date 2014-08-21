@@ -24,32 +24,33 @@ namespace d60.Cirqus.Snapshotting
         /// </summary>
         class JohnnyDeep : DefaultContractResolver
         {
-            static readonly string[] IngoredPropertyNames =
-            {
-                "UnitOfWork",
-                "AggregateRootRepository"
-            };
-
             protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
             {
-                return type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                var inheritedProperties = new List<JsonProperty>();
+
+                if (type.BaseType != null)
+                {
+                    // recursively add properties from base types
+                    inheritedProperties.AddRange(CreateProperties(type.BaseType, memberSerialization));
+                }
+
+                var jsonPropertiesFromFields = type
+                    .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                     .Select(f =>
                     {
                         var jsonProperty = base.CreateProperty(f, memberSerialization);
-                        jsonProperty.Writable =
-                            jsonProperty.Readable = true;
+                        jsonProperty.Writable = jsonProperty.Readable = true;
                         return jsonProperty;
                     })
+                    .ToArray();
+
+                var jsonPropertiesToKeep = jsonPropertiesFromFields
+                    .Concat(inheritedProperties)
+                    .GroupBy(p => p.UnderlyingName)
+                    .Select(g => g.First()) //< only keep first occurrency for each underlying name - weeds out dupes
                     .ToList();
 
-                var props = type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                    .Where(p => !IngoredPropertyNames.Contains(p.Name))
-                    .Select(p => base.CreateProperty(p, memberSerialization))
-                    .Union(type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                        .Select(f => base.CreateProperty(f, memberSerialization)))
-                    .ToList();
-                props.ForEach(p => { p.Writable = true; p.Readable = true; });
-                return props;
+                return jsonPropertiesToKeep;
             }
         }
 
