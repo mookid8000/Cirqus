@@ -137,6 +137,7 @@ namespace d60.Cirqus.MongoDb.Events
             foreach (var e in events)
             {
                 e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = nextGlobalSeqNo++;
+                e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
             }
 
             EventValidation.ValidateBatchIntegrity(batchId, events);

@@ -10,6 +10,7 @@ namespace d60.Cirqus.Events
             public const string GlobalSequenceNumber = "gl_seq";
             public const string SequenceNumber = "seq";
             public const string AggregateRootId = "root_id";
+            public const string BatchId = "batch_id";
             public const string TimeLocal = "time_local";
             public const string TimeUtc = "time_utc";
             public const string Owner = "owner";

@@ -54,6 +54,7 @@ namespace d60.Cirqus.MsSql.Events
                         foreach (var e in eventList)
                         {
                             e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = globalSequenceNumber++;
+                            e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
                         }
 
                         EventValidation.ValidateBatchIntegrity(batchId, eventList);

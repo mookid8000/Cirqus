@@ -57,6 +57,7 @@ namespace d60.Cirqus.TestHelpers.Internals
             foreach (var e in eventList)
             {
                 e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = result++;
+                e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
             }
 
             EventValidation.ValidateBatchIntegrity(batchId, eventList);

@@ -25,6 +25,40 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         }
 
         [Test]
+        public void BatchIdIsAppliedAsMetadataToEvents()
+        {
+            // arrange
+
+            // act
+            var batch1 = Guid.NewGuid();
+            var batch2 = Guid.NewGuid();
+            
+            _eventStore.Save(batch1, new[] { Event(0, Guid.NewGuid()), Event(0, Guid.NewGuid()) });
+            _eventStore.Save(batch2, new[] { Event(0, Guid.NewGuid()), Event(0, Guid.NewGuid()), Event(0, Guid.NewGuid()) });
+
+            // assert
+            var allEvents = _eventStore
+                .Stream()
+                .OrderBy(a => a.GetGlobalSequenceNumber())
+                .ToList();
+
+            Assert.That(allEvents.Count, Is.EqualTo(5));
+
+            var batches = allEvents
+                .GroupBy(e => e.GetBatchId())
+                .OrderBy(b => b.Count())
+                .ToList();
+
+            Assert.That(batches.Count, Is.EqualTo(2));
+            
+            Assert.That(batches[0].Key, Is.EqualTo(batch1));
+            Assert.That(batches[1].Key, Is.EqualTo(batch2));
+            
+            Assert.That(batches[0].Count(), Is.EqualTo(2));
+            Assert.That(batches[1].Count(), Is.EqualTo(3));
+        }
+
+        [Test]
         public void EventAreAutomaticallyGivenGlobalSequenceNumbers()
         {
             // arrange

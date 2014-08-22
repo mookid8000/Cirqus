@@ -10,6 +10,12 @@ namespace d60.Cirqus.Extensions
         {
             return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.AggregateRootId, value => new Guid(Convert.ToString(value)), throwIfNotFound);
         }
+
+        public static Guid GetBatchId(this DomainEvent domainEvent, bool throwIfNotFound = true)
+        {
+            return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.BatchId, value => new Guid(Convert.ToString(value)), throwIfNotFound);
+        }
+
         public static long GetSequenceNumber(this DomainEvent domainEvent, bool throwIfNotFound = true)
         {
             return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.SequenceNumber, Convert.ToInt64, throwIfNotFound);

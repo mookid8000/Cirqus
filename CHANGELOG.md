@@ -141,3 +141,7 @@
 ## 0.6.0
 
 * Fixed potential odd behavior by having in-mem event store save cloned events instead of the original objects.
+
+## 0.6.1
+
+* Make event stores automatically add event batch ID as a header on all events
