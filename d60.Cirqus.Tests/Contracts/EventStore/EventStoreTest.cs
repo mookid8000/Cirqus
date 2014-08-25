@@ -1,10 +1,16 @@
 ﻿using System;
 using System.Linq;
+using d60.Cirqus.Aggregates;
+using d60.Cirqus.Commands;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Numbers;
 using d60.Cirqus.Tests.Contracts.EventStore.Factories;
+using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
+using TestContext = d60.Cirqus.TestHelpers.TestContext;
 
 namespace d60.Cirqus.Tests.Contracts.EventStore
 {
@@ -25,6 +31,49 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         }
 
         [Test]
+        public void TimeStampsCanRoundtripAsTheyShould()
+        {
+            var someLocalTime = new DateTime(2015, 10, 31, 12, 10, 15, DateTimeKind.Local);
+            var someUtcTime = someLocalTime.ToUniversalTime();
+            TimeMachine.FixCurrentTimeTo(someUtcTime);
+            
+            var processor = new CommandProcessor(_eventStore, new DefaultAggregateRootRepository(_eventStore), new ConsoleOutEventDispatcher());
+            
+            processor.ProcessCommand(new MakeSomeRootEmitTheEvent(Guid.NewGuid()));
+
+            var domainEvents = _eventStore.Stream().Cast<SomeRootEvent>().Single();
+            Assert.That(domainEvents.GetUtcTime(), Is.EqualTo(someUtcTime));
+            Assert.That(domainEvents.GetLocalTime(), Is.EqualTo(someLocalTime));
+        }
+
+        public class MakeSomeRootEmitTheEvent : Command<SomeRoot>
+        {
+            public MakeSomeRootEmitTheEvent(Guid aggregateRootId) : base(aggregateRootId)
+            {
+            }
+
+            public override void Execute(SomeRoot aggregateRoot)
+            {
+                aggregateRoot.EmitTheEvent();
+            }
+        }
+
+        public class SomeRoot : AggregateRoot, IEmit<SomeRootEvent>
+        {
+            public void EmitTheEvent()
+            {
+                Emit(new SomeRootEvent());
+            }
+
+            public void Apply(SomeRootEvent e)
+            {
+            }
+        }
+
+        public class SomeRootEvent : DomainEvent<SomeRoot> { }
+
+
+        [Test]
         public void BatchIdIsAppliedAsMetadataToEvents()
         {
             // arrange
@@ -32,7 +81,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             // act
             var batch1 = Guid.NewGuid();
             var batch2 = Guid.NewGuid();
-            
+
             _eventStore.Save(batch1, new[] { Event(0, Guid.NewGuid()), Event(0, Guid.NewGuid()) });
             _eventStore.Save(batch2, new[] { Event(0, Guid.NewGuid()), Event(0, Guid.NewGuid()), Event(0, Guid.NewGuid()) });
 
@@ -50,10 +99,10 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                 .ToList();
 
             Assert.That(batches.Count, Is.EqualTo(2));
-            
+
             Assert.That(batches[0].Key, Is.EqualTo(batch1));
             Assert.That(batches[1].Key, Is.EqualTo(batch2));
-            
+
             Assert.That(batches[0].Count(), Is.EqualTo(2));
             Assert.That(batches[1].Count(), Is.EqualTo(3));
         }

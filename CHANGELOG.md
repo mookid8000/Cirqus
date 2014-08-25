@@ -145,3 +145,7 @@
 ## 0.6.1
 
 * Make event stores automatically add event batch ID as a header on all events
+
+## 0.7.0
+
+* Changed format of timestamp metadata to be strings in order to ensure consistent behavior across all event stores + introduced extension method for extracting them
