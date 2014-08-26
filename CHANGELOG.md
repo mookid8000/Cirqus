@@ -153,3 +153,7 @@
 ## 0.7.1
 
 * Corrected spelling in an error message
+
+## 0.8.0
+
+* Changed initialization of async event dispatcher to be async as well

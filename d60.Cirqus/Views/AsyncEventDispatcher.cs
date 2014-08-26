@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using d60.Cirqus.Events;
+using d60.Cirqus.Logging;
 
 namespace d60.Cirqus.Views
 {
@@ -11,9 +12,17 @@ namespace d60.Cirqus.Views
     /// </summary>
     public class AsyncEventDispatcher : IEventDispatcher
     {
+        static Logger _logger;
+
+        static AsyncEventDispatcher()
+        {
+            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+        }
+
         readonly BlockingCollection<Action> _work = new BlockingCollection<Action>();
         readonly IEventDispatcher _innerEventDispatcher;
         readonly Thread _dispatcherThread;
+        bool _keepWorking = true;
 
         public AsyncEventDispatcher(IEventDispatcher innerEventDispatcher)
         {
@@ -23,11 +32,11 @@ namespace d60.Cirqus.Views
         }
 
         /// <summary>
-        /// Will initialize the wrapped dispatcher synchronously as always
+        /// Will initialize the wrapped dispatcher asynchronously, delegating the initialization to the worker thread
         /// </summary>
         public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
         {
-            _innerEventDispatcher.Initialize(eventStore, purgeExistingViews);
+            _work.Add(() => _innerEventDispatcher.Initialize(eventStore, purgeExistingViews));
 
             _dispatcherThread.Start();
         }
@@ -42,11 +51,20 @@ namespace d60.Cirqus.Views
 
         void Run()
         {
-            while (true)
+            while (_keepWorking)
             {
                 var action = _work.Take();
-                Console.WriteLine("Got action, executing!");
-                action();
+
+                try
+                {
+                    action();
+                }
+                catch (Exception exception)
+                {
+                    _logger.Warn("An error occurred while attempting to do work {0}: {1} - the worker thread will shut down now", action, exception);
+
+                    _keepWorking = false;
+                }
             }
         }
     }
