@@ -48,8 +48,8 @@ namespace d60.Cirqus.Views.ViewManagers
             {
                 throw new ArgumentException(
                     string.Format("Could not construct view dispatcher because the given" +
-                                  " view type {0} is not an implementation of IView<> (i.e." +
-                                  " you must implement IView<TViewLocator> so that it can be" +
+                                  " view type {0} is not an implementation of IViewInstance<> (i.e." +
+                                  " you must implement IViewInstance<TViewLocator> so that it can be" +
                                   " figured out how to locate a specific view instance of" +
                                   " this type for each domain event)", viewType));
             }
