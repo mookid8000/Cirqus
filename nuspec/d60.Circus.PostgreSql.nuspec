@@ -11,7 +11,7 @@
     <description>PostgreSql stuff for d60 event sourcing + cqrs kit</description>
     <dependencies>
       <dependency id="d60.Cirqus" version="VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT" />
-      <dependency id="Npgsql" version="2.2.0-rc2" />
+      <dependency id="Npgsql" version="2.1.3" />
     </dependencies>
   </metadata>
   <files>

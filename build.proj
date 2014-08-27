@@ -30,6 +30,7 @@
            Text="Cannot publish packages because the NuggieRepoPath environment variable has not been set."/>
     
     <Message Text="Updating NuSpec version..."/>
+
     <XmlPoke XmlInputPath="%(NuSpecFiles.FullPath)" Query="//version" Value="$(Version)" />
     <XmlPoke XmlInputPath="%(DependantNuSpecFiles.FullPath)" Query="//dependency[@id='d60.Cirqus']/@version" Value="$(Version)" />
     
