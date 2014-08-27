@@ -25,9 +25,7 @@
     <Exec Command="$(ReleaseMaster) &quot;$(Root)&quot; &quot;msbuild&quot; &quot;build.proj /t:release_packages /p:Version={version}&quot;"/>
   </Target>
 
-  <Target Name="release_packages">
-    <Error Condition="'$(Version)' == ''" Text="No version specified! The version parameter must be specified in order to build &amp; release NuGet packages"/>
-
+  <Target Name="release_packages" DependsOnTargets="validate_version_is_present">
     <Error Condition="'$(NuggieRepoPath)' == ''"
            Text="Cannot publish packages because the NuggieRepoPath environment variable has not been set."/>
     
@@ -56,7 +54,11 @@
     </MSBuild>
   </Target>
 
-  <Target Name="create_packages" DependsOnTargets="build">
+  <Target Name="validate_version_is_present">
+    <Error Condition="'$(Version)' == ''" Text="No version specified! The version parameter must be specified in order to build &amp; release NuGet packages"/>
+  </Target>
+  
+  <Target Name="create_packages" DependsOnTargets="validate_version_is_present; build">
     <PropertyGroup>
       <PackagesOutputFolder>$(BuildOutputFolder)\publish</PackagesOutputFolder>
     </PropertyGroup>
