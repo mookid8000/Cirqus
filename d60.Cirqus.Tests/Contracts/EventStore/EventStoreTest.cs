@@ -6,6 +6,8 @@ using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Logging;
+using d60.Cirqus.Logging.Null;
 using d60.Cirqus.Numbers;
 using d60.Cirqus.Tests.Contracts.EventStore.Factories;
 using d60.Cirqus.Tests.Stubs;
@@ -132,15 +134,6 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
             Assert.That(allEvents.Count, Is.EqualTo(5));
             Assert.That(allEvents.Select(a => a.GlobalSequenceNumber), Is.EqualTo(new[] { 0, 1, 2, 3, 4 }));
-        }
-
-
-        [Test]
-        public void SequenceNumbersStartWithZero()
-        {
-            var nextSeqNo = _eventStore.GetNextSeqNo(Guid.NewGuid());
-
-            Assert.That(nextSeqNo, Is.EqualTo(0));
         }
 
         [Test]
@@ -357,46 +350,6 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         }
 
         [Test]
-        public void CanGetNextSequenceNumber()
-        {
-            var agg1Id = Guid.NewGuid();
-            var agg2Id = Guid.NewGuid();
-
-            var generator = _eventStoreFactory.GetEventStore();
-
-            Assert.That(generator.GetNextSeqNo(agg1Id), Is.EqualTo(0));
-            Assert.That(generator.GetNextSeqNo(agg1Id), Is.EqualTo(0));
-            Assert.That(generator.GetNextSeqNo(agg2Id), Is.EqualTo(0));
-            Assert.That(generator.GetNextSeqNo(agg2Id), Is.EqualTo(0));
-
-            _eventStore.Save(Guid.NewGuid(), new[]
-            {
-                Event(0, agg1Id)
-            });
-
-            Assert.That(generator.GetNextSeqNo(agg1Id), Is.EqualTo(1), "Expected the seq for {0} to have been incremented once", agg1Id);
-            Assert.That(generator.GetNextSeqNo(agg2Id), Is.EqualTo(0), "Expected the seq for {0} to not have been changed", agg2Id);
-
-            _eventStore.Save(Guid.NewGuid(), new[]
-            {
-                Event(1, agg1Id), 
-                Event(2, agg1Id), 
-                Event(3, agg1Id)
-            });
-
-            Assert.That(generator.GetNextSeqNo(agg1Id), Is.EqualTo(4), "Expected the seq for {0} to have been incremented four times", agg1Id);
-            Assert.That(generator.GetNextSeqNo(agg2Id), Is.EqualTo(0), "Expected the seq for {0} to not have been changed", agg2Id);
-
-            _eventStore.Save(Guid.NewGuid(), new[]
-            {
-                Event(0, agg2Id)
-            });
-
-            Assert.That(generator.GetNextSeqNo(agg1Id), Is.EqualTo(4), "Expected the seq for {0} to have been incremented four times", agg1Id);
-            Assert.That(generator.GetNextSeqNo(agg2Id), Is.EqualTo(1), "Expected the seq for {0} to have been incremented once", agg2Id);
-        }
-
-        [Test]
         public void CanLoadEventsByAggregateRootId()
         {
             // arrange
@@ -428,10 +381,13 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         }
 
         [TestCase(1000, 10)]
-        [TestCase(1000, 100, Ignore = true)]
-        [TestCase(1000, 1000, Ignore = true)]
+        [TestCase(10000, 10)]
+        //[TestCase(1000, 100, Ignore = true)]
+        //[TestCase(1000, 1000, Ignore = true)]
         public void ComparePerformance(int numberOfBatches, int numberOfEventsPerBatch)
         {
+            CirqusLoggerFactory.Current = new NullLoggerFactory();
+
             TakeTime(string.Format("Save {0} batches with {1} events in each", numberOfBatches, numberOfEventsPerBatch),
                 () =>
                 {

@@ -160,39 +160,6 @@ SELECT [data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo AND [
             return domainEvents;
         }
 
-        public long GetNextSeqNo(Guid aggregateRootId)
-        {
-            var next = 0;
-
-            WithConnection(conn =>
-            {
-                using (var tx = conn.BeginTransaction())
-                {
-                    using (var cmd = conn.CreateCommand())
-                    {
-                        cmd.Transaction = tx;
-                        cmd.CommandText = string.Format(@"
-
-SELECT MAX([seqNo]) FROM [{0}] WHERE [aggId] = @aggId
-
-", _tableName);
-                        cmd.Parameters.Add("aggId", SqlDbType.UniqueIdentifier).Value = aggregateRootId;
-
-                        var result = cmd.ExecuteScalar();
-
-                        if (result != DBNull.Value)
-                        {
-                            next = Convert.ToInt32(result) + 1;
-                        }
-                    }
-
-                    tx.Commit();
-                }
-            });
-
-            return next;
-        }
-
         public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
         {
             SqlConnection connection = null;

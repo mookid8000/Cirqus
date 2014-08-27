@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using d60.Cirqus.Events;
+using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Serialization;
 using Npgsql;
-using NpgsqlTypes;
 
 namespace d60.Cirqus.PostgreSql
 {
     public class PostgreSqlEventStore : IEventStore
     {
-        readonly string _tableName;
-        readonly string _connectionString;
         readonly Serializer _serializer = new Serializer("<events>");
+        readonly string _connectionString;
+        readonly string _tableName;
 
         public PostgreSqlEventStore(string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true)
         {
@@ -31,6 +30,16 @@ namespace d60.Cirqus.PostgreSql
         {
             var sql = string.Format(@"
 
+DO $$
+BEGIN
+
+IF NOT EXISTS (
+    SELECT 1
+    FROM   pg_class c
+    JOIN   pg_namespace n ON n.oid = c.relnamespace
+    WHERE  c.relname = '{0}'
+    ) THEN
+
 CREATE TABLE IF NOT EXISTS ""{0}"" (
 	""id"" BIGSERIAL NOT NULL,
 	""batchId"" UUID NOT NULL,
@@ -40,6 +49,16 @@ CREATE TABLE IF NOT EXISTS ""{0}"" (
 	""data"" JSONB NOT NULL,
 	PRIMARY KEY (""id"")
 );
+
+CREATE UNIQUE INDEX ""Idx_{0}_aggId_seqNo"" ON ""{0}"" (""aggId"", ""seqNo"");
+CREATE UNIQUE INDEX ""Idx_{0}_globSeqNo"" ON ""{0}"" (""globSeqNo""); 
+
+END IF;
+
+END$$;
+
+
+
 ", _tableName);
 
             /*
@@ -61,27 +80,30 @@ CREATE TABLE IF NOT EXISTS ""{0}"" (
 
         public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
         {
-            using (var connection = GetConnection())
-            using (var tx = connection.BeginTransaction())
+            var eventList = batch.ToList();
+
+            try
             {
-                var eventList = batch.ToList();
-
-                var nextSequenceNumber = GetNextSequenceNumber(connection, tx);
-
-                foreach (var e in eventList)
+                using (var connection = GetConnection())
+                using (var tx = connection.BeginTransaction())
                 {
-                    e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = nextSequenceNumber++;
-                    e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
-                }
 
-                EventValidation.ValidateBatchIntegrity(batchId, eventList);
+                    var nextSequenceNumber = GetNextSequenceNumber(connection, tx);
 
-                foreach (var e in eventList)
-                {
-                    using (var cmd = connection.CreateCommand())
+                    foreach (var e in eventList)
                     {
-                        cmd.Transaction = tx;
-                        cmd.CommandText = string.Format(@"
+                        e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = nextSequenceNumber++;
+                        e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
+                    }
+
+                    EventValidation.ValidateBatchIntegrity(batchId, eventList);
+
+                    foreach (var e in eventList)
+                    {
+                        using (var cmd = connection.CreateCommand())
+                        {
+                            cmd.Transaction = tx;
+                            cmd.CommandText = string.Format(@"
 
 INSERT INTO ""{0}"" (
     ""batchId"",
@@ -100,17 +122,27 @@ INSERT INTO ""{0}"" (
 ", _tableName);
 
 
-                        cmd.Parameters.AddWithValue("batchId", batchId);
-                        cmd.Parameters.AddWithValue("aggId", e.GetAggregateRootId());
-                        cmd.Parameters.AddWithValue("seqNo", e.Meta[DomainEvent.MetadataKeys.SequenceNumber]);
-                        cmd.Parameters.AddWithValue("globSeqNo", e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber]);
-                        cmd.Parameters.AddWithValue("data", _serializer.Serialize(e));
+                            cmd.Parameters.AddWithValue("batchId", batchId);
+                            cmd.Parameters.AddWithValue("aggId", e.GetAggregateRootId());
+                            cmd.Parameters.AddWithValue("seqNo", e.Meta[DomainEvent.MetadataKeys.SequenceNumber]);
+                            cmd.Parameters.AddWithValue("globSeqNo", e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber]);
+                            cmd.Parameters.AddWithValue("data", _serializer.Serialize(e));
 
-                        cmd.ExecuteNonQuery();
+                            cmd.ExecuteNonQuery();
+                        }
                     }
+
+                    tx.Commit();
+                }
+            }
+            catch (NpgsqlException exception)
+            {
+                if (exception.Code == "23505")
+                {
+                    throw new ConcurrencyException(batchId, eventList, exception);
                 }
 
-                tx.Commit();
+                throw;
             }
         }
 
@@ -141,17 +173,86 @@ INSERT INTO ""{0}"" (
 
         public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0, long limit = Int32.MaxValue)
         {
-            throw new NotImplementedException();
-        }
+            var domainEvents = new List<DomainEvent>();
+            var lastSeqNo = firstSeq + limit == int.MaxValue ? int.MaxValue : firstSeq + limit;
 
-        public long GetNextSeqNo(Guid aggregateRootId)
-        {
-            return 0;
+            using (var connection = GetConnection())
+            {
+                using (var tx = connection.BeginTransaction())
+                {
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+
+                        cmd.CommandText = string.Format(@"
+                                SELECT ""data"" FROM ""{0}"" WHERE ""aggId"" = @aggId AND ""seqNo"" >= @firstSeqNo AND ""seqNo"" < @lastSeqNo", _tableName);
+                        cmd.Parameters.AddWithValue("aggId", aggregateRootId);
+                        cmd.Parameters.AddWithValue("firstSeqNo", firstSeq);
+                        cmd.Parameters.AddWithValue("lastSeqNo", lastSeqNo);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var data = (string)reader["data"];
+
+                                domainEvents.Add(_serializer.Deserialize(data));
+                            }
+                        }
+                    }
+
+                    tx.Commit();
+                    return domainEvents;
+                }
+            }
         }
 
         public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
         {
-            throw new NotImplementedException();
+            using (var connection = GetConnection())
+            {
+                using (var tx = connection.BeginTransaction())
+                {
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = string.Format(@"
+
+SELECT ""data"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY ""globSeqNo""", _tableName);
+
+                        cmd.Parameters.AddWithValue("cutoff", globalSequenceNumber);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var data = (string)reader["data"];
+
+                                yield return _serializer.Deserialize(data);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public void DropEvents()
+        {
+            using (var connection = GetConnection())
+            {
+                using (var tx = connection.BeginTransaction())
+                {
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = string.Format(@"DELETE FROM ""{0}""", _tableName);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    tx.Commit();
+
+                }
+            }
         }
     }
 }
