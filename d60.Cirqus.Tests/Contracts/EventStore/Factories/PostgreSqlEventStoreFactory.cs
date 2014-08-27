@@ -1,4 +1,5 @@
-﻿using d60.Cirqus.Events;
+﻿using System;
+using d60.Cirqus.Events;
 using d60.Cirqus.PostgreSql;
 using d60.Cirqus.Tests.MsSql;
 using Npgsql;
@@ -14,7 +15,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore.Factories
         {
             _connectionString = TestSqlHelper.PostgreSqlConnectionString;
 
-            DropTable();
+            DropTable("Events");
 
             _eventStore = new PostgreSqlEventStore(_connectionString, "Events");
 
@@ -26,15 +27,17 @@ namespace d60.Cirqus.Tests.Contracts.EventStore.Factories
             return _eventStore;
         }
 
-        void DropTable()
+        void DropTable(string tableName)
         {
+            Console.WriteLine("Dropping Postgres table '{0}'", tableName);
+
             using (var connection = new NpgsqlConnection(_connectionString))
             {
                 using (var cmd = connection.CreateCommand())
                 {
                     connection.Open();
 
-                    cmd.CommandText = @"DROP TABLE IF EXISTS ""Events"" CASCADE";
+                    cmd.CommandText = string.Format(@"DROP TABLE IF EXISTS ""{0}"" CASCADE", tableName);
                     
                     cmd.ExecuteNonQuery();
                 }
