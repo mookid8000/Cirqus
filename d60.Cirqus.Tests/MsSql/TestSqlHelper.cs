@@ -9,7 +9,18 @@ namespace d60.Cirqus.Tests.MsSql
     {
         public static string PostgreSqlConnectionString
         {
-            get { return "Server=localhost;Database=cirqus;User=postgres;Password=postgres;"; }
+            get
+            {
+                var connectionString = SqlHelper.GetConnectionString("postgresqltestdb");
+
+                var configuredDatabaseName = GetDatabaseName(connectionString);
+
+                var databaseNameToUse = PossiblyAppendTeamcityAgentNumber(configuredDatabaseName);
+
+                Console.WriteLine("Using test POSTGRESQL database '{0}'", databaseNameToUse);
+
+                return connectionString.Replace(configuredDatabaseName, databaseNameToUse);
+            }
         }
 
         public static string ConnectionString
