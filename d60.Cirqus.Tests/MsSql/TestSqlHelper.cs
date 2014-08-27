@@ -7,6 +7,11 @@ namespace d60.Cirqus.Tests.MsSql
 {
     public class TestSqlHelper
     {
+        public static string PostgreSqlConnectionString
+        {
+            get { return "Server=localhost;Database=cirqus;User=postgres;Password=postgres;"; }
+        }
+
         public static string ConnectionString
         {
             get

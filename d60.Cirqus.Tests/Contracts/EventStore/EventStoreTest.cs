@@ -10,7 +10,6 @@ using d60.Cirqus.Numbers;
 using d60.Cirqus.Tests.Contracts.EventStore.Factories;
 using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
-using TestContext = d60.Cirqus.TestHelpers.TestContext;
 
 namespace d60.Cirqus.Tests.Contracts.EventStore
 {
@@ -18,6 +17,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
     [TestFixture(typeof(MongoDbEventStoreFactory), Category = TestCategories.MongoDb)]
     [TestFixture(typeof(InMemoryEventStoreFactory))]
     [TestFixture(typeof(MsSqlEventStoreFactory), Category = TestCategories.MsSql)]
+    [TestFixture(typeof(PostgreSqlEventStoreFactory), Category = TestCategories.PostgreSql)]
     public class EventStoreTest<TEventStoreFactory> : FixtureBase where TEventStoreFactory : IEventStoreFactory, new()
     {
         TEventStoreFactory _eventStoreFactory;

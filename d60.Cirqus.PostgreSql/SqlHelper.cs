@@ -1,6 +1,6 @@
 ﻿using System.Configuration;
 
-namespace d60.Cirqus.MsSql
+namespace d60.Cirqus.PostgreSql
 {
     class SqlHelper
     {

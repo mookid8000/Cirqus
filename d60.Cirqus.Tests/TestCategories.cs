@@ -4,5 +4,6 @@
     {
         public const string MongoDb = "mongodb";
         public const string MsSql = "mssql";
+        public const string PostgreSql = "postgresql";
     }
 }
