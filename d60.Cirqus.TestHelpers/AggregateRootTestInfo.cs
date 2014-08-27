@@ -1,4 +1,5 @@
 using System;
+using d60.Cirqus.Aggregates;
 
 namespace d60.Cirqus.TestHelpers
 {
@@ -20,6 +21,11 @@ namespace d60.Cirqus.TestHelpers
         public override string ToString()
         {
             return string.Format("{0}: {1} ({2})", Id, SeqNo, GlobalSeqNo);
+        }
+
+        public AggregateRoot Get()
+        {
+            throw new NotImplementedException();
         }
     }
 }

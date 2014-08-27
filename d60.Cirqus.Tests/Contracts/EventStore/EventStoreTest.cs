@@ -45,7 +45,6 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
             var domainEvents = _eventStore.Stream().Cast<SomeRootEvent>().Single();
             Assert.That(domainEvents.GetUtcTime(), Is.EqualTo(someUtcTime));
-            Assert.That(domainEvents.GetLocalTime(), Is.EqualTo(someLocalTime));
         }
 
         public class MakeSomeRootEmitTheEvent : Command<SomeRoot>

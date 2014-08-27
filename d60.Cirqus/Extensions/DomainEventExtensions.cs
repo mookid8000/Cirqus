@@ -47,13 +47,6 @@ namespace d60.Cirqus.Extensions
             return DateTime.ParseExact(timeAsString, "u", CultureInfo.CurrentCulture);
         }
 
-        public static DateTime GetLocalTime(this DomainEvent domainEvent, bool throwIfNotFound = true)
-        {
-            var timeAsString = GetMetadataField(domainEvent, DomainEvent.MetadataKeys.TimeLocal, Convert.ToString, throwIfNotFound);
-            
-            return DateTime.ParseExact(timeAsString, "u", CultureInfo.CurrentCulture);
-        }
-
         static TValue GetMetadataField<TValue>(DomainEvent domainEvent, string key, Func<object, TValue> converter, bool throwIfNotFound)
         {
             var metadata = domainEvent.Meta;
