@@ -14,8 +14,6 @@ namespace d60.Cirqus.Tests.Contracts.EventStore.Factories
         {
             _connectionString = TestSqlHelper.PostgreSqlConnectionString;
 
-            EnsureTestDatabaseExists();
-
             DropTable();
 
             _eventStore = new PostgreSqlEventStore(_connectionString, "Events");
@@ -26,21 +24,6 @@ namespace d60.Cirqus.Tests.Contracts.EventStore.Factories
         public IEventStore GetEventStore()
         {
             return _eventStore;
-        }
-
-        void EnsureTestDatabaseExists()
-        {
-            using (var connection = new NpgsqlConnection(_connectionString))
-            {
-                using (var cmd = connection.CreateCommand())
-                {
-                    connection.Open();
-
-                    cmd.CommandText = @"DROP TABLE IF EXISTS ""Events"" CASCADE";
-
-                    cmd.ExecuteNonQuery();
-                }
-            }
         }
 
         void DropTable()
