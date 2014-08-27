@@ -164,4 +164,8 @@
 
 ## 0.10.0
 
-* Change `TestContext` API so that it can return fully hydrated aggregate roots
+* Changed `TestContext` API so that it can return fully hydrated aggregate roots
+
+## 0.11.0
+
+* Made `ProcessCommand` method on `TestContext` return events that were emitted as a result of that command

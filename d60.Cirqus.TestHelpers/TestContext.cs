@@ -36,14 +36,20 @@ namespace d60.Cirqus.TestHelpers
             return this;
         }
 
-        public void ProcessCommand<TAggregateRoot>(Command<TAggregateRoot> command) where TAggregateRoot : AggregateRoot, new()
+        public IEnumerable<DomainEvent> ProcessCommand<TAggregateRoot>(Command<TAggregateRoot> command) where TAggregateRoot : AggregateRoot, new()
         {
-            var unitOfWork = BeginUnitOfWork();
-            var aggregateRoot = unitOfWork.Get<TAggregateRoot>(command.AggregateRootId);
+            using (var unitOfWork = BeginUnitOfWork())
+            {
+                var aggregateRoot = unitOfWork.Get<TAggregateRoot>(command.AggregateRootId);
 
-            command.Execute(aggregateRoot);
+                command.Execute(aggregateRoot);
 
-            unitOfWork.Commit();
+                var eventsToReturn = unitOfWork.EmittedEvents.ToList();
+
+                unitOfWork.Commit();
+
+                return eventsToReturn;
+            }
         }
 
         public TestUnitOfWork BeginUnitOfWork()

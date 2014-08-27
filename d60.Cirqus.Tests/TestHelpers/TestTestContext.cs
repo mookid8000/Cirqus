@@ -204,15 +204,17 @@ namespace d60.Cirqus.Tests.TestHelpers
         {
             // arrange
             var rootId = Guid.NewGuid();
-            var uow = _context.BeginUnitOfWork();
-            var root = uow.Get<AnAggregate>(rootId);
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                var root = uow.Get<AnAggregate>(rootId);
 
-            // act
-            root.DoStuff();
+                // act
+                root.DoStuff();
 
-            // assert
-            Assert.That(uow.EmittedEvents.Cast<AnEvent>().Single(), Is.TypeOf<AnEvent>());
-            Assert.That(uow.EmittedEvents.Cast<AnEvent>().Single().GetAggregateRootId(), Is.EqualTo(rootId));
+                // assert
+                Assert.That(uow.EmittedEvents.Cast<AnEvent>().Single(), Is.TypeOf<AnEvent>());
+                Assert.That(uow.EmittedEvents.Cast<AnEvent>().Single().GetAggregateRootId(), Is.EqualTo(rootId));
+            }
         }
 
         [Test]
