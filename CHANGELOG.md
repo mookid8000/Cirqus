@@ -161,3 +161,7 @@
 ## 0.9.0
 
 * Added PostgreSQL event store
+
+## 0.10.0
+
+* Change `TestContext` API so that it can return fully hydrated aggregate roots
