@@ -157,3 +157,7 @@
 ## 0.8.0
 
 * Changed initialization of async event dispatcher to be async as well
+
+## 0.9.0
+
+* Added PostgreSQL event store

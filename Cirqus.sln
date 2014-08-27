@@ -23,6 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspec", "nuspec", "{407E21
 		nuspec\d60.Circus.MsSql.nuspec = nuspec\d60.Circus.MsSql.nuspec
 		nuspec\d60.Circus.NLog.nuspec = nuspec\d60.Circus.NLog.nuspec
 		nuspec\d60.Circus.nuspec = nuspec\d60.Circus.nuspec
+		nuspec\d60.Circus.PostgreSql.nuspec = nuspec\d60.Circus.PostgreSql.nuspec
 		nuspec\d60.Circus.TestHelpers.nuspec = nuspec\d60.Circus.TestHelpers.nuspec
 	EndProjectSection
 EndProject
