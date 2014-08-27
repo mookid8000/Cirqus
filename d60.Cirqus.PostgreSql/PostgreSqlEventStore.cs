@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS ""{0}"" (
 	""aggId"" UUID NOT NULL,
 	""seqNo"" BIGINT NOT NULL,
 	""globSeqNo"" BIGINT NOT NULL,
-	""data"" JSONB NOT NULL,
+	""data"" TEXT NOT NULL,
 	PRIMARY KEY (""id"")
 );
 
