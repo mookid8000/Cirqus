@@ -5,24 +5,8 @@ using d60.Cirqus.MsSql;
 
 namespace d60.Cirqus.Tests.MsSql
 {
-    public class TestSqlHelper
+    class MsSqlTestHelper : SqlTestHelperBase
     {
-        public static string PostgreSqlConnectionString
-        {
-            get
-            {
-                var connectionString = SqlHelper.GetConnectionString("postgresqltestdb");
-
-                var configuredDatabaseName = GetDatabaseName(connectionString);
-
-                var databaseNameToUse = PossiblyAppendTeamcityAgentNumber(configuredDatabaseName);
-
-                Console.WriteLine("Using test POSTGRESQL database '{0}'", databaseNameToUse);
-
-                return connectionString.Replace(configuredDatabaseName, databaseNameToUse);
-            }
-        }
-
         public static string ConnectionString
         {
             get
@@ -37,17 +21,6 @@ namespace d60.Cirqus.Tests.MsSql
 
                 return connectionString.Replace(configuredDatabaseName, databaseNameToUse);
             }
-        } 
-
-        static string PossiblyAppendTeamcityAgentNumber(string databaseName)
-        {
-            var teamCityAgentNumber = Environment.GetEnvironmentVariable("tcagent");
-            int number;
-
-            if (string.IsNullOrWhiteSpace(teamCityAgentNumber) || !int.TryParse(teamCityAgentNumber, out number))
-                return databaseName;
-
-            return string.Format("{0}_agent{1}", databaseName, number);
         }
 
         public static void EnsureTestDatabaseExists()
@@ -114,25 +87,6 @@ END
                 }
                 throw;
             }
-        }
-
-        public static string GetDatabaseName(string connectionString)
-        {
-            var relevantSetting = connectionString
-                .Split(';')
-                .Select(kvp =>
-                {
-                    var tokens = kvp.Split('=');
-
-                    return new
-                    {
-                        Key = tokens[0],
-                        Value = tokens.Length > 0 ? tokens[1] : null
-                    };
-                })
-                .FirstOrDefault(a => string.Equals(a.Key, "database", StringComparison.InvariantCultureIgnoreCase));
-
-            return relevantSetting != null ? relevantSetting.Value : null;
         }
     }
 }

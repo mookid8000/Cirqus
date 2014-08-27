@@ -17,11 +17,11 @@ namespace d60.Cirqus.Tests.MsSql
 
         protected override void DoSetUp()
         {
-            TestSqlHelper.EnsureTestDatabaseExists();
+            MsSqlTestHelper.EnsureTestDatabaseExists();
 
-            var connectionString = TestSqlHelper.ConnectionString;
+            var connectionString = MsSqlTestHelper.ConnectionString;
 
-            TestSqlHelper.DropTable("views");
+            MsSqlTestHelper.DropTable("views");
 
             _viewManager = new MsSqlViewManager<ViewInstanceWithManyPropertyTypes>(connectionString, "views");
             _viewManager.Initialize(new ThrowingViewContext(), new InMemoryEventStore());
