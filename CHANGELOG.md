@@ -173,3 +173,7 @@
 ## 0.12.0
 
 * Removed a lot of generics and reflection stuff and made it possible to use the base `Command` to execute logic on arbitrary aggregate roots.
+
+## 0.12.1
+
+* Added `string[]` as a supported property type on `MsSqlViewManager`.

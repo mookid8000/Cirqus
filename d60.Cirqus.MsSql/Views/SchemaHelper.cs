@@ -29,6 +29,7 @@ namespace d60.Cirqus.MsSql.Views
                 {typeof (List<decimal>), Tuple.Create(SqlDbType.NVarChar, "max")},
                 {typeof (HashSet<string>), Tuple.Create(SqlDbType.NVarChar, "max")},
                 {typeof (HashSet<int>), Tuple.Create(SqlDbType.NVarChar, "max")},
+                {typeof (string[]), Tuple.Create(SqlDbType.NVarChar, "max")},
             };
 
         public static Prop[] GetSchema<TView>()
@@ -100,6 +101,12 @@ namespace d60.Cirqus.MsSql.Views
 
                 valueToSet = new HashSet<int>(tokens);
             }
+            else if (propertyInfo.PropertyType == typeof(string[]))
+            {
+                var tokens = ((string) value).Split(';');
+
+                valueToSet = tokens.ToArray();
+            }
             else
             {
                 valueToSet = Convert.ChangeType(value, propertyInfo.PropertyType);
@@ -148,6 +155,13 @@ namespace d60.Cirqus.MsSql.Views
             if (propertyInfo.PropertyType == typeof(HashSet<int>))
             {
                 var stringList = (HashSet<int>)propertyInfo.GetValue(instance);
+
+                return string.Join(";", stringList);
+            }
+
+            if (propertyInfo.PropertyType == typeof(string[]))
+            {
+                var stringList = (string[])propertyInfo.GetValue(instance);
 
                 return string.Join(";", stringList);
             }
