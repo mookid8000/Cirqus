@@ -169,3 +169,7 @@
 ## 0.11.0
 
 * Made `ProcessCommand` method on `TestContext` return events that were emitted as a result of that command
+
+## 0.12.0
+
+* Removed a lot of generics and reflection stuff and made it possible to use the base `Command` to execute logic on arbitrary aggregate roots.

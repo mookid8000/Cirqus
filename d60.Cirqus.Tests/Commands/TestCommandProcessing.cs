@@ -29,6 +29,45 @@ namespace d60.Cirqus.Tests.Commands
         }
 
         [Test]
+        public void CanProcessBaseCommand()
+        {
+            var aggregateRootIds = Enumerable.Range(0, 5).Select(i => Guid.NewGuid()).ToArray();
+            var command = new MyCommand{AggregateRootIds = aggregateRootIds};
+
+            _cirqus.ProcessCommand(command);
+
+            var events = _eventStore.ToList();
+            Assert.That(events.Count, Is.EqualTo(10));
+        }
+
+        public class MyRoot : AggregateRoot, IEmit<MyEvent>
+        {
+            public void EmitMyEvent()
+            {
+                Emit(new MyEvent());
+            }
+
+            public void Apply(MyEvent e)
+            {
+                
+            }
+        }
+
+        public class MyEvent : DomainEvent<MyRoot> { }
+
+        public class MyCommand : Command
+        {
+            public Guid[] AggregateRootIds { get; set; }
+
+            public override void Execute(ICommandContext context)
+            {
+                AggregateRootIds.Select(context.Load<MyRoot>).ToList().ForEach(r => r.EmitMyEvent());
+                AggregateRootIds.Select(context.Load<MyRoot>).ToList().ForEach(r => r.EmitMyEvent());
+            }
+        }
+
+
+        [Test]
         public void CanLetSpecificExceptionTypesThrough()
         {
             _cirqus.Options.AddDomainException<InvalidOperationException>();
@@ -146,17 +185,6 @@ namespace d60.Cirqus.Tests.Commands
 
         public class AnEvent : DomainEvent<Root>
         {
-        }
-
-        [Test]
-        public void ThrowsNiceExceptionForCommandDerivedOffOfTheWrongCommandTypes()
-        {
-            Assert.Throws<ArgumentException>(() => _cirqus.ProcessCommand(new SomeCommand()));
-        }
-
-        class SomeCommand : Command
-        {
-
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 
 namespace d60.Cirqus.Exceptions
@@ -20,8 +19,7 @@ namespace d60.Cirqus.Exceptions
         {
         }
 
-        public static CommandProcessingException Create<TAggregateRoot>(Command<TAggregateRoot> command, Exception caughtException)
-            where TAggregateRoot : AggregateRoot
+        public static CommandProcessingException Create(Command command, Exception caughtException)
         {
             var message = string.Format("An error occurred while processing command {0} - any events emitted will most likely not have been saved", command);
 

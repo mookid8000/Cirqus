@@ -52,8 +52,10 @@
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\CommandMapper.cs" />
     <Compile Include="Commands\CompositeCommand.cs" />
+    <Compile Include="Commands\ICommandContext.cs" />
     <Compile Include="Commands\ICommandMapper.cs" />
-    <Compile Include="Config\CommandProcessor.cs" />
+    <Compile Include="CommandProcessor.cs" />
+    <Compile Include="Commands\DefaultCommandContext.cs" />
     <Compile Include="ICommandProcessor.cs" />
     <Compile Include="Config\Options.cs" />
     <Compile Include="Config\Retryer.cs" />
