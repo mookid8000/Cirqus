@@ -72,6 +72,9 @@ namespace d60.Cirqus
                 {
                     var eventsFromThisUnitOfWork = InnerProcessCommand(command).ToList();
 
+                    // if command processing yielded no events, there's no more work to do
+                    if (!eventsFromThisUnitOfWork.Any()) return;
+
                     // first: save the events
                     _logger.Debug("Saving batch {0} with {1} events", batchId, eventsFromThisUnitOfWork.Count);
                     _eventStore.Save(batchId, eventsFromThisUnitOfWork);
@@ -89,8 +92,6 @@ namespace d60.Cirqus
 
                 throw CommandProcessingException.Create(command, exception);
             }
-
-            if (!emittedDomainEvents.Any()) return;
 
             try
             {

@@ -110,6 +110,8 @@
     <Compile Include="Examples\ReadmeSnippet.cs" />
     <Compile Include="Extensions\Helpful.cs" />
     <Compile Include="FixtureBase.cs" />
+    <Compile Include="Integration\IntegrationTestBase.cs" />
+    <Compile Include="Integration\Scenarios\ProcessingYieldsNoEvents.cs" />
     <Compile Include="Integration\SimpleScenarioWithDelegation.cs" />
     <Compile Include="Integration\SimpleScenarioWithConcurrency.cs" />
     <Compile Include="Integration\SimpleScenarioWithPersistence.cs" />
@@ -170,6 +172,7 @@
       <Name>d60.Cirqus</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
