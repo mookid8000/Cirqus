@@ -177,3 +177,8 @@
 ## 0.12.1
 
 * Added `string[]` as a supported property type on `MsSqlViewManager`.
+
+## 0.12.2
+
+* Allow properties of type `DateTime`, `DateTimeOffset` and `TimeSpan` on `MsSqlViewManager`-managed views
+

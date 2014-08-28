@@ -51,6 +51,10 @@ namespace d60.Cirqus.Tests.MsSql
             Assert.That(view.HashOfStrings, Is.EqualTo(new HashSet<string> { "bim", "bom" }));
             Assert.That(view.HashOfInts, Is.EqualTo(new HashSet<int> { 9, 3 }));
             Assert.That(view.ArrayOfStrings, Is.EqualTo(new[] { "hej", "med", "dig", "min", "ven" }));
+            
+            Assert.That(view.DateTime, Is.EqualTo(new DateTime(1979, 3, 19, 13, 00, 00, DateTimeKind.Utc)));
+            Assert.That(view.DateTimeOffset, Is.EqualTo(new DateTimeOffset(1979, 3, 19, 14, 00, 00, TimeSpan.FromHours(1))));
+            Assert.That(view.TimeSpan, Is.EqualTo(new TimeSpan(2, 15, 20)));
         }
 
         static AnEvent GetAnEvent(Guid aggregateRootId)
@@ -88,6 +92,10 @@ namespace d60.Cirqus.Tests.MsSql
                 HashOfStrings = new HashSet<string> { "bim", "bom" };
                 HashOfInts = new HashSet<int> { 9, 3 };
                 ArrayOfStrings = new[] { "hej", "med", "dig", "min", "ven" };
+
+                DateTime = new DateTime(1979, 3, 19, 14, 00, 00, DateTimeKind.Local);
+                DateTimeOffset = new DateTimeOffset(1979, 3, 19, 14, 00, 00, TimeSpan.FromHours(1));
+                TimeSpan = new TimeSpan(2, 15, 20);
             }
             public string Id { get; set; }
             public long LastGlobalSequenceNumber { get; set; }
@@ -113,6 +121,9 @@ namespace d60.Cirqus.Tests.MsSql
             public HashSet<string> HashOfStrings { get; set; }
             public HashSet<int> HashOfInts { get; set; }
             public string[] ArrayOfStrings { get; set; }
+            public DateTime DateTime { get; set; }
+            public DateTimeOffset DateTimeOffset { get; set; }
+            public TimeSpan TimeSpan { get; set; }
 
             public void Handle(IViewContext context, AnEvent domainEvent)
             {
