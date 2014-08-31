@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using d60.Cirqus.Events;
 using d60.Cirqus.Numbers;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace d60.Cirqus.Serialization
 {
@@ -59,7 +60,30 @@ namespace d60.Cirqus.Serialization
         {
             try
             {
-                return (DomainEvent) JsonConvert.DeserializeObject(text, _settings);
+                var deserializedObject = JsonConvert.DeserializeObject(text, _settings);
+
+                if (deserializedObject is JObject)
+                {
+                    var eventTypeName = ((JObject)deserializedObject)["$type"].ToString();
+
+                    var eventType = Type.GetType(eventTypeName);
+
+                    if (eventType == null)
+                    {
+                        throw new FormatException(string.Format("Could not find .NET type {0}", eventTypeName));
+                    }
+
+                    var bim = ((JObject)deserializedObject).ToObject(eventType);
+                    
+                    return (DomainEvent)bim;
+                }
+
+                if (deserializedObject is DomainEvent)
+                {
+                    return (DomainEvent)deserializedObject;
+                }
+
+                throw new ApplicationException("Deserialized object was not JObject or DomainEvent!");
             }
             catch (Exception exception)
             {

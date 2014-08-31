@@ -14,9 +14,9 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
 
         public MsSqlPullViewManagerFactory()
         {
-            TestSqlHelper.EnsureTestDatabaseExists();
+            MsSqlTestHelper.EnsureTestDatabaseExists();
 
-            _connectionString = TestSqlHelper.ConnectionString;
+            _connectionString = MsSqlTestHelper.ConnectionString;
         }
 
         public IPullViewManager GetPullViewManager<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
@@ -37,7 +37,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
         {
             var tableName = typeof (TView).Name;
 
-            TestSqlHelper.DropTable(tableName);
+            MsSqlTestHelper.DropTable(tableName);
 
             var viewManager = new MsSqlViewManager<TView>(_connectionString, tableName);
 

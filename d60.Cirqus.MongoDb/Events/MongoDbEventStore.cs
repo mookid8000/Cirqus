@@ -37,21 +37,6 @@ namespace d60.Cirqus.MongoDb.Events
             }
         }
 
-        public long GetNextSeqNo(Guid aggregateRootId)
-        {
-            var doc = _eventBatches
-                .FindAs<BsonDocument>(Query.EQ(AggregateRootIdDocPath, aggregateRootId.ToString()))
-                .SetSortOrder(SortBy.Descending(SeqNoDocPath))
-                .SetLimit(1)
-                .SingleOrDefault();
-
-            return doc == null
-                ? 0
-                : doc[EventsDocPath].AsBsonArray
-                    .Select(e => e[MetaDocPath][DomainEvent.MetadataKeys.SequenceNumber].ToInt64())
-                    .Max() + 1;
-        }
-
         public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
         {
             const int limit = 1000;
@@ -137,6 +122,7 @@ namespace d60.Cirqus.MongoDb.Events
             foreach (var e in events)
             {
                 e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = nextGlobalSeqNo++;
+                e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
             }
 
             EventValidation.ValidateBatchIntegrity(batchId, events);

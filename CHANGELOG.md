@@ -138,3 +138,47 @@
 
 * Fixed bug that would result in not getting a cache hit on 2nd load of the same root from unit of work
 
+## 0.6.0
+
+* Fixed potential odd behavior by having in-mem event store save cloned events instead of the original objects.
+
+## 0.6.1
+
+* Make event stores automatically add event batch ID as a header on all events
+
+## 0.7.0
+
+* Changed format of timestamp metadata to be strings in order to ensure consistent behavior across all event stores + introduced extension method for extracting them
+
+## 0.7.1
+
+* Corrected spelling in an error message
+
+## 0.8.0
+
+* Changed initialization of async event dispatcher to be async as well
+
+## 0.9.0
+
+* Added PostgreSQL event store
+
+## 0.10.0
+
+* Changed `TestContext` API so that it can return fully hydrated aggregate roots
+
+## 0.11.0
+
+* Made `ProcessCommand` method on `TestContext` return events that were emitted as a result of that command
+
+## 0.12.0
+
+* Removed a lot of generics and reflection stuff and made it possible to use the base `Command` to execute logic on arbitrary aggregate roots.
+
+## 0.12.1
+
+* Added `string[]` as a supported property type on `MsSqlViewManager`.
+
+## 0.12.2
+
+* Allow properties of type `DateTime`, `DateTimeOffset` and `TimeSpan` on `MsSqlViewManager`-managed views
+

@@ -29,6 +29,12 @@ namespace d60.Cirqus.MsSql.Views
                 {typeof (List<decimal>), Tuple.Create(SqlDbType.NVarChar, "max")},
                 {typeof (HashSet<string>), Tuple.Create(SqlDbType.NVarChar, "max")},
                 {typeof (HashSet<int>), Tuple.Create(SqlDbType.NVarChar, "max")},
+                {typeof (string[]), Tuple.Create(SqlDbType.NVarChar, "max")},
+                
+                {typeof (DateTime), Tuple.Create(SqlDbType.DateTime2, "")},
+                {typeof (DateTimeOffset), Tuple.Create(SqlDbType.DateTimeOffset, "")},
+                {typeof (TimeSpan), Tuple.Create(SqlDbType.BigInt, "")},
+
             };
 
         public static Prop[] GetSchema<TView>()
@@ -100,6 +106,25 @@ namespace d60.Cirqus.MsSql.Views
 
                 valueToSet = new HashSet<int>(tokens);
             }
+            else if (propertyInfo.PropertyType == typeof(string[]))
+            {
+                var tokens = ((string) value).Split(';');
+
+                valueToSet = tokens.ToArray();
+            }
+            else if (propertyInfo.PropertyType == typeof(DateTime))
+            {
+                valueToSet = value;
+            }
+            else if (propertyInfo.PropertyType == typeof(DateTimeOffset))
+            {
+                valueToSet = value;
+            }
+            else if (propertyInfo.PropertyType == typeof(TimeSpan))
+            {
+                var ticks = (long) value;
+                valueToSet = new TimeSpan(ticks);
+            }
             else
             {
                 valueToSet = Convert.ChangeType(value, propertyInfo.PropertyType);
@@ -150,6 +175,28 @@ namespace d60.Cirqus.MsSql.Views
                 var stringList = (HashSet<int>)propertyInfo.GetValue(instance);
 
                 return string.Join(";", stringList);
+            }
+
+            if (propertyInfo.PropertyType == typeof(string[]))
+            {
+                var stringList = (string[])propertyInfo.GetValue(instance);
+
+                return string.Join(";", stringList);
+            }
+
+            if (propertyInfo.PropertyType == typeof(DateTime))
+            {
+                return ((DateTime)propertyInfo.GetValue(instance)).ToUniversalTime();
+            }
+            
+            if (propertyInfo.PropertyType == typeof(DateTimeOffset))
+            {
+                return (DateTimeOffset)propertyInfo.GetValue(instance);
+            }
+            
+            if (propertyInfo.PropertyType == typeof(TimeSpan))
+            {
+                return ((TimeSpan)propertyInfo.GetValue(instance)).Ticks;
             }
 
             return propertyInfo.GetValue(instance);

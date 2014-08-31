@@ -54,6 +54,7 @@ namespace d60.Cirqus.MsSql.Events
                         foreach (var e in eventList)
                         {
                             e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = globalSequenceNumber++;
+                            e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
                         }
 
                         EventValidation.ValidateBatchIntegrity(batchId, eventList);
@@ -157,39 +158,6 @@ SELECT [data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo AND [
             });
 
             return domainEvents;
-        }
-
-        public long GetNextSeqNo(Guid aggregateRootId)
-        {
-            var next = 0;
-
-            WithConnection(conn =>
-            {
-                using (var tx = conn.BeginTransaction())
-                {
-                    using (var cmd = conn.CreateCommand())
-                    {
-                        cmd.Transaction = tx;
-                        cmd.CommandText = string.Format(@"
-
-SELECT MAX([seqNo]) FROM [{0}] WHERE [aggId] = @aggId
-
-", _tableName);
-                        cmd.Parameters.Add("aggId", SqlDbType.UniqueIdentifier).Value = aggregateRootId;
-
-                        var result = cmd.ExecuteScalar();
-
-                        if (result != DBNull.Value)
-                        {
-                            next = Convert.ToInt32(result) + 1;
-                        }
-                    }
-
-                    tx.Commit();
-                }
-            });
-
-            return next;
         }
 
         public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)

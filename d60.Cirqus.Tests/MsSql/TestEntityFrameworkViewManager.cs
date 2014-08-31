@@ -18,10 +18,10 @@ namespace d60.Cirqus.Tests.MsSql
 
         protected override void DoSetUp()
         {
-            TestSqlHelper.DropTable("__MigrationHistory");
-            TestSqlHelper.DropTable("View");
+            MsSqlTestHelper.DropTable("__MigrationHistory");
+            MsSqlTestHelper.DropTable("View");
 
-            _viewManager = new EntityFrameworkViewManager<ViewInstance>(TestSqlHelper.ConnectionString);
+            _viewManager = new EntityFrameworkViewManager<ViewInstance>(MsSqlTestHelper.ConnectionString);
             _context = new TestContext().AddViewManager(_viewManager);
         }
 

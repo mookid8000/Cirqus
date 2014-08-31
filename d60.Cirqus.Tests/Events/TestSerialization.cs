@@ -22,7 +22,6 @@ namespace d60.Cirqus.Tests.Events
                 Meta =
                 {
                     {DomainEvent.MetadataKeys.AggregateRootId, rootId},
-                    {DomainEvent.MetadataKeys.TimeLocal, utcNow.ToLocalTime()},
                     {DomainEvent.MetadataKeys.TimeUtc, utcNow}
                 }
             };

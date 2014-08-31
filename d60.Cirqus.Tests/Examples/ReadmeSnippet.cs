@@ -19,18 +19,18 @@ namespace d60.Cirqus.Tests.Examples
     {
         protected override void DoSetUp()
         {
-            TestSqlHelper.EnsureTestDatabaseExists();
+            MsSqlTestHelper.EnsureTestDatabaseExists();
         }
 
         [Test]
         public void TheSnippet()
         {
-            TestSqlHelper.DropTable("events");
-            TestSqlHelper.DropTable("counters");
+            MsSqlTestHelper.DropTable("events");
+            MsSqlTestHelper.DropTable("counters");
 
-            var eventStore = new MsSqlEventStore(TestSqlHelper.ConnectionString, "events", automaticallyCreateSchema: true);
+            var eventStore = new MsSqlEventStore(MsSqlTestHelper.ConnectionString, "events", automaticallyCreateSchema: true);
             var aggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
-            var viewManager = new MsSqlViewManager<CounterView>(TestSqlHelper.ConnectionString, "counters", automaticallyCreateSchema: true);
+            var viewManager = new MsSqlViewManager<CounterView>(MsSqlTestHelper.ConnectionString, "counters", automaticallyCreateSchema: true);
 
             var eventDispatcher = new ViewManagerEventDispatcher(aggregateRootRepository, viewManager);
 

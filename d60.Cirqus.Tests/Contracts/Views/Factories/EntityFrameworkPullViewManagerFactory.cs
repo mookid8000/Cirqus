@@ -10,12 +10,12 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
     public class EntityFrameworkPullViewManagerFactory : IPullViewManagerFactory, IPushViewManagerFactory
     {
         readonly List<IViewManager> _viewManagers = new List<IViewManager>();
-        readonly string _connectionString = TestSqlHelper.ConnectionString;
+        readonly string _connectionString = MsSqlTestHelper.ConnectionString;
 
         public EntityFrameworkPullViewManagerFactory()
         {
             Console.WriteLine("Dropping migration history");
-            TestSqlHelper.DropTable("__MigrationHistory");
+            MsSqlTestHelper.DropTable("__MigrationHistory");
         }
 
         public IPullViewManager GetPullViewManager<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
@@ -35,7 +35,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
         EntityFrameworkViewManager<TView> GetEntityFrameworkViewManager<TView>()
             where TView : class, IViewInstance, ISubscribeTo, new()
         {
-            TestSqlHelper.DropTable(typeof (TView).Name);
+            MsSqlTestHelper.DropTable(typeof (TView).Name);
 
             var viewManager = new EntityFrameworkViewManager<TView>(_connectionString);
             MaxDomainEventsBetweenFlushSet += maxEvents => viewManager.MaxDomainEventsBetweenFlush = maxEvents;

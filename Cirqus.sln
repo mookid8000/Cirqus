@@ -23,6 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspec", "nuspec", "{407E21
 		nuspec\d60.Circus.MsSql.nuspec = nuspec\d60.Circus.MsSql.nuspec
 		nuspec\d60.Circus.NLog.nuspec = nuspec\d60.Circus.NLog.nuspec
 		nuspec\d60.Circus.nuspec = nuspec\d60.Circus.nuspec
+		nuspec\d60.Circus.PostgreSql.nuspec = nuspec\d60.Circus.PostgreSql.nuspec
 		nuspec\d60.Circus.TestHelpers.nuspec = nuspec\d60.Circus.TestHelpers.nuspec
 	EndProjectSection
 EndProject
@@ -64,6 +65,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nlog", "nlog", "{61C025A5-1616-423F-B877-A3E017472C76}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Cirqus.NLog", "d60.Cirqus.NLog\d60.Cirqus.NLog.csproj", "{F122F403-DFCF-4ACB-9833-5D93EF357A06}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "postgresql", "postgresql", "{B3C09C49-9BB5-401B-BD4E-E164D0E4B2A6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Cirqus.PostgreSql", "d60.Cirqus.PostgreSql\d60.Cirqus.PostgreSql.csproj", "{1DCEE03D-8316-443B-92D5-DD89D368837C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -107,6 +112,10 @@ Global
 		{F122F403-DFCF-4ACB-9833-5D93EF357A06}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F122F403-DFCF-4ACB-9833-5D93EF357A06}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F122F403-DFCF-4ACB-9833-5D93EF357A06}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DCEE03D-8316-443B-92D5-DD89D368837C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DCEE03D-8316-443B-92D5-DD89D368837C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DCEE03D-8316-443B-92D5-DD89D368837C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DCEE03D-8316-443B-92D5-DD89D368837C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,5 +136,7 @@ Global
 		{7624F47B-B53F-40C6-B211-19288E814F86} = {B7EFFA50-A51B-4D7D-A264-07151A10F9D8}
 		{61C025A5-1616-423F-B877-A3E017472C76} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
 		{F122F403-DFCF-4ACB-9833-5D93EF357A06} = {61C025A5-1616-423F-B877-A3E017472C76}
+		{B3C09C49-9BB5-401B-BD4E-E164D0E4B2A6} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
+		{1DCEE03D-8316-443B-92D5-DD89D368837C} = {B3C09C49-9BB5-401B-BD4E-E164D0E4B2A6}
 	EndGlobalSection
 EndGlobal

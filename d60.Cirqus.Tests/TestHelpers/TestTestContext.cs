@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using d60.Cirqus.Aggregates;
+using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
@@ -24,13 +25,65 @@ namespace d60.Cirqus.Tests.TestHelpers
         }
 
         [Test]
+        public void CanGetFullyHydratedAggregateRootOutsideOfUnitOfWork()
+        {
+            // arrange
+            var id1 = Guid.NewGuid();
+            var id2 = Guid.NewGuid();
+            _context.ProcessCommand(new RootCommand(id1));
+            _context.ProcessCommand(new RootCommand(id1));
+            _context.ProcessCommand(new RootCommand(id2));
+
+            // act
+            var root1 = _context.AggregateRootsInHistory.OfType<Root>().Single(i => i.Id == id1);
+            var root2 = _context.AggregateRootsInHistory.OfType<Root>().Single(i => i.Id == id2);
+
+            // assert
+            Assert.That(root1.DidStuffCount, Is.EqualTo(2));
+            Assert.That(root2.DidStuffCount, Is.EqualTo(1));
+        }
+
+        public class Root : AggregateRoot, IEmit<RootEvent>
+        {
+            public int DidStuffCount { get; set; }
+
+            public void DoStuff()
+            {
+                Emit(new RootEvent());
+            }
+
+            public void Apply(RootEvent e)
+            {
+                DidStuffCount++;
+            }
+        }
+
+        public class RootCommand : Command<Root>
+        {
+            public RootCommand(Guid aggregateRootId)
+                : base(aggregateRootId)
+            {
+            }
+
+            public override void Execute(Root aggregateRoot)
+            {
+                aggregateRoot.DoStuff();
+            }
+        }
+
+        public class RootEvent : DomainEvent<Root>
+        {
+        }
+
+
+        [Test]
         public void CanWriteEventHistory()
         {
             var aggregateRoot1Id = new Guid("03af8b3e-1f9f-4143-90ad-c22bb978210f");
             var aggregateRoot2Id = new Guid("82d07316-4891-4806-96cf-c42d2e011df3");
 
             _context.Save(aggregateRoot1Id, new EventForThatRoot());
-            
+
             _context.Save(aggregateRoot2Id, new EventForThatRoot());
             _context.Save(aggregateRoot2Id, new EventForThatRoot());
 
@@ -71,11 +124,11 @@ namespace d60.Cirqus.Tests.TestHelpers
 
         [Meta("event", "bom")]
         class EventForThatRoot : DomainEvent<RootWithMetadata> { }
-        
+
         [Meta("root", "bim")]
         class RootWithMetadata : AggregateRoot
         {
-            
+
         }
 
 
@@ -94,7 +147,7 @@ namespace d60.Cirqus.Tests.TestHelpers
         [Test]
         public void VerifiesThatEventsCanBeSerialized()
         {
-            Assert.Throws<ArgumentException >(() => _context.Save(Guid.NewGuid(), UnserializableDomainEvent.Create("hej der!")));
+            Assert.Throws<ArgumentException>(() => _context.Save(Guid.NewGuid(), UnserializableDomainEvent.Create("hej der!")));
         }
 
         class UnserializableDomainEvent : DomainEvent<AnAggregate>
@@ -151,15 +204,17 @@ namespace d60.Cirqus.Tests.TestHelpers
         {
             // arrange
             var rootId = Guid.NewGuid();
-            var uow = _context.BeginUnitOfWork();
-            var root = uow.Get<AnAggregate>(rootId);
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                var root = uow.Get<AnAggregate>(rootId);
 
-            // act
-            root.DoStuff();
+                // act
+                root.DoStuff();
 
-            // assert
-            Assert.That(uow.EmittedEvents.Cast<AnEvent>().Single(), Is.TypeOf<AnEvent>());
-            Assert.That(uow.EmittedEvents.Cast<AnEvent>().Single().GetAggregateRootId(), Is.EqualTo(rootId));
+                // assert
+                Assert.That(uow.EmittedEvents.Cast<AnEvent>().Single(), Is.TypeOf<AnEvent>());
+                Assert.That(uow.EmittedEvents.Cast<AnEvent>().Single().GetAggregateRootId(), Is.EqualTo(rootId));
+            }
         }
 
         [Test]

@@ -36,14 +36,20 @@ namespace d60.Cirqus.TestHelpers
             return this;
         }
 
-        public void ProcessCommand<TAggregateRoot>(Command<TAggregateRoot> command) where TAggregateRoot : AggregateRoot, new()
+        public IEnumerable<DomainEvent> ProcessCommand<TAggregateRoot>(Command<TAggregateRoot> command) where TAggregateRoot : AggregateRoot, new()
         {
-            var unitOfWork = BeginUnitOfWork();
-            var aggregateRoot = unitOfWork.Get<TAggregateRoot>(command.AggregateRootId);
-            
-            command.Execute(aggregateRoot);
+            using (var unitOfWork = BeginUnitOfWork())
+            {
+                var aggregateRoot = unitOfWork.Get<TAggregateRoot>(command.AggregateRootId);
 
-            unitOfWork.Commit();
+                command.Execute(aggregateRoot);
+
+                var eventsToReturn = unitOfWork.EmittedEvents.ToList();
+
+                unitOfWork.Commit();
+
+                return eventsToReturn;
+            }
         }
 
         public TestUnitOfWork BeginUnitOfWork()
@@ -58,12 +64,38 @@ namespace d60.Cirqus.TestHelpers
             _currentTime = fixedCurrentTime;
         }
 
-        public IEnumerable<AggregateRootTestInfo> AggregateRootsInHistory
+        public IEnumerable<AggregateRoot> AggregateRootsInHistory
         {
             get
             {
-                return _eventStore.GroupBy(e => e.GetAggregateRootId())
-                    .Select(group => new AggregateRootTestInfo(@group.Key, @group.Max(g => g.GetSequenceNumber()), @group.Max(g => g.GetGlobalSequenceNumber())));
+                return _eventStore
+                    .Select(e => e.GetAggregateRootId()).Distinct()
+                    .Select(aggregateRootId =>
+                    {
+                        var firstEvent = _eventStore.Load(aggregateRootId, 0, 1).First();
+                        var typeName = (firstEvent.Meta[DomainEvent.MetadataKeys.Owner] ?? "").ToString();
+                        var type = Type.GetType(typeName);
+
+                        if (type == null) return null;
+
+                        var parameters = new object[] {aggregateRootId, new RealUnitOfWork(), long.MaxValue};
+
+                        try
+                        {
+                            var info = _aggregateRootRepository
+                                .GetType()
+                                .GetMethod("Get")
+                                .MakeGenericMethod(type)
+                                .Invoke(_aggregateRootRepository, parameters);
+
+                            return (AggregateRoot) info.GetType().GetProperty("AggregateRoot").GetValue(info);
+                        }
+                        catch (Exception exception)
+                        {
+                            throw new ApplicationException(string.Format("Could not hydrate aggregate root {0} with ID {1}!", type, aggregateRootId), exception);
+                        }
+                    })
+                    .Where(aggregateRoot => aggregateRoot != null);
             }
         }
 
@@ -104,7 +136,7 @@ namespace d60.Cirqus.TestHelpers
             var domainEvents = new[] { domainEvent };
 
             _eventStore.Save(Guid.NewGuid(), domainEvents);
-            
+
             _eventDispatcher.Dispatch(_eventStore, domainEvents);
         }
 
@@ -114,12 +146,11 @@ namespace d60.Cirqus.TestHelpers
 
             domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId] = aggregateRootId;
             domainEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber] = _eventStore.GetNextSeqNo(aggregateRootId);
-            domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = AggregateRoot.GetOwnerFromType(typeof (TAggregateRoot));
-            domainEvent.Meta[DomainEvent.MetadataKeys.TimeLocal] = now.ToLocalTime();
+            domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = AggregateRoot.GetOwnerFromType(typeof(TAggregateRoot));
             domainEvent.Meta[DomainEvent.MetadataKeys.TimeUtc] = now;
 
             domainEvent.Meta.TakeFromAttributes(domainEvent.GetType());
-            domainEvent.Meta.TakeFromAttributes(typeof (TAggregateRoot));
+            domainEvent.Meta.TakeFromAttributes(typeof(TAggregateRoot));
 
             _serializer.EnsureSerializability(domainEvent);
         }

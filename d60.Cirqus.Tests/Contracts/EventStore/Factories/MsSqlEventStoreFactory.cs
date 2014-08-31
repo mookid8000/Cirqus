@@ -10,11 +10,11 @@ namespace d60.Cirqus.Tests.Contracts.EventStore.Factories
 
         public MsSqlEventStoreFactory()
         {
-            TestSqlHelper.EnsureTestDatabaseExists();
+            MsSqlTestHelper.EnsureTestDatabaseExists();
 
-            var connectionString = TestSqlHelper.ConnectionString;
+            var connectionString = MsSqlTestHelper.ConnectionString;
             
-            TestSqlHelper.DropTable("events");
+            MsSqlTestHelper.DropTable("events");
 
             _eventStore = new MsSqlEventStore(connectionString, "events");
             

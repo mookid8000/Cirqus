@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 
-namespace d60.Cirqus.Config
+namespace d60.Cirqus
 {
     /// <summary>
     /// Main command processor event emitter thing - if you can successfully create this bad boy, you have a fully functioning event sourcing thing going for you
@@ -23,16 +23,8 @@ namespace d60.Cirqus.Config
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
         }
 
-        const string InnerProcessMethodName = "InnerProcessCommand";
-
-        static readonly MethodInfo CommandProcessorMethod =
-            MethodBase.GetCurrentMethod().DeclaringType
-                .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
-                .SingleOrDefault(m => m.Name == InnerProcessMethodName && m.IsGenericMethod);
-
         readonly Options _options = new Options();
         readonly Retryer _retryer = new Retryer();
-        readonly ICommandMapper _commandMapper = new CommandMapper();
         readonly IEventStore _eventStore;
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventDispatcher _eventDispatcher;
@@ -42,11 +34,6 @@ namespace d60.Cirqus.Config
             if (eventStore == null) throw new ArgumentNullException("eventStore");
             if (aggregateRootRepository == null) throw new ArgumentNullException("aggregateRootRepository");
             if (eventDispatcher == null) throw new ArgumentNullException("eventDispatcher");
-
-            if (CommandProcessorMethod == null)
-            {
-                throw new ApplicationException(string.Format("Could not find the expected eventDispatcher method '{0}' on {1}", InnerProcessMethodName, GetType()));
-            }
 
             _eventStore = eventStore;
             _aggregateRootRepository = aggregateRootRepository;
@@ -75,31 +62,6 @@ namespace d60.Cirqus.Config
         {
             _logger.Debug("Processing command: {0}", command);
 
-            var commandType = command.GetType();
-            var aggregateRootType = GetAggregateRootType(commandType);
-
-            try
-            {
-                CommandProcessorMethod
-                    .MakeGenericMethod(aggregateRootType, commandType)
-                    .Invoke(this, new object[] { command });
-            }
-            catch (TargetInvocationException exception)
-            {
-                var inner = exception.InnerException;
-                inner.PreserveStackTrace();
-                throw inner;
-            }
-        }
-
-        // ReSharper disable UnusedMember.Local
-        /// <summary>
-        /// This method is called via reflection!
-        /// </summary>
-        void InnerProcessCommand<TAggregateRoot, TCommand>(TCommand command)
-            where TCommand : Command<TAggregateRoot>
-            where TAggregateRoot : AggregateRoot, new()
-        {
             var emittedDomainEvents = new List<DomainEvent>();
 
             try
@@ -108,7 +70,14 @@ namespace d60.Cirqus.Config
 
                 _retryer.RetryOn<ConcurrencyException>(() =>
                 {
-                    var eventsFromThisUnitOfWork = DoProcessCommand<TAggregateRoot, TCommand>(batchId, command);
+                    var eventsFromThisUnitOfWork = InnerProcessCommand(command).ToList();
+
+                    // if command processing yielded no events, there's no more work to do
+                    if (!eventsFromThisUnitOfWork.Any()) return;
+
+                    // first: save the events
+                    _logger.Debug("Saving batch {0} with {1} events", batchId, eventsFromThisUnitOfWork.Count);
+                    _eventStore.Save(batchId, eventsFromThisUnitOfWork);
 
                     emittedDomainEvents.AddRange(eventsFromThisUnitOfWork);
                 }, maxRetries: Options.MaxRetries);
@@ -123,8 +92,6 @@ namespace d60.Cirqus.Config
 
                 throw CommandProcessingException.Create(command, exception);
             }
-
-            if (!emittedDomainEvents.Any()) return;
 
             try
             {
@@ -145,25 +112,12 @@ namespace d60.Cirqus.Config
                 throw new ApplicationException(message, exception);
             }
         }
-        // ReSharper restore UnusedMember.Local
 
-        IEnumerable<DomainEvent> DoProcessCommand<TAggregateRoot, TCommand>(Guid batchId, TCommand command)
-            where TCommand : Command<TAggregateRoot>
-            where TAggregateRoot : AggregateRoot, new()
+        IEnumerable<DomainEvent> InnerProcessCommand(Command command)
         {
             var unitOfWork = new RealUnitOfWork();
-            var handler = _commandMapper.GetHandlerFor<TCommand, TAggregateRoot>();
-            var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(command.AggregateRootId, unitOfWork: unitOfWork);
-            var aggregateRoot = aggregateRootInfo.AggregateRoot;
 
-            unitOfWork.AddToCache(aggregateRoot, aggregateRootInfo.LastGlobalSeqNo);
-
-            if (aggregateRootInfo.IsNew)
-            {
-                aggregateRoot.InvokeCreated();
-            }
-
-            handler(command, aggregateRoot);
+            command.Execute(new DefaultCommandContext(unitOfWork, _aggregateRootRepository));
 
             var emittedEvents = unitOfWork.EmittedEvents.ToList();
 
@@ -174,28 +128,7 @@ namespace d60.Cirqus.Config
                 e.Meta.Merge(command.Meta);
             }
 
-            _logger.Debug("Saving batch {0} with {1} events", batchId, emittedEvents.Count);
-
-            // first: save the events
-            _eventStore.Save(batchId, emittedEvents);
-
             return emittedEvents;
-        }
-
-        static Type GetAggregateRootType(Type commandType)
-        {
-            var baseCommandType = commandType;
-
-            do
-            {
-                if (baseCommandType.IsGenericType && baseCommandType.GetGenericTypeDefinition() == typeof(Command<>))
-                {
-                    return baseCommandType.GetGenericArguments().Single();
-                }
-                baseCommandType = baseCommandType.BaseType;
-            } while (baseCommandType != null);
-
-            throw new ArgumentException(string.Format("Could not find the generic Command<> base type from which {0} should have been derived - please derive commands off of the generic Command<> type, closing it with the type of the aggregate root that the command targets, e.g. Command<SomeAggregateRoot>", commandType));
         }
     }
 }
