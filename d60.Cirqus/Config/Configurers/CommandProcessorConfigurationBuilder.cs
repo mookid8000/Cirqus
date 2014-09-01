@@ -13,6 +13,9 @@ namespace d60.Cirqus.Config.Configurers
         IFullConfiguration,
         IRegistrar
     {
+        readonly List<ResolutionContext.Resolver> _resolvers = new List<ResolutionContext.Resolver>();
+        readonly List<Action<Options>> _optionActions = new List<Action<Options>>();
+
         public IAggregateRootRepositoryConfigurationBuilderApi EventStore(Action<EventStoreConfigurationBuilder> configure)
         {
             configure(new EventStoreConfigurationBuilder(this));
@@ -45,45 +48,65 @@ namespace d60.Cirqus.Config.Configurers
 
         public ICommandProcessor Create()
         {
-            var resolutionContext = new ResolutionContext(_factories);
+            FillInDefaults();
 
-            var eventStore = Get<IEventStore>(resolutionContext);
-            var aggregateRootRepository = Get<IAggregateRootRepository>(resolutionContext);
-            var eventDispatcher = Get<IEventDispatcher>(resolutionContext);
+            var resolutionContext = new ResolutionContext(_resolvers);
+
+            var eventStore = resolutionContext.Get<IEventStore>();
+            var aggregateRootRepository = resolutionContext.Get<IAggregateRootRepository>();
+            var eventDispatcher = resolutionContext.Get<IEventDispatcher>();
 
             var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher);
-            
-            _factories
-                .OfType<Action<Options>>()
-                .ToList()
-                .ForEach(action => action(commandProcessor.Options));
+
+            _optionActions.ForEach(action => action(commandProcessor.Options));
 
             commandProcessor.Initialize();
 
             return commandProcessor;
         }
 
-        readonly List<Delegate> _factories = new List<Delegate>();
+        void FillInDefaults()
+        {
+            if (_resolvers.OfType<ResolutionContext.Resolver<IAggregateRootRepository>>().All(r => r.Decorator))
+            {
+                Register<IAggregateRootRepository>(context => new DefaultAggregateRootRepository(context.Get<IEventStore>()));
+            }
+        }
 
         public void Register<TService>(Func<ResolutionContext, TService> serviceFactory, bool decorator = false)
         {
-            if (decorator)
+            var havePrimaryResolverAlready = _resolvers.OfType<ResolutionContext.Resolver<TService>>().Any(r => !r.Decorator);
+
+            if (!decorator && havePrimaryResolverAlready)
             {
-                _factories.Insert(0, serviceFactory);
-                return;
+                var message = string.Format("Attempted to register factory method for {0} as non-decorator," +
+                                            " but there's already a primary resolver for that service! There" +
+                                            " can be only one primary resolver for each service type (but" +
+                                            " any number of decorators)",
+                    typeof(TService));
+
+                throw new InvalidOperationException(message);
             }
 
-            _factories.Add(serviceFactory);
-        }
+            var resolver = new ResolutionContext.Resolver<TService>
+            {
+                Type = typeof (TService),
+                Factory = serviceFactory,
+                Decorator = decorator
+            };
 
-        public TService Get<TService>(ResolutionContext context)
-        {
-            return context.Get<TService>();
+            if (decorator)
+            {
+                _resolvers.Insert(0, resolver);
+                return;
+            }
+            
+            _resolvers.Add(resolver);
         }
 
         public void RegisterOptionConfig(Action<Options> optionAction)
         {
-            _factories.Add(optionAction);
+            _optionActions.Add(optionAction);
         }
     }
 }

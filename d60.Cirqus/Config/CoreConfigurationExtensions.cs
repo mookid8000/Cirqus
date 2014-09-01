@@ -17,12 +17,12 @@ namespace d60.Cirqus.Config
             builder.Registrar
                 .Register<IAggregateRootRepository>(
                     context => new CachingAggregateRootRepositoryDecorator(
-                        builder.Registrar.Get<IAggregateRootRepository>(context),
+                        context.Get<IAggregateRootRepository>(),
                         new InMemorySnapshotCache
                         {
                             ApproximateMaxNumberOfCacheEntries = approximateMaxNumberOfCacheEntries
                         },
-                        builder.Registrar.Get<IEventStore>(context)),
+                        context.Get<IEventStore>()),
                     decorator: true
                 );
 
@@ -31,13 +31,13 @@ namespace d60.Cirqus.Config
         public static void UseDefault(this AggregateRootRepositoryConfigurationBuilder builder)
         {
             builder.Registrar
-                .Register<IAggregateRootRepository>(context => new DefaultAggregateRootRepository(builder.Registrar.Get<IEventStore>(context)));
+                .Register<IAggregateRootRepository>(context => new DefaultAggregateRootRepository(context.Get<IEventStore>()));
         }
 
         public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IViewManager[] viewManagers)
         {
             builder.Registrar
-                .Register<IEventDispatcher>(context => new ViewManagerEventDispatcher(builder.Registrar.Get<IAggregateRootRepository>(context), viewManagers));
+                .Register<IEventDispatcher>(context => new ViewManagerEventDispatcher(context.Get<IAggregateRootRepository>(), viewManagers));
         }
 
         public static void PurgeExistingViews(this OptionsConfigurationBuilder builder, bool purgeViewsAtStartup = false)
