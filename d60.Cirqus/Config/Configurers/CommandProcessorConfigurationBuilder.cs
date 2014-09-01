@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Text;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 
@@ -88,25 +91,64 @@ namespace d60.Cirqus.Config.Configurers
                 throw new InvalidOperationException(message);
             }
 
-            var resolver = new ResolutionContext.Resolver<TService>
-            {
-                Type = typeof (TService),
-                Factory = serviceFactory,
-                Decorator = decorator
-            };
+            var resolver = new ResolutionContext.Resolver<TService>(serviceFactory, decorator);
 
             if (decorator)
             {
                 _resolvers.Insert(0, resolver);
                 return;
             }
-            
+
             _resolvers.Add(resolver);
         }
 
         public void RegisterOptionConfig(Action<Options> optionAction)
         {
             _optionActions.Add(optionAction);
+        }
+
+        internal void LogServicesTo(TextWriter writer)
+        {
+            var es = _resolvers.OfType<ResolutionContext.Resolver<IEventStore>>().ToList();
+            var agg = _resolvers.OfType<ResolutionContext.Resolver<IAggregateRootRepository>>().ToList();
+            var ed = _resolvers.OfType<ResolutionContext.Resolver<IEventDispatcher>>().ToList();
+
+            writer.WriteLine(@"----------------------------------------------------------------------
+Event store:
+{0}
+
+Aggregate root repository:
+{1}
+
+Event dispatcher:
+{2}
+----------------------------------------------------------------------",
+                                                                       Format(es), Format(agg), Format(ed));
+        }
+
+        string Format<TService>(List<ResolutionContext.Resolver<TService>> agg)
+        {
+            var primary = agg.Where(r => !r.Decorator)
+                .ToList();
+
+            var decorators = agg.Where(r => r.Decorator)
+                .ToList();
+
+            var builder = new StringBuilder();
+
+            if (primary.Any())
+            {
+                builder.AppendLine(@"    Primary:");
+                builder.AppendLine(string.Join(Environment.NewLine, primary.Select(p => string.Format("        {0}", p.Type))));
+            }
+
+            if (decorators.Any())
+            {
+                builder.AppendLine(@"    Decorators:");
+                builder.AppendLine(string.Join(Environment.NewLine, decorators.Select(p => string.Format("        {0}", p.Type))));
+            }
+
+            return builder.ToString();
         }
     }
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Services;
 
 namespace d60.Cirqus.Config.Configurers
 {
@@ -21,7 +20,7 @@ namespace d60.Cirqus.Config.Configurers
             if (_cache.ContainsKey(typeof(TService)))
             {
                 var cachedResult = (TService)_cache[typeof(TService)];
-                Console.WriteLine("Resolved: {0}{1} (from cache)", new String(' ', GetLevelFor<TService>() * 2), cachedResult);
+                
                 return cachedResult;
             }
 
@@ -40,8 +39,6 @@ namespace d60.Cirqus.Config.Configurers
             var result = resolver.InvokeFactory(this);
 
             _cache[typeof(TService)] = result;
-
-            Console.WriteLine("Resolved: {0}{1}", new String(' ', GetLevelFor<TService>() * 2), result);
 
             AddToLevel<TService>(-1);
 
@@ -71,7 +68,13 @@ namespace d60.Cirqus.Config.Configurers
 
         public abstract class Resolver
         {
-            public Type Type { get; set; }
+            protected Resolver(Delegate factory, bool decorator)
+            {
+                Factory = factory;
+                Decorator = decorator;
+            }
+
+            public Type Type { get; protected set; }
 
             public Delegate Factory { get; set; }
 
@@ -80,9 +83,14 @@ namespace d60.Cirqus.Config.Configurers
 
         public class Resolver<TService> : Resolver
         {
+            public Resolver(Delegate factory, bool decorator) : base(factory, decorator)
+            {
+                Type = typeof (TService);
+            }
+
             public TService InvokeFactory(ResolutionContext resolutionContext)
             {
-                return ((Func<ResolutionContext, TService>)Factory)(resolutionContext);
+                return ((Func<ResolutionContext, TService>) Factory)(resolutionContext);
             }
         }
     }
