@@ -7,6 +7,11 @@ using d60.Cirqus.Logging;
 
 namespace d60.Cirqus.Snapshotting
 {
+    /// <summary>
+    /// In-memory implementation of <see cref="ISnapshotCache"/> that can hold approximately <seealso cref="ApproximateMaxNumberOfCacheEntries"/> entries in
+    /// memory. Each entry is assigned value that is computed based on the number of applied events, the number of times the entry has been hit, and the
+    /// time since last hit (implementation). 
+    /// </summary>
     public class InMemorySnapshotCache : ISnapshotCache
     {
         static Logger _logger;
@@ -112,26 +117,37 @@ namespace d60.Cirqus.Snapshotting
 
         public AggregateRootInfo<TAggregateRoot> GetCloneFromCache<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
         {
-            var entriesForThisRoot = _cacheEntries.GetOrAdd(aggregateRootId, id => new ConcurrentDictionary<long, CacheEntry>());
+            try
+            {
+                var entriesForThisRoot = _cacheEntries.GetOrAdd(aggregateRootId,
+                    id => new ConcurrentDictionary<long, CacheEntry>());
 
-            CacheEntry entry;
+                CacheEntry entry;
 
-            var availableSequenceNumbersForThisRoot = entriesForThisRoot
-                .Where(e => e.Value.GlobalSequenceNumber <= globalSequenceNumber)
-                .Select(e => e.Value.GlobalSequenceNumber)
-                .ToArray();
+                var availableSequenceNumbersForThisRoot = entriesForThisRoot
+                    .Where(e => e.Value.GlobalSequenceNumber <= globalSequenceNumber)
+                    .Select(e => e.Value.GlobalSequenceNumber)
+                    .ToArray();
 
-            if (!availableSequenceNumbersForThisRoot.Any()) return null;
+                if (!availableSequenceNumbersForThisRoot.Any()) return null;
 
-            var highestSequenceNumberAvailableForThisRoot = availableSequenceNumbersForThisRoot.Max();
-            if (!entriesForThisRoot.TryGetValue(highestSequenceNumberAvailableForThisRoot, out entry))
+                var highestSequenceNumberAvailableForThisRoot = availableSequenceNumbersForThisRoot.Max();
+             
+                if (!entriesForThisRoot.TryGetValue(highestSequenceNumberAvailableForThisRoot, out entry))
+                    return null;
+
+                var aggregateRootInfoToReturn = entry.GetCloneAs<TAggregateRoot>();
+
+                entry.IncrementHits();
+
+                return aggregateRootInfoToReturn;
+            }
+            catch (Exception exception)
+            {
+                _logger.Warn("An error occurred while attempting to load cache entry for {0}/{1}: {2}", aggregateRootId, globalSequenceNumber, exception);
+
                 return null;
-
-            var aggregateRootInfoToReturn = entry.GetCloneAs<TAggregateRoot>();
-
-            entry.IncrementHits();
-
-            return aggregateRootInfoToReturn;
+            }
         }
 
         public void PutCloneToCache<TAggregateRoot>(AggregateRootInfo<TAggregateRoot> aggregateRootInfo) where TAggregateRoot : AggregateRoot, new()
@@ -163,7 +179,7 @@ namespace d60.Cirqus.Snapshotting
 
             if (numberOfEntriesCurrentlyInTheCache <= _approximateMaxNumberOfCacheEntries) return;
 
-            var removalsToPerform = Math.Max(10, _approximateMaxNumberOfCacheEntries/10);
+            var removalsToPerform = Math.Max(10, _approximateMaxNumberOfCacheEntries / 10);
 
             _logger.Debug("Performing cache trimming - cache currently holds {0} entries divided among {1} aggregate roots - will attempt to perform {2} removals",
                 numberOfEntriesCurrentlyInTheCache, _cacheEntries.Count, removalsToPerform);
