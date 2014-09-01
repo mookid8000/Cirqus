@@ -182,3 +182,6 @@
 
 * Allow properties of type `DateTime`, `DateTimeOffset` and `TimeSpan` on `MsSqlViewManager`-managed views
 
+## 0.12.3
+
+* Introduced a fluent configuration API that will make it easier to discover configuration options + make it harder to end up with e.g. an un-initialized command processor

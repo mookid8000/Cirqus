@@ -4,6 +4,7 @@ using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Config;
+using d60.Cirqus.Config.Configurers;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
@@ -21,6 +22,11 @@ namespace d60.Cirqus
         static CommandProcessor()
         {
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+        }
+
+        public static ILoggingAndEventStoreConfigurationBuilderApi With()
+        {
+            return new CommandProcessorConfigurationBuilder();
         }
 
         readonly Options _options = new Options();

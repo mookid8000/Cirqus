@@ -50,6 +50,8 @@
     <Compile Include="Aggregates\DefaultAggregateRootRepository.cs" />
     <Compile Include="Aggregates\IAggregateRootRepository.cs" />
     <Compile Include="Aggregates\ReplayState.cs" />
+    <Compile Include="Config\Configurers\AggregateRootRepositoryConfigurationBuilder.cs" />
+    <Compile Include="Config\Configurers\CommandProcessorConfigurationBuilder.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\CommandMapper.cs" />
     <Compile Include="Commands\CompositeCommand.cs" />
@@ -57,6 +59,18 @@
     <Compile Include="Commands\ICommandMapper.cs" />
     <Compile Include="CommandProcessor.cs" />
     <Compile Include="Commands\DefaultCommandContext.cs" />
+    <Compile Include="Config\Configurers\ILoggingAndEventStoreConfigurationBuilderApi.cs" />
+    <Compile Include="Config\Configurers\LoggingConfigurationBuilder.cs" />
+    <Compile Include="Config\CoreConfigurationExtensions.cs" />
+    <Compile Include="Config\Configurers\IAggregateRootRepositoryConfigurationBuilderApi.cs" />
+    <Compile Include="Config\Configurers\IEventDispatcherConfigurationBuilderApi.cs" />
+    <Compile Include="Config\Configurers\IEventStoreConfigurationBuilderApi.cs" />
+    <Compile Include="Config\Configurers\IFullConfiguration.cs" />
+    <Compile Include="Config\Configurers\IFullConfigurationConfigurationBuilderApi.cs" />
+    <Compile Include="Config\Configurers\EventDispatcherConfigurationBuilder.cs" />
+    <Compile Include="Config\Configurers\EventStoreConfigurationBuilder.cs" />
+    <Compile Include="Config\Configurers\IRegistrar.cs" />
+    <Compile Include="Config\Configurers\OptionsConfigurationBuilder.cs" />
     <Compile Include="ICommandProcessor.cs" />
     <Compile Include="Config\Options.cs" />
     <Compile Include="Config\Retryer.cs" />
