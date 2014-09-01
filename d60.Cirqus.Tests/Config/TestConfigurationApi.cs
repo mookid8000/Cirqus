@@ -10,14 +10,19 @@ namespace d60.Cirqus.Tests.Config
     [TestFixture]
     public class TestConfigurationApi : FixtureBase
     {
-        [Test]
+        [Test, Category(TestCategories.MongoDb)]
         public void CanDoTheConfigThing()
         {
             var mongoConnectionString = ConfigurationManager.ConnectionStrings["mongotestdb"];
 
             var processor = CommandProcessor.With()
+                .Logging(l => l.UseConsole())
                 .EventStore(e => e.StoreInMongoDb(mongoConnectionString.ConnectionString, "Events"))
-                .AggregateRootRepository(r => r.UseDefaultAggregateRootRepository())
+                .AggregateRootRepository(r =>
+                {
+                    r.UseDefaultAggregateRootRepository();
+                    //r.EnableSnapshotCachingInMemory();
+                })
                 .EventDispatcher(d => d.ViewManagerEventDispatcher())
                 .Options(o =>
                 {

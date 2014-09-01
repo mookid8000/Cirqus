@@ -68,7 +68,7 @@
     <Compile Include="Config\Configurers\IFullConfigurationConfigurationBuilderApi.cs" />
     <Compile Include="Config\Configurers\EventDispatcherConfigurationBuilder.cs" />
     <Compile Include="Config\Configurers\EventStoreConfigurationBuilder.cs" />
-    <Compile Include="Config\Configurers\IServiceRegistrar.cs" />
+    <Compile Include="Config\Configurers\IRegistrar.cs" />
     <Compile Include="Config\Configurers\OptionsConfigurationBuilder.cs" />
     <Compile Include="ICommandProcessor.cs" />
     <Compile Include="Config\Options.cs" />

@@ -11,7 +11,7 @@ namespace d60.Cirqus.Config.Configurers
         IAggregateRootRepositoryConfigurationBuilderApi,
         IEventDispatcherConfigurationBuilderApi,
         IFullConfiguration,
-        IServiceRegistrar
+        IRegistrar
     {
         public IAggregateRootRepositoryConfigurationBuilderApi EventStore(Action<EventStoreConfigurationBuilder> configure)
         {

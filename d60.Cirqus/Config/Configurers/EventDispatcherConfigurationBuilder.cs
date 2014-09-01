@@ -2,16 +2,16 @@ namespace d60.Cirqus.Config.Configurers
 {
     public class EventDispatcherConfigurationBuilder
     {
-        readonly IServiceRegistrar _serviceRegistrar;
+        readonly IRegistrar _registrar;
 
-        public EventDispatcherConfigurationBuilder(IServiceRegistrar serviceRegistrar)
+        public EventDispatcherConfigurationBuilder(IRegistrar registrar)
         {
-            _serviceRegistrar = serviceRegistrar;
+            _registrar = registrar;
         }
 
-        public IServiceRegistrar ServiceRegistrar
+        public IRegistrar Registrar
         {
-            get { return _serviceRegistrar; }
+            get { return _registrar; }
         }
     }
 }

@@ -2,16 +2,16 @@
 {
     public class LoggingConfigurationBuilder
     {
-        readonly IServiceRegistrar _serviceRegistrar;
+        readonly IRegistrar _registrar;
 
-        public LoggingConfigurationBuilder(IServiceRegistrar serviceRegistrar)
+        public LoggingConfigurationBuilder(IRegistrar registrar)
         {
-            _serviceRegistrar = serviceRegistrar;
+            _registrar = registrar;
         }
 
-        public IServiceRegistrar ServiceRegistrar
+        public IRegistrar Registrar
         {
-            get { return _serviceRegistrar; }
+            get { return _registrar; }
         }
     }
 }

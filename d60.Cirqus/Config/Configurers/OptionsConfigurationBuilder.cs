@@ -2,16 +2,16 @@ namespace d60.Cirqus.Config.Configurers
 {
     public class OptionsConfigurationBuilder
     {
-        readonly IServiceRegistrar _serviceRegistrar;
+        readonly IRegistrar _registrar;
 
-        public IServiceRegistrar ServiceRegistrar
+        public IRegistrar Registrar
         {
-            get { return _serviceRegistrar; }
+            get { return _registrar; }
         }
 
-        public OptionsConfigurationBuilder(IServiceRegistrar serviceRegistrar)
+        public OptionsConfigurationBuilder(IRegistrar registrar)
         {
-            _serviceRegistrar = serviceRegistrar;
+            _registrar = registrar;
         }
     }
 }

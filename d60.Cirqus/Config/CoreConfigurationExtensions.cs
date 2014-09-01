@@ -13,24 +13,24 @@ namespace d60.Cirqus.Config
     {
         public static void UseDefaultAggregateRootRepository(this AggregateRootRepositoryConfigurationBuilder builder)
         {
-            builder.ServiceRegistrar
-                .Register<IAggregateRootRepository>(() => new DefaultAggregateRootRepository(builder.ServiceRegistrar.Get<IEventStore>()));
+            builder.Registrar
+                .Register<IAggregateRootRepository>(() => new DefaultAggregateRootRepository(builder.Registrar.Get<IEventStore>()));
         }
 
         public static void ViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IViewManager[] viewManagers)
         {
-            builder.ServiceRegistrar
-                .Register<IEventDispatcher>(() => new ViewManagerEventDispatcher(builder.ServiceRegistrar.Get<IAggregateRootRepository>(), viewManagers));
+            builder.Registrar
+                .Register<IEventDispatcher>(() => new ViewManagerEventDispatcher(builder.Registrar.Get<IAggregateRootRepository>(), viewManagers));
         }
 
         public static void PurgeViewsAtStartup(this OptionsConfigurationBuilder builder, bool purgeViewsAtStartup = false)
         {
-            builder.ServiceRegistrar.RegisterOptionConfig(o => o.PurgeExistingViews = purgeViewsAtStartup);
+            builder.Registrar.RegisterOptionConfig(o => o.PurgeExistingViews = purgeViewsAtStartup);
         }
 
         public static void AddDomainExceptionType<TException>(this OptionsConfigurationBuilder builder) where TException : Exception
         {
-            builder.ServiceRegistrar.RegisterOptionConfig(o => o.AddDomainExceptionType<TException>());
+            builder.Registrar.RegisterOptionConfig(o => o.AddDomainExceptionType<TException>());
         }
 
         public static void UseConsole(this LoggingConfigurationBuilder builder, Logger.Level minLevel = Logger.Level.Info)
