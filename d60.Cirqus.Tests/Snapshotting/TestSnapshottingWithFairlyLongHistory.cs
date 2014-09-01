@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
-using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
@@ -26,10 +25,21 @@ namespace d60.Cirqus.Tests.Snapshotting
 
         protected override void DoSetUp()
         {
-            _database = MongoHelper.InitializeTestDatabase();
+            _database = MongoHelper.InitializeTestDatabase(dropExistingDatabase:false);
 
             CirqusLoggerFactory.Current = new ConsoleLoggerFactory(Logger.Level.Warn);
         }
+
+        [Test]
+        public void ProcessOneMoreCommand()
+        {
+            var aggregateRootId = new Guid("c231140b-ca3c-41e9-ac98-013bcea31aca");
+            var commandProcessor = GetCommandProcessor(true);
+            
+            commandProcessor.ProcessCommand(new CrushItRealGood(aggregateRootId, 0.1m));
+            commandProcessor.ProcessCommand(new CrushItRealGood(aggregateRootId, 0.1m));
+        }
+
 
         /// <summary>
         /// Total time spent
@@ -43,7 +53,14 @@ namespace d60.Cirqus.Tests.Snapshotting
         //[TestCase(true, 100, 10000)]
         //[TestCase(true, 1, 10)]
         //[TestCase(false, 1, 10)]
-        [TestCase(true, 1, 5)]
+        //[TestCase(true, 1, 5)]
+        //[TestCase(true, 2, 5)]
+        [TestCase(true, 10, 1000)]
+        [TestCase(false, 10, 1000)]
+        [TestCase(true, 100, 10000)]
+        [TestCase(false, 100, 10000)]
+        [TestCase(true, 10, 10000)]
+        [TestCase(false, 10, 10000)]
         public void RunTest(bool useCaching, int numberOfRoots, int numberOfCommands)
         {
             var aggregateRootIds = Enumerable.Range(0, numberOfRoots).Select(i => Guid.NewGuid()).ToArray();
@@ -89,7 +106,7 @@ caching in use: {3}",
 
             if (useCaching)
             {
-                aggregateRootRepository = new CachingAggregateRootRepository(aggregateRootRepository, new InMemorySnapshotCache(), eventStore);
+                aggregateRootRepository = new CachingAggregateRootRepository(aggregateRootRepository, new InMemorySnapshotCache{ApproximateMaxNumberOfCacheEntries = 100}, eventStore);
             }
 
             _timeTaker.InnerAggregateRootRepository = aggregateRootRepository;
@@ -158,11 +175,6 @@ caching in use: {3}",
                 _timeSpentLoadingEvents += stopwatch.Elapsed;
 
                 return domainEvents;
-            }
-
-            public long GetNextSeqNo(Guid aggregateRootId)
-            {
-                return InnerEventStore.GetNextSeqNo(aggregateRootId);
             }
 
             public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)

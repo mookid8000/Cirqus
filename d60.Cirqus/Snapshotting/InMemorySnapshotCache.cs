@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Threading;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Logging;
 
@@ -17,9 +18,28 @@ namespace d60.Cirqus.Snapshotting
 
         readonly ConcurrentDictionary<Guid, ConcurrentDictionary<long, CacheEntry>> _cacheEntries = new ConcurrentDictionary<Guid, ConcurrentDictionary<long, CacheEntry>>();
 
+        long _currentNumberOfCacheEntries; //<long because of Interlocked.Read
+        int _approximateMaxNumberOfCacheEntries = 1000; //< approximate because who cares if we're slightly off
+
+        public int ApproximateMaxNumberOfCacheEntries
+        {
+            get { return _approximateMaxNumberOfCacheEntries; }
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentException(string.Format("Cannot set maximum number of cache entries to {0} - it must be 0 or greater", value));
+                }
+                _approximateMaxNumberOfCacheEntries = value;
+
+                PossiblyTrimCache();
+            }
+        }
+
         internal class CacheEntry
         {
-            static Sturdylizer _sturdylizer = new Sturdylizer();
+            static readonly Sturdylizer Sturdylizer = new Sturdylizer();
+
             CacheEntry()
             {
             }
@@ -36,12 +56,13 @@ namespace d60.Cirqus.Snapshotting
                     rootInstance.AggregateRootRepository = null;
                     rootInstance.UnitOfWork = null;
 
-                    var data = _sturdylizer.SerializeObject(rootInstance);
+                    var data = Sturdylizer.SerializeObject(rootInstance);
 
                     return new CacheEntry
                     {
                         SequenceNumber = aggregateRootInfo.LastSeqNo,
                         GlobalSequenceNumber = aggregateRootInfo.LastGlobalSeqNo,
+                        AggregateRootId = aggregateRootInfo.AggregateRootId,
                         Hits = 0,
                         TimeOfLastHit = DateTime.UtcNow,
                         Data = data
@@ -60,6 +81,8 @@ namespace d60.Cirqus.Snapshotting
 
             public long GlobalSequenceNumber { get; private set; }
 
+            public Guid AggregateRootId { get; private set; }
+
             public int Hits { get; private set; }
 
             public DateTime TimeOfLastHit { get; private set; }
@@ -70,11 +93,20 @@ namespace d60.Cirqus.Snapshotting
                 TimeOfLastHit = DateTime.UtcNow;
             }
 
+            public double ComputeValue()
+            {
+                var totalSecondsSinceLastHit = (DateTime.UtcNow - TimeOfLastHit).TotalSeconds;
+
+                var ensureAlwaysPositive = Math.Max(0.01, totalSecondsSinceLastHit);
+
+                return SequenceNumber * Hits / ensureAlwaysPositive;
+            }
+
             public AggregateRootInfo<TAggregateRoot> GetCloneAs<TAggregateRoot>() where TAggregateRoot : AggregateRoot
             {
-                var instance = (TAggregateRoot)_sturdylizer.DeserializeObject(Data);
+                var instance = (TAggregateRoot)Sturdylizer.DeserializeObject(Data);
 
-                return AggregateRootInfo<TAggregateRoot>.Old(instance, SequenceNumber, GlobalSequenceNumber);
+                return AggregateRootInfo<TAggregateRoot>.Create(instance);
             }
         }
 
@@ -104,10 +136,76 @@ namespace d60.Cirqus.Snapshotting
 
         public void PutCloneToCache<TAggregateRoot>(AggregateRootInfo<TAggregateRoot> aggregateRootInfo) where TAggregateRoot : AggregateRoot, new()
         {
+            // don't waste cycles add/trimming
+            if (IsEffectivelyDisabled) return;
+
             var aggregateRootId = aggregateRootInfo.AggregateRootId;
             var entriesForThisRoot = _cacheEntries.GetOrAdd(aggregateRootId, id => new ConcurrentDictionary<long, CacheEntry>());
 
-            entriesForThisRoot.TryAdd(aggregateRootInfo.LastGlobalSeqNo, CacheEntry.Create(aggregateRootInfo));
+            var entrySuccessfullyAdded = entriesForThisRoot.TryAdd(aggregateRootInfo.LastGlobalSeqNo, CacheEntry.Create(aggregateRootInfo));
+
+            if (entrySuccessfullyAdded)
+            {
+                Interlocked.Increment(ref _currentNumberOfCacheEntries);
+            }
+
+            PossiblyTrimCache();
+        }
+
+        bool IsEffectivelyDisabled
+        {
+            get { return _approximateMaxNumberOfCacheEntries == 0; }
+        }
+
+        void PossiblyTrimCache()
+        {
+            var numberOfEntriesCurrentlyInTheCache = Interlocked.Read(ref _currentNumberOfCacheEntries);
+
+            if (numberOfEntriesCurrentlyInTheCache <= _approximateMaxNumberOfCacheEntries) return;
+
+            var removalsToPerform = Math.Max(10, _approximateMaxNumberOfCacheEntries/10);
+
+            _logger.Debug("Performing cache trimming - cache currently holds {0} entries divided among {1} aggregate roots - will attempt to perform {2} removals",
+                numberOfEntriesCurrentlyInTheCache, _cacheEntries.Count, removalsToPerform);
+
+            var entriesOrderedByValue = _cacheEntries
+                .SelectMany(kvp => kvp.Value)
+                .Select(kvp => kvp.Value)
+                .Select(entry => new
+                {
+                    Entry = entry,
+                    Value = entry.ComputeValue()
+                })
+                .OrderBy(a => a.Value)
+                .ToArray();
+
+            var index = 0;
+
+            while (index < entriesOrderedByValue.Length && removalsToPerform > 0)
+            {
+                ConcurrentDictionary<long, CacheEntry> entriesForThisRoot;
+
+                var entryToRemove = entriesOrderedByValue[index++];
+
+                if (!_cacheEntries.TryGetValue(entryToRemove.Entry.AggregateRootId, out entriesForThisRoot))
+                    continue;
+
+                CacheEntry removedEntry;
+
+                var entrySuccessfullyRemoved = entriesForThisRoot.TryRemove(entryToRemove.Entry.GlobalSequenceNumber, out removedEntry);
+
+                if (entrySuccessfullyRemoved)
+                {
+                    removalsToPerform--;
+
+                    Interlocked.Decrement(ref _currentNumberOfCacheEntries);
+                }
+            }
+
+            if (removalsToPerform > 0)
+            {
+                _logger.Debug("Cache trimming could not remove {0} cache entries (no worries, they have probably been removed by another thread)", removalsToPerform);
+            }
         }
     }
 }

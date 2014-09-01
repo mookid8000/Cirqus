@@ -6,7 +6,7 @@ namespace d60.Cirqus.Tests.MongoDb
 {
     public class MongoHelper
     {
-        public static MongoDatabase InitializeTestDatabase()
+        public static MongoDatabase InitializeTestDatabase(bool dropExistingDatabase = true)
         {
             var connectionStringSettings = ConfigurationManager.ConnectionStrings["mongotestdb"];
             if (connectionStringSettings == null)
@@ -18,9 +18,12 @@ namespace d60.Cirqus.Tests.MongoDb
             var databaseName = GetDatabaseName(url);
             var database = new MongoClient(url).GetServer().GetDatabase(databaseName);
 
-            Console.WriteLine("Dropping Mongo database '{0}'", databaseName);
-            database.Drop();
-            
+            if (dropExistingDatabase)
+            {
+                Console.WriteLine("Dropping Mongo database '{0}'", databaseName);
+                database.Drop();
+            }
+
             return database;
         }
 

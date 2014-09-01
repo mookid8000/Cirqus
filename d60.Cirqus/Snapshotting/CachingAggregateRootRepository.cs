@@ -22,8 +22,18 @@ namespace d60.Cirqus.Snapshotting
 
         public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = Int64.MaxValue) where TAggregateRoot : AggregateRoot, new()
         {
-            return PrepareCloneFromCache<TAggregateRoot>(aggregateRootId, maxGlobalSequenceNumber, unitOfWork)
-                   ?? GetFromInnerRepository<TAggregateRoot>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber);
+            var cloneFromCache = PrepareCloneFromCache<TAggregateRoot>(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
+
+            if (cloneFromCache != null) return cloneFromCache;
+
+            var fromRepository = GetFromInnerRepository<TAggregateRoot>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber);
+
+            if (fromRepository.LastSeqNo > 0)
+            {
+                _snapshotCache.PutCloneToCache(fromRepository);
+            }
+
+            return fromRepository;
         }
 
         public bool Exists<TAggregateRoot>(Guid aggregateRootId, long maxGlobalSequenceNumber = Int64.MaxValue, IUnitOfWork unitOfWork = null) where TAggregateRoot : AggregateRoot
@@ -41,7 +51,7 @@ namespace d60.Cirqus.Snapshotting
             var stopwatch = Stopwatch.StartNew();
 
             var eventsToApply = _eventStore
-                .Load(cloneInfo.AggregateRootId, cloneInfo.LastGlobalSeqNo)
+                .Load(cloneInfo.AggregateRootId, cloneInfo.LastSeqNo + 1)
                 .Where(e => e.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber);
 
             cloneInfo.Apply(eventsToApply, unitOfWork);
@@ -61,7 +71,7 @@ namespace d60.Cirqus.Snapshotting
         AggregateRootInfo<TAggregateRoot> GetFromInnerRepository<TAggregateRoot>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
         {
             var aggregateRootInfo = _innerAggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber);
-            _snapshotCache.PutCloneToCache(aggregateRootInfo);
+
             return aggregateRootInfo;
         }
     }

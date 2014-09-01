@@ -9,14 +9,21 @@ namespace d60.Cirqus.Tests.Snapshotting
     [TestFixture]
     public class TestInMemorySnapshotCache : FixtureBase
     {
+        static readonly MethodInfo MethodInfo = typeof(TestInMemorySnapshotCache)
+            .GetMethod("RunHashCodeTestWith", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        protected override void DoSetUp()
+        {
+            Assert.That(MethodInfo, Is.Not.Null, "Expected reflection to have found the test method RunHasCodeTestWith");
+        }
+
         [TestCase(typeof(ChallengingSnapshotSpeciments.SimpleRootWithOrdinaryField))]
         [TestCase(typeof(ChallengingSnapshotSpeciments.SimpleRootWithProperty))]
         [TestCase(typeof(ChallengingSnapshotSpeciments.SimpleRootWithPublicField))]
         [TestCase(typeof(ChallengingSnapshotSpeciments.SomeRootWithVariousDifficultThingsGoingOnForIt))]
         public void CanCloneDeepAndGoodWithMyRootsHashCodes(Type rootType)
         {
-            GetType()
-                .GetMethod("RunHashCodeTestWith", BindingFlags.Instance | BindingFlags.NonPublic)
+            MethodInfo
                 .MakeGenericMethod(rootType)
                 .Invoke(this, new object[0]);
         }
@@ -25,15 +32,17 @@ namespace d60.Cirqus.Tests.Snapshotting
         void RunHashCodeTestWith<TAggregateRoot>() where TAggregateRoot : AggregateRoot, new()
         {
             var id = Guid.NewGuid();
-            var instance = new TAggregateRoot { Id = id };
+            var instance = new TAggregateRoot {Id = id, GlobalSequenceNumberCutoff = 0};
 
             var cache = new InMemorySnapshotCache();
-            cache.PutCloneToCache(AggregateRootInfo<TAggregateRoot>.Old(instance, 0, 0));
+            cache.PutCloneToCache(AggregateRootInfo<TAggregateRoot>.Create(instance));
 
             var rootInfo = cache.GetCloneFromCache<TAggregateRoot>(id, 0);
+            Assert.That(rootInfo, Is.Not.Null, "Expected to have found a root in the cache!");
+
             var frozenInstance = rootInfo.AggregateRoot;
 
-            cache.PutCloneToCache(AggregateRootInfo<TAggregateRoot>.Old(frozenInstance, 0, 0));
+            cache.PutCloneToCache(AggregateRootInfo<TAggregateRoot>.Create(frozenInstance));
 
             Assert.That(frozenInstance.GetHashCode(), Is.EqualTo(instance.GetHashCode()));
         }

@@ -23,12 +23,7 @@ namespace d60.Cirqus.Aggregates
 
     public class AggregateRootInfo<TAggregateRoot> : AggregateRootInfo where TAggregateRoot : AggregateRoot
     {
-        public static AggregateRootInfo<TAggregateRoot> New(TAggregateRoot aggregateRoot)
-        {
-            return new AggregateRootInfo<TAggregateRoot>(aggregateRoot);
-        }
-
-        public static AggregateRootInfo<TAggregateRoot> Old(TAggregateRoot aggregateRoot, long lastSeqNo, long lastGlobalSeqNo)
+        public static AggregateRootInfo<TAggregateRoot> Create(TAggregateRoot aggregateRoot)
         {
             return new AggregateRootInfo<TAggregateRoot>(aggregateRoot);
         }
@@ -97,7 +92,7 @@ namespace d60.Cirqus.Aggregates
             }
 
             // restore the cutoff so we don't hinder the root's ability to load other aggregate roots from its emitter methods
-            AggregateRoot.GlobalSequenceNumberCutoff = previousCutoff;
+            //AggregateRoot.GlobalSequenceNumberCutoff = previousCutoff;
             AggregateRoot.ReplayState = ReplayState.None;
         }
 

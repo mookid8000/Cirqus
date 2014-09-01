@@ -43,8 +43,8 @@ namespace d60.Cirqus.Aggregates
             
             aggregate.Initialize(aggregateRootId);
             aggregate.AggregateRootRepository = this;
-            
-            return AggregateRootInfo<TAggregateRoot>.New(aggregate);
+
+            return AggregateRootInfo<TAggregateRoot>.Create(aggregate);
         }
     }
 }
