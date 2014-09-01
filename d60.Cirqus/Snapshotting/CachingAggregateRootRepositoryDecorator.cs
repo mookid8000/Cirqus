@@ -7,13 +7,13 @@ using d60.Cirqus.Extensions;
 
 namespace d60.Cirqus.Snapshotting
 {
-    public class CachingAggregateRootRepository : IAggregateRootRepository
+    public class CachingAggregateRootRepositoryDecorator : IAggregateRootRepository
     {
         readonly IAggregateRootRepository _innerAggregateRootRepository;
         readonly ISnapshotCache _snapshotCache;
         readonly IEventStore _eventStore;
 
-        public CachingAggregateRootRepository(IAggregateRootRepository innerAggregateRootRepository, ISnapshotCache snapshotCache, IEventStore eventStore)
+        public CachingAggregateRootRepositoryDecorator(IAggregateRootRepository innerAggregateRootRepository, ISnapshotCache snapshotCache, IEventStore eventStore)
         {
             _innerAggregateRootRepository = innerAggregateRootRepository;
             _snapshotCache = snapshotCache;

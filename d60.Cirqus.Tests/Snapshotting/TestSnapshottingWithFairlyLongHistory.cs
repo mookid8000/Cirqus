@@ -106,7 +106,7 @@ caching in use: {3}",
 
             if (useCaching)
             {
-                aggregateRootRepository = new CachingAggregateRootRepository(aggregateRootRepository, new InMemorySnapshotCache{ApproximateMaxNumberOfCacheEntries = 100}, eventStore);
+                aggregateRootRepository = new CachingAggregateRootRepositoryDecorator(aggregateRootRepository, new InMemorySnapshotCache{ApproximateMaxNumberOfCacheEntries = 100}, eventStore);
             }
 
             _timeTaker.InnerAggregateRootRepository = aggregateRootRepository;
