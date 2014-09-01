@@ -44,7 +44,7 @@ namespace d60.Cirqus.Config
         /// Registers the given exception type as a "domain exception", meaning that it will be passed
         /// directly to the caller of <seealso cref="CommandProcessor.ProcessCommand"/>
         /// </summary>
-        public void AddDomainException<TException>() where TException : Exception
+        public void AddDomainExceptionType<TException>() where TException : Exception
         {
             _domainExceptionTypes.Add(typeof (TException));
         }

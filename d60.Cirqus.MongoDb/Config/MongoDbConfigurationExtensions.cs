@@ -1,5 +1,6 @@
 ﻿using System.Configuration;
 using d60.Cirqus.Config;
+using d60.Cirqus.Config.Configurers;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
 using MongoDB.Driver;

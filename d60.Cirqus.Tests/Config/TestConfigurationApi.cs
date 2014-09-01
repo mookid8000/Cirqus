@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Config;
 using d60.Cirqus.MongoDb.Config;
@@ -18,7 +19,11 @@ namespace d60.Cirqus.Tests.Config
                 .EventStore(e => e.StoreInMongoDb(mongoConnectionString.ConnectionString, "Events"))
                 .AggregateRootRepository(r => r.UseDefaultAggregateRootRepository())
                 .EventDispatcher(d => d.ViewManagerEventDispatcher())
-                .Options(o => o.PurgeViewsAtStartup(true))
+                .Options(o =>
+                {
+                    o.PurgeViewsAtStartup(true);
+                    o.AddDomainExceptionType<ApplicationException>();
+                })
                 .Create();
 
             var someCommand = new SomeCommand();
