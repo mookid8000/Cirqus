@@ -6,7 +6,7 @@ namespace d60.Cirqus.PostgreSql.Config
 {
     public static class PostgreSqlConfigurationExtensions
     {
-        public static void StoreInPostgreSql(this EventStoreConfigurationBuilder builder, string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true)
+        public static void UsePostgreSql(this EventStoreConfigurationBuilder builder, string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true)
         {
             if (builder == null) throw new ArgumentNullException("builder");
             if (connectionStringOrConnectionStringName == null) throw new ArgumentNullException("connectionStringOrConnectionStringName");

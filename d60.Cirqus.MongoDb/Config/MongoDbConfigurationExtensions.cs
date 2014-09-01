@@ -11,7 +11,7 @@ namespace d60.Cirqus.MongoDb.Config
 {
     public static class MongoDbConfigurationExtensions
     {
-        public static void StoreInMongoDb(this EventStoreConfigurationBuilder builder, string mongoDbConnectionString, string eventCollectionName, bool automaticallyCreateIndexes = true)
+        public static void UseMongoDb(this EventStoreConfigurationBuilder builder, string mongoDbConnectionString, string eventCollectionName, bool automaticallyCreateIndexes = true)
         {
             if (builder == null) throw new ArgumentNullException("builder");
             if (mongoDbConnectionString == null) throw new ArgumentNullException("mongoDbConnectionString");
@@ -25,7 +25,7 @@ namespace d60.Cirqus.MongoDb.Config
             UseMongoDbEventStore(builder, database, eventCollectionName, automaticallyCreateIndexes);
         }
 
-        public static void StoreInMongoDb(this EventStoreConfigurationBuilder builder, MongoDatabase database, string eventCollectionName, bool automaticallyCreateIndexes = true)
+        public static void UseMongoDb(this EventStoreConfigurationBuilder builder, MongoDatabase database, string eventCollectionName, bool automaticallyCreateIndexes = true)
         {
             if (builder == null) throw new ArgumentNullException("builder");
             if (database == null) throw new ArgumentNullException("database");

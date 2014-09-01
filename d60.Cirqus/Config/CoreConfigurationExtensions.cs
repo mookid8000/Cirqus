@@ -11,19 +11,19 @@ namespace d60.Cirqus.Config
 {
     public static class CoreConfigurationExtensions
     {
-        public static void UseDefaultAggregateRootRepository(this AggregateRootRepositoryConfigurationBuilder builder)
+        public static void UseDefault(this AggregateRootRepositoryConfigurationBuilder builder)
         {
             builder.Registrar
                 .Register<IAggregateRootRepository>(() => new DefaultAggregateRootRepository(builder.Registrar.Get<IEventStore>()));
         }
 
-        public static void ViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IViewManager[] viewManagers)
+        public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IViewManager[] viewManagers)
         {
             builder.Registrar
                 .Register<IEventDispatcher>(() => new ViewManagerEventDispatcher(builder.Registrar.Get<IAggregateRootRepository>(), viewManagers));
         }
 
-        public static void PurgeViewsAtStartup(this OptionsConfigurationBuilder builder, bool purgeViewsAtStartup = false)
+        public static void PurgeExistingViews(this OptionsConfigurationBuilder builder, bool purgeViewsAtStartup = false)
         {
             builder.Registrar.RegisterOptionConfig(o => o.PurgeExistingViews = purgeViewsAtStartup);
         }

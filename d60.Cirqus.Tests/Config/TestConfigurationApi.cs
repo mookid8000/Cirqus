@@ -17,16 +17,12 @@ namespace d60.Cirqus.Tests.Config
 
             var processor = CommandProcessor.With()
                 .Logging(l => l.UseConsole())
-                .EventStore(e => e.StoreInMongoDb(mongoConnectionString.ConnectionString, "Events"))
-                .AggregateRootRepository(r =>
-                {
-                    r.UseDefaultAggregateRootRepository();
-                    //r.EnableSnapshotCachingInMemory();
-                })
-                .EventDispatcher(d => d.ViewManagerEventDispatcher())
+                .EventStore(e => e.UseMongoDb(mongoConnectionString.ConnectionString, "Events"))
+                .AggregateRootRepository(r => r.UseDefault())
+                .EventDispatcher(d => d.UseViewManagerEventDispatcher())
                 .Options(o =>
                 {
-                    o.PurgeViewsAtStartup(true);
+                    o.PurgeExistingViews(true);
                     o.AddDomainExceptionType<ApplicationException>();
                 })
                 .Create();
