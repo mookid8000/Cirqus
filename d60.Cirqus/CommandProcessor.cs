@@ -23,13 +23,18 @@ namespace d60.Cirqus
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
         }
 
+        public static IEventStoreConfigurationBuilderApi With()
+        {
+            return new CommandProcessorConfigurationBuilder();
+        }
+
         readonly Options _options = new Options();
         readonly Retryer _retryer = new Retryer();
         readonly IEventStore _eventStore;
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventDispatcher _eventDispatcher;
 
-        public CommandProcessor(IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, IEventDispatcher eventDispatcher)
+        internal CommandProcessor(IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, IEventDispatcher eventDispatcher)
         {
             if (eventStore == null) throw new ArgumentNullException("eventStore");
             if (aggregateRootRepository == null) throw new ArgumentNullException("aggregateRootRepository");

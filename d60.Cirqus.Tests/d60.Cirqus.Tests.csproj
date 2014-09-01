@@ -83,6 +83,7 @@
     <Compile Include="Bugs\VerifyThatNewlyCreatedAggregateRootsAreAvailableForLoading.cs" />
     <Compile Include="Bugs\VerifyThatOtherRootsCanBeLoadedAfterEmittingEvents.cs" />
     <Compile Include="Commands\TestCommandProcessing.cs" />
+    <Compile Include="Config\TestConfigurationApi.cs" />
     <Compile Include="Contracts\AggregateRootRepository\Factories\DefaultAggregateRootRepositoryFactory.cs" />
     <Compile Include="Contracts\AggregateRootRepository\IAggregateRootRepositoryFactory.cs" />
     <Compile Include="Contracts\AggregateRootRepository\TestAggregateRootRepositories.cs" />
