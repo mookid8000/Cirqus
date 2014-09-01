@@ -12,7 +12,7 @@ namespace d60.Cirqus.PostgreSql.Config
             if (connectionStringOrConnectionStringName == null) throw new ArgumentNullException("connectionStringOrConnectionStringName");
             if (tableName == null) throw new ArgumentNullException("tableName");
 
-            builder.Registrar.Register<IEventStore>(() => new PostgreSqlEventStore(connectionStringOrConnectionStringName, tableName, automaticallyCreateSchema: automaticallyCreateSchema));
+            builder.Registrar.Register<IEventStore>(context => new PostgreSqlEventStore(connectionStringOrConnectionStringName, tableName, automaticallyCreateSchema: automaticallyCreateSchema));
         }
     }
 }

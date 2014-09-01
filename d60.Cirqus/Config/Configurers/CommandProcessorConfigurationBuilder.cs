@@ -45,7 +45,13 @@ namespace d60.Cirqus.Config.Configurers
 
         public ICommandProcessor Create()
         {
-            var commandProcessor = new CommandProcessor(Get<IEventStore>(), Get<IAggregateRootRepository>(), Get<IEventDispatcher>());
+            var resolutionContext = new ResolutionContext(_factories);
+
+            var eventStore = Get<IEventStore>(resolutionContext);
+            var aggregateRootRepository = Get<IAggregateRootRepository>(resolutionContext);
+            var eventDispatcher = Get<IEventDispatcher>(resolutionContext);
+
+            var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher);
             
             _factories
                 .OfType<Action<Options>>()
@@ -59,21 +65,20 @@ namespace d60.Cirqus.Config.Configurers
 
         readonly List<Delegate> _factories = new List<Delegate>();
 
-        public void Register<TService>(Func<TService> serviceFactory)
+        public void Register<TService>(Func<ResolutionContext, TService> serviceFactory, bool decorator = false)
         {
+            if (decorator)
+            {
+                _factories.Insert(0, serviceFactory);
+                return;
+            }
+
             _factories.Add(serviceFactory);
         }
 
-        public TService Get<TService>()
+        public TService Get<TService>(ResolutionContext context)
         {
-            var matchingFactoryMethod = _factories.OfType<Func<TService>>().FirstOrDefault();
-
-            if (matchingFactoryMethod == null)
-            {
-                throw new InvalidOperationException(string.Format("Cannot provide an instance of {0} because an appropriate factory method has not been registered!", typeof(TService)));
-            }
-
-            return matchingFactoryMethod();
+            return context.Get<TService>();
         }
 
         public void RegisterOptionConfig(Action<Options> optionAction)

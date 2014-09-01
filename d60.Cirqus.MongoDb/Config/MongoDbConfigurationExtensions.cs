@@ -36,7 +36,7 @@ namespace d60.Cirqus.MongoDb.Config
 
         static void UseMongoDbEventStore(EventStoreConfigurationBuilder builder, MongoDatabase database, string eventCollectionName, bool automaticallyCreateIndexes)
         {
-            builder.Registrar.Register<IEventStore>(() => new MongoDbEventStore(database, eventCollectionName, automaticallyCreateIndexes: automaticallyCreateIndexes));
+            builder.Registrar.Register<IEventStore>(context => new MongoDbEventStore(database, eventCollectionName, automaticallyCreateIndexes: automaticallyCreateIndexes));
         }
 
         public static void UseMongoDb(this LoggingConfigurationBuilder builder, string mongoDbConnectionString, string logCollectionName)

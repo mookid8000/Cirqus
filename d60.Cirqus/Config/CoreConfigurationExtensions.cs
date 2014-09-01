@@ -5,22 +5,39 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Logging.Null;
+using d60.Cirqus.Snapshotting;
 using d60.Cirqus.Views.ViewManagers;
 
 namespace d60.Cirqus.Config
 {
     public static class CoreConfigurationExtensions
     {
+        public static void EnableInMemorySnapshotCaching(this AggregateRootRepositoryConfigurationBuilder builder, int approximateMaxNumberOfCacheEntries)
+        {
+            builder.Registrar
+                .Register<IAggregateRootRepository>(
+                    context => new CachingAggregateRootRepositoryDecorator(
+                        builder.Registrar.Get<IAggregateRootRepository>(context),
+                        new InMemorySnapshotCache
+                        {
+                            ApproximateMaxNumberOfCacheEntries = approximateMaxNumberOfCacheEntries
+                        },
+                        builder.Registrar.Get<IEventStore>(context)),
+                    decorator: true
+                );
+
+        }
+
         public static void UseDefault(this AggregateRootRepositoryConfigurationBuilder builder)
         {
             builder.Registrar
-                .Register<IAggregateRootRepository>(() => new DefaultAggregateRootRepository(builder.Registrar.Get<IEventStore>()));
+                .Register<IAggregateRootRepository>(context => new DefaultAggregateRootRepository(builder.Registrar.Get<IEventStore>(context)));
         }
 
         public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IViewManager[] viewManagers)
         {
             builder.Registrar
-                .Register<IEventDispatcher>(() => new ViewManagerEventDispatcher(builder.Registrar.Get<IAggregateRootRepository>(), viewManagers));
+                .Register<IEventDispatcher>(context => new ViewManagerEventDispatcher(builder.Registrar.Get<IAggregateRootRepository>(context), viewManagers));
         }
 
         public static void PurgeExistingViews(this OptionsConfigurationBuilder builder, bool purgeViewsAtStartup = false)

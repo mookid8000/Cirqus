@@ -18,7 +18,11 @@ namespace d60.Cirqus.Tests.Config
             var processor = CommandProcessor.With()
                 .Logging(l => l.UseConsole())
                 .EventStore(e => e.UseMongoDb(mongoConnectionString.ConnectionString, "Events"))
-                .AggregateRootRepository(r => r.UseDefault())
+                .AggregateRootRepository(r =>
+                {
+                    r.UseDefault();
+                    r.EnableInMemorySnapshotCaching(10000);
+                })
                 .EventDispatcher(d => d.UseViewManagerEventDispatcher())
                 .Options(o =>
                 {

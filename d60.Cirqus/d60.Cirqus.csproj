@@ -61,6 +61,7 @@
     <Compile Include="Commands\DefaultCommandContext.cs" />
     <Compile Include="Config\Configurers\ILoggingAndEventStoreConfigurationBuilderApi.cs" />
     <Compile Include="Config\Configurers\LoggingConfigurationBuilder.cs" />
+    <Compile Include="Config\Configurers\ResolutionContext.cs" />
     <Compile Include="Config\CoreConfigurationExtensions.cs" />
     <Compile Include="Config\Configurers\IAggregateRootRepositoryConfigurationBuilderApi.cs" />
     <Compile Include="Config\Configurers\IEventDispatcherConfigurationBuilderApi.cs" />
