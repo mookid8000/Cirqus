@@ -50,6 +50,11 @@ namespace d60.Cirqus.Config
             builder.Registrar.RegisterOptionConfig(o => o.AddDomainExceptionType<TException>());
         }
 
+        public static void SetMaxRetries(this OptionsConfigurationBuilder builder, int maxRetries)
+        {
+            builder.Registrar.RegisterOptionConfig(o => o.MaxRetries = maxRetries);
+        }
+
         public static void UseConsole(this LoggingConfigurationBuilder builder, Logger.Level minLevel = Logger.Level.Info)
         {
             CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel: minLevel);

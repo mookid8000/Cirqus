@@ -3,9 +3,7 @@ using System.Configuration;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Config;
 using d60.Cirqus.Config.Configurers;
-using d60.Cirqus.Logging;
 using d60.Cirqus.MongoDb.Config;
-using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Config
@@ -27,6 +25,7 @@ namespace d60.Cirqus.Tests.Config
                 {
                     o.PurgeExistingViews(true);
                     o.AddDomainExceptionType<ApplicationException>();
+                    o.SetMaxRetries(10);
                 });
 
             ((CommandProcessorConfigurationBuilder)fullConfiguration).LogServicesTo(Console.Out);
