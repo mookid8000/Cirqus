@@ -190,3 +190,7 @@
 
 * Changed logger API to include overloads for `Warn` and `Error` that include a real `exception` field
 * Added Serilog integration package
+
+## 0.14.0
+
+* Removed superfluous methods from `ICommandProcessor` interface - it's only about processing commands now!
