@@ -61,7 +61,7 @@ namespace d60.Cirqus.Views
                 }
                 catch (Exception exception)
                 {
-                    _logger.Warn("An error occurred while attempting to do work {0}: {1} - the worker thread will shut down now", action, exception);
+                    _logger.Warn(exception, "An error occurred while attempting to do work {0} - the worker thread will shut down now", action);
 
                     _keepWorking = false;
                 }

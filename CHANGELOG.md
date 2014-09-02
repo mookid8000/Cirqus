@@ -185,3 +185,8 @@
 ## 0.12.3
 
 * Introduced a fluent configuration API that will make it easier to discover configuration options + make it harder to end up with e.g. an un-initialized command processor
+
+## 0.13.0
+
+* Changed logger API to include overloads for `Warn` and `Error` that include a real `exception` field
+* Added Serilog integration package

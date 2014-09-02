@@ -112,7 +112,7 @@ namespace d60.Cirqus.Views.ViewManagers
 
         void HandleViewManagerError(IViewManager viewManager, Exception exception)
         {
-            _logger.Warn("An error occurred in the view manager {0}: {1} - setting Stopped = true", viewManager, exception);
+            _logger.Warn(exception, "An error occurred in the view manager {0} - setting Stopped = true", viewManager);
 
             viewManager.Stopped = true;
 
