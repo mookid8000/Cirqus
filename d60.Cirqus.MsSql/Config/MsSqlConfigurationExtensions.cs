@@ -13,7 +13,7 @@ namespace d60.Cirqus.MsSql.Config
             if (connectionStringOrConnectionStringName == null) throw new ArgumentNullException("connectionStringOrConnectionStringName");
             if (tableName == null) throw new ArgumentNullException("tableName");
             
-            builder.Registrar.Register<IEventStore>(() => new MsSqlEventStore(connectionStringOrConnectionStringName, tableName, automaticallyCreateSchema: automaticallyCreateSchema));
+            builder.Registrar.Register<IEventStore>(context => new MsSqlEventStore(connectionStringOrConnectionStringName, tableName, automaticallyCreateSchema: automaticallyCreateSchema));
         }
     }
 }

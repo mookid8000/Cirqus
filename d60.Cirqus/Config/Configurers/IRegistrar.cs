@@ -4,8 +4,10 @@ namespace d60.Cirqus.Config.Configurers
 {
     public interface IRegistrar
     {
-        void Register<TService>(Func<TService> serviceFactory);
+        /// <summary>
+        /// Registers a factory method for the given service
+        /// </summary>
+        void Register<TService>(Func<ResolutionContext, TService> serviceFactory, bool decorator = false);
         void RegisterOptionConfig(Action<Options> optionAction);
-        TService Get<TService>();
     }
 }

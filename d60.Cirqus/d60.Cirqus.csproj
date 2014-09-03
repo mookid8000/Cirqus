@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggregates\AggregateRoot.cs" />
+    <Compile Include="Aggregates\AggregateRootInfo.cs" />
     <Compile Include="Aggregates\DefaultAggregateRootRepository.cs" />
     <Compile Include="Aggregates\IAggregateRootRepository.cs" />
     <Compile Include="Aggregates\ReplayState.cs" />
@@ -60,6 +61,7 @@
     <Compile Include="Commands\DefaultCommandContext.cs" />
     <Compile Include="Config\Configurers\ILoggingAndEventStoreConfigurationBuilderApi.cs" />
     <Compile Include="Config\Configurers\LoggingConfigurationBuilder.cs" />
+    <Compile Include="Config\Configurers\ResolutionContext.cs" />
     <Compile Include="Config\CoreConfigurationExtensions.cs" />
     <Compile Include="Config\Configurers\IAggregateRootRepositoryConfigurationBuilderApi.cs" />
     <Compile Include="Config\Configurers\IEventDispatcherConfigurationBuilderApi.cs" />
@@ -99,6 +101,10 @@
     <Compile Include="Serialization\Serializer.cs" />
     <Compile Include="Serialization\TypeAliasBinder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Snapshotting\CachingAggregateRootRepositoryDecorator.cs" />
+    <Compile Include="Snapshotting\InMemorySnapshotCache.cs" />
+    <Compile Include="Snapshotting\ISnapshotCache.cs" />
+    <Compile Include="Snapshotting\Sturdylizer.cs" />
     <Compile Include="Views\AsyncEventDispatcher.cs" />
     <Compile Include="Views\CompositeEventDispatcher.cs" />
     <Compile Include="Views\ViewManagers\AggregateRootResolver.cs" />
