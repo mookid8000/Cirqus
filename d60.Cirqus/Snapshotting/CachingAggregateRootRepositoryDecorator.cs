@@ -7,6 +7,11 @@ using d60.Cirqus.Extensions;
 
 namespace d60.Cirqus.Snapshotting
 {
+    /// <summary>
+    /// Decorator for <see cref="IAggregateRootRepository"/> that uses the supplied <see cref="ISnapshotCache"/> to cache
+    /// hydrated aggregate roots, always attempting to retrieve a (possibly partially) hydrated root instance from the
+    /// cache when it can.
+    /// </summary>
     public class CachingAggregateRootRepositoryDecorator : IAggregateRootRepository
     {
         readonly IAggregateRootRepository _innerAggregateRootRepository;
