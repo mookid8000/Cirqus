@@ -194,3 +194,7 @@
 ## 0.14.0
 
 * Removed superfluous methods from `ICommandProcessor` interface - it's only about processing commands now!
+
+## 0.14.1
+
+* Added experimental caching aggregate root repository with a simple in-mem snapshot cache (warning: beta!)
