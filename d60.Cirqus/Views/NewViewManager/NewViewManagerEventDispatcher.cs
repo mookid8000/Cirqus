@@ -3,10 +3,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
+using d60.Cirqus.Views.ViewManagers;
 using Timer = System.Timers.Timer;
 
 namespace d60.Cirqus.Views.NewViewManager
@@ -80,6 +82,14 @@ namespace d60.Cirqus.Views.NewViewManager
             _sequenceNumbersToCatchUpTo.Enqueue(new PieceOfWork(maxSequenceNumberInBatch, eventStore, canUseCachedInformation: true));
         }
 
+        public async Task WaitUntilDispatched<TViewInstance>(CommandProcessingResult result) where TViewInstance : IViewInstance
+        {
+            await Task.WhenAll(_managedViews
+                .OfType<IManagedView<TViewInstance>>()
+                .Select(v => v.WaitUntilDispatched(result))
+                .ToArray());
+        }
+
         public int MaxItemsPerBatch
         {
             get { return _maxItemsPerBatch; }
@@ -115,7 +125,7 @@ namespace d60.Cirqus.Views.NewViewManager
                     _logger.Warn(exception, "Could not catch up to {0}", pieceOfWork.SequenceNumberToCatchUpTo);
                 }
             }
-            
+
             _logger.Info("View manager background thread stopped!");
         }
 

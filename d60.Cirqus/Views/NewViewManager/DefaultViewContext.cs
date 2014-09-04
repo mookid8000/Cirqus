@@ -7,6 +7,9 @@ using d60.Cirqus.Views.ViewManagers;
 
 namespace d60.Cirqus.Views.NewViewManager
 {
+    /// <summary>
+    /// View context implementation that works nicely with the existing view managers
+    /// </summary>
     class DefaultViewContext : IViewContext, IUnitOfWork
     {
         readonly IAggregateRootRepository _aggregateRootRepository;

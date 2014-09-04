@@ -76,10 +76,17 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             Assert.That(viewOnNextLoad.LastGlobalSequenceNumber, Is.EqualTo(viewOnFirstLoad.LastGlobalSequenceNumber));
         }
 
+        public enum BlockOption
+        {
+            NoBlock,
+            BlockOnManagedView,
+            BlockOnViewManager,
+        }
 
-        [TestCase(true)]
-        [TestCase(false)]
-        public void CanBlockUntilViewIsUpdated(bool blockAndExpectViewToBeUpToDate)
+        [TestCase(BlockOption.NoBlock)]
+        [TestCase(BlockOption.BlockOnManagedView)]
+        [TestCase(BlockOption.BlockOnViewManager)]
+        public void CanBlockUntilViewIsUpdated(BlockOption blockOption)
         {
             // arrange
             var slowView = new NewMongoDbViewManager<SlowView>(_mongoDatabase);
@@ -89,22 +96,29 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             var result = _commandProcessor.ProcessCommand(new BitePotato(potatoId, 1));
 
             // act
-            if (blockAndExpectViewToBeUpToDate)
+            switch (blockOption)
             {
-                slowView.WaitUntilDispatched(result).Wait();
+                case BlockOption.BlockOnManagedView:
+                    slowView.WaitUntilDispatched(result).Wait();
+                    break;
+                case BlockOption.BlockOnViewManager:
+                    _dispatcher.WaitUntilDispatched<SlowView>(result).Wait();
+                    break;
             }
 
             // assert
             var instance = slowView.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(potatoId));
 
-            if (blockAndExpectViewToBeUpToDate)
+            if (blockOption != BlockOption.NoBlock)
             {
                 Assert.That(instance, Is.Not.Null);
                 Assert.That(instance.LastGlobalSequenceNumber, Is.EqualTo(2));
+                Console.WriteLine("View instance was properly updated, just as expected");
             }
             else
             {
                 Assert.That(instance, Is.Null);
+                Console.WriteLine("View instance was null, just as expected");
             }
         }
 

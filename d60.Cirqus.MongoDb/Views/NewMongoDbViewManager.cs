@@ -14,7 +14,7 @@ using MongoDB.Driver.Builders;
 
 namespace d60.Cirqus.MongoDb.Views
 {
-    public class NewMongoDbViewManager<TViewInstance> : IManagedView where TViewInstance : class, IViewInstance, ISubscribeTo, new()
+    public class NewMongoDbViewManager<TViewInstance> : IManagedView<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
         const string LowWatermarkId = "__low_watermark__";
         const string LowWatermarkPropertyName = "LastGlobalSequenceNumber";
