@@ -91,7 +91,12 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             // arrange
             var slowView = new NewMongoDbViewManager<SlowView>(_mongoDatabase);
             _dispatcher.AddViewManager(slowView);
+
             var potatoId = Guid.NewGuid();
+            _commandProcessor.ProcessCommand(new BitePotato(potatoId, .1m));
+            _commandProcessor.ProcessCommand(new BitePotato(potatoId, .1m));
+            _commandProcessor.ProcessCommand(new BitePotato(potatoId, .1m));
+            _commandProcessor.ProcessCommand(new BitePotato(potatoId, .1m));
 
             var result = _commandProcessor.ProcessCommand(new BitePotato(potatoId, 1));
 
@@ -99,9 +104,11 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             switch (blockOption)
             {
                 case BlockOption.BlockOnManagedView:
+                    Console.WriteLine("Waiting for {0} on the view...", result.GlobalSequenceNumbersOfEmittedEvents.Max());
                     slowView.WaitUntilDispatched(result).Wait();
                     break;
                 case BlockOption.BlockOnViewManager:
+                    Console.WriteLine("Waiting for {0} on the dispatcher...", result.GlobalSequenceNumbersOfEmittedEvents.Max());
                     _dispatcher.WaitUntilDispatched<SlowView>(result).Wait();
                     break;
             }
@@ -109,16 +116,15 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             // assert
             var instance = slowView.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(potatoId));
 
-            if (blockOption != BlockOption.NoBlock)
-            {
-                Assert.That(instance, Is.Not.Null);
-                Assert.That(instance.LastGlobalSequenceNumber, Is.EqualTo(2));
-                Console.WriteLine("View instance was properly updated, just as expected");
-            }
-            else
+            if (blockOption == BlockOption.NoBlock)
             {
                 Assert.That(instance, Is.Null);
                 Console.WriteLine("View instance was null, just as expected");
+            }
+            else
+            {
+                Assert.That(instance, Is.Not.Null);
+                Console.WriteLine("View instance was properly updated, just as expected");
             }
         }
 

@@ -91,7 +91,7 @@ namespace d60.Cirqus.MongoDb.Views
 
             var mostRecentGlobalSequenceNumber = result.GlobalSequenceNumbersOfEmittedEvents.Max();
 
-            while (GetLowWatermark() < mostRecentGlobalSequenceNumber)
+            while (GetLowWatermark(canGetFromCache:false) < mostRecentGlobalSequenceNumber)
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(10));
             }
