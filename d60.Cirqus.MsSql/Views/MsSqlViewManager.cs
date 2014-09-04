@@ -151,7 +151,7 @@ namespace d60.Cirqus.MsSql.Views
                     // make sure we flush after each single domain event
                     foreach (var e in eventsToDispatch)
                     {
-                        ProcessOneBatch(eventStore, new[] {e}, context);
+                        ProcessOneBatch(eventStore, new[] { e }, context);
                     }
                 }
                 catch (ConsistencyException)
@@ -183,7 +183,11 @@ namespace d60.Cirqus.MsSql.Views
                     var viewId = locator.GetViewId(e);
                     var view = activeViewsById
                         .GetOrAdd(viewId, id => FindOneById(id, tx, conn)
-                                                ?? new MsSqlView<TView> { View = new TView() });
+                                                ?? new MsSqlView<TView>
+                                                {
+                                                    View = new TView { Id = id, LastGlobalSequenceNumber = -1 },
+                                                    MaxGlobalSeq = -1
+                                                });
 
                     DispatchEvent(eventStore, e, view, context);
                 }

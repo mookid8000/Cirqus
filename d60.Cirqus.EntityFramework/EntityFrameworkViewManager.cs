@@ -15,7 +15,7 @@ namespace d60.Cirqus.EntityFramework
     {
         readonly ViewDispatcherHelper<TView> _dispatcherHelper = new ViewDispatcherHelper<TView>();
         readonly string _connectionStringOrName;
-        int _maxDomainEventsBetweenFlush;
+        int _maxDomainEventsBetweenFlush = 100;
         bool _initialized;
 
         public EntityFrameworkViewManager(string connectionStringOrName, bool createDatabaseIfnotExist = true)
@@ -246,8 +246,7 @@ END
 
         TView CreateAndAddNewViewInstance(GenericViewContext<TView> genericViewBasse, string id)
         {
-            var instance = new TView();
-            instance.Id = id;
+            var instance = new TView {Id = id, LastGlobalSequenceNumber = -1};
             genericViewBasse.ViewCollection.Add(instance);
             return instance;
         }

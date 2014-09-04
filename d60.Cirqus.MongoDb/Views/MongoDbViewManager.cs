@@ -159,7 +159,11 @@ namespace d60.Cirqus.MongoDb.Views
                 var viewId = locator.GetViewId(e);
                 var doc = activeViewDocsByid
                     .GetOrAdd(viewId, id => _viewCollection.FindOneById(id)
-                                            ?? new TView { Id = id });
+                                            ?? new TView
+                                            {
+                                                Id = id,
+                                                LastGlobalSequenceNumber = -1
+                                            });
 
                 _dispatcherHelper.DispatchToView(context, e, doc);
             }
