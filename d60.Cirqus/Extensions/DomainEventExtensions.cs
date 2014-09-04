@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using d60.Cirqus.Events;
@@ -40,11 +39,23 @@ namespace d60.Cirqus.Extensions
             return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.GlobalSequenceNumber, Convert.ToInt64, throwIfNotFound);
         }
 
+        /// <summary>
+        /// Gets the UTC time of when the event was emitted from the <seealso cref="DomainEvent.MetadataKeys.TimeUtc"/>
+        /// header on the event. If <seealso cref="throwIfNotFound"/> is false and the header is not present, <seealso cref="DateTime.MinValue"/>
+        /// is returned
+        /// </summary>
         public static DateTime GetUtcTime(this DomainEvent domainEvent, bool throwIfNotFound = true)
         {
             var timeAsString = GetMetadataField(domainEvent, DomainEvent.MetadataKeys.TimeUtc, Convert.ToString, throwIfNotFound);
 
-            return DateTime.ParseExact(timeAsString, "u", CultureInfo.CurrentCulture);
+            if (string.IsNullOrWhiteSpace(timeAsString))
+            {
+                return DateTime.MinValue;
+            }
+
+            var dateTime = DateTime.ParseExact(timeAsString, "u", CultureInfo.CurrentCulture);
+
+            return new DateTime(dateTime.Ticks, DateTimeKind.Utc);
         }
 
         static TValue GetMetadataField<TValue>(DomainEvent domainEvent, string key, Func<object, TValue> converter, bool throwIfNotFound)

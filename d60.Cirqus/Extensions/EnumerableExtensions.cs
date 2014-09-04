@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace d60.Cirqus.Extensions
@@ -7,6 +8,11 @@ namespace d60.Cirqus.Extensions
     {
         public static IEnumerable<IEnumerable<T>> Batch<T>(this IEnumerable<T> items, int maxItemsPerBatch)
         {
+            if (maxItemsPerBatch < 1)
+            {
+                throw new ArgumentException(string.Format("Cannot set max items per batch to {0}!", maxItemsPerBatch));
+            }
+
             var batch = new List<T>();
 
             foreach (var item in items)

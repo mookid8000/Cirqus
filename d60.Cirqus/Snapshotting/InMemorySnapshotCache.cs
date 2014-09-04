@@ -69,6 +69,7 @@ namespace d60.Cirqus.Snapshotting
                         SequenceNumber = aggregateRootInfo.LastSeqNo,
                         GlobalSequenceNumber = aggregateRootInfo.LastGlobalSeqNo,
                         AggregateRootId = aggregateRootInfo.AggregateRootId,
+                        AggregateRootType = typeof(TAggregateRoot),
                         Hits = 0,
                         TimeOfLastHit = DateTime.UtcNow,
                         Data = data
@@ -88,6 +89,8 @@ namespace d60.Cirqus.Snapshotting
             public long GlobalSequenceNumber { get; private set; }
 
             public Guid AggregateRootId { get; private set; }
+
+            public Type AggregateRootType { get; private set; }
 
             public int Hits { get; private set; }
 

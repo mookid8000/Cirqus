@@ -16,10 +16,10 @@ namespace d60.Cirqus.Views.ViewManagers.Locators
 
         public static string GetViewIdFromAggregateRoot(AggregateRoot aggregateRoot)
         {
-            return GetViewIdFromGuid(aggregateRoot.Id);
+            return GetViewIdFromAggregateRootId(aggregateRoot.Id);
         }
 
-        public static string GetViewIdFromGuid(Guid guid)
+        public static string GetViewIdFromAggregateRootId(Guid guid)
         {
             return guid.ToString();
         }

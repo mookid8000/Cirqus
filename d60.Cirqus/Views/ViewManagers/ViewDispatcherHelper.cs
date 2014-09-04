@@ -36,6 +36,10 @@ namespace d60.Cirqus.Views.ViewManagers
 
         public void DispatchToView(IViewContext context, DomainEvent domainEvent, TView view)
         {
+            var lastGlobalSequenceNumber = domainEvent.GetGlobalSequenceNumber();
+
+            if (lastGlobalSequenceNumber <= view.LastGlobalSequenceNumber) return;
+
             var domainEventType = domainEvent.GetType();
 
             var dispatcherMethod = _dispatcherMethods
@@ -43,8 +47,6 @@ namespace d60.Cirqus.Views.ViewManagers
 
             try
             {
-                var lastGlobalSequenceNumber = domainEvent.GetGlobalSequenceNumber();
-
                 _logger.Debug("Dispatching event {0} to {1} with ID {2}", lastGlobalSequenceNumber, view, view.Id);
 
                 context.CurrentEvent = domainEvent;

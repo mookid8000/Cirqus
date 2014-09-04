@@ -55,7 +55,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
                     CreateEvent("dig", aggregateRootId),
                 });
 
-            var view = _viewManagerFactory.Load<SomeView>(InstancePerAggregateRootLocator.GetViewIdFromGuid(aggregateRootId));
+            var view = _viewManagerFactory.Load<SomeView>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(aggregateRootId));
             var accumulatedData = view.CollectedData;
 
             Assert.That(view, Is.Not.Null);

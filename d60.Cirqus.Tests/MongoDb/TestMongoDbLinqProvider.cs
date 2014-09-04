@@ -38,9 +38,9 @@ namespace d60.Cirqus.Tests.MongoDb
             _context.Save(root2, new RootWasNamed { Name = "Claire" });
             _context.Save(root3, new RootWasNamed { Name = "Doug" });
 
-            var view1 = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(root1));
-            var view2 = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(root2));
-            var view3 = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(root3));
+            var view1 = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(root1));
+            var view2 = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(root2));
+            var view3 = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(root3));
 
             Assert.That(view1.Name, Is.EqualTo("Francis"));
             Assert.That(view2.Name, Is.EqualTo("Claire"));

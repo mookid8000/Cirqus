@@ -55,7 +55,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _testContext.Save(rootId2, new ThisIsJustAnEvent());
             _testContext.Save(rootId2, new ThisIsJustAnEvent());
 
-            var view = _factory.Load<InstancePerAggregateRootView>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var view = _factory.Load<InstancePerAggregateRootView>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(rootId1));
             Assert.That(view.EventCounter, Is.EqualTo(3));
         }
 

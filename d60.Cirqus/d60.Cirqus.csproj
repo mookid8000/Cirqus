@@ -107,6 +107,9 @@
     <Compile Include="Snapshotting\Sturdylizer.cs" />
     <Compile Include="Views\AsyncEventDispatcher.cs" />
     <Compile Include="Views\CompositeEventDispatcher.cs" />
+    <Compile Include="Views\NewViewManager\Class1.cs" />
+    <Compile Include="Views\NewViewManager\IManagedView.cs" />
+    <Compile Include="Views\NewViewManager\NewViewManagerEventDispatcher.cs" />
     <Compile Include="Views\ViewManagers\AggregateRootResolver.cs" />
     <Compile Include="Views\ViewManagers\ViewManagerEventDispatcher.cs" />
     <Compile Include="Views\ViewManagers\InMemoryViewManager.cs" />

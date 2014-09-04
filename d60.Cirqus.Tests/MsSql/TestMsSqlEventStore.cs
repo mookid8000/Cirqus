@@ -34,7 +34,7 @@ namespace d60.Cirqus.Tests.MsSql
 
             _viewManager.Dispatch(new ThrowingViewContext(), new InMemoryEventStore(), new[] { GetAnEvent(aggregateRootId) });
 
-            var view = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(aggregateRootId));
+            var view = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(aggregateRootId));
 
             Assert.That(view, Is.Not.Null, "View was not properly generated");
             Assert.That(view.String, Is.EqualTo("a string"));

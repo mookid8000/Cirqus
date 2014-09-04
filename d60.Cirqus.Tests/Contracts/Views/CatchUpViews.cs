@@ -64,7 +64,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             SaveAndDispatch(domainEvents, saveEventsToEventStore: false);
 
             // assert
-            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(rootId1));
 
             Assert.That(view.EventsHandled, Is.EqualTo(3));
         }
@@ -96,7 +96,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             SaveAndDispatch(domainEventsWithOneAdditionalEvent, saveEventsToEventStore: false);
 
             // assert
-            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(rootId1));
 
             Assert.That(view.EventsHandled, Is.EqualTo(4));
         }
@@ -120,7 +120,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _eventDispatcher.Initialize(_eventStore);
 
             // assert
-            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(rootId1));
             Assert.That(view.EventsHandled, Is.EqualTo(2));
         }
 
@@ -146,7 +146,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             SaveAndDispatch(events);
 
             // assert
-            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(rootId1));
             Assert.That(view.EventsHandled, Is.EqualTo(2));
         }
 
@@ -172,7 +172,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _eventDispatcher.Initialize(_eventStore);
 
             // assert
-            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(rootId1));
 
             Assert.That(view.EventsHandled, Is.EqualTo(5));
         }
@@ -196,7 +196,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _eventDispatcher.Initialize(_eventStore);
 
             // assert
-            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var view = _factory.Load<ViewInstanceThatCanThrow>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(rootId1));
             Assert.That(view.EventsHandled, Is.EqualTo(2));
         }
 
@@ -216,10 +216,10 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             SaveAndDispatch(events);
 
-            var firstView = _factory.Load<JustAnotherViewInstanceOther>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var firstView = _factory.Load<JustAnotherViewInstanceOther>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(rootId1));
             Assert.That(firstView.EventCounter, Is.EqualTo(3));
 
-            var secondView = _factory.Load<JustAnotherViewInstanceOther>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId2));
+            var secondView = _factory.Load<JustAnotherViewInstanceOther>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(rootId2));
             Assert.That(secondView.EventCounter, Is.EqualTo(1));
         }
 

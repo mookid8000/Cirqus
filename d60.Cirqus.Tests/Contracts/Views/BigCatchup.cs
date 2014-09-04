@@ -88,7 +88,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             foreach (var id in aggregateRootIds)
             {
-                var view = _factory.Load<JustAnotherViewInstance>(InstancePerAggregateRootLocator.GetViewIdFromGuid(id));
+                var view = _factory.Load<JustAnotherViewInstance>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(id));
 
                 Assert.That(view.EventCounter, Is.EqualTo(seqNos[id]));
             }
