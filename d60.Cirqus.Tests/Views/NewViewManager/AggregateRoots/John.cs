@@ -17,7 +17,10 @@ namespace d60.Cirqus.Tests.Views.NewViewManager.AggregateRoots
         {
             var name = _names[_nextNameIndex];
 
-            Emit(new BaptizedSomeone { NameIndex = _nextNameIndex + 1 });
+            Emit(new BaptizedSomeone
+            {
+                NameIndex = (_nextNameIndex + 1) % _names.Length
+            });
 
             return name;
         }

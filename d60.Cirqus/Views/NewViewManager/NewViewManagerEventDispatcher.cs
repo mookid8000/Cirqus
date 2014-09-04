@@ -20,30 +20,155 @@ namespace d60.Cirqus.Views.NewViewManager
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
         }
 
+        /// <summary>
+        /// Use a concurrent queue to store views so that it's safe to traverse in the background even though new views may be added to it at runtime
+        /// </summary>
+        readonly ConcurrentQueue<IManagedView> _managedViews = new ConcurrentQueue<IManagedView>();
+
         readonly ConcurrentQueue<PieceOfWork> _sequenceNumbersToCatchUpTo = new ConcurrentQueue<PieceOfWork>();
+
         readonly IAggregateRootRepository _aggregateRootRepository;
-        readonly Timer _automaticCatchUpTimer = new Timer();
         readonly IEventStore _eventStore;
-        readonly List<IManagedView> _managedViews;
+
+        readonly Timer _automaticCatchUpTimer = new Timer();
         readonly Thread _worker;
 
         volatile bool _keepWorking = true;
+        int _maxItemsPerBatch = 100;
 
         public NewViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, params IManagedView[] managedViews)
         {
             _aggregateRootRepository = aggregateRootRepository;
             _eventStore = eventStore;
-            _managedViews = managedViews.ToList();
+
+            managedViews.ToList().ForEach(view => _managedViews.Enqueue(view));
 
             _worker = new Thread(DoWork) { IsBackground = true };
 
-            _automaticCatchUpTimer.Interval = 5000;
+            _automaticCatchUpTimer.Interval = 1000;
             _automaticCatchUpTimer.Elapsed += delegate
             {
-                _sequenceNumbersToCatchUpTo.Enqueue(new PieceOfWork(long.MaxValue, _eventStore));
+                _sequenceNumbersToCatchUpTo.Enqueue(new PieceOfWork(long.MaxValue, _eventStore, canUseCachedInformation: false));
             };
         }
 
+        public void AddViewManager(IManagedView managedView)
+        {
+            _logger.Info("Adding managed view: {0}", managedView);
+
+            _managedViews.Enqueue(managedView);
+        }
+
+        public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
+        {
+            _logger.Info("Initializing view manager with managed views: {0}", string.Join(", ", _managedViews));
+
+            _sequenceNumbersToCatchUpTo.Enqueue(new PieceOfWork(long.MaxValue, _eventStore, canUseCachedInformation: false));
+
+            _automaticCatchUpTimer.Start();
+            _worker.Start();
+        }
+
+        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
+        {
+            var list = events.ToList();
+
+            if (!list.Any()) return;
+
+            var maxSequenceNumberInBatch = list.Max(e => e.GetGlobalSequenceNumber());
+
+            _sequenceNumbersToCatchUpTo.Enqueue(new PieceOfWork(maxSequenceNumberInBatch, eventStore, canUseCachedInformation: true));
+        }
+
+        public int MaxItemsPerBatch
+        {
+            get { return _maxItemsPerBatch; }
+            set
+            {
+                if (value < 1)
+                {
+                    throw new ArgumentException(string.Format("Attempted to set MAX items per batch to {0}! Please set it to at least 1...", value));
+                }
+                _maxItemsPerBatch = value;
+            }
+        }
+
+        void DoWork()
+        {
+            _logger.Info("View manager background thread started");
+
+            while (_keepWorking)
+            {
+                PieceOfWork pieceOfWork;
+                if (!_sequenceNumbersToCatchUpTo.TryDequeue(out pieceOfWork))
+                {
+                    Thread.Sleep(100);
+                    continue;
+                }
+
+                try
+                {
+                    CatchUpTo(pieceOfWork.SequenceNumberToCatchUpTo, pieceOfWork.EventStore, pieceOfWork.CanUseCachedInformation);
+                }
+                catch (Exception exception)
+                {
+                    _logger.Warn(exception, "Could not catch up to {0}", pieceOfWork.SequenceNumberToCatchUpTo);
+                }
+            }
+            
+            _logger.Info("View manager background thread stopped!");
+        }
+
+        void CatchUpTo(long sequenceNumberToCatchUpTo, IEventStore eventStore, bool cachedInformationAllowed)
+        {
+            // bail out now if there isn't any actual work to do
+            if (!_managedViews.Any()) return;
+
+            // get the lowest low watermark
+            var lowestSequenceNumnerSuccessfullyProcessed = _managedViews
+                .Min(v => v.GetLowWatermark(canGetFromCache: cachedInformationAllowed));
+
+            // if we've already been there, don't do anything
+            if (lowestSequenceNumnerSuccessfullyProcessed >= sequenceNumberToCatchUpTo) return;
+
+            // ok, we must replay - start from here:
+            var sequenceNumberToReplayFrom = lowestSequenceNumnerSuccessfullyProcessed + 1;
+
+            _logger.Debug("Getting events from global sequence number {0} and on...", sequenceNumberToReplayFrom);
+
+            foreach (var batch in eventStore.Stream(sequenceNumberToReplayFrom).Batch(MaxItemsPerBatch))
+            {
+                var context = new DefaultViewContext(_aggregateRootRepository);
+                var list = batch.ToList();
+
+                foreach (var managedView in _managedViews)
+                {
+                    _logger.Debug("Dispatching batch of {0} events to {1}", list.Count, managedView);
+
+                    managedView.Dispatch(context, list);
+                }
+            }
+        }
+
+        class PieceOfWork
+        {
+            public PieceOfWork(long sequenceNumberToCatchUpTo, IEventStore eventStore, bool canUseCachedInformation)
+            {
+                SequenceNumberToCatchUpTo = sequenceNumberToCatchUpTo;
+                EventStore = eventStore;
+                CanUseCachedInformation = canUseCachedInformation;
+            }
+
+            public long SequenceNumberToCatchUpTo { get; private set; }
+
+            public IEventStore EventStore { get; private set; }
+
+            public bool CanUseCachedInformation { get; private set; }
+        }
+
+        /// <summary>
+        /// Strictly not necessary with a dtor, but it feels better this way
+        /// </summary>
         ~NewViewManagerEventDispatcher()
         {
             _keepWorking = false;
@@ -60,86 +185,6 @@ namespace d60.Cirqus.Views.NewViewManager
                 _worker.Join(TimeSpan.FromSeconds(1));
             }
             catch { }
-        }
-
-        public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
-        {
-            _sequenceNumbersToCatchUpTo.Enqueue(new PieceOfWork(long.MaxValue, _eventStore));
-
-            _automaticCatchUpTimer.Start();
-            _worker.Start();
-        }
-
-        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
-        {
-            var list = events.ToList();
-
-            if (!list.Any()) return;
-
-            var maxSequenceNumberInBatch = list.Max(e => e.GetGlobalSequenceNumber());
-
-            _sequenceNumbersToCatchUpTo.Enqueue(new PieceOfWork(maxSequenceNumberInBatch, eventStore));
-        }
-
-        class PieceOfWork
-        {
-            public PieceOfWork(long sequenceNumberToCatchUpTo, IEventStore eventStore)
-            {
-                SequenceNumberToCatchUpTo = sequenceNumberToCatchUpTo;
-                EventStore = eventStore;
-            }
-
-            public long SequenceNumberToCatchUpTo { get; private set; }
-
-            public IEventStore EventStore { get; private set; }
-        }
-
-        void DoWork()
-        {
-            while (_keepWorking)
-            {
-                PieceOfWork pieceOfWork;
-                if (!_sequenceNumbersToCatchUpTo.TryDequeue(out pieceOfWork))
-                {
-                    Thread.Sleep(100);
-                    continue;
-                }
-
-                try
-                {
-                    CatchUpTo(pieceOfWork.SequenceNumberToCatchUpTo, pieceOfWork.EventStore);
-                }
-                catch (Exception exception)
-                {
-                    _logger.Warn(exception, "Could not catch up to {0}", pieceOfWork.SequenceNumberToCatchUpTo);
-                }
-            }
-        }
-
-        void CatchUpTo(long sequenceNumberToCatchUpTo, IEventStore eventStore)
-        {
-            if (!_managedViews.Any()) return;
-
-            var lowestSequenceNumnerSuccessfullyProcessed = _managedViews.Min(v => v.GetLowWatermark());
-
-            if (lowestSequenceNumnerSuccessfullyProcessed >= sequenceNumberToCatchUpTo) return;
-
-            var sequenceNumberToReplayFrom = lowestSequenceNumnerSuccessfullyProcessed + 1;
-
-            _logger.Debug("Automatic replay from {0} and on...", sequenceNumberToReplayFrom);
-
-            foreach (var batch in eventStore.Stream(sequenceNumberToReplayFrom).Batch(100))
-            {
-                var context = new DefaultViewContext(_aggregateRootRepository);
-                var list = batch.ToList();
-
-                foreach (var managedView in _managedViews)
-                {
-                    _logger.Debug("Dispatching batch of {0} events to {1}", list.Count, managedView);
-                    
-                    managedView.Dispatch(context, list);
-                }
-            }
         }
     }
 }

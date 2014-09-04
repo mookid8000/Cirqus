@@ -9,7 +9,7 @@ namespace d60.Cirqus.Views.NewViewManager
         /// <summary>
         /// Must return the lowest global sequence number that this view KNOWS FOR SURE has been successfully processed
         /// </summary>
-        long GetLowWatermark();
+        long GetLowWatermark(bool canGetFromCache = true);
 
         /// <summary>
         /// Must update the view

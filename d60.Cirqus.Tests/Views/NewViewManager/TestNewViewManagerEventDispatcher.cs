@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Config;
@@ -12,6 +13,7 @@ using d60.Cirqus.Tests.Views.NewViewManager.Commands;
 using d60.Cirqus.Tests.Views.NewViewManager.Views;
 using d60.Cirqus.Views.NewViewManager;
 using d60.Cirqus.Views.ViewManagers.Locators;
+using MongoDB.Driver;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Views.NewViewManager
@@ -19,38 +21,103 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
     [TestFixture]
     public class TestNewViewManagerEventDispatcher : FixtureBase
     {
-        NewMongoDbViewManager<AllPotatoesView> _allPotatoesView;
-        NewMongoDbViewManager<PotatoTimeToBeConsumedView> _potatoTimeToBeConsumedView;
-
         NewViewManagerEventDispatcher _dispatcher;
 
         ICommandProcessor _commandProcessor;
+        MongoDatabase _mongoDatabase;
 
         protected override void DoSetUp()
         {
-            var mongoDatabase = MongoHelper.InitializeTestDatabase();
+            _mongoDatabase = MongoHelper.InitializeTestDatabase();
 
             _commandProcessor = CommandProcessor.With()
                 .Logging(l => l.UseConsole(minLevel: Logger.Level.Warn))
-                .EventStore(e => e.UseMongoDb(mongoDatabase, "Events"))
+                .EventStore(e => e.UseMongoDb(_mongoDatabase, "Events"))
                 .EventDispatcher(e => e.Registrar.Register<IEventDispatcher>(r =>
                 {
                     var repository = r.Get<IAggregateRootRepository>();
                     var eventStore = r.Get<IEventStore>();
 
-                    _allPotatoesView = new NewMongoDbViewManager<AllPotatoesView>(mongoDatabase);
-                    _potatoTimeToBeConsumedView = new NewMongoDbViewManager<PotatoTimeToBeConsumedView>(mongoDatabase);
-
-                    _dispatcher = new NewViewManagerEventDispatcher(repository, eventStore, _allPotatoesView, _potatoTimeToBeConsumedView);
+                    _dispatcher = new NewViewManagerEventDispatcher(repository, eventStore);
 
                     return _dispatcher;
                 }))
                 .Create();
         }
 
-        [Test]
-        public void ItWorks()
+        [TestCase(1000)]
+        public void AutomaticallyReplaysEventsIfViewIsPurged(int numberOfCommands)
         {
+            var allPotatoesView = new NewMongoDbViewManager<AllPotatoesView>(_mongoDatabase);
+            _dispatcher.AddViewManager(allPotatoesView);
+
+            Console.WriteLine("Processing {0} commands....", numberOfCommands);
+            Enumerable.Range(0, numberOfCommands - 1)
+                .ToList()
+                .ForEach(i => _commandProcessor.ProcessCommand(new BitePotato(Guid.NewGuid(), .01m)));
+
+            var lastResult = _commandProcessor.ProcessCommand(new BitePotato(Guid.NewGuid(), .01m));
+
+            Console.WriteLine("Waiting until {0} has been dispatched to the view...", lastResult.GlobalSequenceNumbersOfEmittedEvents.Max());
+            allPotatoesView.WaitUntilDispatched(lastResult).Wait();
+
+            var viewOnFirstLoad = allPotatoesView.Load(GlobalInstanceLocator.GetViewInstanceId());
+            Assert.That(viewOnFirstLoad, Is.Not.Null);
+
+            Console.WriteLine("Purging the view!");
+            allPotatoesView.Purge();
+
+            Console.WriteLine("Waiting until {0} has been dispatched to the view...", lastResult.GlobalSequenceNumbersOfEmittedEvents.Max());
+            allPotatoesView.WaitUntilDispatched(lastResult).Wait();
+
+            var viewOnNextLoad = allPotatoesView.Load(GlobalInstanceLocator.GetViewInstanceId());
+            Assert.That(viewOnNextLoad, Is.Not.Null);
+
+            Assert.That(viewOnNextLoad.LastGlobalSequenceNumber, Is.EqualTo(viewOnFirstLoad.LastGlobalSequenceNumber));
+        }
+
+
+        [TestCase(true)]
+        [TestCase(false)]
+        public void CanBlockUntilViewIsUpdated(bool blockAndExpectViewToBeUpToDate)
+        {
+            // arrange
+            var slowView = new NewMongoDbViewManager<SlowView>(_mongoDatabase);
+            _dispatcher.AddViewManager(slowView);
+            var potatoId = Guid.NewGuid();
+
+            var result = _commandProcessor.ProcessCommand(new BitePotato(potatoId, 1));
+
+            // act
+            if (blockAndExpectViewToBeUpToDate)
+            {
+                slowView.WaitUntilDispatched(result).Wait();
+            }
+
+            // assert
+            var instance = slowView.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(potatoId));
+
+            if (blockAndExpectViewToBeUpToDate)
+            {
+                Assert.That(instance, Is.Not.Null);
+                Assert.That(instance.LastGlobalSequenceNumber, Is.EqualTo(2));
+            }
+            else
+            {
+                Assert.That(instance, Is.Null);
+            }
+        }
+
+
+        [Test]
+        public void BasicDispatchOfSomeEvents()
+        {
+            var allPotatoesView = new NewMongoDbViewManager<AllPotatoesView>(_mongoDatabase);
+            var potatoTimeToBeConsumedView = new NewMongoDbViewManager<PotatoTimeToBeConsumedView>(_mongoDatabase);
+            
+            _dispatcher.AddViewManager(allPotatoesView);
+            _dispatcher.AddViewManager(potatoTimeToBeConsumedView);
+
             // arrange
             var potato1Id = Guid.NewGuid();
             var potato2Id = Guid.NewGuid();
@@ -75,13 +142,13 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             Thread.Sleep(1000);
 
             // assert
-            var allPotatoes = _allPotatoesView.Load(GlobalInstanceLocator.GetViewInstanceId());
+            var allPotatoes = allPotatoesView.Load(GlobalInstanceLocator.GetViewInstanceId());
 
             Assert.That(allPotatoes, Is.Not.Null);
 
-            var potato1View = _potatoTimeToBeConsumedView.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(potato1Id));
-            var potato2View = _potatoTimeToBeConsumedView.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(potato2Id));
-            var potato3View = _potatoTimeToBeConsumedView.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(potato3Id));
+            var potato1View = potatoTimeToBeConsumedView.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(potato1Id));
+            var potato2View = potatoTimeToBeConsumedView.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(potato2Id));
+            var potato3View = potatoTimeToBeConsumedView.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(potato3Id));
 
             Assert.That(potato1View, Is.Not.Null);
             Assert.That(potato2View, Is.Not.Null);

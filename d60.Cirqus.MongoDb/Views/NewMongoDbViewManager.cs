@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Logging;
 using d60.Cirqus.Views.NewViewManager;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
@@ -15,11 +17,20 @@ namespace d60.Cirqus.MongoDb.Views
     public class NewMongoDbViewManager<TViewInstance> : IManagedView where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
         const string LowWatermarkId = "__low_watermark__";
-        const string LowWatermarkPropertyName = "GlobalSequenceNumber";
+        const string LowWatermarkPropertyName = "LastGlobalSequenceNumber";
 
         readonly ViewDispatcherHelper<TViewInstance> _dispatcherHelper = new ViewDispatcherHelper<TViewInstance>();
         readonly MongoCollection<TViewInstance> _viewCollection;
         readonly ViewLocator _viewLocator;
+
+        static Logger _logger;
+
+        static NewMongoDbViewManager()
+        {
+            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+        }
+
+        long? _cachedLowWatermark;
 
         public NewMongoDbViewManager(MongoDatabase database)
             : this(database, typeof(TViewInstance).Name)
@@ -38,8 +49,8 @@ namespace d60.Cirqus.MongoDb.Views
                     string.Format("Could not successfully retrieve the view locator for the type {0} - please make" +
                                   " sure that your view class implements IViewInstance<T> where T is one of the" +
                                   " available view locators (e.g. {1} or {2} or a custom locator)",
-                        typeof (TViewInstance), typeof (InstancePerAggregateRootLocator).Name,
-                        typeof (GlobalInstanceLocator).Name);
+                        typeof(TViewInstance), typeof(InstancePerAggregateRootLocator).Name,
+                        typeof(GlobalInstanceLocator).Name);
 
                 throw new ArgumentException(message, exception);
             }
@@ -53,26 +64,37 @@ namespace d60.Cirqus.MongoDb.Views
             return _viewCollection.FindOneById(viewId);
         }
 
-        public long GetLowWatermark()
+        public long GetLowWatermark(bool canGetFromCache = true)
         {
-            var lowWatermarkDocument = _viewCollection.FindOneByIdAs<BsonDocument>(LowWatermarkId);
-
-            if (lowWatermarkDocument != null)
+            if (canGetFromCache)
             {
-                return lowWatermarkDocument[LowWatermarkPropertyName].AsInt64;
+                return GetLowWatermarkFromMemory()
+                       ?? GetLowWatermarkFromPersistentCache()
+                       ?? GetLowWatermarkFromViewInstances()
+                       ?? -1;
             }
 
-            var viewWithTheLowestGlobalSequenceNumber =
-                _viewCollection
-                    .FindAll()
-                    .SetFields(Fields<TViewInstance>.Include(i => i.LastGlobalSequenceNumber).Exclude(i => i.Id))
-                    .SetLimit(1)
-                    .SetSortOrder(SortBy<TViewInstance>.Ascending(v => v.LastGlobalSequenceNumber))
-                    .FirstOrDefault();
+            return GetLowWatermarkFromPersistentCache()
+                       ?? GetLowWatermarkFromViewInstances()
+                       ?? -1;
+        }
 
-            return viewWithTheLowestGlobalSequenceNumber != null
-                ? viewWithTheLowestGlobalSequenceNumber.LastGlobalSequenceNumber
-                : -1;
+        public void Purge()
+        {
+            _viewCollection.RemoveAll();
+            _cachedLowWatermark = null;
+        }
+
+        public async Task WaitUntilDispatched(CommandProcessingResult result)
+        {
+            if (!result.EventsWereEmitted) return;
+
+            var mostRecentGlobalSequenceNumber = result.GlobalSequenceNumbersOfEmittedEvents.Max();
+
+            while (GetLowWatermark() < mostRecentGlobalSequenceNumber)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(10));
+            }
         }
 
         void UpdateLowWatermark(long newLowWatermark)
@@ -80,6 +102,8 @@ namespace d60.Cirqus.MongoDb.Views
             _viewCollection.Update(Query.EQ("_id", LowWatermarkId),
                 Update.Set(LowWatermarkPropertyName, newLowWatermark),
                 UpdateFlags.Upsert);
+
+            _cachedLowWatermark = newLowWatermark;
         }
 
         public void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
@@ -93,7 +117,7 @@ namespace d60.Cirqus.MongoDb.Views
             foreach (var e in eventList)
             {
                 if (!ViewLocator.IsRelevant<TViewInstance>(e)) continue;
-                
+
                 var viewId = _viewLocator.GetViewId(e);
                 if (viewId == null) continue;
 
@@ -125,11 +149,44 @@ namespace d60.Cirqus.MongoDb.Views
                 return instanceToReturn;
 
             instanceToReturn = _viewCollection.FindOneById(viewId)
-                               ?? new TViewInstance {Id = viewId};
+                               ?? new TViewInstance { Id = viewId };
 
             cachedViewInstances[viewId] = instanceToReturn;
-            
+
             return instanceToReturn;
+        }
+
+        long? GetLowWatermarkFromMemory()
+        {
+            return _cachedLowWatermark;
+        }
+
+        long? GetLowWatermarkFromPersistentCache()
+        {
+            var lowWatermarkDocument = _viewCollection
+                .FindOneByIdAs<BsonDocument>(LowWatermarkId);
+
+            if (lowWatermarkDocument != null)
+            {
+                return lowWatermarkDocument[LowWatermarkPropertyName].AsInt64;
+            }
+
+            return null;
+        }
+
+        long? GetLowWatermarkFromViewInstances()
+        {
+            var viewWithTheLowestGlobalSequenceNumber =
+                _viewCollection
+                    .FindAll()
+                    .SetFields(Fields<TViewInstance>.Include(i => i.LastGlobalSequenceNumber).Exclude(i => i.Id))
+                    .SetLimit(1)
+                    .SetSortOrder(SortBy<TViewInstance>.Ascending(v => v.LastGlobalSequenceNumber))
+                    .FirstOrDefault();
+
+            return viewWithTheLowestGlobalSequenceNumber != null
+                ? viewWithTheLowestGlobalSequenceNumber.LastGlobalSequenceNumber
+                : default(long?);
         }
     }
 }

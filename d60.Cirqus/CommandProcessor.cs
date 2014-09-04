@@ -64,7 +64,7 @@ namespace d60.Cirqus
         /// <summary>
         /// Processes the specified command by invoking the generic eventDispatcher method
         /// </summary>
-        public void ProcessCommand(Command command)
+        public CommandProcessingResult ProcessCommand(Command command)
         {
             _logger.Debug("Processing command: {0}", command);
 
@@ -117,6 +117,8 @@ namespace d60.Cirqus
 
                 throw new ApplicationException(message, exception);
             }
+
+            return new CommandProcessingResult(emittedDomainEvents.Select(d => d.GetGlobalSequenceNumber()).ToArray());
         }
 
         IEnumerable<DomainEvent> InnerProcessCommand(Command command)

@@ -153,6 +153,7 @@
     <Compile Include="Views\NewViewManager\TestNewViewManagerEventDispatcher.cs" />
     <Compile Include="Views\NewViewManager\Events\WasBitten.cs" />
     <Compile Include="Views\NewViewManager\Events\WasEaten.cs" />
+    <Compile Include="Views\NewViewManager\Views\SlowView.cs" />
     <Compile Include="Views\TestAsyncEventDispatcher.cs" />
     <Compile Include="Views\TestInMemoryViewManager.cs" />
     <Compile Include="Views\TestLoadAggregatesFromView.cs" />
