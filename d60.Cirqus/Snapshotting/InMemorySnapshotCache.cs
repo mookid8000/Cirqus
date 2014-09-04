@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Logging;
@@ -109,9 +110,19 @@ namespace d60.Cirqus.Snapshotting
 
             public AggregateRootInfo<TAggregateRoot> GetCloneAs<TAggregateRoot>() where TAggregateRoot : AggregateRoot
             {
-                var instance = (TAggregateRoot)Sturdylizer.DeserializeObject(Data);
+                try
+                {
+                    var deserializedObject = Sturdylizer.DeserializeObject(Data);
 
-                return AggregateRootInfo<TAggregateRoot>.Create(instance);
+                    var instance = (TAggregateRoot)deserializedObject;
+
+                    return AggregateRootInfo<TAggregateRoot>.Create(instance);
+                }
+                catch(Exception exception)
+                {
+                    throw new SerializationException(string.Format("An error occured when attempting to deserialize {0} into object of type {1}",
+                        Data, typeof(TAggregateRoot)), exception);
+                }
             }
         }
 
