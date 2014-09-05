@@ -156,16 +156,20 @@ namespace d60.Cirqus.MongoDb.Views
 
                 if (globalSequenceNumberOfThisEvent <= _lastGlobalSequenceNumberProcessed) continue;
 
-                var viewId = locator.GetViewId(e);
-                var doc = activeViewDocsByid
-                    .GetOrAdd(viewId, id => _viewCollection.FindOneById(id)
-                                            ?? new TView
-                                            {
-                                                Id = id,
-                                                LastGlobalSequenceNumber = -1
-                                            });
+                var viewIds = locator.GetViewIds(e);
 
-                _dispatcherHelper.DispatchToView(context, e, doc);
+                foreach (var viewId in viewIds)
+                {
+                    var doc = activeViewDocsByid
+                        .GetOrAdd(viewId, id => _viewCollection.FindOneById(id)
+                                                ?? new TView
+                                                {
+                                                    Id = id,
+                                                    LastGlobalSequenceNumber = -1
+                                                });
+
+                    _dispatcherHelper.DispatchToView(context, e, doc);
+                }
             }
 
             Save(activeViewDocsByid.Values);

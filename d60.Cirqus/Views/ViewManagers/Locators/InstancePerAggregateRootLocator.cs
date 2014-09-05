@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 
@@ -9,9 +10,9 @@ namespace d60.Cirqus.Views.ViewManagers.Locators
     /// </summary>
     public class InstancePerAggregateRootLocator : ViewLocator
     {
-        public override string GetViewId(DomainEvent e)
+        public override IEnumerable<string> GetViewIds(DomainEvent e)
         {
-            return e.Meta[DomainEvent.MetadataKeys.AggregateRootId].ToString();
+            return new[] {e.Meta[DomainEvent.MetadataKeys.AggregateRootId].ToString()};
         }
 
         public static string GetViewIdFromAggregateRoot(AggregateRoot aggregateRoot)

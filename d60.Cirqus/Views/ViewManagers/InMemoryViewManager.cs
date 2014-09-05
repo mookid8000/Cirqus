@@ -58,24 +58,27 @@ namespace d60.Cirqus.Views.ViewManagers
 
                 if (!ViewLocator.IsRelevant<TView>(e)) continue;
 
-                var viewId = viewLocator.GetViewId(e);
+                var viewIds = viewLocator.GetViewIds(e);
 
-                _views.AddOrUpdate(viewId,
-                    id =>
-                    {
-                        var view = new TView
+                foreach (var viewId in viewIds)
+                {
+                    _views.AddOrUpdate(viewId,
+                        id =>
                         {
-                            Id = id,
-                            LastGlobalSequenceNumber = -1
-                        };
-                        _viewDispatcherHelper.DispatchToView(context, e, view);
-                        return view;
-                    },
-                    (id, view) =>
-                    {
-                        _viewDispatcherHelper.DispatchToView(context, e, view);
-                        return view;
-                    });
+                            var view = new TView
+                            {
+                                Id = id,
+                                LastGlobalSequenceNumber = -1
+                            };
+                            _viewDispatcherHelper.DispatchToView(context, e, view);
+                            return view;
+                        },
+                        (id, view) =>
+                        {
+                            _viewDispatcherHelper.DispatchToView(context, e, view);
+                            return view;
+                        });
+                }
             }
         }
 

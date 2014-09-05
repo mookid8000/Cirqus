@@ -232,16 +232,19 @@ END
         void DispatchEvent(DomainEvent domainEvent, GenericViewContext<TView> genericViewBasse, IViewContext context)
         {
             var locator = ViewLocator.GetLocatorFor<TView>();
-            var id = locator.GetViewId(domainEvent);
+            var ids = locator.GetViewIds(domainEvent);
 
-            var instance = genericViewBasse.ViewCollection.Find(id)
-                           ?? CreateAndAddNewViewInstance(genericViewBasse, id);
+            foreach (var id in ids)
+            {
+                var instance = genericViewBasse.ViewCollection.Find(id)
+                               ?? CreateAndAddNewViewInstance(genericViewBasse, id);
 
-            var globalSequenceNumber = domainEvent.GetGlobalSequenceNumber();
+                var globalSequenceNumber = domainEvent.GetGlobalSequenceNumber();
 
-            if (globalSequenceNumber < instance.LastGlobalSequenceNumber) return;
+                if (globalSequenceNumber < instance.LastGlobalSequenceNumber) return;
 
-            _dispatcherHelper.DispatchToView(context, domainEvent, instance);
+                _dispatcherHelper.DispatchToView(context, domainEvent, instance);
+            }
         }
 
         TView CreateAndAddNewViewInstance(GenericViewContext<TView> genericViewBasse, string id)

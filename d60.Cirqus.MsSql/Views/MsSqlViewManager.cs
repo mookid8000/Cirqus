@@ -180,16 +180,20 @@ namespace d60.Cirqus.MsSql.Views
                 {
                     if (!ViewLocator.IsRelevant<TView>(e)) continue;
 
-                    var viewId = locator.GetViewId(e);
-                    var view = activeViewsById
-                        .GetOrAdd(viewId, id => FindOneById(id, tx, conn)
-                                                ?? new MsSqlView<TView>
-                                                {
-                                                    View = new TView { Id = id, LastGlobalSequenceNumber = -1 },
-                                                    MaxGlobalSeq = -1
-                                                });
+                    var viewIds = locator.GetViewIds(e);
 
-                    DispatchEvent(eventStore, e, view, context);
+                    foreach (var viewId in viewIds)
+                    {
+                        var view = activeViewsById
+                            .GetOrAdd(viewId, id => FindOneById(id, tx, conn)
+                                                    ?? new MsSqlView<TView>
+                                                    {
+                                                        View = new TView {Id = id, LastGlobalSequenceNumber = -1},
+                                                        MaxGlobalSeq = -1
+                                                    });
+
+                        DispatchEvent(eventStore, e, view, context);
+                    }
                 }
 
                 Save(activeViewsById, conn, tx);

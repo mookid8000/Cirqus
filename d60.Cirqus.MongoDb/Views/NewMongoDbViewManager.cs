@@ -118,12 +118,14 @@ namespace d60.Cirqus.MongoDb.Views
             {
                 if (!ViewLocator.IsRelevant<TViewInstance>(e)) continue;
 
-                var viewId = _viewLocator.GetViewId(e);
-                if (viewId == null) continue;
+                var viewIds = _viewLocator.GetViewIds(e);
 
-                var viewInstance = GetOrCreateViewInstance(viewId, cachedViewInstances);
+                foreach (var viewId in viewIds)
+                {
+                    var viewInstance = GetOrCreateViewInstance(viewId, cachedViewInstances);
 
-                _dispatcherHelper.DispatchToView(viewContext, e, viewInstance);
+                    _dispatcherHelper.DispatchToView(viewContext, e, viewInstance);
+                }
             }
 
             FlushCacheToDatabase(cachedViewInstances);

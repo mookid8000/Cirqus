@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Events;
 
@@ -33,7 +34,7 @@ namespace d60.Cirqus.Views.ViewManagers
         /// <summary>
         /// Gets the ID of the view to which this particular <see cref="DomainEvent"/> must be applied
         /// </summary>
-        public abstract string GetViewId(DomainEvent e);
+        public abstract IEnumerable<string> GetViewIds(DomainEvent e);
 
         /// <summary>
         /// Looks at the type closing the implemented <see cref="IViewInstance{TViewLocator}"/> and returns a new instance of that type

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
@@ -101,11 +102,16 @@ namespace d60.Cirqus.Tests.Contracts.Views
         }
         class CustomizedViewLocator : ViewLocator
         {
-            public override string GetViewId(DomainEvent e)
+            public override IEnumerable<string> GetViewIds(DomainEvent e)
             {
-                if (e is AnEvent) return "yay";
-
-                throw new ApplicationException("oh noes!!!!");
+                if (e is AnEvent)
+                {
+                    yield return "yay";
+                }
+                else
+                {
+                    throw new ApplicationException("oh noes!!!!");
+                }
             }
         }
     }
