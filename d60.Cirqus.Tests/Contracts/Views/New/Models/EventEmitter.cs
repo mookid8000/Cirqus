@@ -12,7 +12,6 @@ namespace d60.Cirqus.Tests.Contracts.Views.New.Models
     {
         public void Apply(AnEvent e)
         {
-            
         }
 
         public void DoIt()
@@ -53,8 +52,6 @@ namespace d60.Cirqus.Tests.Contracts.Views.New.Models
         public void Handle(IViewContext context, AnEvent domainEvent)
         {
             var value = domainEvent.Meta[Id].ToString();
-
-            Console.WriteLine("============================== Handling event for {0}", Id);
 
             HeaderValues.Add(value);
         }
