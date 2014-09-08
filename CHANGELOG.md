@@ -202,3 +202,7 @@
 ## 0.15.0
 
 * Added experimental async-by-default managed views as an alternative to the initial view managers
+
+## 0.15.1
+
+* Support for composite event dispatchers in the configuration API

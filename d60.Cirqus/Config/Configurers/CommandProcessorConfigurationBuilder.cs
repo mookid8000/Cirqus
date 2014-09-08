@@ -106,6 +106,13 @@ namespace d60.Cirqus.Config.Configurers
             _optionActions.Add(optionAction);
         }
 
+        public bool HasService<TService>()
+        {
+            return _resolvers
+                .OfType<ResolutionContext.Resolver<TService>>()
+                .Any();
+        }
+
         internal void LogServicesTo(TextWriter writer)
         {
             var es = _resolvers.OfType<ResolutionContext.Resolver<IEventStore>>().ToList();
