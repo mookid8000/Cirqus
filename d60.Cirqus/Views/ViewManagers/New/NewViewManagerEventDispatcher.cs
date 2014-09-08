@@ -85,11 +85,11 @@ namespace d60.Cirqus.Views.ViewManagers.New
             _sequenceNumbersToCatchUpTo.Enqueue(new PieceOfWork(maxSequenceNumberInBatch, eventStore, canUseCachedInformation: true));
         }
 
-        public async Task WaitUntilDispatched<TViewInstance>(CommandProcessingResult result) where TViewInstance : IViewInstance
+        public async Task WaitUntilDispatched<TViewInstance>(CommandProcessingResult result, TimeSpan timeout) where TViewInstance : IViewInstance
         {
             await Task.WhenAll(_managedViews
                 .OfType<IManagedView<TViewInstance>>()
-                .Select(v => v.WaitUntilDispatched(result))
+                .Select(v => v.WaitUntilDispatched(result, timeout))
                 .ToArray());
         }
 

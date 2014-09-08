@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
+using d60.Cirqus.Numbers;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using d60.Cirqus.Views.ViewManagers.New;
@@ -91,18 +92,26 @@ namespace d60.Cirqus.MongoDb.Views.New
             _logger.Info("Purging MongoDB collection {0}", _viewCollection.Name);
 
             _viewCollection.RemoveAll();
-         
+
             Interlocked.Exchange(ref _cachedLowWatermark, DefaultLowWatermark);
         }
 
-        public async Task WaitUntilDispatched(CommandProcessingResult result)
+        public async Task WaitUntilDispatched(CommandProcessingResult result, TimeSpan timeout)
         {
             if (!result.EventsWereEmitted) return;
 
             var mostRecentGlobalSequenceNumber = result.GlobalSequenceNumbersOfEmittedEvents.Max();
 
-            while (GetLowWatermark(canGetFromCache:false) < mostRecentGlobalSequenceNumber)
+            var waitStartTime = DateTime.UtcNow;
+
+            while (GetLowWatermark(canGetFromCache: false) < mostRecentGlobalSequenceNumber)
             {
+                if (DateTime.UtcNow - waitStartTime > timeout)
+                {
+                    throw new TimeoutException(string.Format("View for {0} did not catch up to {1} within {2} timeout!",
+                        typeof(TViewInstance), mostRecentGlobalSequenceNumber, timeout));
+                }
+
                 await Task.Delay(TimeSpan.FromMilliseconds(10));
             }
         }
@@ -171,7 +180,7 @@ namespace d60.Cirqus.MongoDb.Views.New
         long? GetLowWatermarkFromMemory()
         {
             var value = Interlocked.Read(ref _cachedLowWatermark);
-            
+
             return value != DefaultLowWatermark ? value : default(long?);
         }
 
@@ -206,7 +215,7 @@ namespace d60.Cirqus.MongoDb.Views.New
 
                 return lowWatermark;
             }
-            
+
             return default(long?);
         }
     }

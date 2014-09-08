@@ -136,14 +136,22 @@ namespace d60.Cirqus.MsSql.Views
             Interlocked.Exchange(ref _cachedLowWatermark, eventList.Max(e => e.GetGlobalSequenceNumber()));
         }
 
-        public async Task WaitUntilDispatched(CommandProcessingResult result)
+        public async Task WaitUntilDispatched(CommandProcessingResult result, TimeSpan timeout)
         {
             if (!result.EventsWereEmitted) return;
 
             var mostRecentGlobalSequenceNumber = result.GlobalSequenceNumbersOfEmittedEvents.Max();
 
+            var waitStartTime = DateTime.UtcNow;
+
             while (GetLowWatermark(canGetFromCache: false) < mostRecentGlobalSequenceNumber)
             {
+                if (DateTime.UtcNow - waitStartTime > timeout)
+                {
+                    throw new TimeoutException(string.Format("View for {0} did not catch up to {1} within {2} timeout!",
+                        typeof(TViewInstance), mostRecentGlobalSequenceNumber, timeout));
+                }
+
                 await Task.Delay(TimeSpan.FromMilliseconds(10));
             }
         }

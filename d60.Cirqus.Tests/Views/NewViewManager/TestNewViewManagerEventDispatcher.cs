@@ -60,7 +60,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             var lastResult = _commandProcessor.ProcessCommand(new BitePotato(Guid.NewGuid(), .01m));
 
             Console.WriteLine("Waiting until {0} has been dispatched to the view...", lastResult.GlobalSequenceNumbersOfEmittedEvents.Max());
-            allPotatoesView.WaitUntilDispatched(lastResult).Wait();
+            allPotatoesView.WaitUntilDispatched(lastResult, TimeSpan.FromSeconds(2)).Wait();
 
             var viewOnFirstLoad = allPotatoesView.Load(GlobalInstanceLocator.GetViewInstanceId());
             Assert.That(viewOnFirstLoad, Is.Not.Null);
@@ -69,7 +69,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             allPotatoesView.Purge();
 
             Console.WriteLine("Waiting until {0} has been dispatched to the view...", lastResult.GlobalSequenceNumbersOfEmittedEvents.Max());
-            allPotatoesView.WaitUntilDispatched(lastResult).Wait();
+            allPotatoesView.WaitUntilDispatched(lastResult, TimeSpan.FromSeconds(2)).Wait();
 
             var viewOnNextLoad = allPotatoesView.Load(GlobalInstanceLocator.GetViewInstanceId());
             Assert.That(viewOnNextLoad, Is.Not.Null);
@@ -106,11 +106,11 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             {
                 case BlockOption.BlockOnManagedView:
                     Console.WriteLine("Waiting for {0} on the view...", result.GlobalSequenceNumbersOfEmittedEvents.Max());
-                    slowView.WaitUntilDispatched(result).Wait();
+                    slowView.WaitUntilDispatched(result, TimeSpan.FromSeconds(2)).Wait();
                     break;
                 case BlockOption.BlockOnViewManager:
                     Console.WriteLine("Waiting for {0} on the dispatcher...", result.GlobalSequenceNumbersOfEmittedEvents.Max());
-                    _dispatcher.WaitUntilDispatched<SlowView>(result).Wait();
+                    _dispatcher.WaitUntilDispatched<SlowView>(result, TimeSpan.FromSeconds(2)).Wait();
                     break;
             }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using d60.Cirqus.Events;
 
@@ -19,7 +20,7 @@ namespace d60.Cirqus.Views.ViewManagers.New
         /// <summary>
         /// Must block until the results of the specified command processing result are visible in the view
         /// </summary>
-        Task WaitUntilDispatched(CommandProcessingResult result);
+        Task WaitUntilDispatched(CommandProcessingResult result, TimeSpan timeout);
 
         /// <summary>
         /// Clears all the data in the view - may/may not happen synchronously, but all view data is guaranteed to end up being re-generated
