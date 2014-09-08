@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Threading;
 using d60.Cirqus.Events;
+using d60.Cirqus.Logging;
+using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Tests.Contracts.Views.New.Factories;
 using d60.Cirqus.Tests.Contracts.Views.New.Models;
 using d60.Cirqus.Views.ViewManagers.Locators;
@@ -18,6 +19,8 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
 
         protected override void DoSetUp()
         {
+            CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel:Logger.Level.Info);
+
             _factory = new TFactory();
 
             _context = new TestContext();
