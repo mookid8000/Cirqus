@@ -27,6 +27,14 @@ namespace d60.Cirqus.Views.ViewManagers.New
     /// </summary>
     public interface IManagedView<TViewInstance> : IManagedView where TViewInstance : IViewInstance
     {
+        /// <summary>
+        /// Loads the view instance with the specified ID, returning null if it does not exist
+        /// </summary>
         TViewInstance Load(string viewId);
+
+        /// <summary>
+        /// Clears all the data in the view - may/may not happen synchronously, but all view data is guaranteed to end up being re-generated
+        /// </summary>
+        void Purge();
     }
 }

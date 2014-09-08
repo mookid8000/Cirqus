@@ -8,5 +8,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
         IManagedView<TViewInstance> CreateManagedView<TViewInstance>() where TViewInstance : class, IViewInstance, ISubscribeTo, new();
 
         TViewInstance Load<TViewInstance>(string viewId) where TViewInstance : class, IViewInstance, ISubscribeTo, new();
+
+        void PurgeView<TViewInstance>() where TViewInstance : class, IViewInstance, ISubscribeTo, new();
     }
 }

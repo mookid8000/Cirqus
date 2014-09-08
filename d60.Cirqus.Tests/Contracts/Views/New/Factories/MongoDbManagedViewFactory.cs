@@ -30,6 +30,20 @@ namespace d60.Cirqus.Tests.Contracts.Views.New.Factories
 
         public TViewInstance Load<TViewInstance>(string viewId) where TViewInstance : class, IViewInstance, ISubscribeTo, new()
         {
+            var managedView = GetManagedView<TViewInstance>();
+
+            return managedView.Load(viewId);
+        }
+
+        public void PurgeView<TViewInstance>() where TViewInstance : class, IViewInstance, ISubscribeTo, new()
+        {
+            var managedView = GetManagedView<TViewInstance>();
+
+            managedView.Purge();
+        }
+
+        IManagedView<TViewInstance> GetManagedView<TViewInstance>() where TViewInstance : class, IViewInstance, ISubscribeTo, new()
+        {
             var managedView = _managedViews
                 .OfType<IManagedView<TViewInstance>>()
                 .FirstOrDefault();
@@ -37,10 +51,10 @@ namespace d60.Cirqus.Tests.Contracts.Views.New.Factories
             if (managedView == null)
             {
                 throw new ArgumentException(string.Format("Could not find managed view for {0} - only have {1}",
-                    typeof(TViewInstance), string.Join(", ", _managedViews)));
+                    typeof (TViewInstance), string.Join(", ", _managedViews)));
             }
 
-            return managedView.Load(viewId);
+            return managedView;
         }
     }
 }
