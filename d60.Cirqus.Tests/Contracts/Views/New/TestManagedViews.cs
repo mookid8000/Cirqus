@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Tests.Contracts.Views.New.Factories;
 using d60.Cirqus.Tests.Contracts.Views.New.Models;
@@ -10,7 +9,8 @@ using TestContext = d60.Cirqus.TestHelpers.TestContext;
 namespace d60.Cirqus.Tests.Contracts.Views.New
 {
     [TestFixture(typeof(MongoDbManagedViewFactory), Category = TestCategories.MongoDb)]
-    public class TestManagedViews<TFactory> : FixtureBase where TFactory : IManagedViewFactory, new()
+    [TestFixture(typeof(MsSqlManagedViewFactory), Category = TestCategories.MsSql)]
+    public class TestManagedViews<TFactory> : FixtureBase where TFactory : ManagedViewFactoryBase, new()
     {
         TFactory _factory;
         TestContext _context;

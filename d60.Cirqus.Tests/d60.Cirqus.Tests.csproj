@@ -95,8 +95,9 @@
     <Compile Include="Contracts\EventStore\Factories\InMemoryEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\Factories\MongoDbEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\Factories\MsSqlEventStoreFactory.cs" />
+    <Compile Include="Contracts\Views\New\Factories\ManagedViewFactoryBase.cs" />
     <Compile Include="Contracts\Views\New\Factories\MongoDbManagedViewFactory.cs" />
-    <Compile Include="Contracts\Views\New\IManagedViewFactory.cs" />
+    <Compile Include="Contracts\Views\New\Factories\MsSqlManagedViewFactory.cs" />
     <Compile Include="Contracts\Views\New\Models\EventEmitter.cs" />
     <Compile Include="Contracts\Views\New\Models\IdGenerator.cs" />
     <Compile Include="Contracts\Views\New\TestManagedViews.cs" />
