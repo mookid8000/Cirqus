@@ -5,7 +5,7 @@ using d60.Cirqus.Views.ViewManagers.New;
 
 namespace d60.Cirqus.Tests.Contracts.Views.New.Factories
 {
-    public abstract class ManagedViewFactoryBase
+    public abstract class AbstractManagedViewFactory
     {
         readonly List<IManagedView> _managedViews = new List<IManagedView>();
 

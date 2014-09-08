@@ -5,7 +5,7 @@ using MongoDB.Driver;
 
 namespace d60.Cirqus.Tests.Contracts.Views.New.Factories
 {
-    public class MongoDbManagedViewFactory : ManagedViewFactoryBase
+    public class MongoDbManagedViewFactory : AbstractManagedViewFactory
     {
         readonly MongoDatabase _database;
 

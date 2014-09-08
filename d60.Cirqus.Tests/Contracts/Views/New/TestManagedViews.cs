@@ -12,7 +12,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
 {
     [TestFixture(typeof(MongoDbManagedViewFactory), Category = TestCategories.MongoDb)]
     [TestFixture(typeof(MsSqlManagedViewFactory), Category = TestCategories.MsSql)]
-    public class TestManagedViews<TFactory> : FixtureBase where TFactory : ManagedViewFactoryBase, new()
+    public class TestManagedViews<TFactory> : FixtureBase where TFactory : AbstractManagedViewFactory, new()
     {
         TFactory _factory;
         TestContext _context;

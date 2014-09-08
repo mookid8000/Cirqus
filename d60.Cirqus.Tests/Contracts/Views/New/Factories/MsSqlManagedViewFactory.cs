@@ -4,7 +4,7 @@ using d60.Cirqus.Views.ViewManagers.New;
 
 namespace d60.Cirqus.Tests.Contracts.Views.New.Factories
 {
-    public class MsSqlManagedViewFactory : ManagedViewFactoryBase
+    public class MsSqlManagedViewFactory : AbstractManagedViewFactory
     {
         readonly string _connectionString;
 
@@ -17,7 +17,11 @@ namespace d60.Cirqus.Tests.Contracts.Views.New.Factories
 
         protected override IManagedView<TViewInstance> CreateManagedView<TViewInstance>()
         {
-            var viewManager = new NewMsSqlViewManager<TViewInstance>(_connectionString);
+            var tableName = typeof(TViewInstance).Name;
+
+            MsSqlTestHelper.DropTable(tableName);
+
+            var viewManager = new NewMsSqlViewManager<TViewInstance>(_connectionString, tableName);
 
             return viewManager;
         }
