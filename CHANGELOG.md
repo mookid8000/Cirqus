@@ -198,3 +198,7 @@
 ## 0.14.1
 
 * Added experimental caching aggregate root repository with a simple in-mem snapshot cache (warning: beta!)
+
+## 0.15.0
+
+* Added experimental async-by-default managed views as an alternative to the initial view managers
