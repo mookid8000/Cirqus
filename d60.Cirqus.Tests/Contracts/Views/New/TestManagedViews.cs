@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Tests.Contracts.Views.New.Factories;
 using d60.Cirqus.Tests.Contracts.Views.New.Models;
+using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.TestHelpers.TestContext;
@@ -19,7 +21,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
 
         protected override void DoSetUp()
         {
-            CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel:Logger.Level.Info);
+            CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel:Logger.Level.Debug);
 
             _factory = new TFactory();
 
@@ -30,19 +32,23 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
         public void WorksWithSimpleScenario()
         {
             // arrange
+            Console.WriteLine("Adding view manager for GeneratedIds");
             var view = _factory.GetManagedView<GeneratedIds>();
             _context.AddViewManager(view);
 
             // act
+            Console.WriteLine("Processing 2 commands");
             _context.ProcessCommand(new GenerateNewId(IdGenerator.InstanceId) { IdBase = "bim" });
             _context.ProcessCommand(new GenerateNewId(IdGenerator.InstanceId) { IdBase = "bim" });
             var last = _context.ProcessCommand(new GenerateNewId(IdGenerator.InstanceId) { IdBase = "bom" });
 
             // assert
+            Console.WriteLine("Waiting until dispatched: {0}", last.GlobalSequenceNumbersOfEmittedEvents.Max());
             view.WaitUntilDispatched(last).Wait();
 
             var idsView = view.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));
-            
+
+            Assert.That(idsView, Is.Not.Null, "Could not find view!");
             Assert.That(idsView.AllIds.Count, Is.EqualTo(3));
          
             Assert.That(idsView.AllIds, Contains.Item("bim/0"));
@@ -54,19 +60,23 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
         public void AutomaticallyCatchesUpWhenInitializing()
         {
             // arrange
+            Console.WriteLine("Processing 2 commands");
             _context.ProcessCommand(new GenerateNewId(IdGenerator.InstanceId) { IdBase = "bim" });
             _context.ProcessCommand(new GenerateNewId(IdGenerator.InstanceId) { IdBase = "bim" });
             var last = _context.ProcessCommand(new GenerateNewId(IdGenerator.InstanceId) { IdBase = "bom" });
 
             // act
+            Console.WriteLine("Adding view manager for GeneratedIds");
             var view = _factory.GetManagedView<GeneratedIds>();
             _context.AddViewManager(view);
 
             // assert
+            Console.WriteLine("Waiting until dispatched: {0}", last.GlobalSequenceNumbersOfEmittedEvents.Max());
             view.WaitUntilDispatched(last).Wait();
 
             var idsView = view.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));
 
+            Assert.That(idsView, Is.Not.Null, "Could not find view!");
             Assert.That(idsView.AllIds.Count, Is.EqualTo(3));
 
             Assert.That(idsView.AllIds, Contains.Item("bim/0"));
@@ -78,14 +88,17 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
         public void AutomaticallyCatchesUpAfterPurging()
         {
             // arrange
+            Console.WriteLine("Adding view manager for GeneratedIds");
             var view = _factory.GetManagedView<GeneratedIds>();
             _context.AddViewManager(view);
 
+            Console.WriteLine("Processing 2 commands");
             _context.ProcessCommand(new GenerateNewId(IdGenerator.InstanceId) { IdBase = "bim" });
             _context.ProcessCommand(new GenerateNewId(IdGenerator.InstanceId) { IdBase = "bim" });
             var last = _context.ProcessCommand(new GenerateNewId(IdGenerator.InstanceId) { IdBase = "bom" });
 
             // act
+            Console.WriteLine("Purging view");
             _factory.PurgeView<GeneratedIds>();
 
             // assert

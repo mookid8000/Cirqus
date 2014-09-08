@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Logging;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.New;
 
@@ -14,6 +15,13 @@ namespace d60.Cirqus.MsSql.Views
 {
     public class NewMsSqlViewManager<TViewInstance> : IManagedView<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
+        static Logger _logger;
+
+        static NewMsSqlViewManager()
+        {
+            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+        }
+
         const int PrimaryKeySize = 100;
         const int DefaultLowWatermark = -1;
 
@@ -162,6 +170,8 @@ namespace d60.Cirqus.MsSql.Views
 
         public void Purge()
         {
+            _logger.Info("Purging SQL Server table {0}", _tableName);
+
             using (var conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
@@ -294,6 +304,8 @@ WHEN NOT MATCHED THEN
 
         void CreateSchema()
         {
+            _logger.Info("Ensuring that schema for {0} is created...", typeof (TViewInstance));
+
             using (var conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
