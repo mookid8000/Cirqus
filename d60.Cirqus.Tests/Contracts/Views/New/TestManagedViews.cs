@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using d60.Cirqus.Events;
 using d60.Cirqus.Tests.Contracts.Views.New.Factories;
 using d60.Cirqus.Tests.Contracts.Views.New.Models;
@@ -26,7 +27,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
         public void WorksWithSimpleScenario()
         {
             // arrange
-            var view = _factory.CreateManagedView<GeneratedIds>();
+            var view = _factory.GetManagedView<GeneratedIds>();
             _context.AddViewManager(view);
 
             // act
@@ -55,7 +56,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
             var last = _context.ProcessCommand(new GenerateNewId(IdGenerator.InstanceId) { IdBase = "bom" });
 
             // act
-            var view = _factory.CreateManagedView<GeneratedIds>();
+            var view = _factory.GetManagedView<GeneratedIds>();
             _context.AddViewManager(view);
 
             // assert
@@ -74,7 +75,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
         public void AutomaticallyCatchesUpAfterPurging()
         {
             // arrange
-            var view = _factory.CreateManagedView<GeneratedIds>();
+            var view = _factory.GetManagedView<GeneratedIds>();
             _context.AddViewManager(view);
 
             _context.ProcessCommand(new GenerateNewId(IdGenerator.InstanceId) { IdBase = "bim" });
@@ -100,11 +101,12 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
         public void CanManageViewWithLocatorWithMultipleIds()
         {
             // arrange
-            var view = _factory.CreateManagedView<HeaderCounter>();
+            const string customHeaderKey = "custom-header";
+            var view = _factory.GetManagedView<HeaderCounter>();
             _context.AddViewManager(view);
 
             // act
-            _context.ProcessCommand(new EmitEvent(Guid.NewGuid()));
+            _context.ProcessCommand(new EmitEvent(Guid.NewGuid()) {Meta = {{customHeaderKey, "w00t!"}}});
             _context.ProcessCommand(new EmitEvent(Guid.NewGuid()));
             _context.ProcessCommand(new EmitEvent(Guid.NewGuid()));
             var last = _context.ProcessCommand(new EmitEvent(Guid.NewGuid()));
@@ -116,11 +118,13 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
             var aggregateRootIdView = view.Load(DomainEvent.MetadataKeys.AggregateRootId);
             var globalSequenceNumberView = view.Load(DomainEvent.MetadataKeys.GlobalSequenceNumber);
             var sequenceNumberView = view.Load(DomainEvent.MetadataKeys.SequenceNumber);
+            var customHeaderView = view.Load(customHeaderKey);
 
             Assert.That(batchIdView.HeaderValues.Count, Is.EqualTo(4));
             Assert.That(aggregateRootIdView.HeaderValues.Count, Is.EqualTo(4));
             Assert.That(globalSequenceNumberView.HeaderValues.Count, Is.EqualTo(4));
             Assert.That(sequenceNumberView.HeaderValues.Count, Is.EqualTo(1));
+            Assert.That(customHeaderView.HeaderValues.Count, Is.EqualTo(1));
         }
     }
 }

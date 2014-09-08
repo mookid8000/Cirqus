@@ -20,6 +20,11 @@ namespace d60.Cirqus.Views.ViewManagers.New
         /// Must block until the results of the specified command processing result are visible in the view
         /// </summary>
         Task WaitUntilDispatched(CommandProcessingResult result);
+
+        /// <summary>
+        /// Clears all the data in the view - may/may not happen synchronously, but all view data is guaranteed to end up being re-generated
+        /// </summary>
+        void Purge();
     }
 
     /// <summary>
@@ -31,10 +36,5 @@ namespace d60.Cirqus.Views.ViewManagers.New
         /// Loads the view instance with the specified ID, returning null if it does not exist
         /// </summary>
         TViewInstance Load(string viewId);
-
-        /// <summary>
-        /// Clears all the data in the view - may/may not happen synchronously, but all view data is guaranteed to end up being re-generated
-        /// </summary>
-        void Purge();
     }
 }

@@ -62,6 +62,11 @@ namespace d60.Cirqus.TestHelpers
 
                 var eventsToReturn = unitOfWork.EmittedEvents.ToList();
 
+                foreach (var e in eventsToReturn)
+                {
+                    e.Meta.Merge(command.Meta);
+                }
+
                 unitOfWork.Commit();
 
                 return new CommandProcessingResultWithEvents(eventsToReturn);

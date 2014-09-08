@@ -189,8 +189,7 @@ namespace d60.Cirqus.MsSql.Views
                             .GetOrAdd(viewId, id => FindOneById(id, tx, conn)
                                                     ?? new MsSqlView<TView>
                                                     {
-                                                        View = new TView {Id = id, LastGlobalSequenceNumber = -1},
-                                                        MaxGlobalSeq = -1
+                                                        View = new TView { Id = id, LastGlobalSequenceNumber = -1 },
                                                     });
 
                         DispatchEvent(eventStore, e, view, context);
@@ -261,8 +260,6 @@ WHEN NOT MATCHED THEN
             if (globalSequenceNumber < view.MaxGlobalSeq) return;
 
             _dispatcher.DispatchToView(context, domainEvent, view.View);
-
-            view.MaxGlobalSeq = globalSequenceNumber;
         }
 
         MsSqlView<TView> FindOneById(string id, SqlTransaction tx, SqlConnection conn)
@@ -294,12 +291,9 @@ FROM [{1}] WHERE [Id] = @id
                             prop.Setter(view, reader[prop.ColumnName]);
                         }
 
-                        var globalSeqNo = (long)reader["GlobalSeqNo"];
-
                         return new MsSqlView<TView>
                         {
                             View = view,
-                            MaxGlobalSeq = globalSeqNo
                         };
                     }
 
@@ -429,9 +423,10 @@ END
         }
     }
 
-    class MsSqlView<TView> where TView : IViewInstance
+    class MsSqlView<TViewInstance> where TViewInstance : IViewInstance
     {
-        public long MaxGlobalSeq { get; set; }
-        public TView View { get; set; }
+        public TViewInstance View { get; set; }
+        
+        public long MaxGlobalSeq { get { return View.LastGlobalSequenceNumber; }}
     }
 }

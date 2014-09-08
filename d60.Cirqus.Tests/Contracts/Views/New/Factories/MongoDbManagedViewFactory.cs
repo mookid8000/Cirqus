@@ -14,11 +14,9 @@ namespace d60.Cirqus.Tests.Contracts.Views.New.Factories
             _database = MongoHelper.InitializeTestDatabase();
         }
 
-        public override IManagedView<TViewInstance> CreateManagedView<TViewInstance>()
+        protected override IManagedView<TViewInstance> CreateManagedView<TViewInstance>()
         {
             var managedView = new NewMongoDbViewManager<TViewInstance>(_database);
-
-            ManagedViews.Add(managedView);
 
             return managedView;
         }

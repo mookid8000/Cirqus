@@ -65,7 +65,10 @@ namespace d60.Cirqus.Views.ViewManagers.New
         {
             _logger.Info("Initializing view manager with managed views: {0}", string.Join(", ", _managedViews));
 
-            _sequenceNumbersToCatchUpTo.Enqueue(new PieceOfWork(long.MaxValue, _eventStore, canUseCachedInformation: false));
+            _sequenceNumbersToCatchUpTo.Enqueue(new PieceOfWork(long.MaxValue, _eventStore, canUseCachedInformation: false)
+            {
+                PurgeViewsFirst = purgeExistingViews
+            });
 
             _automaticCatchUpTimer.Start();
             _worker.Start();
@@ -134,7 +137,7 @@ namespace d60.Cirqus.Views.ViewManagers.New
 
                 try
                 {
-                    CatchUpTo(sequenceNumberToCatchUpTo, pieceOfWork.EventStore, pieceOfWork.CanUseCachedInformation);
+                    CatchUpTo(sequenceNumberToCatchUpTo, pieceOfWork.EventStore, pieceOfWork.CanUseCachedInformation, pieceOfWork.PurgeViewsFirst, _managedViews.ToArray());
                 }
                 catch (Exception exception)
                 {
@@ -145,13 +148,21 @@ namespace d60.Cirqus.Views.ViewManagers.New
             _logger.Info("View manager background thread stopped!");
         }
 
-        void CatchUpTo(long sequenceNumberToCatchUpTo, IEventStore eventStore, bool cachedInformationAllowed)
+        void CatchUpTo(long sequenceNumberToCatchUpTo, IEventStore eventStore, bool cachedInformationAllowed, bool purgeViewsFirst, IManagedView[] managedViews)
         {
             // bail out now if there isn't any actual work to do
-            if (!_managedViews.Any()) return;
+            if (!managedViews.Any()) return;
+
+            if (purgeViewsFirst)
+            {
+                foreach (var managedView in managedViews)
+                {
+                    managedView.Purge();
+                }
+            }
 
             // get the lowest low watermark
-            var lowestSequenceNumberSuccessfullyProcessed = _managedViews
+            var lowestSequenceNumberSuccessfullyProcessed = managedViews
                 .Min(v => v.GetLowWatermark(canGetFromCache: cachedInformationAllowed));
 
             // if we've already been there, don't do anything
@@ -167,7 +178,7 @@ namespace d60.Cirqus.Views.ViewManagers.New
                 var context = new DefaultViewContext(_aggregateRootRepository);
                 var list = batch.ToList();
 
-                foreach (var managedView in _managedViews)
+                foreach (var managedView in managedViews)
                 {
                     _logger.Debug("Dispatching batch of {0} events to {1}", list.Count, managedView);
 
@@ -190,6 +201,8 @@ namespace d60.Cirqus.Views.ViewManagers.New
             public IEventStore EventStore { get; private set; }
 
             public bool CanUseCachedInformation { get; private set; }
+            
+            public bool PurgeViewsFirst { get; set; }
         }
 
         /// <summary>

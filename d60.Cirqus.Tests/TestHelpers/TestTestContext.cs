@@ -26,6 +26,21 @@ namespace d60.Cirqus.Tests.TestHelpers
         }
 
         [Test]
+        public void CopiesCommandHeadersToEventsLikeTheRealCommandProcessor()
+        {
+            // arrange
+            var id1 = Guid.NewGuid();
+
+            // act
+            _context.ProcessCommand(new RootCommand(id1) {Meta = {{"custom-header", "hej!!!11"}}});
+
+            // assert
+            Assert.That(_context.History.OfType<RootEvent>().Single().Meta.ContainsKey("custom-header"), Is.True);
+            Assert.That(_context.History.OfType<RootEvent>().Single().Meta["custom-header"], Is.EqualTo("hej!!!11"));
+        }
+
+
+        [Test]
         public void CanGetFullyHydratedAggregateRootOutsideOfUnitOfWork()
         {
             // arrange
