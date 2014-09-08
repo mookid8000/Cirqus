@@ -6,7 +6,7 @@ using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Logging.Null;
 using d60.Cirqus.Snapshotting;
-using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.New;
 using d60.Cirqus.Views.ViewManagers.Old;
 
 namespace d60.Cirqus.Config
@@ -39,6 +39,17 @@ namespace d60.Cirqus.Config
         {
             builder.Registrar
                 .Register<IEventDispatcher>(context => new ViewManagerEventDispatcher(context.Get<IAggregateRootRepository>(), viewManagers));
+        }
+
+        public static void UseNewViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IManagedView[] managedViews)
+        {
+            builder.Registrar
+                .Register<IEventDispatcher>(context => new NewViewManagerEventDispatcher(context.Get<IAggregateRootRepository>(), context.Get<IEventStore>(), managedViews));
+        }
+
+        public static void UseEventDispatcher(this EventDispatcherConfigurationBuilder builder, IEventDispatcher eventDispatcher)
+        {
+            builder.Registrar.Register(context => eventDispatcher);
         }
 
         public static void PurgeExistingViews(this OptionsConfigurationBuilder builder, bool purgeViewsAtStartup = false)
