@@ -3,9 +3,8 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
-using d60.Cirqus.Views.ViewManagers;
 
-namespace d60.Cirqus.Views.NewViewManager
+namespace d60.Cirqus.Views.ViewManagers.New
 {
     /// <summary>
     /// View context implementation that works nicely with the existing view managers

@@ -2,7 +2,7 @@
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
-using d60.Cirqus.MongoDb.Views;
+using d60.Cirqus.MongoDb.Views.Old;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;

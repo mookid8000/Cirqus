@@ -12,6 +12,7 @@ using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.Snapshotting;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Old;
 using MongoDB.Driver;
 using NUnit.Framework;
 

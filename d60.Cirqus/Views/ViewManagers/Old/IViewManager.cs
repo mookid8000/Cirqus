@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using d60.Cirqus.Events;
 
-namespace d60.Cirqus.Views.ViewManagers
+namespace d60.Cirqus.Views.ViewManagers.Old
 {
     public interface IViewManager
     {

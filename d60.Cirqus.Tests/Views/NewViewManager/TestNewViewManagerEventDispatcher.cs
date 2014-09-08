@@ -7,12 +7,13 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.MongoDb.Config;
 using d60.Cirqus.MongoDb.Views;
+using d60.Cirqus.MongoDb.Views.New;
 using d60.Cirqus.Numbers;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Views.NewViewManager.Commands;
 using d60.Cirqus.Tests.Views.NewViewManager.Views;
-using d60.Cirqus.Views.NewViewManager;
 using d60.Cirqus.Views.ViewManagers.Locators;
+using d60.Cirqus.Views.ViewManagers.New;
 using MongoDB.Driver;
 using NUnit.Framework;
 

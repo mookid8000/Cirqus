@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.MongoDb.Views;
+using d60.Cirqus.MongoDb.Views.Old;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Old;
 using MongoDB.Driver;
 
-namespace d60.Cirqus.Tests.Contracts.Views.Factories
+namespace d60.Cirqus.Tests.Contracts.Views.Old.Factories
 {
     class MongoDbPullViewManagerFactory : IPullViewManagerFactory, IPushViewManagerFactory
     {

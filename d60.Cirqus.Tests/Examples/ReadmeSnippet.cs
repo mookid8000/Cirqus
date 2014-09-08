@@ -10,6 +10,7 @@ using d60.Cirqus.MsSql.Views;
 using d60.Cirqus.Tests.MsSql;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
+using d60.Cirqus.Views.ViewManagers.Old;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Examples

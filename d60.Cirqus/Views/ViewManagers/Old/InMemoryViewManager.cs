@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 
-namespace d60.Cirqus.Views.ViewManagers
+namespace d60.Cirqus.Views.ViewManagers.Old
 {
     public class InMemoryViewManager<TView> : IEnumerable<TView>, IPushViewManager where TView : class, IViewInstance, ISubscribeTo, new()
     {

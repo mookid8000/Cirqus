@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using d60.Cirqus.Events;
 using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Old;
 
-namespace d60.Cirqus.Tests.Contracts.Views
+namespace d60.Cirqus.Tests.Contracts.Views.Old
 {
     /// <summary>
     /// Wraps another view manager that is possibly both push/pull-based, ensuring that only the PUSH-capable API is used

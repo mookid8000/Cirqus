@@ -1,6 +1,7 @@
 ﻿using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Old;
 
-namespace d60.Cirqus.Tests.Contracts.Views
+namespace d60.Cirqus.Tests.Contracts.Views.Old
 {
     public interface IPullViewManagerFactory
     {

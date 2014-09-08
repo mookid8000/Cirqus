@@ -8,10 +8,9 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
-using d60.Cirqus.Views.ViewManagers;
 using Timer = System.Timers.Timer;
 
-namespace d60.Cirqus.Views.NewViewManager
+namespace d60.Cirqus.Views.ViewManagers.New
 {
     public class NewViewManagerEventDispatcher : IEventDispatcher
     {
@@ -37,6 +36,7 @@ namespace d60.Cirqus.Views.NewViewManager
 
         volatile bool _keepWorking = true;
         int _maxItemsPerBatch = 100;
+        TimeSpan _automaticCatchUpInterval = TimeSpan.FromSeconds(1);
 
         public NewViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, params IManagedView[] managedViews)
         {
@@ -47,7 +47,7 @@ namespace d60.Cirqus.Views.NewViewManager
 
             _worker = new Thread(DoWork) { IsBackground = true };
 
-            _automaticCatchUpTimer.Interval = 1000;
+            _automaticCatchUpTimer.Interval = _automaticCatchUpInterval.TotalMilliseconds;
             _automaticCatchUpTimer.Elapsed += delegate
             {
                 _sequenceNumbersToCatchUpTo.Enqueue(new PieceOfWork(long.MaxValue, _eventStore, canUseCachedInformation: false));
@@ -103,6 +103,20 @@ namespace d60.Cirqus.Views.NewViewManager
             }
         }
 
+        public TimeSpan AutomaticCatchUpInterval
+        {
+            get { return _automaticCatchUpInterval; }
+            set
+            {
+                if (value < TimeSpan.FromMilliseconds(1))
+                {
+                    throw new ArgumentException(string.Format("Attempted to set automatic catch-up interval to {0}! Please set it to at least 1 millisecond", value));
+                }
+                _automaticCatchUpInterval = value;
+                _automaticCatchUpTimer.Interval = value.TotalMilliseconds;
+            }
+        }
+
         void DoWork()
         {
             _logger.Info("View manager background thread started");
@@ -116,13 +130,15 @@ namespace d60.Cirqus.Views.NewViewManager
                     continue;
                 }
 
+                var sequenceNumberToCatchUpTo = pieceOfWork.SequenceNumberToCatchUpTo;
+
                 try
                 {
-                    CatchUpTo(pieceOfWork.SequenceNumberToCatchUpTo, pieceOfWork.EventStore, pieceOfWork.CanUseCachedInformation);
+                    CatchUpTo(sequenceNumberToCatchUpTo, pieceOfWork.EventStore, pieceOfWork.CanUseCachedInformation);
                 }
                 catch (Exception exception)
                 {
-                    _logger.Warn(exception, "Could not catch up to {0}", pieceOfWork.SequenceNumberToCatchUpTo);
+                    _logger.Warn(exception, "Could not catch up to {0}", sequenceNumberToCatchUpTo);
                 }
             }
 
@@ -135,14 +151,14 @@ namespace d60.Cirqus.Views.NewViewManager
             if (!_managedViews.Any()) return;
 
             // get the lowest low watermark
-            var lowestSequenceNumnerSuccessfullyProcessed = _managedViews
+            var lowestSequenceNumberSuccessfullyProcessed = _managedViews
                 .Min(v => v.GetLowWatermark(canGetFromCache: cachedInformationAllowed));
 
             // if we've already been there, don't do anything
-            if (lowestSequenceNumnerSuccessfullyProcessed >= sequenceNumberToCatchUpTo) return;
+            if (lowestSequenceNumberSuccessfullyProcessed >= sequenceNumberToCatchUpTo) return;
 
             // ok, we must replay - start from here:
-            var sequenceNumberToReplayFrom = lowestSequenceNumnerSuccessfullyProcessed + 1;
+            var sequenceNumberToReplayFrom = lowestSequenceNumberSuccessfullyProcessed + 1;
 
             _logger.Debug("Getting events from global sequence number {0} and on...", sequenceNumberToReplayFrom);
 

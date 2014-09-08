@@ -5,11 +5,12 @@ using System.Linq.Expressions;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Old;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using MongoDB.Driver.Linq;
 
-namespace d60.Cirqus.MongoDb.Views
+namespace d60.Cirqus.MongoDb.Views.Old
 {
     public class MongoDbViewManager<TView> : IPushViewManager, IPullViewManager where TView : class, IViewInstance, ISubscribeTo, new()
     {

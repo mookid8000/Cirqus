@@ -8,6 +8,7 @@ using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.MongoDb.Views;
+using d60.Cirqus.MongoDb.Views.Old;
 using d60.Cirqus.Tests.Stubs;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;

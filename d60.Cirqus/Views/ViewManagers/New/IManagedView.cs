@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using d60.Cirqus.Events;
-using d60.Cirqus.Views.ViewManagers;
 
-namespace d60.Cirqus.Views.NewViewManager
+namespace d60.Cirqus.Views.ViewManagers.New
 {
     public interface IManagedView
     {
@@ -28,5 +27,6 @@ namespace d60.Cirqus.Views.NewViewManager
     /// </summary>
     public interface IManagedView<TViewInstance> : IManagedView where TViewInstance : IViewInstance
     {
+        TViewInstance Load(string viewId);
     }
 }

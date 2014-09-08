@@ -6,9 +6,9 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
-using d60.Cirqus.Views.NewViewManager;
+using d60.Cirqus.Views.ViewManagers.New;
 
-namespace d60.Cirqus.Views.ViewManagers
+namespace d60.Cirqus.Views.ViewManagers.Old
 {
     /// <summary>
     /// Event dispatcher that can dispatch events to any number of view managers based on <see cref="IViewManager"/>,

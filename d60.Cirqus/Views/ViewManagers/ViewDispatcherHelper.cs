@@ -11,7 +11,7 @@ namespace d60.Cirqus.Views.ViewManagers
     /// Helper that can dispatch events to an instance of a class that implements any number of
     /// <see cref="ISubscribeTo{TDomainEvent}"/> interfaces
     /// </summary>
-    public class ViewDispatcherHelper<TView> where TView : ISubscribeTo, IViewInstance
+    public class ViewDispatcherHelper<TViewInstance> where TViewInstance : ISubscribeTo, IViewInstance, new()
     {
         static Logger _logger;
 
@@ -34,7 +34,7 @@ namespace d60.Cirqus.Views.ViewManagers
             }
         }
 
-        public void DispatchToView(IViewContext context, DomainEvent domainEvent, TView view)
+        public void DispatchToView(IViewContext context, DomainEvent domainEvent, TViewInstance view)
         {
             var lastGlobalSequenceNumber = domainEvent.GetGlobalSequenceNumber();
 
@@ -59,6 +59,15 @@ namespace d60.Cirqus.Views.ViewManagers
             {
                 throw new ApplicationException(string.Format("Could not dispatch {0} to {1}", domainEvent, view), exception);
             }
+        }
+
+        public TViewInstance CreateNewInstance(string viewId)
+        {
+            return new TViewInstance
+            {
+                Id = viewId,
+                LastGlobalSequenceNumber = -1
+            };
         }
 
         // ReSharper disable UnusedMember.Local
