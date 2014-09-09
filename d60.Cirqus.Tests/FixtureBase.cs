@@ -39,6 +39,14 @@ namespace d60.Cirqus.Tests
         public void TearDown()
         {
             DoTearDown();
+
+            DisposeStuff();
+        }
+
+        protected void DisposeStuff()
+        {
+            _stuffToDispose.ForEach(d => d.Dispose());
+            _stuffToDispose.Clear();
         }
 
         protected virtual void DoSetUp()
