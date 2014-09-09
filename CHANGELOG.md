@@ -216,3 +216,6 @@
 * Ability for new SQL views to have certain propoerties JSON-serialized - just use the `[Json]` attribute on them :)
 * Can now pass `ViewManagerWaitHandle` to the new view manager event dispatcher to allow for blocking until certain views have updated
 
+## 0.17.0
+
+* Made `CommandProcessor` and `TestContext` disposable in the hope that someone will dispose them and stop their threads
