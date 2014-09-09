@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 
 namespace d60.Cirqus.Config.Configurers
 {
@@ -9,6 +10,7 @@ namespace d60.Cirqus.Config.Configurers
         readonly IEnumerable<Resolver> _resolvers;
         readonly Dictionary<Type, int> _levels = new Dictionary<Type, int>();
         readonly Dictionary<Type, object> _cache = new Dictionary<Type, object>();
+        readonly HashSet<object> _resolvedObjects = new HashSet<object>();
 
         public ResolutionContext(IEnumerable<Resolver> resolvers)
         {
@@ -40,6 +42,8 @@ namespace d60.Cirqus.Config.Configurers
 
             _cache[typeof(TService)] = result;
 
+            _resolvedObjects.Add(result);
+
             AddToLevel<TService>(-1);
 
             return result;
@@ -54,6 +58,11 @@ namespace d60.Cirqus.Config.Configurers
                 _levels[serviceType] = 0;
 
             _levels[serviceType] += addend;
+        }
+
+        public IEnumerable<IDisposable> GetDisposables()
+        {
+            return _resolvedObjects.OfType<IDisposable>();
         }
 
         int GetLevelFor<TService>()

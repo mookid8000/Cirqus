@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
+using d60.Cirqus.Logging;
 
 namespace d60.Cirqus.Config.Configurers
 {
@@ -15,6 +16,13 @@ namespace d60.Cirqus.Config.Configurers
         IFullConfiguration,
         IRegistrar
     {
+        static Logger _logger;
+
+        static CommandProcessorConfigurationBuilder()
+        {
+            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+        }
+
         readonly List<ResolutionContext.Resolver> _resolvers = new List<ResolutionContext.Resolver>();
         readonly List<Action<Options>> _optionActions = new List<Action<Options>>();
 
@@ -59,6 +67,18 @@ namespace d60.Cirqus.Config.Configurers
             var eventDispatcher = resolutionContext.Get<IEventDispatcher>();
 
             var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher);
+
+            commandProcessor.Disposed += () =>
+            {
+                var disposables = resolutionContext.GetDisposables();
+
+                foreach (var disposable in disposables)
+                {
+                    _logger.Debug("Disposing {0}", disposable);
+
+                    disposable.Dispose();
+                }
+            };
 
             _optionActions.ForEach(action => action(commandProcessor.Options));
 

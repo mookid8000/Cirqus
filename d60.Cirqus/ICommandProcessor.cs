@@ -1,8 +1,9 @@
+using System;
 using d60.Cirqus.Commands;
 
 namespace d60.Cirqus
 {
-    public interface ICommandProcessor
+    public interface ICommandProcessor : IDisposable
     {
         /// <summary>
         /// Processes the specified command by invoking the generic eventDispatcher method

@@ -12,7 +12,7 @@ using Timer = System.Timers.Timer;
 
 namespace d60.Cirqus.Views.ViewManagers.New
 {
-    public class NewViewManagerEventDispatcher : IEventDispatcher
+    public class NewViewManagerEventDispatcher : IEventDispatcher, IDisposable
     {
         static Logger _logger;
 
@@ -242,6 +242,24 @@ namespace d60.Cirqus.Views.ViewManagers.New
         /// Strictly not necessary with a dtor, but it feels better this way
         /// </summary>
         ~NewViewManagerEventDispatcher()
+        {
+            _keepWorking = false;
+
+            try
+            {
+                _automaticCatchUpTimer.Stop();
+                _automaticCatchUpTimer.Dispose();
+            }
+            catch { }
+
+            try
+            {
+                _worker.Join(TimeSpan.FromSeconds(1));
+            }
+            catch { }
+        }
+
+        public void Dispose()
         {
             _keepWorking = false;
 

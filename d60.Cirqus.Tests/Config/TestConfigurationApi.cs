@@ -46,6 +46,8 @@ namespace d60.Cirqus.Tests.Config
                 })
                 .Create();
 
+            RegisterForDisposal(commandProcessor);
+
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
 
@@ -159,6 +161,8 @@ namespace d60.Cirqus.Tests.Config
             ((CommandProcessorConfigurationBuilder)fullConfiguration).LogServicesTo(Console.Out);
 
             var processor = fullConfiguration.Create();
+
+            RegisterForDisposal(processor);
 
             var someCommand = new SomeCommand();
             processor.ProcessCommand(someCommand);

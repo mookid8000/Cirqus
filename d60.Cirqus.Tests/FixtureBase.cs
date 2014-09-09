@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Timers;
 using d60.Cirqus.Logging;
@@ -10,6 +11,8 @@ namespace d60.Cirqus.Tests
 {
     public class FixtureBase
     {
+        List<IDisposable> _stuffToDispose;
+
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
@@ -19,9 +22,17 @@ namespace d60.Cirqus.Tests
         [SetUp]
         public void SetUp()
         {
+            _stuffToDispose = new List<IDisposable>();
+
             CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel: Logger.Level.Debug);
 
             DoSetUp();
+        }
+
+        protected TDisposable RegisterForDisposal<TDisposable>(TDisposable disposable) where TDisposable : IDisposable
+        {
+            _stuffToDispose.Add(disposable);
+            return disposable;
         }
 
         [TearDown]

@@ -138,5 +138,19 @@ namespace d60.Cirqus
 
             return emittedEvents;
         }
+
+        internal event Action Disposed = delegate { };
+        bool _disposed;
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+
+            _logger.Info("Disposing command processor");
+
+            Disposed();
+
+            _disposed = true;
+        }
     }
 }

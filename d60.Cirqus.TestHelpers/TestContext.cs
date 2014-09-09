@@ -17,7 +17,7 @@ namespace d60.Cirqus.TestHelpers
     /// <summary>
     /// Use this bad boy to test your CQRS+ES things
     /// </summary>
-    public class TestContext
+    public class TestContext : IDisposable
     {
         readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
         readonly InMemoryEventStore _eventStore = new InMemoryEventStore();
@@ -199,6 +199,11 @@ namespace d60.Cirqus.TestHelpers
         public EventCollection History
         {
             get { return new EventCollection(_eventStore.Stream()); }
+        }
+
+        public void Dispose()
+        {
+            _newViewManagerEventDispatcher.Dispose();
         }
     }
 
