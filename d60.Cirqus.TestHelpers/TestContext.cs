@@ -203,7 +203,16 @@ namespace d60.Cirqus.TestHelpers
 
         public void Dispose()
         {
-            _newViewManagerEventDispatcher.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _newViewManagerEventDispatcher.Dispose();
+            }            
         }
     }
 

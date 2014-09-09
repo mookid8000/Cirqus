@@ -238,43 +238,35 @@ namespace d60.Cirqus.Views.ViewManagers.New
             }
         }
 
-        /// <summary>
-        /// Strictly not necessary with a dtor, but it feels better this way
-        /// </summary>
-        ~NewViewManagerEventDispatcher()
-        {
-            _keepWorking = false;
-
-            try
-            {
-                _automaticCatchUpTimer.Stop();
-                _automaticCatchUpTimer.Dispose();
-            }
-            catch { }
-
-            try
-            {
-                _worker.Join(TimeSpan.FromSeconds(1));
-            }
-            catch { }
-        }
-
         public void Dispose()
         {
-            _keepWorking = false;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            try
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                _automaticCatchUpTimer.Stop();
-                _automaticCatchUpTimer.Dispose();
-            }
-            catch { }
+                _keepWorking = false;
 
-            try
-            {
-                _worker.Join(TimeSpan.FromSeconds(1));
+                try
+                {
+                    _automaticCatchUpTimer.Stop();
+                    _automaticCatchUpTimer.Dispose();
+                }
+                catch
+                {
+                }
+
+                try
+                {
+                    _worker.Join(TimeSpan.FromSeconds(1));
+                }
+                catch
+                {
+                }
             }
-            catch { }
         }
     }
 }

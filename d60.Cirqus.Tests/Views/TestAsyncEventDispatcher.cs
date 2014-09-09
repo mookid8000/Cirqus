@@ -43,6 +43,8 @@ namespace d60.Cirqus.Tests.Views
                 }
             }.Initialize();
 
+            RegisterForDisposal(_processor);
+
             Console.WriteLine("Processing a command (async = {0})", makeAsync);
             var stopwatch = Stopwatch.StartNew();
             2.Times(() => _processor.ProcessCommand(new MyCommand(Guid.NewGuid())));

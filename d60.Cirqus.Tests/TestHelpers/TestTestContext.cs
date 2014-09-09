@@ -22,7 +22,7 @@ namespace d60.Cirqus.Tests.TestHelpers
 
         protected override void DoSetUp()
         {
-            _context = new TestContext();
+            _context = RegisterForDisposal(new TestContext());
         }
 
         [Test]

@@ -44,6 +44,8 @@ many time in parallel, and after some time the consistency of everything is veri
             var viewManager = new ConsoleOutEventDispatcher();
 
             _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager);
+
+            RegisterForDisposal(_cirqus);
         }
 
         [TestCase(1, 1000, 40)]

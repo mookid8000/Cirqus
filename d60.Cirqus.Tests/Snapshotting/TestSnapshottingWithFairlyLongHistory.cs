@@ -113,6 +113,9 @@ caching in use: {3}",
             _timeTaker.InnerAggregateRootRepository = aggregateRootRepository;
 
             var commandProcessor = new CommandProcessor(_timeTaker, _timeTaker, new ViewManagerEventDispatcher(_timeTaker));
+
+            RegisterForDisposal(commandProcessor);
+
             return commandProcessor;
         }
 

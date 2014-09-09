@@ -36,6 +36,8 @@ namespace d60.Cirqus.Tests.Views
             _cirqus = new CommandProcessor(eventStore, basicAggregateRootRepository, new ViewManagerEventDispatcher(basicAggregateRootRepository, _viewManager1, _viewManager2, _viewManager3));
 
             _cirqus.Initialize();
+
+            RegisterForDisposal(_cirqus);
         }
 
         [Test]

@@ -140,17 +140,21 @@ namespace d60.Cirqus
         }
 
         internal event Action Disposed = delegate { };
-        bool _disposed;
 
         public void Dispose()
         {
-            if (_disposed) return;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            _logger.Info("Disposing command processor");
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _logger.Info("Disposing command processor");
 
-            Disposed();
-
-            _disposed = true;
+                Disposed();
+            }
         }
     }
 }

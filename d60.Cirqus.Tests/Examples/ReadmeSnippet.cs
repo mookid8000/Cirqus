@@ -36,7 +36,9 @@ namespace d60.Cirqus.Tests.Examples
             var eventDispatcher = new ViewManagerEventDispatcher(aggregateRootRepository, viewManager);
 
             var processor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher);
-            
+
+            RegisterForDisposal(processor);
+
             processor.Initialize();
 
             var aggregateRootId = Guid.NewGuid();

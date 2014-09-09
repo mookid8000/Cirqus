@@ -41,6 +41,8 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             
             var processor = new CommandProcessor(_eventStore, new DefaultAggregateRootRepository(_eventStore), new ConsoleOutEventDispatcher());
             
+            RegisterForDisposal(processor);
+            
             processor.ProcessCommand(new MakeSomeRootEmitTheEvent(Guid.NewGuid()));
 
             var domainEvents = _eventStore.Stream().Cast<SomeRootEvent>().Single();

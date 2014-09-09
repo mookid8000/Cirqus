@@ -20,7 +20,7 @@ namespace d60.Cirqus.Tests.MongoDb
         {
             _viewManager = new MongoDbViewManager<RootViewInstance>(MongoHelper.InitializeTestDatabase(), "rootViews");
 
-            _context = new TestContext()
+            _context = RegisterForDisposal(new TestContext())
                 .AddViewManager(_viewManager);
 
             _viewManager.CreateIndex(v => v.Name);

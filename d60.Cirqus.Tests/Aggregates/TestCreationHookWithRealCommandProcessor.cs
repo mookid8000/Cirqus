@@ -2,7 +2,6 @@
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
-using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.TestHelpers.Internals;
 using d60.Cirqus.Tests.Stubs;
@@ -21,6 +20,7 @@ namespace d60.Cirqus.Tests.Aggregates
             _eventStore = new InMemoryEventStore();
             var aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
             _commandProcessor = new CommandProcessor(_eventStore, aggregateRootRepository, new ConsoleOutEventDispatcher());
+            RegisterForDisposal(_commandProcessor);
         }
 
         [Test]
