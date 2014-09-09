@@ -21,6 +21,15 @@ namespace d60.Cirqus.Tests.Playground
             CompareTypes(typeof (N1.SomeClass), typeof (N2.SomeClass));
         }
 
+        [Test]
+        public void WhatIsDefaultOfNullableLong()
+        {
+            var value = false ? 23L : default(long?);
+
+            Console.WriteLine("It is {0}", value);
+        }
+
+
         static void CompareTypes(Type firstType, Type secondType)
         {
             var firstHashCode = firstType.GetHashCode();

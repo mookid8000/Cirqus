@@ -213,4 +213,6 @@
 
 ## 0.16.0
 
-* Added ability for new SQL views to have certain propoerties JSON-serialized - just use the `[Json]` attribute on them :)
+* Ability for new SQL views to have certain propoerties JSON-serialized - just use the `[Json]` attribute on them :)
+* Can now pass `ViewManagerWaitHandle` to the new view manager event dispatcher to allow for blocking until certain views have updated
+

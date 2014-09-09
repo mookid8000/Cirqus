@@ -26,7 +26,7 @@ namespace d60.Cirqus.Views.ViewManagers.New
         /// </summary>
         readonly ConcurrentQueue<IManagedView> _managedViews = new ConcurrentQueue<IManagedView>();
 
-        readonly ConcurrentQueue<PieceOfWork> _sequenceNumbersToCatchUpTo = new ConcurrentQueue<PieceOfWork>();
+        readonly ConcurrentQueue<PieceOfWork> _work = new ConcurrentQueue<PieceOfWork>();
 
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventStore _eventStore;
@@ -37,6 +37,7 @@ namespace d60.Cirqus.Views.ViewManagers.New
         volatile bool _keepWorking = true;
         int _maxItemsPerBatch = 100;
         TimeSpan _automaticCatchUpInterval = TimeSpan.FromSeconds(1);
+        long _sequenceNumberToCatchUpTo = -1;
 
         public NewViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, params IManagedView[] managedViews)
         {
@@ -50,7 +51,7 @@ namespace d60.Cirqus.Views.ViewManagers.New
             _automaticCatchUpTimer.Interval = _automaticCatchUpInterval.TotalMilliseconds;
             _automaticCatchUpTimer.Elapsed += delegate
             {
-                _sequenceNumbersToCatchUpTo.Enqueue(new PieceOfWork(long.MaxValue, _eventStore, canUseCachedInformation: false));
+                _work.Enqueue(PieceOfWork.FullCatchUp(false));
             };
         }
 
@@ -65,10 +66,7 @@ namespace d60.Cirqus.Views.ViewManagers.New
         {
             _logger.Info("Initializing view manager with managed views: {0}", string.Join(", ", _managedViews));
 
-            _sequenceNumbersToCatchUpTo.Enqueue(new PieceOfWork(long.MaxValue, _eventStore, canUseCachedInformation: false)
-            {
-                PurgeViewsFirst = purgeExistingViews
-            });
+            _work.Enqueue(PieceOfWork.FullCatchUp(purgeExistingViews: purgeExistingViews));
 
             _automaticCatchUpTimer.Start();
             _worker.Start();
@@ -82,14 +80,23 @@ namespace d60.Cirqus.Views.ViewManagers.New
 
             var maxSequenceNumberInBatch = list.Max(e => e.GetGlobalSequenceNumber());
 
-            _sequenceNumbersToCatchUpTo.Enqueue(new PieceOfWork(maxSequenceNumberInBatch, eventStore, canUseCachedInformation: true));
+            Interlocked.Exchange(ref _sequenceNumberToCatchUpTo, maxSequenceNumberInBatch);
+
+            _work.Enqueue(PieceOfWork.JustCatchUp());
         }
 
-        public async Task WaitUntilDispatched<TViewInstance>(CommandProcessingResult result, TimeSpan timeout) where TViewInstance : IViewInstance
+        public async Task WaitUntilProcessed<TViewInstance>(CommandProcessingResult result, TimeSpan timeout) where TViewInstance : IViewInstance
         {
             await Task.WhenAll(_managedViews
                 .OfType<IManagedView<TViewInstance>>()
-                .Select(v => v.WaitUntilDispatched(result, timeout))
+                .Select(v => v.WaitUntilProcessed(result, timeout))
+                .ToArray());
+        }
+
+        public async Task WaitUntilProcessed(CommandProcessingResult result, TimeSpan timeout)
+        {
+            await Task.WhenAll(_managedViews
+                .Select(v => v.WaitUntilProcessed(result, timeout))
                 .ToArray());
         }
 
@@ -127,17 +134,19 @@ namespace d60.Cirqus.Views.ViewManagers.New
             while (_keepWorking)
             {
                 PieceOfWork pieceOfWork;
-                if (!_sequenceNumbersToCatchUpTo.TryDequeue(out pieceOfWork))
+                if (!_work.TryDequeue(out pieceOfWork))
                 {
                     Thread.Sleep(100);
                     continue;
                 }
 
-                var sequenceNumberToCatchUpTo = pieceOfWork.SequenceNumberToCatchUpTo;
+                var sequenceNumberToCatchUpTo = pieceOfWork.CatchUpAsFarAsPossible
+                    ? long.MaxValue
+                    : Interlocked.Read(ref _sequenceNumberToCatchUpTo);
 
                 try
                 {
-                    CatchUpTo(sequenceNumberToCatchUpTo, pieceOfWork.EventStore, pieceOfWork.CanUseCachedInformation, pieceOfWork.PurgeViewsFirst, _managedViews.ToArray());
+                    CatchUpTo(sequenceNumberToCatchUpTo, _eventStore, pieceOfWork.CanUseCachedInformation, pieceOfWork.PurgeViewsFirst, _managedViews.ToArray());
                 }
                 catch (Exception exception)
                 {
@@ -189,20 +198,44 @@ namespace d60.Cirqus.Views.ViewManagers.New
 
         class PieceOfWork
         {
-            public PieceOfWork(long sequenceNumberToCatchUpTo, IEventStore eventStore, bool canUseCachedInformation)
-            {
-                SequenceNumberToCatchUpTo = sequenceNumberToCatchUpTo;
-                EventStore = eventStore;
-                CanUseCachedInformation = canUseCachedInformation;
+            PieceOfWork()
+            {                
             }
 
-            public long SequenceNumberToCatchUpTo { get; private set; }
+            public static PieceOfWork FullCatchUp(bool purgeExistingViews)
+            {
+                return new PieceOfWork
+                {
+                    CatchUpAsFarAsPossible = true,
+                    CanUseCachedInformation = false,
+                    PurgeViewsFirst = purgeExistingViews
+                };
+            }
 
-            public IEventStore EventStore { get; private set; }
+            public static PieceOfWork JustCatchUp()
+            {
+                return new PieceOfWork
+                {
+                    CatchUpAsFarAsPossible = false,
+                    CanUseCachedInformation = true,
+                    PurgeViewsFirst = false
+                };
+            }
+
+            public bool CatchUpAsFarAsPossible { get; private set; }
 
             public bool CanUseCachedInformation { get; private set; }
             
-            public bool PurgeViewsFirst { get; set; }
+            public bool PurgeViewsFirst { get; private set; }
+
+            public override string ToString()
+            {
+                return string.Format("Catch up {0} (allow cache: {1}, purge: {2})",
+                    CatchUpAsFarAsPossible
+                        ? "to MAX"
+                        : "to latest",
+                    CanUseCachedInformation, PurgeViewsFirst);
+            }
         }
 
         /// <summary>

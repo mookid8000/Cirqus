@@ -9,11 +9,14 @@ using d60.Cirqus.Config;
 using d60.Cirqus.Config.Configurers;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Logging;
 using d60.Cirqus.MongoDb.Config;
 using d60.Cirqus.MongoDb.Views.New;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
+using d60.Cirqus.Views.ViewManagers.New;
+using MongoDB.Driver.Builders;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Config
@@ -27,30 +30,51 @@ namespace d60.Cirqus.Tests.Config
             var database = MongoHelper.InitializeTestDatabase();
             var mongoConnectionString = ConfigurationManager.ConnectionStrings["mongotestdb"];
 
+            var waiter = new ViewManagerWaitHandle();
+
             var commandProcessor = CommandProcessor.With()
+                .Logging(l => l.UseConsole(minLevel: Logger.Level.Warn))
                 .EventStore(e => e.UseMongoDb(mongoConnectionString.ConnectionString, "Events"))
                 .EventDispatcher(d =>
                 {
-                    d.UseNewViewManagerEventDispatcher(new NewMongoDbViewManager<ConfigTestView>(database, "view1"));
-                    d.UseNewViewManagerEventDispatcher(new NewMongoDbViewManager<ConfigTestView>(database, "view2"));
-                    d.UseNewViewManagerEventDispatcher(new NewMongoDbViewManager<ConfigTestView>(database, "view3"));
-                    d.UseNewViewManagerEventDispatcher(new NewMongoDbViewManager<ConfigTestView>(database, "view4"));
+                    d.UseNewViewManagerEventDispatcher(waiter, new NewMongoDbViewManager<ConfigTestView>(database, "view1"));
+                    d.UseNewViewManagerEventDispatcher(waiter, new NewMongoDbViewManager<ConfigTestView>(database, "view2"));
+                    d.UseNewViewManagerEventDispatcher(waiter, new NewMongoDbViewManager<ConfigTestView>(database, "view3"));
+                    d.UseNewViewManagerEventDispatcher(waiter, new NewMongoDbViewManager<ConfigTestView>(database, "view4"));
                 })
                 .Create();
 
             var id1 = Guid.NewGuid();
             var id2 = Guid.NewGuid();
 
+            Console.WriteLine("Processing 100 commands...");
+            99.Times(() =>
+            {
+                commandProcessor.ProcessCommand(new ConfigTestCommand(id1));
+                commandProcessor.ProcessCommand(new ConfigTestCommand(id2));
+            });
             commandProcessor.ProcessCommand(new ConfigTestCommand(id1));
-            commandProcessor.ProcessCommand(new ConfigTestCommand(id1));
-            commandProcessor.ProcessCommand(new ConfigTestCommand(id1));
-            commandProcessor.ProcessCommand(new ConfigTestCommand(id2));
-            commandProcessor.ProcessCommand(new ConfigTestCommand(id2));
+            var lastResult = commandProcessor.ProcessCommand(new ConfigTestCommand(id2));
 
-            Thread.Sleep(1000);
+            Console.WriteLine("Waiting until views have been updated");
+            waiter.WaitForAll(lastResult, TimeSpan.FromSeconds(5)).Wait();
+
+            Console.WriteLine("Done - checking collections");
+            var viewCollectionNames = new[] { "view1", "view2", "view3", "view4" };
 
             Assert.That(database.GetCollectionNames().OrderBy(n => n).Where(c => c.StartsWith("view")).ToArray(),
-                Is.EqualTo(new[] {"view1", "view2", "view3", "view4"}));
+                Is.EqualTo(viewCollectionNames));
+
+            viewCollectionNames.ToList()
+                .ForEach(name =>
+                {
+                    var doc = database.GetCollection<ConfigTestView>(name)
+                        .FindOne(Query.EQ("_id", GlobalInstanceLocator.GetViewInstanceId()));
+
+                    Assert.That(doc.ProcessedEventNumbers, Is.EqualTo(Enumerable.Range(0, 200).ToArray()));
+                    Assert.That(doc.CountsByRootId[id1], Is.EqualTo(100));
+                    Assert.That(doc.CountsByRootId[id2], Is.EqualTo(100));
+                });
         }
 
         public class ConfigTestView : IViewInstance<GlobalInstanceLocator>, ISubscribeTo<ConfigTestEvent>
@@ -58,18 +82,24 @@ namespace d60.Cirqus.Tests.Config
             public ConfigTestView()
             {
                 CountsByRootId = new Dictionary<Guid, int>();
+                ProcessedEventNumbers = new List<long>();
             }
             public string Id { get; set; }
             public long LastGlobalSequenceNumber { get; set; }
+            public List<long> ProcessedEventNumbers { get; set; }
             public Dictionary<Guid, int> CountsByRootId { get; set; }
             public void Handle(IViewContext context, ConfigTestEvent domainEvent)
             {
+                ProcessedEventNumbers.Add(domainEvent.GetGlobalSequenceNumber());
+
                 var id = domainEvent.GetAggregateRootId();
 
                 if (!CountsByRootId.ContainsKey(id))
                     CountsByRootId[id] = 0;
 
                 CountsByRootId[id]++;
+
+                Thread.Sleep(10);
             }
         }
 
@@ -92,7 +122,8 @@ namespace d60.Cirqus.Tests.Config
 
         public class ConfigTestCommand : Command<ConfigTestRoot>
         {
-            public ConfigTestCommand(Guid aggregateRootId) : base(aggregateRootId)
+            public ConfigTestCommand(Guid aggregateRootId)
+                : base(aggregateRootId)
             {
             }
 

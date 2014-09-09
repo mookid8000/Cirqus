@@ -20,7 +20,7 @@ namespace d60.Cirqus.Views.ViewManagers.New
         /// <summary>
         /// Must block until the results of the specified command processing result are visible in the view
         /// </summary>
-        Task WaitUntilDispatched(CommandProcessingResult result, TimeSpan timeout);
+        Task WaitUntilProcessed(CommandProcessingResult result, TimeSpan timeout);
 
         /// <summary>
         /// Clears all the data in the view - may/may not happen synchronously, but all view data is guaranteed to end up being re-generated

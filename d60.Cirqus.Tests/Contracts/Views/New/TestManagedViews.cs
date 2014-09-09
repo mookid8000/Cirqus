@@ -43,7 +43,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
 
             // assert
             Console.WriteLine("Waiting until dispatched: {0}", last.GlobalSequenceNumbersOfEmittedEvents.Max());
-            view.WaitUntilDispatched(last, TimeSpan.FromSeconds(2)).Wait();
+            view.WaitUntilProcessed(last, TimeSpan.FromSeconds(2)).Wait();
 
             var idsView = view.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));
 
@@ -71,7 +71,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
 
             // assert
             Console.WriteLine("Waiting until dispatched: {0}", last.GlobalSequenceNumbersOfEmittedEvents.Max());
-            view.WaitUntilDispatched(last, TimeSpan.FromSeconds(2)).Wait();
+            view.WaitUntilProcessed(last, TimeSpan.FromSeconds(2)).Wait();
 
             var idsView = view.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));
 
@@ -101,7 +101,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
             _factory.PurgeView<GeneratedIds>();
 
             // assert
-            view.WaitUntilDispatched(last, TimeSpan.FromSeconds(2)).Wait();
+            view.WaitUntilProcessed(last, TimeSpan.FromSeconds(2)).Wait();
 
             var idsView = view.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));
 
@@ -127,7 +127,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
             var last = _context.ProcessCommand(new EmitEvent(Guid.NewGuid()));
 
             // assert
-            view.WaitUntilDispatched(last, TimeSpan.FromSeconds(2)).Wait();
+            view.WaitUntilProcessed(last, TimeSpan.FromSeconds(2)).Wait();
 
             var batchIdView = view.Load(DomainEvent.MetadataKeys.BatchId);
             var aggregateRootIdView = view.Load(DomainEvent.MetadataKeys.AggregateRootId);

@@ -48,6 +48,20 @@ namespace d60.Cirqus.Config
                 context.Get<IEventStore>(), managedViews));
         }
 
+        public static void UseNewViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, ViewManagerWaitHandle waitHandle, params IManagedView[] managedViews)
+        {
+            RegisterEventDispatcher(builder, context =>
+            {
+                var eventDispatcher = new NewViewManagerEventDispatcher(
+                    context.Get<IAggregateRootRepository>(),
+                    context.Get<IEventStore>(), managedViews);
+
+                waitHandle.Register(eventDispatcher);
+
+                return eventDispatcher;
+            });
+        }
+
         public static void UseEventDispatcher(this EventDispatcherConfigurationBuilder builder, IEventDispatcher eventDispatcher)
         {
             RegisterEventDispatcher(builder, context => eventDispatcher);

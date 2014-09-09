@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -51,7 +52,7 @@ namespace d60.Cirqus.MsSql.Views
 
         public long GetLowWatermark(bool canGetFromCache = true)
         {
-            if (canGetFromCache)
+            if (canGetFromCache && false)
             {
                 return GetLowWatermarkFromMemory()
                        ?? GetLowWatermarkFromDb()
@@ -66,7 +67,12 @@ namespace d60.Cirqus.MsSql.Views
         {
             var value = Interlocked.Read(ref _cachedLowWatermark);
 
-            return value != DefaultLowWatermark ? value : default(long?);
+            if (value != DefaultLowWatermark)
+            {
+                return value;
+            }
+            
+            return null;
         }
 
         long? GetLowWatermarkFromDb()
@@ -90,7 +96,7 @@ namespace d60.Cirqus.MsSql.Views
                 }
             }
 
-            return default(long?);
+            return null;
         }
 
         public void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
@@ -136,17 +142,17 @@ namespace d60.Cirqus.MsSql.Views
             Interlocked.Exchange(ref _cachedLowWatermark, eventList.Max(e => e.GetGlobalSequenceNumber()));
         }
 
-        public async Task WaitUntilDispatched(CommandProcessingResult result, TimeSpan timeout)
+        public async Task WaitUntilProcessed(CommandProcessingResult result, TimeSpan timeout)
         {
             if (!result.EventsWereEmitted) return;
 
             var mostRecentGlobalSequenceNumber = result.GlobalSequenceNumbersOfEmittedEvents.Max();
 
-            var waitStartTime = DateTime.UtcNow;
+            var stopwatch = Stopwatch.StartNew();
 
             while (GetLowWatermark(canGetFromCache: false) < mostRecentGlobalSequenceNumber)
             {
-                if (DateTime.UtcNow - waitStartTime > timeout)
+                if (stopwatch.Elapsed > timeout)
                 {
                     throw new TimeoutException(string.Format("View for {0} did not catch up to {1} within {2} timeout!",
                         typeof(TViewInstance), mostRecentGlobalSequenceNumber, timeout));
