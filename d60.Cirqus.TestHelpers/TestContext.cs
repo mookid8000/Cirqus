@@ -19,7 +19,7 @@ namespace d60.Cirqus.TestHelpers
     /// </summary>
     public class TestContext
     {
-        readonly Serializer _serializer = new Serializer("<events>");
+        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
         readonly InMemoryEventStore _eventStore = new InMemoryEventStore();
         readonly DefaultAggregateRootRepository _aggregateRootRepository;
         readonly ViewManagerEventDispatcher _viewManagerEventDispatcher;
@@ -174,7 +174,7 @@ namespace d60.Cirqus.TestHelpers
             domainEvent.Meta.TakeFromAttributes(domainEvent.GetType());
             domainEvent.Meta.TakeFromAttributes(typeof(TAggregateRoot));
 
-            _serializer.EnsureSerializability(domainEvent);
+            _domainEventSerializer.EnsureSerializability(domainEvent);
         }
 
 

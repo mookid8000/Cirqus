@@ -128,10 +128,11 @@
     <Compile Include="MongoDb\TestMongoDbLoggerFactory.cs" />
     <Compile Include="MongoDb\TestMongoDbSerializer.cs" />
     <Compile Include="MongoDb\TestMongoDbViewManager.cs" />
+    <Compile Include="MsSql\TestNewMsSqlViewManager.cs" />
     <Compile Include="PostgreSql\PostgreSqlTestHelper.cs" />
     <Compile Include="SqlTestHelperBase.cs" />
     <Compile Include="MsSql\TestEntityFrameworkViewManager.cs" />
-    <Compile Include="MsSql\TestMsSqlEventStore.cs" />
+    <Compile Include="MsSql\TestMsSqlViewManager.cs" />
     <Compile Include="MsSql\MsSqlTestHelper.cs" />
     <Compile Include="Playground\TestTypeHashCodes.cs" />
     <Compile Include="Snapshotting\ChallengingSnapshotSpeciments.cs" />

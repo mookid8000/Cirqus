@@ -423,6 +423,10 @@ END
         }
     }
 
+    public class JsonAttribute : Attribute
+    {
+    }
+
     class MsSqlView<TViewInstance> where TViewInstance : IViewInstance
     {
         public TViewInstance View { get; set; }

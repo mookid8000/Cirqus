@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using d60.Cirqus.Serialization;
 
 namespace d60.Cirqus.MsSql.Views
 {
@@ -34,8 +35,9 @@ namespace d60.Cirqus.MsSql.Views
                 {typeof (DateTime), Tuple.Create(SqlDbType.DateTime2, "")},
                 {typeof (DateTimeOffset), Tuple.Create(SqlDbType.DateTimeOffset, "")},
                 {typeof (TimeSpan), Tuple.Create(SqlDbType.BigInt, "")},
-
             };
+
+        static readonly GenericSerializer _serializer = new GenericSerializer();
 
         public static Prop[] GetSchema<TView>()
         {
@@ -70,10 +72,16 @@ namespace d60.Cirqus.MsSql.Views
         {
             object valueToSet;
 
-            if (propertyInfo.PropertyType == typeof(List<string>))
+            if (propertyInfo.GetCustomAttributes<JsonAttribute>().Any())
+            {
+                var text = _serializer.Deserialize((string)value);
+
+                valueToSet = text;
+            }
+            else if (propertyInfo.PropertyType == typeof(List<string>))
             {
                 var tokens = ((string)value).Split(';');
-                
+
                 valueToSet = tokens.ToList();
             }
             else if (propertyInfo.PropertyType == typeof(List<int>))
@@ -108,7 +116,7 @@ namespace d60.Cirqus.MsSql.Views
             }
             else if (propertyInfo.PropertyType == typeof(string[]))
             {
-                var tokens = ((string) value).Split(';');
+                var tokens = ((string)value).Split(';');
 
                 valueToSet = tokens.ToArray();
             }
@@ -122,7 +130,7 @@ namespace d60.Cirqus.MsSql.Views
             }
             else if (propertyInfo.PropertyType == typeof(TimeSpan))
             {
-                var ticks = (long) value;
+                var ticks = (long)value;
                 valueToSet = new TimeSpan(ticks);
             }
             else
@@ -135,75 +143,88 @@ namespace d60.Cirqus.MsSql.Views
 
         static object GetGetter(PropertyInfo propertyInfo, object instance)
         {
+            var value = propertyInfo.GetValue(instance);
+
+            if (propertyInfo.GetCustomAttributes<JsonAttribute>().Any())
+            {
+                var text = _serializer.Serialize(value);
+
+                return text;
+            }
+
             if (propertyInfo.PropertyType == typeof(List<string>))
             {
-                var stringList = (List<string>)propertyInfo.GetValue(instance);
+                var stringList = (List<string>)value;
 
                 return string.Join(";", stringList);
             }
 
             if (propertyInfo.PropertyType == typeof(List<int>))
             {
-                var stringList = (List<int>)propertyInfo.GetValue(instance);
+                var stringList = (List<int>)value;
 
                 return string.Join(";", stringList);
             }
 
             if (propertyInfo.PropertyType == typeof(List<double>))
             {
-                var stringList = (List<double>)propertyInfo.GetValue(instance);
+                var stringList = (List<double>)value;
 
                 return string.Join(";", stringList);
             }
 
             if (propertyInfo.PropertyType == typeof(List<decimal>))
             {
-                var stringList = (List<decimal>)propertyInfo.GetValue(instance);
+                var stringList = (List<decimal>)value;
 
                 return string.Join(";", stringList);
             }
 
             if (propertyInfo.PropertyType == typeof(HashSet<string>))
             {
-                var stringList = (HashSet<string>)propertyInfo.GetValue(instance);
+                var stringList = (HashSet<string>)value;
 
                 return string.Join(";", stringList);
             }
 
             if (propertyInfo.PropertyType == typeof(HashSet<int>))
             {
-                var stringList = (HashSet<int>)propertyInfo.GetValue(instance);
+                var stringList = (HashSet<int>)value;
 
                 return string.Join(";", stringList);
             }
 
             if (propertyInfo.PropertyType == typeof(string[]))
             {
-                var stringList = (string[])propertyInfo.GetValue(instance);
+                var stringList = (string[])value;
 
                 return string.Join(";", stringList);
             }
 
             if (propertyInfo.PropertyType == typeof(DateTime))
             {
-                return ((DateTime)propertyInfo.GetValue(instance)).ToUniversalTime();
-            }
-            
-            if (propertyInfo.PropertyType == typeof(DateTimeOffset))
-            {
-                return (DateTimeOffset)propertyInfo.GetValue(instance);
-            }
-            
-            if (propertyInfo.PropertyType == typeof(TimeSpan))
-            {
-                return ((TimeSpan)propertyInfo.GetValue(instance)).Ticks;
+                return ((DateTime)value).ToUniversalTime();
             }
 
-            return propertyInfo.GetValue(instance);
+            if (propertyInfo.PropertyType == typeof(DateTimeOffset))
+            {
+                return (DateTimeOffset)value;
+            }
+
+            if (propertyInfo.PropertyType == typeof(TimeSpan))
+            {
+                return ((TimeSpan)value).Ticks;
+            }
+
+            return value;
         }
 
         static Tuple<SqlDbType, string> MapType(Type propertyType)
         {
+            return DbTypes.ContainsKey(propertyType)
+                ? DbTypes[propertyType]
+                : Tuple.Create(SqlDbType.NVarChar, "max");
+
             try
             {
                 return DbTypes[propertyType];

@@ -210,3 +210,7 @@
 ## 0.15.2
 
 * Added configuration options to Serilog integration
+
+## 0.16.0
+
+* Added ability for new SQL views to have certain propoerties JSON-serialized - just use the `[Json]` attribute on them :)

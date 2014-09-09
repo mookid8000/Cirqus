@@ -11,7 +11,7 @@ using NUnit.Framework;
 namespace d60.Cirqus.Tests.MsSql
 {
     [TestFixture]
-    public class TestMsSqlEventStore : FixtureBase
+    public class TestMsSqlViewManager : FixtureBase
     {
         MsSqlViewManager<ViewInstanceWithManyPropertyTypes> _viewManager;
 

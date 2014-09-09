@@ -13,7 +13,7 @@ namespace d60.Cirqus.TestHelpers.Internals
     class InMemoryEventStore : IEventStore, IEnumerable<DomainEvent>
     {
         readonly Dictionary<string, object> _idAndSeqNoTuples = new Dictionary<string, object>();
-        readonly Serializer _serializer = new Serializer("<events>");
+        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
         readonly List<EventBatch> _savedEventBatches = new List<EventBatch>();
 
         long _globalSequenceNumber;
@@ -22,7 +22,7 @@ namespace d60.Cirqus.TestHelpers.Internals
         {
             var eventList = batch.ToList();
 
-            eventList.ForEach(e => _serializer.EnsureSerializability(e));
+            eventList.ForEach(e => _domainEventSerializer.EnsureSerializability(e));
 
             var tuplesInBatch = eventList
                 .Select(e => string.Format("{0}:{1}", e.GetAggregateRootId(), e.GetSequenceNumber()))
@@ -67,7 +67,7 @@ namespace d60.Cirqus.TestHelpers.Internals
 
         DomainEvent CloneEvent(DomainEvent ev)
         {
-            return _serializer.Deserialize(_serializer.Serialize(ev));
+            return _domainEventSerializer.Deserialize(_domainEventSerializer.Serialize(ev));
         }
 
         public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0, long limit = int.MaxValue/2)

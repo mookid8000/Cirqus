@@ -14,7 +14,7 @@ namespace d60.Cirqus.MsSql.Events
         readonly string _tableName;
         readonly Func<SqlConnection> _connectionProvider;
         readonly Action<SqlConnection> _cleanupAction;
-        readonly Serializer _serializer = new Serializer("<events>");
+        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
 
         public MsSqlEventStore(string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true)
         {
@@ -41,7 +41,7 @@ namespace d60.Cirqus.MsSql.Events
         {
             var eventList = batch.ToList();
 
-            eventList.ForEach(e => _serializer.EnsureSerializability(e));
+            eventList.ForEach(e => _domainEventSerializer.EnsureSerializability(e));
 
             try
             {
@@ -85,7 +85,7 @@ INSERT INTO [{0}] (
                                 cmd.Parameters.Add("aggId", SqlDbType.UniqueIdentifier).Value = new Guid(e.Meta[DomainEvent.MetadataKeys.AggregateRootId].ToString());
                                 cmd.Parameters.Add("seqNo", SqlDbType.BigInt).Value = e.Meta[DomainEvent.MetadataKeys.SequenceNumber];
                                 cmd.Parameters.Add("globSeqNo", SqlDbType.BigInt).Value = e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber];
-                                cmd.Parameters.Add("data", SqlDbType.NVarChar).Value = _serializer.Serialize(e);
+                                cmd.Parameters.Add("data", SqlDbType.NVarChar).Value = _domainEventSerializer.Serialize(e);
 
                                 cmd.ExecuteNonQuery();
                             }
@@ -148,7 +148,7 @@ SELECT [data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo AND [
                             {
                                 var data = (string)reader["data"];
 
-                                domainEvents.Add(_serializer.Deserialize(data));
+                                domainEvents.Add(_domainEventSerializer.Deserialize(data));
                             }
                         }
                     }
@@ -187,7 +187,7 @@ SELECT [data] FROM [{0}] WHERE [globSeqNo] >= @cutoff ORDER BY [globSeqNo]
                             {
                                 var data = (string)reader["data"];
 
-                                yield return _serializer.Deserialize(data);
+                                yield return _domainEventSerializer.Deserialize(data);
                             }
                         }
                     }

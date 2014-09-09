@@ -8,12 +8,12 @@ using Newtonsoft.Json.Linq;
 
 namespace d60.Cirqus.Serialization
 {
-    public class Serializer
+    public class DomainEventSerializer
     {
         readonly TypeAliasBinder _binder;
         readonly JsonSerializerSettings _settings;
 
-        public Serializer(string virtualNamespaceName)
+        public DomainEventSerializer(string virtualNamespaceName)
         {
             _binder = new TypeAliasBinder(virtualNamespaceName);
             _settings = new JsonSerializerSettings
@@ -24,18 +24,18 @@ namespace d60.Cirqus.Serialization
             };
         }
 
-        public Serializer AddAliasFor(Type type)
+        public DomainEventSerializer AddAliasFor(Type type)
         {
             _binder.AddType(type);
             return this;
         }
 
-        public Serializer AddAliasesFor(params Type [] types)
+        public DomainEventSerializer AddAliasesFor(params Type[] types)
         {
-            return AddAliasesFor((IEnumerable<Type>) types);
+            return AddAliasesFor((IEnumerable<Type>)types);
         }
 
-        public Serializer AddAliasesFor(IEnumerable<Type> types)
+        public DomainEventSerializer AddAliasesFor(IEnumerable<Type> types)
         {
             foreach (var type in types)
             {
@@ -62,10 +62,11 @@ namespace d60.Cirqus.Serialization
             {
                 var deserializedObject = JsonConvert.DeserializeObject(text, _settings);
 
+                // if the $type property is not first in the JSON (e.g. after having been roundtripped to Postgres), it will come back as a JObject - therefore:
                 if (deserializedObject is JObject)
                 {
-                    var eventTypeName = ((JObject)deserializedObject)["$type"].ToString();
-
+                    var jsonObject = (JObject)deserializedObject;
+                    var eventTypeName = jsonObject["$type"].ToString();
                     var eventType = Type.GetType(eventTypeName);
 
                     if (eventType == null)
@@ -73,8 +74,8 @@ namespace d60.Cirqus.Serialization
                         throw new FormatException(string.Format("Could not find .NET type {0}", eventTypeName));
                     }
 
-                    var bim = ((JObject)deserializedObject).ToObject(eventType);
-                    
+                    var bim = jsonObject.ToObject(eventType);
+
                     return (DomainEvent)bim;
                 }
 
