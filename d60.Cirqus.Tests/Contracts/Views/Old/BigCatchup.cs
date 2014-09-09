@@ -94,7 +94,8 @@ namespace d60.Cirqus.Tests.Contracts.Views.Old
             foreach (var id in aggregateRootIds)
             {
                 Console.WriteLine("Checking seq no for {0}...", id);
-                var view = _factory.Load<JustAnotherViewInstance>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(id));
+                var viewIdFromAggregateRootId = InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(id);
+                var view = _factory.Load<JustAnotherViewInstance>(viewIdFromAggregateRootId);
 
                 Assert.That(view.EventCounter, Is.EqualTo(nextSeqNoById[id]));
             }

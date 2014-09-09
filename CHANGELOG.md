@@ -206,3 +206,7 @@
 ## 0.15.1
 
 * Support for composite event dispatchers in the configuration API
+
+## 0.15.2
+
+* Added configuration options to Serilog integration

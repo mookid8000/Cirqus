@@ -32,7 +32,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel: Logger.Level.Debug);
 
             _mongoDatabase = MongoHelper.InitializeTestDatabase();
-
+            
             _commandProcessor = CommandProcessor.With()
                 .Logging(l => l.UseConsole(minLevel: Logger.Level.Warn))
                 .EventStore(e => e.UseMongoDb(_mongoDatabase, "Events"))
