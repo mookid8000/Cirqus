@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -34,6 +35,16 @@ namespace d60.Cirqus.MongoDb.Views.New
         }
 
         long _cachedLowWatermark;
+
+        public NewMongoDbViewManager(string mongoDbConnectionString)
+            : this(GetDatabaseFromConnectionString(mongoDbConnectionString))
+        {
+        }
+
+        public NewMongoDbViewManager(string mongoDbConnectionString, string collectionName)
+            : this(GetDatabaseFromConnectionString(mongoDbConnectionString), collectionName)
+        {
+        }
 
         public NewMongoDbViewManager(MongoDatabase database)
             : this(database, typeof(TViewInstance).Name)
@@ -181,9 +192,9 @@ namespace d60.Cirqus.MongoDb.Views.New
         {
             var value = Interlocked.Read(ref _cachedLowWatermark);
 
-            if (value != DefaultLowWatermark) 
+            if (value != DefaultLowWatermark)
                 return value;
-            
+
             return null;
         }
 
@@ -220,6 +231,20 @@ namespace d60.Cirqus.MongoDb.Views.New
             }
 
             return null;
+        }
+
+        static MongoDatabase GetDatabaseFromConnectionString(string mongoDbConnectionString)
+        {
+            var mongoUrl = new MongoUrl(mongoDbConnectionString);
+
+            if (string.IsNullOrWhiteSpace(mongoUrl.DatabaseName))
+            {
+                throw new ConfigurationErrorsException(string.Format("MongoDB URL does not contain a database name!: {0}", mongoDbConnectionString));
+            }
+
+            return new MongoClient(mongoUrl)
+                .GetServer()
+                .GetDatabase(mongoUrl.DatabaseName);
         }
     }
 }
