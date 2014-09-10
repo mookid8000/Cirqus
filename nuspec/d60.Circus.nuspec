@@ -9,11 +9,8 @@
     <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Event sourcing + cqrs kit</description>
-    <dependencies>
-      <dependency id="Newtonsoft.Json" version="6.0.3" />
-    </dependencies>
   </metadata>
   <files>
-    <file src="..\d60.Cirqus\bin\Release\d60.Cirqus.dll" target="lib\NET45" />
+    <file src="..\d60.Cirqus\bin\ReleaseMerged\d60.Cirqus.dll" target="lib\NET45" />
   </files>
 </package>
