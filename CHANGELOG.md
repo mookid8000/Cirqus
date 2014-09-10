@@ -219,3 +219,7 @@
 ## 0.17.0
 
 * Made `CommandProcessor` and `TestContext` disposable in the hope that someone will dispose them and stop their threads
+
+## 0.17.1
+
+* Comments + more.
