@@ -97,6 +97,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.Old
                 var viewIdFromAggregateRootId = InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(id);
                 var view = _factory.Load<JustAnotherViewInstance>(viewIdFromAggregateRootId);
 
+                Assert.That(view, Is.Not.Null, "Could not load view - got NULL back when querying for {0}", viewIdFromAggregateRootId);
                 Assert.That(view.EventCounter, Is.EqualTo(nextSeqNoById[id]));
             }
         }
