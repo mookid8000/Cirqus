@@ -223,3 +223,7 @@
 ## 0.17.1
 
 * Comments + more.
+
+## 0.17.2
+
+* Exposed Serilog options on config API
