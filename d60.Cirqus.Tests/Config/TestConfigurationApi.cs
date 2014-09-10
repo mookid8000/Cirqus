@@ -30,19 +30,17 @@ namespace d60.Cirqus.Tests.Config
             var database = MongoHelper.InitializeTestDatabase();
             database.Drop();
 
-            var mongoConnectionString = ConfigurationManager.ConnectionStrings["mongotestdb"].ConnectionString;
-
             var waiter = new ViewManagerWaitHandle();
 
             var commandProcessor = CommandProcessor.With()
                 .Logging(l => l.UseConsole(minLevel: Logger.Level.Warn))
-                .EventStore(e => e.UseMongoDb(mongoConnectionString, "Events"))
+                .EventStore(e => e.UseMongoDb(database, "Events"))
                 .EventDispatcher(d =>
                 {
-                    d.UseNewViewManagerEventDispatcher(waiter, new NewMongoDbViewManager<ConfigTestView>(mongoConnectionString, "view1"));
-                    d.UseNewViewManagerEventDispatcher(waiter, new NewMongoDbViewManager<ConfigTestView>(mongoConnectionString, "view2"));
-                    d.UseNewViewManagerEventDispatcher(waiter, new NewMongoDbViewManager<ConfigTestView>(mongoConnectionString, "view3"));
-                    d.UseNewViewManagerEventDispatcher(waiter, new NewMongoDbViewManager<ConfigTestView>(mongoConnectionString, "view4"));
+                    d.UseNewViewManagerEventDispatcher(waiter, new NewMongoDbViewManager<ConfigTestView>(database, "view1"));
+                    d.UseNewViewManagerEventDispatcher(waiter, new NewMongoDbViewManager<ConfigTestView>(database, "view2"));
+                    d.UseNewViewManagerEventDispatcher(waiter, new NewMongoDbViewManager<ConfigTestView>(database, "view3"));
+                    d.UseNewViewManagerEventDispatcher(waiter, new NewMongoDbViewManager<ConfigTestView>(database, "view4"));
                 })
                 .Create();
 

@@ -27,7 +27,7 @@ namespace d60.Cirqus.Tests.MongoDb
             return database;
         }
 
-        static string GetDatabaseName(MongoUrl url)
+        public static string GetDatabaseName(MongoUrl url)
         {
             var databaseName = url.DatabaseName;
 
