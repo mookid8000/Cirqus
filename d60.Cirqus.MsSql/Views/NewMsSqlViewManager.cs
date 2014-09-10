@@ -308,7 +308,7 @@ WHEN NOT MATCHED THEN
                     {
                         var value = prop.Getter(view.View);
 
-                        cmd.Parameters.AddWithValue(prop.SqlParameterName, value);
+                        cmd.Parameters.AddWithValue(prop.SqlParameterName, value ?? DBNull.Value);
                     }
 
                     cmd.ExecuteNonQuery();
@@ -330,7 +330,11 @@ WHEN NOT MATCHED THEN
                                  + Environment.NewLine
                                  + string.Join("," + Environment.NewLine, _schema
                                      .Where(c => !c.IsPrimaryKey)
-                                     .Select(c => string.Format("[{0}] [{1}]{2} NOT NULL", c.ColumnName, c.SqlDbType, string.IsNullOrWhiteSpace(c.Size) ? "" : "(" + c.Size + ")")));
+                                     .Select(c => string.Format("[{0}] [{1}]{2} {3}", 
+                                         c.ColumnName, 
+                                         c.SqlDbType, 
+                                         string.IsNullOrWhiteSpace(c.Size) ? "" : "(" + c.Size + ")",
+                                         c.IsNullable ? "NULL" : "NOT NULL")));
 
                     var commandText = string.Format(@"
 

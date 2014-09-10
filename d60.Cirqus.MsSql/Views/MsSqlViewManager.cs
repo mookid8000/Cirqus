@@ -412,25 +412,4 @@ END
         }
 
     }
-
-    public class ColumnAttribute : Attribute
-    {
-        public string ColumnName { get; private set; }
-
-        public ColumnAttribute(string columnName)
-        {
-            ColumnName = columnName;
-        }
-    }
-
-    public class JsonAttribute : Attribute
-    {
-    }
-
-    class MsSqlView<TViewInstance> where TViewInstance : IViewInstance
-    {
-        public TViewInstance View { get; set; }
-        
-        public long MaxGlobalSeq { get { return View.LastGlobalSequenceNumber; }}
-    }
 }

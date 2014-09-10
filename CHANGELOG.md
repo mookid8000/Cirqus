@@ -227,3 +227,7 @@
 ## 0.17.2
 
 * Exposed Serilog options on config API
+
+## 0.18.0
+
+* Allow for specifying that certain columns can be `[NotNull]` with the new MsSql view manager

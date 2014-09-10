@@ -36,6 +36,8 @@ namespace d60.Cirqus.Tests.MsSql
             var view = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(aggregateRootId));
 
             Assert.That(view, Is.Not.Null, "View was not properly generated");
+            Assert.That(view.NullString, Is.Null);
+            Assert.That(view.NullInt, Is.Null);
             Assert.That(view.String, Is.EqualTo("a string"));
             Assert.That(view.Integer, Is.EqualTo(2));
             Assert.That(view.Shorty, Is.EqualTo(3));
@@ -86,6 +88,10 @@ namespace d60.Cirqus.Tests.MsSql
         {
             public ViewInstanceWithManyPropertyTypes()
             {
+                // this bad boy is intentionally set to null
+                NullString = null;
+                NullInt = null;
+
                 String = "a string";
 
                 Integer = 2;
@@ -144,6 +150,9 @@ namespace d60.Cirqus.Tests.MsSql
 
             public string Id { get; set; }
             public long LastGlobalSequenceNumber { get; set; }
+
+            public string NullString { get; set; }
+            public int? NullInt { get; set; }
 
             // string
             public string String { get; set; }

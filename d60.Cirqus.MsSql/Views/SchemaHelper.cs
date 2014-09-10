@@ -61,11 +61,18 @@ namespace d60.Cirqus.MsSql.Views
                         ColumnName = columnName,
                         SqlDbType = sqlDbType.Item1,
                         Size = sqlDbType.Item2,
+                        IsNullable = DetermineNullability(propertyInfo),
                         Getter = instance => GetGetter(propertyInfo, instance),
                         Setter = (instance, value) => GetSetter(propertyInfo, instance, value)
                     };
                 })
                 .ToArray();
+        }
+
+        static bool DetermineNullability(PropertyInfo propertyInfo)
+        {
+            return !propertyInfo.GetCustomAttributes<NotNullAttribute>().Any();
+
         }
 
         static void GetSetter(PropertyInfo propertyInfo, object instance, object value)
@@ -132,6 +139,10 @@ namespace d60.Cirqus.MsSql.Views
             {
                 var ticks = (long)value;
                 valueToSet = new TimeSpan(ticks);
+            }
+            else if (value == DBNull.Value)
+            {
+                valueToSet = null;
             }
             else
             {
@@ -224,15 +235,6 @@ namespace d60.Cirqus.MsSql.Views
             return DbTypes.ContainsKey(propertyType)
                 ? DbTypes[propertyType]
                 : Tuple.Create(SqlDbType.NVarChar, "max");
-
-            try
-            {
-                return DbTypes[propertyType];
-            }
-            catch (Exception exception)
-            {
-                throw new ArgumentException(string.Format("Could not map .NET type {0} to a proper SqlDbType", propertyType), exception);
-            }
         }
     }
 
@@ -251,6 +253,8 @@ namespace d60.Cirqus.MsSql.Views
         {
             get { return "@" + ColumnName; }
         }
+
+        public bool IsNullable { get; set; }
 
         public override string ToString()
         {
