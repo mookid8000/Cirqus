@@ -41,27 +41,14 @@ namespace d60.Cirqus.Tests.Snapshotting
             commandProcessor.ProcessCommand(new CrushItRealGood(aggregateRootId, 0.1m));
         }
 
-
-        /// <summary>
-        /// Total time spent
-        ///     hydrating roots: 28.1
-        ///     loading events: 27.5
-        ///     saving events: 7.7
-        /// 
-        /// 
-        /// </summary>
-        //[TestCase(false, 100, 10000)]
-        //[TestCase(true, 100, 10000)]
-        //[TestCase(true, 1, 10)]
-        //[TestCase(false, 1, 10)]
-        //[TestCase(true, 1, 5)]
-        //[TestCase(true, 2, 5)]
-        [TestCase(true, 10, 1000)]
-        [TestCase(false, 10, 1000)]
-        [TestCase(true, 100, 10000)]
-        [TestCase(false, 100, 10000)]
-        [TestCase(true, 10, 10000)]
-        [TestCase(false, 10, 10000)]
+        [TestCase(true, 3, 50)]
+        [TestCase(false, 3, 50)]
+        [TestCase(true, 10, 1000, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(false, 10, 1000, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(true, 100, 10000, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(false, 100, 10000, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(true, 10, 10000, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(false, 10, 10000, Ignore = TestCategories.IgnoreLongRunning)]
         public void RunTest(bool useCaching, int numberOfRoots, int numberOfCommands)
         {
             var aggregateRootIds = Enumerable.Range(0, numberOfRoots).Select(i => Guid.NewGuid()).ToArray();
