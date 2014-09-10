@@ -97,8 +97,15 @@ namespace d60.Cirqus.Tests.Contracts.Views.Old
                 var viewIdFromAggregateRootId = InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(id);
                 var view = _factory.Load<JustAnotherViewInstance>(viewIdFromAggregateRootId);
 
-                Assert.That(view, Is.Not.Null, "Could not load view - got NULL back when querying for {0}", viewIdFromAggregateRootId);
-                Assert.That(view.EventCounter, Is.EqualTo(nextSeqNoById[id]));
+                if (view == null)
+                {
+                    Assert.That(!nextSeqNoById.ContainsKey(id), "Didn't expect to find {0} among the tracked sequence numbers! (next seq was {1})",
+                        id, nextSeqNoById[id]);
+                }
+                else
+                {
+                    Assert.That(view.EventCounter, Is.EqualTo(nextSeqNoById[id]), "Event counter did not yield a number that corresponds to the right place in the root's sequence");
+                }
             }
         }
 
