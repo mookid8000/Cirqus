@@ -90,8 +90,10 @@ namespace d60.Cirqus.MsSql.Views
 
                         var result = cmd.ExecuteScalar();
 
-                        if(result != DBNull.Value)
+                        if (result != DBNull.Value)
+                        {
                             return (long) result;
+                        }
                     }
                 }
             }
@@ -265,6 +267,8 @@ FROM [{1}] WHERE [Id] = @id
 
         void Save(Dictionary<string, MsSqlView<TViewInstance>> activeViewsById, SqlConnection conn, SqlTransaction tx)
         {
+            _logger.Debug("Flushing {0} view instances to '{1}'", activeViewsById.Count, _tableName);
+
             foreach (var kvp in activeViewsById)
             {
                 var id = kvp.Key;
@@ -313,7 +317,7 @@ WHEN NOT MATCHED THEN
 
         void CreateSchema()
         {
-            _logger.Info("Ensuring that schema for {0} is created...", typeof (TViewInstance));
+            _logger.Info("Ensuring that schema for '{0}' is created...", typeof (TViewInstance));
 
             using (var conn = new SqlConnection(_connectionString))
             {

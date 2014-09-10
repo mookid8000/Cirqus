@@ -70,7 +70,9 @@ namespace d60.Cirqus.MongoDb.Views.New
             }
 
             _viewCollection = database.GetCollection<TViewInstance>(collectionName);
-            _viewCollection.CreateIndex(IndexKeys<TViewInstance>.Ascending(i => i.LastGlobalSequenceNumber));
+
+            _logger.Info("Create index in '{0}': '{1}'", collectionName, LowWatermarkPropertyName);
+            _viewCollection.CreateIndex(IndexKeys<TViewInstance>.Ascending(i => i.LastGlobalSequenceNumber), IndexOptions.SetName(LowWatermarkPropertyName));
         }
 
         public TViewInstance Load(string viewId)
@@ -100,7 +102,7 @@ namespace d60.Cirqus.MongoDb.Views.New
 
         public void Purge()
         {
-            _logger.Info("Purging MongoDB collection {0}", _viewCollection.Name);
+            _logger.Info("Purging '{0}'", _viewCollection.Name);
 
             _viewCollection.RemoveAll();
 
@@ -129,6 +131,8 @@ namespace d60.Cirqus.MongoDb.Views.New
 
         void UpdateLowWatermark(long newLowWatermark)
         {
+            _logger.Debug("Updating persistent low watermark to {0}", newLowWatermark);
+
             _viewCollection.Update(Query.EQ("_id", LowWatermarkDocId),
                 Update.Set(LowWatermarkPropertyName, newLowWatermark),
                 UpdateFlags.Upsert);
@@ -167,6 +171,8 @@ namespace d60.Cirqus.MongoDb.Views.New
         {
             if (!cachedViewInstances.Any()) return;
 
+            _logger.Debug("Flushing {0} view instances to '{1}'", cachedViewInstances.Values.Count, _viewCollection.Name);
+
             foreach (var viewInstance in cachedViewInstances.Values)
             {
                 _viewCollection.Save(viewInstance);
@@ -203,14 +209,11 @@ namespace d60.Cirqus.MongoDb.Views.New
             var lowWatermarkDocument = _viewCollection
                 .FindOneByIdAs<BsonDocument>(LowWatermarkDocId);
 
-            if (lowWatermarkDocument != null)
-            {
-                var lowWatermark = lowWatermarkDocument[LowWatermarkPropertyName].AsInt64;
+            if (lowWatermarkDocument == null) return null;
+            
+            var lowWatermark = lowWatermarkDocument[LowWatermarkPropertyName].AsInt64;
 
-                return lowWatermark;
-            }
-
-            return null;
+            return lowWatermark;
         }
 
         long? GetLowWatermarkFromViewInstances()
@@ -223,14 +226,11 @@ namespace d60.Cirqus.MongoDb.Views.New
                     .SetSortOrder(SortBy<TViewInstance>.Ascending(v => v.LastGlobalSequenceNumber))
                     .FirstOrDefault();
 
-            if (viewWithTheLowestGlobalSequenceNumber != null)
-            {
-                var lowWatermark = viewWithTheLowestGlobalSequenceNumber.LastGlobalSequenceNumber;
+            if (viewWithTheLowestGlobalSequenceNumber == null) return null;
+            
+            var lowWatermark = viewWithTheLowestGlobalSequenceNumber.LastGlobalSequenceNumber;
 
-                return lowWatermark;
-            }
-
-            return null;
+            return lowWatermark;
         }
 
         static MongoDatabase GetDatabaseFromConnectionString(string mongoDbConnectionString)
