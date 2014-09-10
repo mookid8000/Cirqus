@@ -15,6 +15,8 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
     [TestFixture(typeof(MsSqlManagedViewFactory), Category = TestCategories.MsSql)]
     public class TestManagedViews<TFactory> : FixtureBase where TFactory : AbstractManagedViewFactory, new()
     {
+        readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(5);
+
         TFactory _factory;
         TestContext _context;
 
@@ -43,7 +45,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
 
             // assert
             Console.WriteLine("Waiting until dispatched: {0}", last.GlobalSequenceNumbersOfEmittedEvents.Max());
-            view.WaitUntilProcessed(last, TimeSpan.FromSeconds(2)).Wait();
+            view.WaitUntilProcessed(last, _defaultTimeout).Wait();
 
             var idsView = view.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));
 
@@ -71,7 +73,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
 
             // assert
             Console.WriteLine("Waiting until dispatched: {0}", last.GlobalSequenceNumbersOfEmittedEvents.Max());
-            view.WaitUntilProcessed(last, TimeSpan.FromSeconds(2)).Wait();
+            view.WaitUntilProcessed(last, _defaultTimeout).Wait();
 
             var idsView = view.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));
 
@@ -101,7 +103,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
             _factory.PurgeView<GeneratedIds>();
 
             // assert
-            view.WaitUntilProcessed(last, TimeSpan.FromSeconds(2)).Wait();
+            view.WaitUntilProcessed(last, _defaultTimeout).Wait();
 
             var idsView = view.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));
 
@@ -127,7 +129,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
             var last = _context.ProcessCommand(new EmitEvent(Guid.NewGuid()));
 
             // assert
-            view.WaitUntilProcessed(last, TimeSpan.FromSeconds(2)).Wait();
+            view.WaitUntilProcessed(last, _defaultTimeout).Wait();
 
             var batchIdView = view.Load(DomainEvent.MetadataKeys.BatchId);
             var aggregateRootIdView = view.Load(DomainEvent.MetadataKeys.AggregateRootId);
