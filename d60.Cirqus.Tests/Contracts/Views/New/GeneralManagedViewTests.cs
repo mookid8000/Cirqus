@@ -6,6 +6,7 @@ using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Tests.Contracts.Views.New.Factories;
 using d60.Cirqus.Tests.Contracts.Views.New.Models;
 using d60.Cirqus.Views.ViewManagers.Locators;
+using d60.Cirqus.Views.ViewManagers.New;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.TestHelpers.TestContext;
 
@@ -131,17 +132,29 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
             // assert
             view.WaitUntilProcessed(last, _defaultTimeout).Wait();
 
-            var batchIdView = view.Load(DomainEvent.MetadataKeys.BatchId);
-            var aggregateRootIdView = view.Load(DomainEvent.MetadataKeys.AggregateRootId);
-            var globalSequenceNumberView = view.Load(DomainEvent.MetadataKeys.GlobalSequenceNumber);
-            var sequenceNumberView = view.Load(DomainEvent.MetadataKeys.SequenceNumber);
-            var customHeaderView = view.Load(customHeaderKey);
+            var batchIdView = LoadCheckForNull(view, DomainEvent.MetadataKeys.BatchId);
+            var aggregateRootIdView = LoadCheckForNull(view, DomainEvent.MetadataKeys.AggregateRootId);
+            var globalSequenceNumberView = LoadCheckForNull(view, DomainEvent.MetadataKeys.GlobalSequenceNumber);
+            var sequenceNumberView = LoadCheckForNull(view, DomainEvent.MetadataKeys.SequenceNumber);
+            var customHeaderView = LoadCheckForNull(view, customHeaderKey);
 
             Assert.That(batchIdView.HeaderValues.Count, Is.EqualTo(4));
             Assert.That(aggregateRootIdView.HeaderValues.Count, Is.EqualTo(4));
             Assert.That(globalSequenceNumberView.HeaderValues.Count, Is.EqualTo(4));
             Assert.That(sequenceNumberView.HeaderValues.Count, Is.EqualTo(1));
             Assert.That(customHeaderView.HeaderValues.Count, Is.EqualTo(1));
+        }
+
+        static HeaderCounter LoadCheckForNull(IManagedView<HeaderCounter> view, string metadataKey)
+        {
+            var loadedView = view.Load(metadataKey);
+
+            if (loadedView == null)
+            {
+                throw new AssertionException(string.Format("Could not find view with ID '{0}'", metadataKey));
+            }
+
+            return loadedView;
         }
     }
 }
