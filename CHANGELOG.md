@@ -235,3 +235,7 @@
 ## 0.19.0
 
 * Changed `ViewLocator` API to pass the view context, allowing for loading roots during view location
+
+## 0.20.0
+
+* JSON.NET is now merged into d60.Cirqus, making for an effectively dependency-less core assembly - just how it's supposed to be
