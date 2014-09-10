@@ -80,9 +80,9 @@ namespace d60.Cirqus.Tests.Contracts.Views.Old
                 foreach (var batch in batches)
                 {
                     var events = batch.ToList();
-                
+
                     _eventStore.Save(Guid.NewGuid(), events);
-                    
+
                     savedEventsCount += events.Count;
                 }
             }, elapsed => Console.WriteLine("Events saved: {0} ({1:0} events/s)", savedEventsCount, savedEventsCount / elapsed.TotalSeconds));
@@ -93,19 +93,18 @@ namespace d60.Cirqus.Tests.Contracts.Views.Old
 
             foreach (var id in aggregateRootIds)
             {
+                if (!nextSeqNoById.ContainsKey(id))
+                {
+                    Console.WriteLine("Didn't create event(s) for {0} - skipping!", id);
+                    continue;
+                }
+
                 Console.WriteLine("Checking seq no for {0}...", id);
                 var viewIdFromAggregateRootId = InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(id);
                 var view = _factory.Load<JustAnotherViewInstance>(viewIdFromAggregateRootId);
 
-                if (view == null)
-                {
-                    Assert.That(!nextSeqNoById.ContainsKey(id), "Didn't expect to find {0} among the tracked sequence numbers! (next seq was {1})",
-                        id, nextSeqNoById[id]);
-                }
-                else
-                {
-                    Assert.That(view.EventCounter, Is.EqualTo(nextSeqNoById[id]), "Event counter did not yield a number that corresponds to the right place in the root's sequence");
-                }
+                Assert.That(view, Is.Not.Null, "Could not find view for ID {0}   !!", id);
+                Assert.That(view.EventCounter, Is.EqualTo(nextSeqNoById[id]), "Event counter did not yield a number that corresponds to the right place in the root's sequence");
             }
         }
 
@@ -126,9 +125,9 @@ namespace d60.Cirqus.Tests.Contracts.Views.Old
     class JustAnotherViewInstance : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<AnEventMore>
     {
         public int EventCounter { get; set; }
-        
+
         public Guid AggregateRootId { get; set; }
-        
+
         public void Handle(IViewContext context, AnEventMore domainEvent)
         {
             AggregateRootId = domainEvent.GetAggregateRootId();
@@ -138,7 +137,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.Old
         }
 
         public string Id { get; set; }
-        
+
         public long LastGlobalSequenceNumber { get; set; }
     }
 
