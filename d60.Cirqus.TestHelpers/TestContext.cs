@@ -9,6 +9,7 @@ using d60.Cirqus.Extensions;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.TestHelpers.Internals;
 using d60.Cirqus.Views;
+using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.New;
 using d60.Cirqus.Views.ViewManagers.Old;
 
@@ -25,6 +26,7 @@ namespace d60.Cirqus.TestHelpers
         readonly ViewManagerEventDispatcher _viewManagerEventDispatcher;
         readonly NewViewManagerEventDispatcher _newViewManagerEventDispatcher;
         readonly CompositeEventDispatcher _eventDispatcher;
+        readonly ViewManagerWaitHandle _waitHandle = new ViewManagerWaitHandle();
 
         DateTime _currentTime = DateTime.MinValue;
         bool _initialized;
@@ -35,6 +37,8 @@ namespace d60.Cirqus.TestHelpers
 
             _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository);
             _newViewManagerEventDispatcher = new NewViewManagerEventDispatcher(_aggregateRootRepository, _eventStore);
+
+            _waitHandle.Register(_newViewManagerEventDispatcher);
 
             _eventDispatcher = new CompositeEventDispatcher(_viewManagerEventDispatcher,
                 _newViewManagerEventDispatcher);
@@ -224,6 +228,14 @@ namespace d60.Cirqus.TestHelpers
             }
 
             _disposed = true;
+        }
+
+        public void WaitForViewToCatchUp<TViewInstance>() where TViewInstance : IViewInstance
+        {
+            var allGlobalSequenceNumbers = History.Select(h => h.GetGlobalSequenceNumber()).ToArray();
+
+            _waitHandle.WaitFor<TViewInstance>(new CommandProcessingResult(allGlobalSequenceNumbers),
+                TimeSpan.FromSeconds(10)).Wait();
         }
     }
 

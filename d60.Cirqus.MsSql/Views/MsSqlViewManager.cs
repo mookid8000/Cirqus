@@ -181,7 +181,7 @@ namespace d60.Cirqus.MsSql.Views
                 {
                     if (!ViewLocator.IsRelevant<TView>(e)) continue;
 
-                    var viewIds = locator.GetViewIds(e);
+                    var viewIds = locator.GetVirewIds(context, e);
 
                     foreach (var viewId in viewIds)
                     {

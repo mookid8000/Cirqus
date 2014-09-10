@@ -9,7 +9,7 @@ namespace d60.Cirqus.Views.ViewManagers.Locators
         
         static readonly string[] ViewInstanceIds = { ViewInstanceId };
 
-        public override IEnumerable<string> GetViewIds(DomainEvent e)
+        protected override IEnumerable<string> GetViewIds(IViewContext context, DomainEvent e)
         {
             return ViewInstanceIds;
         }

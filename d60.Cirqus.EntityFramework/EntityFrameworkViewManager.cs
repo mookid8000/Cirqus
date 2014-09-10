@@ -206,7 +206,7 @@ END
         void DispatchEvent(DomainEvent domainEvent, GenericViewContext<TViewInstance> genericViewBasse, IViewContext context)
         {
             var locator = ViewLocator.GetLocatorFor<TViewInstance>();
-            var viewIds = locator.GetViewIds(domainEvent);
+            var viewIds = locator.GetVirewIds(context, domainEvent);
 
             foreach (var viewId in viewIds)
             {

@@ -100,7 +100,8 @@
     <Compile Include="Contracts\Views\New\Factories\MsSqlManagedViewFactory.cs" />
     <Compile Include="Contracts\Views\New\Models\EventEmitter.cs" />
     <Compile Include="Contracts\Views\New\Models\IdGenerator.cs" />
-    <Compile Include="Contracts\Views\New\TestManagedViews.cs" />
+    <Compile Include="Contracts\Views\New\LoadingStuffDuringViewLocation.cs" />
+    <Compile Include="Contracts\Views\New\GeneralManagedViewTests.cs" />
     <Compile Include="Contracts\Views\Old\CatchUpViews.cs" />
     <Compile Include="Contracts\Views\Old\DirectDispatch.cs" />
     <Compile Include="Contracts\Views\Old\Factories\EntityFrameworkPullViewManagerFactory.cs" />

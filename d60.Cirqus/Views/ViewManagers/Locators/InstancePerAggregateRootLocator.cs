@@ -10,7 +10,7 @@ namespace d60.Cirqus.Views.ViewManagers.Locators
     /// </summary>
     public class InstancePerAggregateRootLocator : ViewLocator
     {
-        public override IEnumerable<string> GetViewIds(DomainEvent e)
+        protected override IEnumerable<string> GetViewIds(IViewContext context, DomainEvent e)
         {
             return new[] {e.Meta[DomainEvent.MetadataKeys.AggregateRootId].ToString()};
         }

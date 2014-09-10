@@ -148,7 +148,7 @@ namespace d60.Cirqus.MongoDb.Views.New
             {
                 if (!ViewLocator.IsRelevant<TViewInstance>(e)) continue;
 
-                var viewIds = _viewLocator.GetViewIds(e);
+                var viewIds = _viewLocator.GetVirewIds(viewContext, e);
 
                 foreach (var viewId in viewIds)
                 {

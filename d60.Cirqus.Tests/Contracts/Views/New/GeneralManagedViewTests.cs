@@ -13,7 +13,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
 {
     [TestFixture(typeof(MongoDbManagedViewFactory), Category = TestCategories.MongoDb)]
     [TestFixture(typeof(MsSqlManagedViewFactory), Category = TestCategories.MsSql)]
-    public class TestManagedViews<TFactory> : FixtureBase where TFactory : AbstractManagedViewFactory, new()
+    public class GeneralManagedViewTests<TFactory> : FixtureBase where TFactory : AbstractManagedViewFactory, new()
     {
         readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(5);
 

@@ -231,3 +231,7 @@
 ## 0.18.0
 
 * Allow for specifying that certain columns can be `[NotNull]` with the new MsSql view manager
+
+## 0.19.0
+
+* Changed `ViewLocator` API to pass the view context, allowing for loading roots during view location

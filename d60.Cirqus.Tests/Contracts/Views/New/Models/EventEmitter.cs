@@ -59,7 +59,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New.Models
 
     public class HeaderCounterViewLocator : ViewLocator
     {
-        public override IEnumerable<string> GetViewIds(DomainEvent e)
+        protected override IEnumerable<string> GetViewIds(IViewContext context, DomainEvent e)
         {
             return e.Meta.Keys.ToArray();
         }

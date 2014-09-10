@@ -104,7 +104,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
         }
         class CustomizedViewLocator : ViewLocator
         {
-            public override IEnumerable<string> GetViewIds(DomainEvent e)
+            protected override IEnumerable<string> GetViewIds(IViewContext context, DomainEvent e)
             {
                 if (e is AnEvent)
                 {
