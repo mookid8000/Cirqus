@@ -86,7 +86,7 @@ namespace d60.Cirqus.MsSql.Views
                     using (var cmd = conn.CreateCommand())
                     {
                         cmd.Transaction = tx;
-                        cmd.CommandText = string.Format("SELECT MAX([GlobalSeqNo]) FROM [{0}]", _tableName);
+                        cmd.CommandText = string.Format("SELECT MAX([LastGlobalSequenceNumber]) FROM [{0}]", _tableName);
 
                         var result = cmd.ExecuteScalar();
 
@@ -215,8 +215,7 @@ namespace d60.Cirqus.MsSql.Views
 
 SELECT 
 
-{0},
-[GlobalSeqNo]
+{0}
 
 FROM [{1}] WHERE [Id] = @id
 
@@ -285,25 +284,21 @@ ON ViewTable.Id = foo.Id
 WHEN MATCHED THEN
 
     UPDATE SET 
-{1},
-[GlobalSeqNo] = @GlobalSeqNo
+{1}
 
 WHEN NOT MATCHED THEN
 
     INSERT (
-{2},
-[GlobalSeqNo]
+{2}
 ) VALUES (
-{3},
-@GlobalSeqNo
+{3}
 )
     
 ;
 ", _tableName, FormatAssignments(_schema.Where(prop => !prop.IsPrimaryKey)), FormatColumnNames(_schema), FormatParameterNames(_schema));
 
                     cmd.Parameters.Add("Id", SqlDbType.NChar, PrimaryKeySize).Value = id;
-                    cmd.Parameters.Add("GlobalSeqNo", SqlDbType.BigInt).Value = view.MaxGlobalSeq;
-
+   
                     foreach (var prop in _schema.Where(p => !p.IsPrimaryKey))
                     {
                         var value = prop.Getter(view.View);
@@ -343,8 +338,6 @@ BEGIN
     CREATE TABLE [dbo].[{0}] (
 
 {1},
-
-[GlobalSeqNo] [BigInt],
 
 
         CONSTRAINT [PK_{0}] PRIMARY KEY CLUSTERED 

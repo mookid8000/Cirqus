@@ -61,7 +61,7 @@ namespace d60.Cirqus.MsSql.Views
                         ColumnName = columnName,
                         SqlDbType = sqlDbType.Item1,
                         Size = sqlDbType.Item2,
-                        IsNullable = DetermineNullability(propertyInfo),
+                        PropertyIsNullable = DetermineNullability(propertyInfo),
                         Getter = instance => GetGetter(propertyInfo, instance),
                         Setter = (instance, value) => GetSetter(propertyInfo, instance, value)
                     };
@@ -72,7 +72,6 @@ namespace d60.Cirqus.MsSql.Views
         static bool DetermineNullability(PropertyInfo propertyInfo)
         {
             return !propertyInfo.GetCustomAttributes<NotNullAttribute>().Any();
-
         }
 
         static void GetSetter(PropertyInfo propertyInfo, object instance, object value)
@@ -244,6 +243,12 @@ namespace d60.Cirqus.MsSql.Views
         {
             get { return ColumnName.Equals("Id", StringComparison.InvariantCultureIgnoreCase); }
         }
+
+        public bool IsGlobalSequenceNumber
+        {
+            get { return ColumnName.Equals("LastGlobalSequenceNumber", StringComparison.InvariantCultureIgnoreCase); }
+        }
+
         public string ColumnName { get; set; }
         public Func<object, object> Getter { get; set; }
         public Action<object, object> Setter { get; set; }
@@ -254,7 +259,17 @@ namespace d60.Cirqus.MsSql.Views
             get { return "@" + ColumnName; }
         }
 
-        public bool IsNullable { get; set; }
+        public bool IsNullable
+        {
+            get
+            {
+                return !IsPrimaryKey
+                       && !IsGlobalSequenceNumber
+                       && PropertyIsNullable;
+            }
+        }
+
+        public bool PropertyIsNullable { get; set; }
 
         public override string ToString()
         {
