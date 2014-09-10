@@ -24,11 +24,10 @@ namespace d60.Cirqus.Tests.Config
     [TestFixture]
     public class TestConfigurationApi : FixtureBase
     {
-        [Test]
+        [Test, Category(TestCategories.MongoDb)]
         public void CanInstallMultipleEventDispatchers()
         {
             var database = MongoHelper.InitializeTestDatabase();
-            database.Drop();
 
             var waiter = new ViewManagerWaitHandle();
 
