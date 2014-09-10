@@ -381,10 +381,11 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             Assert.That(allEventsForAgg2.GetSeq(), Is.EqualTo(new[] { 3, 6 }));
         }
 
-        [TestCase(1000, 10)]
-        [TestCase(10000, 10)]
-        //[TestCase(1000, 100, Ignore = true)]
-        //[TestCase(1000, 1000, Ignore = true)]
+        [TestCase(100, 3)]
+        [TestCase(1000, 10, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(10000, 10, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(1000, 100, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(1000, 1000, Ignore = TestCategories.IgnoreLongRunning)]
         public void ComparePerformance(int numberOfBatches, int numberOfEventsPerBatch)
         {
             CirqusLoggerFactory.Current = new NullLoggerFactory();

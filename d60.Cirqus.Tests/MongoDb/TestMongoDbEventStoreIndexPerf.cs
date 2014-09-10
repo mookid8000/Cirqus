@@ -10,8 +10,10 @@ namespace d60.Cirqus.Tests.MongoDb
     [Category(TestCategories.MongoDb)]
     public class TestMongoDbEventStoreIndexPerf : FixtureBase
     {
-        [TestCase(true, 100, 10*1000, Description = "Indexes")]
-        [TestCase(false, 100, 10*1000, Description = "NO indexes")]
+        [TestCase(true, 100, 1000, Description = "Indexes")]
+        [TestCase(false, 100, 1000, Description = "NO indexes")]
+        [TestCase(true, 100, 10*1000, Description = "Indexes", Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(false, 100, 10 * 1000, Description = "NO indexes", Ignore = TestCategories.IgnoreLongRunning)]
         public void IndexSpeedTest(bool useIndexes, int numberOfQueries, int numberOfEvents)
         {
             var database = MongoHelper.InitializeTestDatabase();
