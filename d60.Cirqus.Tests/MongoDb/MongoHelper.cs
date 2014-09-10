@@ -18,6 +18,7 @@ namespace d60.Cirqus.Tests.MongoDb
             var databaseName = GetDatabaseName(url);
             var database = new MongoClient(url).GetServer().GetDatabase(databaseName);
 
+            Console.WriteLine("Using Mongo database '{0}'", databaseName);
             if (dropExistingDatabase)
             {
                 Console.WriteLine("Dropping Mongo database '{0}'", databaseName);
@@ -35,7 +36,9 @@ namespace d60.Cirqus.Tests.MongoDb
             int number;
 
             if (string.IsNullOrWhiteSpace(teamCityAgentNumber) || !int.TryParse(teamCityAgentNumber, out number))
+            {
                 return databaseName;
+            }
 
             return string.Format("{0}_{1}", databaseName, number);
         }
