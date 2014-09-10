@@ -46,6 +46,8 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
                     return _dispatcher;
                 }))
                 .Create();
+
+            RegisterForDisposal(_commandProcessor);
         }
 
         [TestCase(10)]
