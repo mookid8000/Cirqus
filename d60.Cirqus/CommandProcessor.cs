@@ -141,6 +141,13 @@ namespace d60.Cirqus
 
         internal event Action Disposed = delegate { };
 
+        bool _disposed;
+
+        ~CommandProcessor()
+        {
+            Dispose(false);
+        }
+
         public void Dispose()
         {
             Dispose(true);
@@ -149,12 +156,16 @@ namespace d60.Cirqus
 
         protected virtual void Dispose(bool disposing)
         {
+            if (_disposed) return;
+
             if (disposing)
             {
                 _logger.Info("Disposing command processor");
 
                 Disposed();
             }
+
+            _disposed = true;
         }
     }
 }

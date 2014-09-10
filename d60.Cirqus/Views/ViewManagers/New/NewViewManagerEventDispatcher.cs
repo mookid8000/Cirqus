@@ -238,6 +238,13 @@ namespace d60.Cirqus.Views.ViewManagers.New
             }
         }
 
+        bool _disposed;
+
+        ~NewViewManagerEventDispatcher()
+        {
+            Dispose(false);
+        }
+
         public void Dispose()
         {
             Dispose(true);
@@ -246,6 +253,8 @@ namespace d60.Cirqus.Views.ViewManagers.New
 
         protected virtual void Dispose(bool disposing)
         {
+            if (_disposed) return;
+
             if (disposing)
             {
                 _keepWorking = false;
@@ -267,6 +276,8 @@ namespace d60.Cirqus.Views.ViewManagers.New
                 {
                 }
             }
+
+            _disposed = true;
         }
     }
 }

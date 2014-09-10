@@ -201,6 +201,13 @@ namespace d60.Cirqus.TestHelpers
             get { return new EventCollection(_eventStore.Stream()); }
         }
 
+        bool _disposed;
+
+        ~TestContext()
+        {
+            Dispose(false);
+        }
+
         public void Dispose()
         {
             Dispose(true);
@@ -209,10 +216,14 @@ namespace d60.Cirqus.TestHelpers
 
         protected virtual void Dispose(bool disposing)
         {
+            if (_disposed) return;
+
             if (disposing)
             {
                 _newViewManagerEventDispatcher.Dispose();
-            }            
+            }
+
+            _disposed = true;
         }
     }
 
