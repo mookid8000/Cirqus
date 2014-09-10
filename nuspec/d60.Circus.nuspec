@@ -11,6 +11,6 @@
     <description>Event sourcing + cqrs kit</description>
   </metadata>
   <files>
-    <file src="..\d60.Cirqus\bin\ReleaseMerged\d60.Cirqus.dll" target="lib\NET45" />
+    <file src="..\d60.Cirqus\bin\Release\merged\d60.Cirqus.dll" target="lib\NET45" />
   </files>
 </package>
