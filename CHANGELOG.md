@@ -243,3 +243,8 @@
 ## 0.20.1
 
 * Made `TestContext` return `CommandProcessingResult` when calling `Save`, so that async views can be blocked until the results are visible
+
+
+## 0.20.2
+
+* Fixed bug in `TestContext` that did not correctly serialize the UTC time 

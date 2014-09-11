@@ -184,7 +184,7 @@ namespace d60.Cirqus.TestHelpers
             domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId] = aggregateRootId;
             domainEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber] = _eventStore.GetNextSeqNo(aggregateRootId);
             domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = AggregateRoot.GetOwnerFromType(typeof(TAggregateRoot));
-            domainEvent.Meta[DomainEvent.MetadataKeys.TimeUtc] = now;
+            domainEvent.Meta[DomainEvent.MetadataKeys.TimeUtc] = now.ToString("u");
 
             domainEvent.Meta.TakeFromAttributes(domainEvent.GetType());
             domainEvent.Meta.TakeFromAttributes(typeof(TAggregateRoot));

@@ -26,6 +26,26 @@ namespace d60.Cirqus.Tests.TestHelpers
         }
 
         [Test]
+        public void CanGetSpecialMetaFields()
+        {
+            var myBirthday = new DateTime(1979, 3, 19, 12, 30, 00, DateTimeKind.Utc);
+            _context.SetCurrentTime(myBirthday);
+            var aggregateRootId = Guid.NewGuid();
+
+            _context.Save(aggregateRootId, new RandomEvent());
+
+            var domainEvent = _context.History.Single();
+            Assert.That(domainEvent.GetUtcTime(), Is.EqualTo(myBirthday));
+            Assert.That(domainEvent.GetAggregateRootId(), Is.EqualTo(aggregateRootId));
+
+        }
+
+        class RandomEvent : DomainEvent<Root>
+        {
+        }
+
+
+        [Test]
         public void CopiesCommandHeadersToEventsLikeTheRealCommandProcessor()
         {
             // arrange
