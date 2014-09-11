@@ -137,7 +137,7 @@ namespace d60.Cirqus.TestHelpers
         /// <summary>
         /// Saves the given domain event to the history - requires that the aggregate root ID has been added in the event's metadata under the <see cref="DomainEvent.MetadataKeys.AggregateRootId"/> key
         /// </summary>
-        public void Save<TAggregateRoot>(DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
+        public CommandProcessingResultWithEvents Save<TAggregateRoot>(DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
         {
             if (!domainEvent.Meta.ContainsKey(DomainEvent.MetadataKeys.AggregateRootId))
             {
@@ -147,23 +147,34 @@ namespace d60.Cirqus.TestHelpers
                         domainEvent, DomainEvent.MetadataKeys.AggregateRootId));
             }
 
-            Save(domainEvent.GetAggregateRootId(), domainEvent);
+            return Save(domainEvent.GetAggregateRootId(), domainEvent);
         }
 
         /// <summary>
         /// Saves the given domain event to the history as if it was emitted by the specified aggregate root, immediately dispatching the event to the event dispatcher
         /// </summary>
-        public void Save<TAggregateRoot>(Guid aggregateRootId, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
+        public CommandProcessingResultWithEvents Save<TAggregateRoot>(Guid aggregateRootId, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
+        {
+            return Save(aggregateRootId, new[] {domainEvent});
+        }
+
+        /// <summary>
+        /// Saves the given domain events to the history as if they were emitted by the specified aggregate root, immediately dispatching the events to the event dispatcher
+        /// </summary>
+        public CommandProcessingResultWithEvents Save<TAggregateRoot>(Guid aggregateRootId, params DomainEvent<TAggregateRoot>[] domainEvents) where TAggregateRoot : AggregateRoot
         {
             EnsureInitialized();
 
-            SetMetadata(aggregateRootId, domainEvent);
-
-            var domainEvents = new[] { domainEvent };
+            foreach (var domainEvent in domainEvents)
+            {
+                SetMetadata(aggregateRootId, domainEvent);
+            }
 
             _eventStore.Save(Guid.NewGuid(), domainEvents);
 
             _eventDispatcher.Dispatch(_eventStore, domainEvents);
+
+            return new CommandProcessingResultWithEvents(domainEvents);
         }
 
         void SetMetadata<TAggregateRoot>(Guid aggregateRootId, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot

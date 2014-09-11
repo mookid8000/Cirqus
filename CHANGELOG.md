@@ -239,3 +239,7 @@
 ## 0.20.0
 
 * JSON.NET is now merged into d60.Cirqus, making for an effectively dependency-less core assembly - just how it's supposed to be
+
+## 0.20.1
+
+* Made `TestContext` return `CommandProcessingResult` when calling `Save`, so that async views can be blocked until the results are visible
