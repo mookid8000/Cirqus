@@ -130,9 +130,9 @@ namespace d60.Cirqus.Tests.MsSql
 
             }
         }
-    }
 
-    public class AnEvent : DomainEvent
-    {
+        public class AnEvent : DomainEvent
+        {
+        }
     }
 }

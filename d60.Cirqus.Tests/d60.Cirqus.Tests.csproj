@@ -130,6 +130,7 @@
     <Compile Include="MongoDb\TestMongoDbLoggerFactory.cs" />
     <Compile Include="MongoDb\TestMongoDbSerializer.cs" />
     <Compile Include="MongoDb\TestMongoDbViewManager.cs" />
+    <Compile Include="MsSql\TestNewMsSqlViewManager_AutomaticSchemaRegeneration.cs" />
     <Compile Include="MsSql\TestNewMsSqlViewManager.cs" />
     <Compile Include="PostgreSql\PostgreSqlTestHelper.cs" />
     <Compile Include="SqlTestHelperBase.cs" />
