@@ -39,8 +39,8 @@ namespace d60.Cirqus.Tests.MsSql
             // assert
             _viewManager.Dispatch(new ThrowingViewContext(), new[]
             {
-                GetAnEvent(Guid.NewGuid()),
-                GetAnEvent(Guid.NewGuid())
+                GetAnEvent(Guid.NewGuid(), 0),
+                GetAnEvent(Guid.NewGuid(), 1)
             });
 
             var view = _viewManager.Load(GlobalInstanceLocator.GetViewInstanceId());
@@ -83,7 +83,7 @@ namespace d60.Cirqus.Tests.MsSql
         {
         }
 
-        static AnEvent GetAnEvent(Guid aggregateRootId)
+        static AnEvent GetAnEvent(Guid aggregateRootId, int globalSequenceNumber)
         {
             return new AnEvent
             {
@@ -91,7 +91,7 @@ namespace d60.Cirqus.Tests.MsSql
                 {
                     {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId},
                     {DomainEvent.MetadataKeys.SequenceNumber, 0},
-                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, 0},
+                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, globalSequenceNumber},
                 }
             };
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -71,7 +72,7 @@ namespace d60.Cirqus.MsSql.Views
             {
                 return value;
             }
-            
+
             return null;
         }
 
@@ -92,7 +93,7 @@ namespace d60.Cirqus.MsSql.Views
 
                         if (result != DBNull.Value)
                         {
-                            return (long) result;
+                            return (long)result;
                         }
                     }
                 }
@@ -114,7 +115,7 @@ namespace d60.Cirqus.MsSql.Views
                 using (var tx = conn.BeginTransaction())
                 {
                     var locator = ViewLocator.GetLocatorFor<TViewInstance>();
-                    var activeViewsById = new Dictionary<string, MsSqlView<TViewInstance>>();
+                    var activeViewsById = new Dictionary<string, TViewInstance>();
 
                     foreach (var e in eventList)
                     {
@@ -126,12 +127,9 @@ namespace d60.Cirqus.MsSql.Views
                         {
                             var view = activeViewsById
                                 .GetOrAdd(viewId, id => FindOneById(id, tx, conn)
-                                                        ?? new MsSqlView<TViewInstance>
-                                                        {
-                                                            View = _dispatcher.CreateNewInstance(viewId),
-                                                        });
+                                                        ?? _dispatcher.CreateNewInstance(viewId));
 
-                            _dispatcher.DispatchToView(viewContext, e, view.View);
+                            _dispatcher.DispatchToView(viewContext, e, view);
                         }
                     }
 
@@ -172,16 +170,9 @@ namespace d60.Cirqus.MsSql.Views
 
                 using (var tx = conn.BeginTransaction())
                 {
-                    var wrapper = FindOneById(viewId, tx, conn);
-
-                    if (wrapper != null)
-                    {
-                        return wrapper.View;
-                    }
+                    return FindOneById(viewId, tx, conn);
                 }
             }
-
-            return null;
         }
 
         public void Purge()
@@ -208,7 +199,7 @@ namespace d60.Cirqus.MsSql.Views
             Interlocked.Exchange(ref _cachedLowWatermark, DefaultLowWatermark);
         }
 
-        MsSqlView<TViewInstance> FindOneById(string viewId, SqlTransaction tx, SqlConnection conn)
+        TViewInstance FindOneById(string viewId, SqlTransaction tx, SqlConnection conn)
         {
             using (var cmd = conn.CreateCommand())
             {
@@ -236,10 +227,7 @@ FROM [{1}] WHERE [Id] = @id
                             prop.Setter(view, reader[prop.ColumnName]);
                         }
 
-                        return new MsSqlView<TViewInstance>
-                        {
-                            View = view,
-                        };
+                        return view;
                     }
 
                     return null;
@@ -265,7 +253,7 @@ FROM [{1}] WHERE [Id] = @id
                 schema.Select(prop => string.Format("[{0}]", prop.ColumnName)));
         }
 
-        void Save(Dictionary<string, MsSqlView<TViewInstance>> activeViewsById, SqlConnection conn, SqlTransaction tx)
+        void Save(Dictionary<string, TViewInstance> activeViewsById, SqlConnection conn, SqlTransaction tx)
         {
             _logger.Debug("Flushing {0} view instances to '{1}'", activeViewsById.Count, _tableName);
 
@@ -302,10 +290,10 @@ WHEN NOT MATCHED THEN
 ", _tableName, FormatAssignments(_schema.Where(prop => !prop.IsPrimaryKey)), FormatColumnNames(_schema), FormatParameterNames(_schema));
 
                     cmd.Parameters.Add("Id", SqlDbType.NChar, PrimaryKeySize).Value = id;
-   
+
                     foreach (var prop in _schema.Where(p => !p.IsPrimaryKey))
                     {
-                        var value = prop.Getter(view.View);
+                        var value = prop.Getter(view);
 
                         cmd.Parameters.AddWithValue(prop.SqlParameterName, value ?? DBNull.Value);
                     }
@@ -317,25 +305,102 @@ WHEN NOT MATCHED THEN
 
         void CreateSchema()
         {
-            _logger.Info("Ensuring that schema for '{0}' is created...", typeof (TViewInstance));
+            _logger.Info("Ensuring that schema for '{0}' is created...", typeof(TViewInstance));
 
             using (var conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
 
-                using (var cmd = conn.CreateCommand())
+                if (!SchemaLooksRight(conn, _tableName))
                 {
-                    var script = string.Format("[Id] [NCHAR]({0}) NOT NULL, ", PrimaryKeySize)
-                                 + Environment.NewLine
-                                 + string.Join("," + Environment.NewLine, _schema
-                                     .Where(c => !c.IsPrimaryKey)
-                                     .Select(c => string.Format("[{0}] [{1}]{2} {3}", 
-                                         c.ColumnName, 
-                                         c.SqlDbType, 
-                                         string.IsNullOrWhiteSpace(c.Size) ? "" : "(" + c.Size + ")",
-                                         c.IsNullable ? "NULL" : "NOT NULL")));
+                    DropTable(conn, _tableName);
+                }
 
-                    var commandText = string.Format(@"
+                CreateTable(conn, _tableName);
+            }
+        }
+
+        bool SchemaLooksRight(SqlConnection conn, string tableName)
+        {
+            var columnsPresentInDatabase = new List<Prop>();
+
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = string.Format(@"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '{0}'", tableName);
+
+                var tableExists = Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+
+                if (!tableExists)
+                {
+                    return true;
+                }
+            }
+
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = string.Format(@"SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{0}'", tableName);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var columnName = (string)reader["COLUMN_NAME"];
+                        var dataType = (string)reader["DATA_TYPE"];
+
+                        var sqlDbType = (SqlDbType)Enum.Parse(typeof(SqlDbType), dataType, true);
+
+                        columnsPresentInDatabase.Add(new Prop
+                        {
+                            ColumnName = columnName,
+                            SqlDbType = sqlDbType
+                        });
+                    }
+                }
+            }
+
+            var columnsPresentInSchemaMissingOrWithWrongTypeInDatabase = _schema
+                .Where(schemaColumn => !columnsPresentInDatabase.Any(c => c.Matches(schemaColumn)))
+                .ToList();
+
+            if (columnsPresentInSchemaMissingOrWithWrongTypeInDatabase.Any())
+            {
+                _logger.Warn("The table '{0}' is missing columns with the following names and types: {1}",
+                    tableName, string.Join(", ", columnsPresentInSchemaMissingOrWithWrongTypeInDatabase.Select(prop => string.Format("{0} ({1})", prop.ColumnName, prop.SqlDbType))));
+                return false;
+            }
+
+            return true;
+        }
+
+        void DropTable(SqlConnection conn, string tableName)
+        {
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = string.Format(@"
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '{0}')
+BEGIN
+    DROP TABLE [{0}]
+END
+", tableName);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        void CreateTable(SqlConnection conn, string tableName)
+        {
+            using (var cmd = conn.CreateCommand())
+            {
+                var script = string.Format("[Id] [NVARCHAR]({0}) NOT NULL, ", PrimaryKeySize)
+                             + Environment.NewLine
+                             + string.Join("," + Environment.NewLine, _schema
+                                 .Where(c => !c.IsPrimaryKey)
+                                 .Select(c => string.Format("[{0}] [{1}]{2} {3}",
+                                     c.ColumnName,
+                                     c.SqlDbType,
+                                     string.IsNullOrWhiteSpace(c.Size) ? "" : "(" + c.Size + ")",
+                                     c.IsNullable ? "NULL" : "NOT NULL")));
+
+                var commandText = string.Format(@"
 
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '{0}')
 BEGIN
@@ -351,12 +416,11 @@ BEGIN
     )
 END
 
-", _tableName, script);
+", tableName, script);
 
-                    cmd.CommandText = commandText;
+                cmd.CommandText = commandText;
 
-                    cmd.ExecuteNonQuery();
-                }
+                cmd.ExecuteNonQuery();
             }
         }
     }

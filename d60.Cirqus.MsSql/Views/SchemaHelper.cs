@@ -7,7 +7,7 @@ using d60.Cirqus.Serialization;
 
 namespace d60.Cirqus.MsSql.Views
 {
-    public class SchemaHelper
+    class SchemaHelper
     {
         static readonly Dictionary<Type, Tuple<SqlDbType, string>> DbTypes =
             new Dictionary<Type, Tuple<SqlDbType, string>>
@@ -237,7 +237,7 @@ namespace d60.Cirqus.MsSql.Views
         }
     }
 
-    public class Prop
+    class   Prop
     {
         public bool IsPrimaryKey
         {
@@ -247,6 +247,12 @@ namespace d60.Cirqus.MsSql.Views
         public bool IsGlobalSequenceNumber
         {
             get { return ColumnName.Equals("LastGlobalSequenceNumber", StringComparison.InvariantCultureIgnoreCase); }
+        }
+
+        public bool Matches(Prop otherProp)
+        {
+            return ColumnName.Equals(otherProp.ColumnName, StringComparison.InvariantCultureIgnoreCase)
+                   && SqlDbType == otherProp.SqlDbType;
         }
 
         public string ColumnName { get; set; }
