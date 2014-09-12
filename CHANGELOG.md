@@ -248,3 +248,7 @@
 ## 0.20.2
 
 * Fixed bug in `TestContext` that did not correctly serialize the UTC time 
+
+## 0.20.3
+
+* `NewMsSqlViewManager` can automagically drop & recreate the table when necessary
