@@ -3,7 +3,6 @@ using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
-using d60.Cirqus.Numbers;
 
 namespace d60.Cirqus.TestHelpers
 {
@@ -13,6 +12,8 @@ namespace d60.Cirqus.TestHelpers
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventStore _eventStore;
         readonly IEventDispatcher _eventDispatcher;
+
+        bool _wasCommitted;
 
         internal TestUnitOfWork(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IEventDispatcher eventDispatcher)
         {
@@ -60,20 +61,28 @@ namespace d60.Cirqus.TestHelpers
         /// </summary>
         public void Commit()
         {
+            if (_wasCommitted)
+            {
+                throw new InvalidOperationException("Cannot commit the same unit of work twice!");
+            }
+
             var domainEvents = EmittedEvents.ToList();
 
             if (!domainEvents.Any()) return;
 
             _eventStore.Save(Guid.NewGuid(), domainEvents);
 
+            _wasCommitted = true;
+
             _eventDispatcher.Dispatch(_eventStore, domainEvents);
         }
 
         public void Dispose()
         {
-            if (!EmittedEvents.Any()) return;
-
-            Console.WriteLine("Unit of work was disposed with {0} events", EmittedEvents.Count());
+            if (!_wasCommitted)
+            {
+                Console.WriteLine("Unit of work was disposed with {0} events without being committed", EmittedEvents.Count());
+            }
         }
     }
 }

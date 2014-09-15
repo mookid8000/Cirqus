@@ -177,3 +177,78 @@
 ## 0.12.1
 
 * Added `string[]` as a supported property type on `MsSqlViewManager`.
+
+## 0.12.2
+
+* Allow properties of type `DateTime`, `DateTimeOffset` and `TimeSpan` on `MsSqlViewManager`-managed views
+
+## 0.12.3
+
+* Introduced a fluent configuration API that will make it easier to discover configuration options + make it harder to end up with e.g. an un-initialized command processor
+
+## 0.13.0
+
+* Changed logger API to include overloads for `Warn` and `Error` that include a real `exception` field
+* Added Serilog integration package
+
+## 0.14.0
+
+* Removed superfluous methods from `ICommandProcessor` interface - it's only about processing commands now!
+
+## 0.14.1
+
+* Added experimental caching aggregate root repository with a simple in-mem snapshot cache (warning: beta!)
+
+## 0.15.0
+
+* Added experimental async-by-default managed views as an alternative to the initial view managers
+
+## 0.15.1
+
+* Support for composite event dispatchers in the configuration API
+
+## 0.15.2
+
+* Added configuration options to Serilog integration
+
+## 0.16.0
+
+* Ability for new SQL views to have certain propoerties JSON-serialized - just use the `[Json]` attribute on them :)
+* Can now pass `ViewManagerWaitHandle` to the new view manager event dispatcher to allow for blocking until certain views have updated
+
+## 0.17.0
+
+* Made `CommandProcessor` and `TestContext` disposable in the hope that someone will dispose them and stop their threads
+
+## 0.17.1
+
+* Comments + more.
+
+## 0.17.2
+
+* Exposed Serilog options on config API
+
+## 0.18.0
+
+* Allow for specifying that certain columns can be `[NotNull]` with the new MsSql view manager
+
+## 0.19.0
+
+* Changed `ViewLocator` API to pass the view context, allowing for loading roots during view location
+
+## 0.20.0
+
+* JSON.NET is now merged into d60.Cirqus, making for an effectively dependency-less core assembly - just how it's supposed to be
+
+## 0.20.1
+
+* Made `TestContext` return `CommandProcessingResult` when calling `Save`, so that async views can be blocked until the results are visible
+
+
+## 0.20.2
+
+* Fixed bug in `TestContext` that did not correctly serialize the UTC time 
+
+## 0.20.3
+
+* `NewMsSqlViewManager` can automagically drop & recreate the table when necessary

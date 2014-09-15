@@ -25,7 +25,15 @@ namespace d60.Cirqus.Logging.Null
             {
             }
 
+            public override void Warn(Exception exception, string message, params object[] objs)
+            {
+            }
+
             public override void Error(string message, params object[] objs)
+            {
+            }
+
+            public override void Error(Exception exception, string message, params object[] objs)
             {
             }
         }

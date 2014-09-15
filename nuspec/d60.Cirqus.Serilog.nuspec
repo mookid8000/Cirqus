@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>d60.Cirqus.Serilog</id>
+    <version>VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT</version>
+    <title>d60.Cirqus.Serilog</title>
+    <authors>Mogens Heller Grabe</authors>
+    <owners>mookid8000</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Serilog integration for Cirqus</description>
+    <dependencies>
+      <dependency id="d60.Cirqus" version="VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT" />
+      <dependency id="Serilog" version="1.4.7" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\d60.Cirqus.Serilog\bin\Release\d60.Cirqus.Serilog.dll" target="lib\NET45" />
+  </files>
+</package>

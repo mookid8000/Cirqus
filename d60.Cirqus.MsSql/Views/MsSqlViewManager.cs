@@ -7,6 +7,7 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Old;
 
 namespace d60.Cirqus.MsSql.Views
 {
@@ -151,7 +152,7 @@ namespace d60.Cirqus.MsSql.Views
                     // make sure we flush after each single domain event
                     foreach (var e in eventsToDispatch)
                     {
-                        ProcessOneBatch(eventStore, new[] {e}, context);
+                        ProcessOneBatch(eventStore, new[] { e }, context);
                     }
                 }
                 catch (ConsistencyException)
@@ -174,18 +175,22 @@ namespace d60.Cirqus.MsSql.Views
             using (var tx = conn.BeginTransaction())
             {
                 var locator = ViewLocator.GetLocatorFor<TView>();
-                var activeViewsById = new Dictionary<string, MsSqlView<TView>>();
+                var activeViewsById = new Dictionary<string, TView>();
 
                 foreach (var e in batch)
                 {
                     if (!ViewLocator.IsRelevant<TView>(e)) continue;
 
-                    var viewId = locator.GetViewId(e);
-                    var view = activeViewsById
-                        .GetOrAdd(viewId, id => FindOneById(id, tx, conn)
-                                                ?? new MsSqlView<TView> { View = new TView() });
+                    var viewIds = locator.GetVirewIds(context, e);
 
-                    DispatchEvent(eventStore, e, view, context);
+                    foreach (var viewId in viewIds)
+                    {
+                        var view = activeViewsById
+                            .GetOrAdd(viewId, id => FindOneById(id, tx, conn)
+                                                    ?? _dispatcher.CreateNewInstance(viewId));
+
+                        _dispatcher.DispatchToView(context, e, view);
+                    }
                 }
 
                 Save(activeViewsById, conn, tx);
@@ -194,7 +199,7 @@ namespace d60.Cirqus.MsSql.Views
             }
         }
 
-        void Save(Dictionary<string, MsSqlView<TView>> activeViewsById, SqlConnection conn, SqlTransaction tx)
+        void Save(Dictionary<string, TView> activeViewsById, SqlConnection conn, SqlTransaction tx)
         {
             foreach (var kvp in activeViewsById)
             {
@@ -232,11 +237,11 @@ WHEN NOT MATCHED THEN
 ", _tableName, FormatAssignments(_schema.Where(prop => !prop.IsPrimaryKey)), FormatColumnNames(_schema), FormatParameterNames(_schema));
 
                     cmd.Parameters.Add("Id", SqlDbType.NChar, PrimaryKeySize).Value = id;
-                    cmd.Parameters.Add("GlobalSeqNo", SqlDbType.BigInt).Value = view.MaxGlobalSeq;
+                    cmd.Parameters.Add("GlobalSeqNo", SqlDbType.BigInt).Value = view.LastGlobalSequenceNumber;
 
                     foreach (var prop in _schema.Where(p => !p.IsPrimaryKey))
                     {
-                        var value = prop.Getter(view.View);
+                        var value = prop.Getter(view);
 
                         cmd.Parameters.AddWithValue(prop.SqlParameterName, value);
                     }
@@ -246,17 +251,7 @@ WHEN NOT MATCHED THEN
             }
         }
 
-        void DispatchEvent(IEventStore eventStore, DomainEvent domainEvent, MsSqlView<TView> view, IViewContext context)
-        {
-            var globalSequenceNumber = domainEvent.GetGlobalSequenceNumber();
-            if (globalSequenceNumber < view.MaxGlobalSeq) return;
-
-            _dispatcher.DispatchToView(context, domainEvent, view.View);
-
-            view.MaxGlobalSeq = globalSequenceNumber;
-        }
-
-        MsSqlView<TView> FindOneById(string id, SqlTransaction tx, SqlConnection conn)
+        TView FindOneById(string id, SqlTransaction tx, SqlConnection conn)
         {
             using (var cmd = conn.CreateCommand())
             {
@@ -285,13 +280,7 @@ FROM [{1}] WHERE [Id] = @id
                             prop.Setter(view, reader[prop.ColumnName]);
                         }
 
-                        var globalSeqNo = (long)reader["GlobalSeqNo"];
-
-                        return new MsSqlView<TView>
-                        {
-                            View = view,
-                            MaxGlobalSeq = globalSeqNo
-                        };
+                        return view;
                     }
 
                     return null;
@@ -325,12 +314,7 @@ FROM [{1}] WHERE [Id] = @id
             {
                 using (var tx = conn.BeginTransaction())
                 {
-                    var wrapper = FindOneById(viewId, tx, conn);
-
-                    if (wrapper != null)
-                    {
-                        view = wrapper.View;
-                    }
+                    view = FindOneById(viewId, tx, conn);
                 }
             });
 
@@ -408,21 +392,5 @@ END
             }
         }
 
-    }
-
-    public class ColumnAttribute : Attribute
-    {
-        public string ColumnName { get; private set; }
-
-        public ColumnAttribute(string columnName)
-        {
-            ColumnName = columnName;
-        }
-    }
-
-    class MsSqlView<TView> where TView : IViewInstance
-    {
-        public long MaxGlobalSeq { get; set; }
-        public TView View { get; set; }
     }
 }

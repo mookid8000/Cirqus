@@ -2,7 +2,6 @@
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
-using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.TestHelpers.Internals;
@@ -25,7 +24,7 @@ namespace d60.Cirqus.Tests.Commands
 
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
 
-            _cirqus = new CommandProcessor(_eventStore, _aggregateRootRepository, eventDispatcher);
+            _cirqus = RegisterForDisposal(new CommandProcessor(_eventStore, _aggregateRootRepository, eventDispatcher));
         }
 
         [Test]
@@ -70,7 +69,7 @@ namespace d60.Cirqus.Tests.Commands
         [Test]
         public void CanLetSpecificExceptionTypesThrough()
         {
-            _cirqus.Options.AddDomainException<InvalidOperationException>();
+            _cirqus.Options.AddDomainExceptionType<InvalidOperationException>();
 
             var unwrappedException = Assert.Throws<InvalidOperationException>(() => _cirqus.ProcessCommand(new ErronousCommand(Guid.NewGuid())));
 
@@ -113,7 +112,7 @@ namespace d60.Cirqus.Tests.Commands
 
             _cirqus.ProcessCommand(new MappedCommand(aggregateRootId));
 
-            Assert.That(Enumerable.ToList<DomainEvent>(_eventStore).Count, Is.EqualTo(1));
+            Assert.That(_eventStore.ToList().Count, Is.EqualTo(1));
         }
 
         class MappedCommand : Command<Root>

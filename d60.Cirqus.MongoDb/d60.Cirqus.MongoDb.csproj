@@ -43,6 +43,7 @@
       <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -51,11 +52,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Config\MongoDbConfigurationExtensions.cs" />
     <Compile Include="Events\MongoDbEventStore.cs" />
     <Compile Include="Events\MongoDbSerializer.cs" />
     <Compile Include="Logging\MongoDbLoggerFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Views\MongoDbViewManager.cs" />
+    <Compile Include="Views\Old\MongoDbViewManager.cs" />
+    <Compile Include="Views\New\NewMongoDbViewManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
-using d60.Cirqus.Tests.Contracts.Views.Factories;
+using d60.Cirqus.Tests.Contracts.Views.Old;
+using d60.Cirqus.Tests.Contracts.Views.Old.Factories;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
+using d60.Cirqus.Views.ViewManagers.Old;
 using MongoDB.Driver;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.TestHelpers.TestContext;
@@ -35,7 +38,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _globalInstanceViewManager = _factory.GetPullViewManager<GlobalInstanceViewInstance>();
             _instancePerAggregateRootViewManager = _factory.GetPullViewManager<InstancePerAggregateRootView>();
 
-            _testContext = new TestContext();
+            _testContext = RegisterForDisposal(new TestContext());
         }
 
 
@@ -55,7 +58,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _testContext.Save(rootId2, new ThisIsJustAnEvent());
             _testContext.Save(rootId2, new ThisIsJustAnEvent());
 
-            var view = _factory.Load<InstancePerAggregateRootView>(InstancePerAggregateRootLocator.GetViewIdFromGuid(rootId1));
+            var view = _factory.Load<InstancePerAggregateRootView>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(rootId1));
             Assert.That(view.EventCounter, Is.EqualTo(3));
         }
 
@@ -101,11 +104,16 @@ namespace d60.Cirqus.Tests.Contracts.Views
         }
         class CustomizedViewLocator : ViewLocator
         {
-            public override string GetViewId(DomainEvent e)
+            protected override IEnumerable<string> GetViewIds(IViewContext context, DomainEvent e)
             {
-                if (e is AnEvent) return "yay";
-
-                throw new ApplicationException("oh noes!!!!");
+                if (e is AnEvent)
+                {
+                    yield return "yay";
+                }
+                else
+                {
+                    throw new ApplicationException("oh noes!!!!");
+                }
             }
         }
     }

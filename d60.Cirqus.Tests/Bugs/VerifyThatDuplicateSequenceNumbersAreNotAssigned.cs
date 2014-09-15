@@ -2,7 +2,6 @@
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
-using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.Tests.MongoDb;
@@ -21,6 +20,8 @@ namespace d60.Cirqus.Tests.Bugs
             // arrange
             var eventStore = new MongoDbEventStore(MongoHelper.InitializeTestDatabase(), "events");
             var commandProcessor = new CommandProcessor(eventStore, new DefaultAggregateRootRepository(eventStore), new ConsoleOutEventDispatcher());
+
+            RegisterForDisposal(commandProcessor);
 
             var root1Id = Guid.NewGuid();
             var root2Id = Guid.NewGuid();
@@ -41,7 +42,7 @@ namespace d60.Cirqus.Tests.Bugs
         public void NoProblemoWithTestContext()
         {
             // arrange
-            var context = new TestContext();
+            var context = RegisterForDisposal(new TestContext());
 
             try
             {

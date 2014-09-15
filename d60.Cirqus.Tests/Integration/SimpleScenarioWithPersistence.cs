@@ -41,6 +41,8 @@ this time by using actual MongoDB underneath
             var viewManager = new ConsoleOutEventDispatcher();
 
             _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager);
+
+            RegisterForDisposal(_cirqus);
         }
 
         [Test]

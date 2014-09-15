@@ -6,7 +6,7 @@ namespace d60.Cirqus.Tests.MongoDb
 {
     public class MongoHelper
     {
-        public static MongoDatabase InitializeTestDatabase()
+        public static MongoDatabase InitializeTestDatabase(bool dropExistingDatabase = true)
         {
             var connectionStringSettings = ConfigurationManager.ConnectionStrings["mongotestdb"];
             if (connectionStringSettings == null)
@@ -18,13 +18,17 @@ namespace d60.Cirqus.Tests.MongoDb
             var databaseName = GetDatabaseName(url);
             var database = new MongoClient(url).GetServer().GetDatabase(databaseName);
 
-            Console.WriteLine("Dropping Mongo database '{0}'", databaseName);
-            database.Drop();
-            
+            Console.WriteLine("Using Mongo database '{0}'", databaseName);
+            if (dropExistingDatabase)
+            {
+                Console.WriteLine("Dropping Mongo database '{0}'", databaseName);
+                database.Drop();
+            }
+
             return database;
         }
 
-        static string GetDatabaseName(MongoUrl url)
+        public static string GetDatabaseName(MongoUrl url)
         {
             var databaseName = url.DatabaseName;
 
@@ -32,7 +36,9 @@ namespace d60.Cirqus.Tests.MongoDb
             int number;
 
             if (string.IsNullOrWhiteSpace(teamCityAgentNumber) || !int.TryParse(teamCityAgentNumber, out number))
+            {
                 return databaseName;
+            }
 
             return string.Format("{0}_{1}", databaseName, number);
         }

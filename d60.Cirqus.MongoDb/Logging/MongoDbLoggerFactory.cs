@@ -1,18 +1,16 @@
 ﻿using System;
 using d60.Cirqus.Logging;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 
 namespace d60.Cirqus.MongoDb.Logging
 {
     public class MongoDbLoggerFactory : CirqusLoggerFactory
     {
-        readonly MongoCollection<LogStatement> _logStatements;
+        readonly MongoCollection _logStatements;
 
         public MongoDbLoggerFactory(MongoDatabase database, string collectionName)
         {
-            _logStatements = database.GetCollection<LogStatement>(collectionName);
+            _logStatements = database.GetCollection(collectionName);
         }
 
         public override Logger GetLogger(Type ownerType)
@@ -22,10 +20,10 @@ namespace d60.Cirqus.MongoDb.Logging
 
         class MongoDbLogger : Logger
         {
-            readonly MongoCollection<LogStatement> _logStatements;
+            readonly MongoCollection _logStatements;
             readonly Type _ownerType;
 
-            public MongoDbLogger(MongoCollection<LogStatement> logStatements, Type ownerType)
+            public MongoDbLogger(MongoCollection logStatements, Type ownerType)
             {
                 _logStatements = logStatements;
                 _ownerType = ownerType;
@@ -46,22 +44,46 @@ namespace d60.Cirqus.MongoDb.Logging
                 Write(Level.Warn, SafeFormat(message, objs));
             }
 
+            public override void Warn(Exception exception, string message, params object[] objs)
+            {
+                Write(Level.Warn, SafeFormat(message, objs), exception);
+            }
+
             public override void Error(string message, params object[] objs)
             {
                 Write(Level.Error, SafeFormat(message, objs));
             }
 
-            void Write(Level level, string text)
+            public override void Error(Exception exception, string message, params object[] objs)
+            {
+                Write(Level.Error, SafeFormat(message, objs), exception);
+            }
+
+            void Write(Level level, string text, Exception exception = null)
             {
                 try
                 {
-                    _logStatements.Insert(new LogStatement
+                    if (exception == null)
                     {
-                        Level = level.ToString(),
-                        Text = text,
-                        Time = DateTime.Now,
-                        OwnerType = _ownerType.FullName
-                    }, WriteConcern.Unacknowledged);
+                        _logStatements.Insert(new
+                        {
+                            level = level.ToString(),
+                            text = text,
+                            time = DateTime.Now,
+                            owner = _ownerType.FullName
+                        }, WriteConcern.Unacknowledged);
+                    }
+                    else
+                    {
+                        _logStatements.Insert(new
+                        {
+                            level = level.ToString(),
+                            text = text,
+                            time = DateTime.Now,
+                            owner = _ownerType.FullName,
+                            exception = exception.ToString()
+                        }, WriteConcern.Unacknowledged);
+                    }
                 }
                 catch { }
             }
@@ -77,28 +99,6 @@ namespace d60.Cirqus.MongoDb.Logging
                     return message;
                 }
             }
-        }
-
-        class LogStatement
-        {
-            public LogStatement()
-            {
-                Id = ObjectId.GenerateNewId();
-            }
-
-            public ObjectId Id { get; private set; }
-
-            [BsonElement("level")]
-            public string Level { get; set; }
-
-            [BsonElement("time")]
-            public DateTime Time { get; set; }
-
-            [BsonElement("owner")]
-            public string OwnerType { get; set; }
-
-            [BsonElement("text")]
-            public string Text { get; set; }
         }
     }
 }

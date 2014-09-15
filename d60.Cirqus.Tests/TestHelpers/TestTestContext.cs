@@ -9,6 +9,7 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
 using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Old;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.TestHelpers.TestContext;
 
@@ -21,8 +22,43 @@ namespace d60.Cirqus.Tests.TestHelpers
 
         protected override void DoSetUp()
         {
-            _context = new TestContext();
+            _context = RegisterForDisposal(new TestContext());
         }
+
+        [Test]
+        public void CanGetSpecialMetaFields()
+        {
+            var myBirthday = new DateTime(1979, 3, 19, 12, 30, 00, DateTimeKind.Utc);
+            _context.SetCurrentTime(myBirthday);
+            var aggregateRootId = Guid.NewGuid();
+
+            _context.Save(aggregateRootId, new RandomEvent());
+
+            var domainEvent = _context.History.Single();
+            Assert.That(domainEvent.GetUtcTime(), Is.EqualTo(myBirthday));
+            Assert.That(domainEvent.GetAggregateRootId(), Is.EqualTo(aggregateRootId));
+
+        }
+
+        class RandomEvent : DomainEvent<Root>
+        {
+        }
+
+
+        [Test]
+        public void CopiesCommandHeadersToEventsLikeTheRealCommandProcessor()
+        {
+            // arrange
+            var id1 = Guid.NewGuid();
+
+            // act
+            _context.ProcessCommand(new RootCommand(id1) {Meta = {{"custom-header", "hej!!!11"}}});
+
+            // assert
+            Assert.That(_context.History.OfType<RootEvent>().Single().Meta.ContainsKey("custom-header"), Is.True);
+            Assert.That(_context.History.OfType<RootEvent>().Single().Meta["custom-header"], Is.EqualTo("hej!!!11"));
+        }
+
 
         [Test]
         public void CanGetFullyHydratedAggregateRootOutsideOfUnitOfWork()

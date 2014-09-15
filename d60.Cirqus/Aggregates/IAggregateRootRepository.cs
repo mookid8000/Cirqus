@@ -20,35 +20,4 @@ namespace d60.Cirqus.Aggregates
         /// </summary>
         bool Exists<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue, IUnitOfWork unitOfWork = null) where TAggregate : AggregateRoot;
     }
-
-    public class AggregateRootInfo<TAggregate> where TAggregate : AggregateRoot
-    {
-        public static AggregateRootInfo<TAggregate> New(TAggregate aggregateRoot)
-        {
-            return new AggregateRootInfo<TAggregate>(aggregateRoot, -1, -1);
-        }
-
-        public static AggregateRootInfo<TAggregate> Old(TAggregate aggregateRoot, long lastSeqNo, long lastGlobalSeqNo)
-        {
-            return new AggregateRootInfo<TAggregate>(aggregateRoot, lastSeqNo, lastGlobalSeqNo);
-        }
-
-        AggregateRootInfo(TAggregate aggregateRoot, long lastSeqNo, long lastGlobalSeqNo)
-        {
-            AggregateRoot = aggregateRoot;
-            LastSeqNo = lastSeqNo;
-            LastGlobalSeqNo = lastGlobalSeqNo;
-        }
-
-        public TAggregate AggregateRoot { get; private set; }
-
-        public long LastSeqNo { get; private set; }
-
-        public long LastGlobalSeqNo { get; private set; }
-
-        public bool IsNew
-        {
-            get { return LastSeqNo == -1; }
-        }
-    }
 }

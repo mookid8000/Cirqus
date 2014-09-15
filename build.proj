@@ -9,6 +9,7 @@
     <ToolsFolder>$(Root)\tools</ToolsFolder>
     <DefaultNuSpecVersion>VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT</DefaultNuSpecVersion>
     <ReleaseMaster>$(ToolsFolder)\ReleaseMaster\ReleaseMaster.exe</ReleaseMaster>
+    <IlMerge>$(ToolsFolder)\IlMerge\ilmerge.exe</IlMerge>
   </PropertyGroup>
 
   <ItemGroup>
@@ -48,11 +49,21 @@
   </Target>
 
   <Target Name="build_solution">
+    <PropertyGroup>
+      <BuildOutputDirectory>$(Root)\d60.Cirqus\bin\Release</BuildOutputDirectory>
+      <DestinationForMergedFile>$(BuildOutputDirectory)\merged</DestinationForMergedFile>
+      <ReferenceAssemblies>$(ProgramFiles)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5</ReferenceAssemblies>
+    </PropertyGroup>
+    
     <Message Text="Building everything"/>
 
     <MSBuild Projects="Cirqus.sln" Targets="rebuild" StopOnFirstFailure="true" Properties="Configuration=Release">
       <Output TaskParameter="TargetOutputs" ItemName="AssembliesBuilt" />
     </MSBuild>
+    
+    <MakeDir Directories="$(DestinationForMergedFile)"/>
+    
+    <Exec Command="$(IlMerge) /out:$(DestinationForMergedFile)\d60.Cirqus.dll $(BuildOutputDirectory)\d60.Cirqus.dll $(BuildOutputDirectory)\Newtonsoft.Json.dll /targetplatform:&quot;v4,$(ReferenceAssemblies)&quot; /internalize" />
   </Target>
 
   <Target Name="validate_version_is_present">
@@ -75,9 +86,6 @@
     <ItemGroup>
       <GeneratedPackages Include="$(BuildOutputFolder)/publish/*.nupkg"/>
     </ItemGroup>
-
-    <!--<Message Text="Pushing NuGet packages to NuGet.org..." />
-    <Exec Command="$(NuGetFolder)\nuget.exe push %(GeneratedPackages.FullPath)" />-->
 
     <Message Text="Pushing NuGet packages to d60 Nuggie Repo..." Condition="'$(NuggieRepoPath)' != ''"/>
     <Copy SourceFiles="@(GeneratedPackages)" DestinationFolder="$(NuggieRepoPath)" Condition="'$(NuggieRepoPath)' != ''"/>

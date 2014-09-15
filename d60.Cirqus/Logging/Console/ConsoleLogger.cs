@@ -28,9 +28,23 @@ namespace d60.Cirqus.Logging.Console
             Write(Level.Warn, SafeFormat(message, objs));
         }
 
+        public override void Warn(Exception exception, string message, params object[] objs)
+        {
+            var text = SafeFormat(message, objs);
+
+            Write(Level.Warn, SafeFormat("{0} - exception: {1}", text, exception));
+        }
+
         public override void Error(string message, params object[] objs)
         {
             Write(Level.Error, SafeFormat(message, objs));
+        }
+
+        public override void Error(Exception exception, string message, params object[] objs)
+        {
+            var text = SafeFormat(message, objs);
+
+            Write(Level.Error, SafeFormat("{0} - exception: {1}", text, exception));
         }
 
         void Write(Level level, string message)
@@ -40,7 +54,7 @@ namespace d60.Cirqus.Logging.Console
             System.Console.WriteLine("{0:O}|{1}|{2}|{3}", DateTime.Now, level, _ownerType.FullName, message);
         }
 
-        string SafeFormat(string message, object[] objs)
+        string SafeFormat(string message, params object[] objs)
         {
             try
             {

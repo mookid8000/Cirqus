@@ -52,6 +52,8 @@ namespace d60.Cirqus.Tests.Integration
                     },
                 }
             };
+
+            RegisterForDisposal(_cirqus);
         }
 
         [Test]

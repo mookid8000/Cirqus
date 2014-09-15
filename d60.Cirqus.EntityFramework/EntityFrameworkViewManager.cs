@@ -1,34 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.Migrations;
+using System.Data.Entity.Validation;
 using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Old;
 
 namespace d60.Cirqus.EntityFramework
 {
-    public class EntityFrameworkViewManager<TView> : IPushViewManager, IPullViewManager where TView : class, IViewInstance, ISubscribeTo, new()
+    public class EntityFrameworkViewManager<TViewInstance> : IPushViewManager, IPullViewManager where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
-        readonly ViewDispatcherHelper<TView> _dispatcherHelper = new ViewDispatcherHelper<TView>();
+        readonly ViewDispatcherHelper<TViewInstance> _dispatcherHelper = new ViewDispatcherHelper<TViewInstance>();
         readonly string _connectionStringOrName;
-        int _maxDomainEventsBetweenFlush;
+
+        int _maxDomainEventsBetweenFlush = 100;
         bool _initialized;
 
         public EntityFrameworkViewManager(string connectionStringOrName, bool createDatabaseIfnotExist = true)
         {
             _connectionStringOrName = connectionStringOrName;
 
-            Database.SetInitializer(new CreateDatabaseIfNotExists<GenericViewContext<TView>>());
-            //DbConfiguration.Loaded += (o, ea) => ea.ReplaceService<IDbContextFactory<GenericViewContext<TView>>>((s,k) => new Factory<TView>(_connectionStringOrName));
-            //Database.SetInitializer(new MigrateDatabaseToLatestVersion<GenericViewContext<TView>, GenericMigrationsThingie>());
+            Database.SetInitializer(new CreateDatabaseIfNotExists<GenericViewContext<TViewInstance>>());
 
             if (createDatabaseIfnotExist)
             {
-                using (var context = new GenericViewContext<TView>(_connectionStringOrName))
+                using (var context = new GenericViewContext<TViewInstance>(_connectionStringOrName))
                 {
                     //touch tables to create them
                     context.Database.Initialize(true);
@@ -48,22 +47,6 @@ END
 
 ", indexName, tableName));
                 }
-            }
-        }
-
-        class Factory<TView> : IDbContextFactory<GenericViewContext<TView>> where TView : class, IViewInstance
-        {
-            readonly string _connectionString;
-
-            public Factory(string connectionString)
-            {
-                Console.WriteLine("Whoaaaa, creating the factory!!!");
-                _connectionString = connectionString;
-            }
-
-            public GenericViewContext<TView> Create()
-            {
-                return new GenericViewContext<TView>(_connectionString);
             }
         }
 
@@ -101,11 +84,11 @@ END
                 var eventsList = batch.ToList();
                 try
                 {
-                    using (var genericViewBasse = new GenericViewContext<TView>(_connectionStringOrName))
+                    using (var genericViewBasse = new GenericViewContext<TViewInstance>(_connectionStringOrName))
                     {
                         foreach (var e in eventsList)
                         {
-                            if (!ViewLocator.IsRelevant<TView>(e)) continue;
+                            if (!ViewLocator.IsRelevant<TViewInstance>(e)) continue;
 
                             DispatchEvent(e, genericViewBasse, context);
                         }
@@ -124,7 +107,7 @@ END
 
         void PurgeViews()
         {
-            using (var dbContext = new GenericViewContext<TView>(_connectionStringOrName))
+            using (var dbContext = new GenericViewContext<TViewInstance>(_connectionStringOrName))
             {
                 var sql = "DELETE FROM " + dbContext.ViewTableName;
 
@@ -142,7 +125,7 @@ END
                                   " manager is properly initialized, either by initializing it manually, or by having" +
                                   " the event dispatcher do it (which is the preferred way when you\'re working with" +
                                   " an event dispatcher)",
-                        typeof(TView));
+                        typeof(TViewInstance));
 
                 throw new InvalidOperationException(message);
             }
@@ -157,11 +140,11 @@ END
 
             try
             {
-                using (var genericViewBasse = new GenericViewContext<TView>(_connectionStringOrName))
+                using (var genericViewBasse = new GenericViewContext<TViewInstance>(_connectionStringOrName))
                 {
                     foreach (var e in eventsList)
                     {
-                        if (!ViewLocator.IsRelevant<TView>(e)) continue;
+                        if (!ViewLocator.IsRelevant<TViewInstance>(e)) continue;
 
                         DispatchEvent(e, genericViewBasse, context);
                     }
@@ -183,7 +166,7 @@ END
                 // make sure we flush after each single domain event
                 foreach (var e in eventsList)
                 {
-                    using (var innerContext = new GenericViewContext<TView>(_connectionStringOrName))
+                    using (var innerContext = new GenericViewContext<TViewInstance>(_connectionStringOrName))
                     {
                         DispatchEvent(e, innerContext, context);
 
@@ -200,13 +183,13 @@ END
             }
         }
 
-        static void SaveChanges(GenericViewContext<TView> genericViewBasse)
+        static void SaveChanges(GenericViewContext<TViewInstance> genericViewBasse)
         {
             try
             {
                 genericViewBasse.SaveChanges();
             }
-            catch (System.Data.Entity.Validation.DbEntityValidationException entityValidationException)
+            catch (DbEntityValidationException entityValidationException)
             {
                 foreach (var error in entityValidationException.EntityValidationErrors)
                 {
@@ -214,47 +197,42 @@ END
 
                     foreach (var valError in error.ValidationErrors)
                     {
-                        Console.WriteLine(String.Format("Property: {0} has error: {1}", valError.PropertyName, valError.ErrorMessage));
+                        Console.WriteLine("Property: {0} has error: {1}", valError.PropertyName, valError.ErrorMessage);
                     }
                 }
             }
-            //catch (System.Data.Entity.Infrastructure.DbUpdateException updateException)
-            //{
-            //    foreach (var dbEntityEntry in updateException.Entries)
-            //    {
-            //        Console.WriteLine(dbEntityEntry.Entity.GetType().Name);
-            //    }
-
-            //    throw;
-            //}
         }
 
-        void DispatchEvent(DomainEvent domainEvent, GenericViewContext<TView> genericViewBasse, IViewContext context)
+        void DispatchEvent(DomainEvent domainEvent, GenericViewContext<TViewInstance> genericViewBasse, IViewContext context)
         {
-            var locator = ViewLocator.GetLocatorFor<TView>();
-            var id = locator.GetViewId(domainEvent);
+            var locator = ViewLocator.GetLocatorFor<TViewInstance>();
+            var viewIds = locator.GetVirewIds(context, domainEvent);
 
-            var instance = genericViewBasse.ViewCollection.Find(id)
-                           ?? CreateAndAddNewViewInstance(genericViewBasse, id);
+            foreach (var viewId in viewIds)
+            {
+                var instance = genericViewBasse.ViewCollection.Find(viewId)
+                               ?? CreateAndAddNewViewInstance(genericViewBasse, viewId);
 
-            var globalSequenceNumber = domainEvent.GetGlobalSequenceNumber();
-
-            if (globalSequenceNumber < instance.LastGlobalSequenceNumber) return;
-
-            _dispatcherHelper.DispatchToView(context, domainEvent, instance);
+                _dispatcherHelper.DispatchToView(context, domainEvent, instance);
+            }
         }
 
-        TView CreateAndAddNewViewInstance(GenericViewContext<TView> genericViewBasse, string id)
+        TViewInstance CreateAndAddNewViewInstance(GenericViewContext<TViewInstance> genericViewBasse, string viewId)
         {
-            var instance = new TView();
-            instance.Id = id;
+            var instance = new TViewInstance
+            {
+                Id = viewId, 
+                LastGlobalSequenceNumber = -1
+            };
+            
             genericViewBasse.ViewCollection.Add(instance);
+            
             return instance;
         }
 
         long FindMax()
         {
-            using (var context = new GenericViewContext<TView>(_connectionStringOrName))
+            using (var context = new GenericViewContext<TViewInstance>(_connectionStringOrName))
             {
                 return context.ViewCollection.Any()
                     ? context.ViewCollection.Max(v => v.LastGlobalSequenceNumber)
@@ -272,6 +250,7 @@ END
             public DbSet<TView> ViewCollection { get; set; }
 
             public readonly string ViewTableName = typeof(TView).Name;
+
             protected override void OnModelCreating(DbModelBuilder modelBuilder)
             {
                 modelBuilder.Entity<TView>().ToTable(ViewTableName);
@@ -281,25 +260,17 @@ END
             }
         }
 
-        class GenericMigrationsThingie : DbMigrationsConfiguration<GenericViewContext<TView>>
+        public TViewInstance Load(string id)
         {
-            public GenericMigrationsThingie()
-            {
-                AutomaticMigrationsEnabled = true;
-            }
-        }
-
-        public TView Load(string id)
-        {
-            using (var context = new GenericViewContext<TView>(_connectionStringOrName))
+            using (var context = new GenericViewContext<TViewInstance>(_connectionStringOrName))
             {
                 return context.ViewCollection.AsNoTracking().FirstOrDefault(v => v.Id == id);
             }
         }
 
-        public ILinqContext<TView> Linq()
+        public ILinqContext<TViewInstance> Linq()
         {
-            return new DisposableLinqContext<TView>(new GenericViewContext<TView>(_connectionStringOrName));
+            return new DisposableLinqContext<TViewInstance>(new GenericViewContext<TViewInstance>(_connectionStringOrName));
         }
 
         class DisposableLinqContext<TVIew> : ILinqContext<TVIew> where TVIew : class, IViewInstance

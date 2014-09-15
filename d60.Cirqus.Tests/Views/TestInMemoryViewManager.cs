@@ -7,6 +7,7 @@ using d60.Cirqus.Logging.Console;
 using d60.Cirqus.TestHelpers.Internals;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
+using d60.Cirqus.Views.ViewManagers.Old;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Views

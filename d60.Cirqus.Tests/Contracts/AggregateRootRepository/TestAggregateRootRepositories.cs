@@ -24,6 +24,7 @@ namespace d60.Cirqus.Tests.Contracts.AggregateRootRepository
         {
             var aggregateRootId = Guid.NewGuid();
 
+            _factory.SaveEvent<SomeEvent, SomeRoot>(NewEvent(aggregateRootId, 0));
             _factory.SaveEvent<SomeEvent, SomeRoot>(NewEvent(aggregateRootId, 1));
             _factory.SaveEvent<SomeEvent, SomeRoot>(NewEvent(aggregateRootId, 2));
             _factory.SaveEvent<SomeEvent, SomeRoot>(NewEvent(aggregateRootId, 3));
@@ -31,7 +32,7 @@ namespace d60.Cirqus.Tests.Contracts.AggregateRootRepository
 
             var instance = _repo.Get<SomeRoot>(aggregateRootId, new InMemoryUnitOfWork()).AggregateRoot;
 
-            Assert.That(instance.EventCounter, Is.EqualTo(4));
+            Assert.That(instance.EventCounter, Is.EqualTo(5));
         }
 
         static SomeEvent NewEvent(Guid aggregateRootId, int sequenceNumber)

@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using d60.Cirqus.Serialization;
 
 namespace d60.Cirqus.MsSql.Views
 {
-    public class SchemaHelper
+    class SchemaHelper
     {
         static readonly Dictionary<Type, Tuple<SqlDbType, string>> DbTypes =
             new Dictionary<Type, Tuple<SqlDbType, string>>
@@ -30,7 +31,13 @@ namespace d60.Cirqus.MsSql.Views
                 {typeof (HashSet<string>), Tuple.Create(SqlDbType.NVarChar, "max")},
                 {typeof (HashSet<int>), Tuple.Create(SqlDbType.NVarChar, "max")},
                 {typeof (string[]), Tuple.Create(SqlDbType.NVarChar, "max")},
+                
+                {typeof (DateTime), Tuple.Create(SqlDbType.DateTime2, "")},
+                {typeof (DateTimeOffset), Tuple.Create(SqlDbType.DateTimeOffset, "")},
+                {typeof (TimeSpan), Tuple.Create(SqlDbType.BigInt, "")},
             };
+
+        static readonly GenericSerializer _serializer = new GenericSerializer();
 
         public static Prop[] GetSchema<TView>()
         {
@@ -54,6 +61,7 @@ namespace d60.Cirqus.MsSql.Views
                         ColumnName = columnName,
                         SqlDbType = sqlDbType.Item1,
                         Size = sqlDbType.Item2,
+                        PropertyIsNullable = DetermineNullability(propertyInfo),
                         Getter = instance => GetGetter(propertyInfo, instance),
                         Setter = (instance, value) => GetSetter(propertyInfo, instance, value)
                     };
@@ -61,14 +69,25 @@ namespace d60.Cirqus.MsSql.Views
                 .ToArray();
         }
 
+        static bool DetermineNullability(PropertyInfo propertyInfo)
+        {
+            return !propertyInfo.GetCustomAttributes<NotNullAttribute>().Any();
+        }
+
         static void GetSetter(PropertyInfo propertyInfo, object instance, object value)
         {
             object valueToSet;
 
-            if (propertyInfo.PropertyType == typeof(List<string>))
+            if (propertyInfo.GetCustomAttributes<JsonAttribute>().Any())
+            {
+                var text = _serializer.Deserialize((string)value);
+
+                valueToSet = text;
+            }
+            else if (propertyInfo.PropertyType == typeof(List<string>))
             {
                 var tokens = ((string)value).Split(';');
-                
+
                 valueToSet = tokens.ToList();
             }
             else if (propertyInfo.PropertyType == typeof(List<int>))
@@ -103,9 +122,26 @@ namespace d60.Cirqus.MsSql.Views
             }
             else if (propertyInfo.PropertyType == typeof(string[]))
             {
-                var tokens = ((string) value).Split(';');
+                var tokens = ((string)value).Split(';');
 
                 valueToSet = tokens.ToArray();
+            }
+            else if (propertyInfo.PropertyType == typeof(DateTime))
+            {
+                valueToSet = value;
+            }
+            else if (propertyInfo.PropertyType == typeof(DateTimeOffset))
+            {
+                valueToSet = value;
+            }
+            else if (propertyInfo.PropertyType == typeof(TimeSpan))
+            {
+                var ticks = (long)value;
+                valueToSet = new TimeSpan(ticks);
+            }
+            else if (value == DBNull.Value)
+            {
+                valueToSet = null;
             }
             else
             {
@@ -117,77 +153,108 @@ namespace d60.Cirqus.MsSql.Views
 
         static object GetGetter(PropertyInfo propertyInfo, object instance)
         {
+            var value = propertyInfo.GetValue(instance);
+
+            if (propertyInfo.GetCustomAttributes<JsonAttribute>().Any())
+            {
+                var text = _serializer.Serialize(value);
+
+                return text;
+            }
+
             if (propertyInfo.PropertyType == typeof(List<string>))
             {
-                var stringList = (List<string>)propertyInfo.GetValue(instance);
+                var stringList = (List<string>)value;
 
                 return string.Join(";", stringList);
             }
 
             if (propertyInfo.PropertyType == typeof(List<int>))
             {
-                var stringList = (List<int>)propertyInfo.GetValue(instance);
+                var stringList = (List<int>)value;
 
                 return string.Join(";", stringList);
             }
 
             if (propertyInfo.PropertyType == typeof(List<double>))
             {
-                var stringList = (List<double>)propertyInfo.GetValue(instance);
+                var stringList = (List<double>)value;
 
                 return string.Join(";", stringList);
             }
 
             if (propertyInfo.PropertyType == typeof(List<decimal>))
             {
-                var stringList = (List<decimal>)propertyInfo.GetValue(instance);
+                var stringList = (List<decimal>)value;
 
                 return string.Join(";", stringList);
             }
 
             if (propertyInfo.PropertyType == typeof(HashSet<string>))
             {
-                var stringList = (HashSet<string>)propertyInfo.GetValue(instance);
+                var stringList = (HashSet<string>)value;
 
                 return string.Join(";", stringList);
             }
 
             if (propertyInfo.PropertyType == typeof(HashSet<int>))
             {
-                var stringList = (HashSet<int>)propertyInfo.GetValue(instance);
+                var stringList = (HashSet<int>)value;
 
                 return string.Join(";", stringList);
             }
 
             if (propertyInfo.PropertyType == typeof(string[]))
             {
-                var stringList = (string[])propertyInfo.GetValue(instance);
+                var stringList = (string[])value;
 
                 return string.Join(";", stringList);
             }
 
-            return propertyInfo.GetValue(instance);
+            if (propertyInfo.PropertyType == typeof(DateTime))
+            {
+                return ((DateTime)value).ToUniversalTime();
+            }
+
+            if (propertyInfo.PropertyType == typeof(DateTimeOffset))
+            {
+                return (DateTimeOffset)value;
+            }
+
+            if (propertyInfo.PropertyType == typeof(TimeSpan))
+            {
+                return ((TimeSpan)value).Ticks;
+            }
+
+            return value;
         }
 
         static Tuple<SqlDbType, string> MapType(Type propertyType)
         {
-            try
-            {
-                return DbTypes[propertyType];
-            }
-            catch (Exception exception)
-            {
-                throw new ArgumentException(string.Format("Could not map .NET type {0} to a proper SqlDbType", propertyType), exception);
-            }
+            return DbTypes.ContainsKey(propertyType)
+                ? DbTypes[propertyType]
+                : Tuple.Create(SqlDbType.NVarChar, "max");
         }
     }
 
-    public class Prop
+    class   Prop
     {
         public bool IsPrimaryKey
         {
             get { return ColumnName.Equals("Id", StringComparison.InvariantCultureIgnoreCase); }
         }
+
+        public bool IsGlobalSequenceNumber
+        {
+            get { return ColumnName.Equals("LastGlobalSequenceNumber", StringComparison.InvariantCultureIgnoreCase); }
+        }
+
+        public bool Matches(Prop otherProp)
+        {
+            return ColumnName.Equals(otherProp.ColumnName, StringComparison.InvariantCultureIgnoreCase)
+                   && SqlDbType == otherProp.SqlDbType;
+        }
+
         public string ColumnName { get; set; }
         public Func<object, object> Getter { get; set; }
         public Action<object, object> Setter { get; set; }
@@ -197,6 +264,18 @@ namespace d60.Cirqus.MsSql.Views
         {
             get { return "@" + ColumnName; }
         }
+
+        public bool IsNullable
+        {
+            get
+            {
+                return !IsPrimaryKey
+                       && !IsGlobalSequenceNumber
+                       && PropertyIsNullable;
+            }
+        }
+
+        public bool PropertyIsNullable { get; set; }
 
         public override string ToString()
         {

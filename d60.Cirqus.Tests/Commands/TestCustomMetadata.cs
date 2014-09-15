@@ -25,7 +25,7 @@ namespace d60.Cirqus.Tests.Commands
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _cirqus = new CommandProcessor(_eventStore, _aggregateRootRepository, viewManager);
+            _cirqus = RegisterForDisposal(new CommandProcessor(_eventStore, _aggregateRootRepository, viewManager));
         }
 
         [Test]

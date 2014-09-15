@@ -40,10 +40,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Config\MsSqlConfigurationExtensions.cs" />
     <Compile Include="Events\MsSqlEventStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlHelper.cs" />
+    <Compile Include="Views\ColumnAttribute.cs" />
+    <Compile Include="Views\JsonAttribute.cs" />
     <Compile Include="Views\MsSqlViewManager.cs" />
+    <Compile Include="Views\NewMsSqlViewManager.cs" />
+    <Compile Include="Views\NotNullAttribute.cs" />
     <Compile Include="Views\SchemaHelper.cs" />
   </ItemGroup>
   <ItemGroup>

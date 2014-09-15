@@ -26,7 +26,11 @@ namespace d60.Cirqus.Tests.Integration
         {
             var eventStore = GetEventStore(eventStoreOption);
 
-            return new CommandProcessor(eventStore, new DefaultAggregateRootRepository(eventStore), new ConsoleOutEventDispatcher());
+            var commandProcessor = new CommandProcessor(eventStore, new DefaultAggregateRootRepository(eventStore), new ConsoleOutEventDispatcher());
+
+            RegisterForDisposal(commandProcessor);
+
+            return commandProcessor;
         }
 
         IEventStore GetEventStore(EventStoreOption eventStoreOption)

@@ -67,9 +67,19 @@ namespace d60.Cirqus.Tests.Stubs
                 Emit(Level.Warn, string.Format(message, objs));
             }
 
+            public override void Warn(Exception exception, string message, params object[] objs)
+            {
+                Emit(Level.Warn, string.Format("{0} - exception: {1}", string.Format(message, objs), exception));
+            }
+
             public override void Error(string message, params object[] objs)
             {
                 Emit(Level.Error, string.Format(message, objs));
+            }
+
+            public override void Error(Exception exception, string message, params object[] objs)
+            {
+                Emit(Level.Error, string.Format("{0} - exception: {1}", string.Format(message, objs), exception));
             }
 
             void Emit(Level level, string text)

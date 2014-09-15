@@ -11,7 +11,7 @@ namespace d60.Cirqus.PostgreSql
 {
     public class PostgreSqlEventStore : IEventStore
     {
-        readonly Serializer _serializer = new Serializer("<events>");
+        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
         readonly string _connectionString;
         readonly string _tableName;
 
@@ -126,7 +126,7 @@ INSERT INTO ""{0}"" (
                             cmd.Parameters.AddWithValue("aggId", e.GetAggregateRootId());
                             cmd.Parameters.AddWithValue("seqNo", e.Meta[DomainEvent.MetadataKeys.SequenceNumber]);
                             cmd.Parameters.AddWithValue("globSeqNo", e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber]);
-                            cmd.Parameters.AddWithValue("data", _serializer.Serialize(e));
+                            cmd.Parameters.AddWithValue("data", _domainEventSerializer.Serialize(e));
 
                             cmd.ExecuteNonQuery();
                         }
@@ -196,7 +196,7 @@ INSERT INTO ""{0}"" (
                             {
                                 var data = (string)reader["data"];
 
-                                domainEvents.Add(_serializer.Deserialize(data));
+                                domainEvents.Add(_domainEventSerializer.Deserialize(data));
                             }
                         }
                     }
@@ -228,7 +228,7 @@ SELECT ""data"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY ""globSeqNo
                             {
                                 var data = (string)reader["data"];
 
-                                yield return _serializer.Deserialize(data);
+                                yield return _domainEventSerializer.Deserialize(data);
                             }
                         }
                     }

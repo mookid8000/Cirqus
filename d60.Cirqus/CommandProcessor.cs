@@ -4,6 +4,7 @@ using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Config;
+using d60.Cirqus.Config.Configurers;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
@@ -21,6 +22,11 @@ namespace d60.Cirqus
         static CommandProcessor()
         {
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+        }
+
+        public static ILoggingAndEventStoreConfigurationBuilderApi With()
+        {
+            return new CommandProcessorConfigurationBuilder();
         }
 
         readonly Options _options = new Options();
@@ -60,7 +66,7 @@ namespace d60.Cirqus
         /// <summary>
         /// Processes the specified command by invoking the generic eventDispatcher method
         /// </summary>
-        public void ProcessCommand(Command command)
+        public CommandProcessingResult ProcessCommand(Command command)
         {
             if (!_initialized)
             {
@@ -118,6 +124,8 @@ namespace d60.Cirqus
 
                 throw new ApplicationException(message, exception);
             }
+
+            return new CommandProcessingResult(emittedDomainEvents.Select(d => d.GetGlobalSequenceNumber()).ToArray());
         }
 
         IEnumerable<DomainEvent> InnerProcessCommand(Command command)
@@ -136,6 +144,35 @@ namespace d60.Cirqus
             }
 
             return emittedEvents;
+        }
+
+        internal event Action Disposed = delegate { };
+
+        bool _disposed;
+
+        ~CommandProcessor()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
+            {
+                _logger.Info("Disposing command processor");
+
+                Disposed();
+            }
+
+            _disposed = true;
         }
     }
 }

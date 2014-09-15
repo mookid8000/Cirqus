@@ -28,6 +28,9 @@ namespace d60.Cirqus.Tests.MongoDb
             var eventStore = new MongoDbEventStore(_database, "events");
             var aggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
             var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, new ConsoleOutEventDispatcher());
+            
+            RegisterForDisposal(commandProcessor);
+            
             commandProcessor.Initialize();
 
             var logStatements = _database.GetCollection("logs").FindAll().ToList();

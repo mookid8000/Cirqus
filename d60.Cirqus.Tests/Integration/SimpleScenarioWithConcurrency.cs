@@ -44,23 +44,27 @@ many time in parallel, and after some time the consistency of everything is veri
             var viewManager = new ConsoleOutEventDispatcher();
 
             _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager);
+
+            RegisterForDisposal(_cirqus);
         }
 
-        [TestCase(1, 1000, 40)]
-        [TestCase(2, 1000, 40)]
-        [TestCase(3, 1000, 40)]
-        [TestCase(5, 1000, 40)]
-        [TestCase(1, 1000, 500)]
-        [TestCase(2, 1000, 500)]
-        [TestCase(3, 1000, 500)]
-        [TestCase(5, 1000, 500)]
+        [TestCase(1, 100, 10)]
+        [TestCase(2, 100, 10)]
+        [TestCase(3, 100, 10)]
+        [TestCase(5, 100, 10)]
+        [TestCase(1, 1000, 40, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(2, 1000, 40, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(3, 1000, 40, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(5, 1000, 40, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(1, 1000, 500, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(2, 1000, 500, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(3, 1000, 500, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(5, 1000, 500, Ignore = TestCategories.IgnoreLongRunning)]
         public void RunEntirePipelineAndProbePrivatesForMultipleAggregates(int parallellism, int numberOfOperations, int numberOfAggregates)
         {
             var description = string.Format("{0} threads performing {1} ops distributed evenly among {2} aggregate roots", parallellism, numberOfOperations, numberOfAggregates);
 
             TakeTime(description, () => RunTest(parallellism, numberOfOperations, numberOfAggregates));
-
-            var eventsCollection = _mongoDatabase.GetCollection("events");
         }
 
         void RunTest(int parallellism, int numberOfOperations, int numberOfAggregates)

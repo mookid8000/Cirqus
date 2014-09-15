@@ -22,7 +22,7 @@ namespace d60.Cirqus.Tests.MsSql
             MsSqlTestHelper.DropTable("View");
 
             _viewManager = new EntityFrameworkViewManager<ViewInstance>(MsSqlTestHelper.ConnectionString);
-            _context = new TestContext().AddViewManager(_viewManager);
+            _context = RegisterForDisposal(new TestContext()).AddViewManager(_viewManager);
         }
 
         [Test]

@@ -11,6 +11,7 @@ using d60.Cirqus.TestHelpers.Internals;
 using d60.Cirqus.Tests.Stubs;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
+using d60.Cirqus.Views.ViewManagers.Old;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Views
@@ -35,6 +36,8 @@ namespace d60.Cirqus.Tests.Views
             _cirqus = new CommandProcessor(eventStore, basicAggregateRootRepository, new ViewManagerEventDispatcher(basicAggregateRootRepository, _viewManager1, _viewManager2, _viewManager3));
 
             _cirqus.Initialize();
+
+            RegisterForDisposal(_cirqus);
         }
 
         [Test]
@@ -72,7 +75,7 @@ namespace d60.Cirqus.Tests.Views
             _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
             _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
 
-            var view = _viewManager1.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(aggregateRootId));
+            var view = _viewManager1.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(aggregateRootId));
 
             Assert.That(view.Calls.All(c => c.Item1 == c.Item2), "Registered calls contained a call where the version of the loaded aggregate root did not correspond to the version of the event that the view got to process: {0}",
                 string.Join(", ", view.Calls.Select(c => string.Format("{0}/{1}", c.Item1, c.Item2))));
@@ -89,7 +92,7 @@ namespace d60.Cirqus.Tests.Views
             _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
             _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
 
-            var view = _viewManager2.Load(InstancePerAggregateRootLocator.GetViewIdFromGuid(aggregateRootId));
+            var view = _viewManager2.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(aggregateRootId));
 
             Assert.That(view, Is.Not.Null);
 

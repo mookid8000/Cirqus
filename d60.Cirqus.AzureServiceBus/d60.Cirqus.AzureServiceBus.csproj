@@ -57,6 +57,7 @@
     <Compile Include="AzureHelpers.cs" />
     <Compile Include="AzureServiceBusEventDispatcherReceiver.cs" />
     <Compile Include="AzureServiceBusEventDispatcherSender.cs" />
+    <Compile Include="Config\AzureServiceBusConfigurationExtensions.cs" />
     <Compile Include="DispatchNotification.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serializer.cs" />
