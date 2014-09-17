@@ -252,3 +252,8 @@
 ## 0.20.3
 
 * `NewMsSqlViewManager` can automagically drop & recreate the table when necessary
+
+## 0.20.4
+
+* Added `HandlerViewLocator` that allows for implementing `IGetViewIdsFor<TDomainEvent>` where `TDomainEvent` is a domain event or an interface - makes view ID mapping really neat in some situations.
+

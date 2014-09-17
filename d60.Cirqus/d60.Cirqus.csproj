@@ -108,6 +108,8 @@
     <Compile Include="Snapshotting\Sturdylizer.cs" />
     <Compile Include="Views\AsyncEventDispatcher.cs" />
     <Compile Include="Views\CompositeEventDispatcher.cs" />
+    <Compile Include="Views\ViewManagers\HandlerViewLocator.cs" />
+    <Compile Include="Views\ViewManagers\IGetViewIdsFor.cs" />
     <Compile Include="Views\ViewManagers\New\DefaultViewContext.cs" />
     <Compile Include="Views\ViewManagers\New\IManagedView.cs" />
     <Compile Include="Views\ViewManagers\New\NewViewManagerEventDispatcher.cs" />
