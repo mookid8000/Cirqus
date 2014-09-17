@@ -157,7 +157,7 @@ namespace d60.Cirqus.MongoDb.Views.Old
 
                 if (globalSequenceNumberOfThisEvent <= _lastGlobalSequenceNumberProcessed) continue;
 
-                var viewIds = locator.GetVirewIds(context, e);
+                var viewIds = locator.GetAffectedViewIds(context, e);
 
                 foreach (var viewId in viewIds)
                 {

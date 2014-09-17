@@ -58,7 +58,7 @@ namespace d60.Cirqus.Views.ViewManagers.Old
 
                 if (!ViewLocator.IsRelevant<TView>(e)) continue;
 
-                var viewIds = viewLocator.GetVirewIds(context, e);
+                var viewIds = viewLocator.GetAffectedViewIds(context, e);
 
                 foreach (var viewId in viewIds)
                 {

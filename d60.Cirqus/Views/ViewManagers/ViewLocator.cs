@@ -36,7 +36,10 @@ namespace d60.Cirqus.Views.ViewManagers
         /// </summary>
         protected abstract IEnumerable<string> GetViewIds(IViewContext context, DomainEvent e);
 
-        public IEnumerable<string> GetVirewIds(IViewContext context, DomainEvent e)
+        /// <summary>
+        /// Gets the IDs of the views to which the domain event must be dispatchers
+        /// </summary>
+        public IEnumerable<string> GetAffectedViewIds(IViewContext context, DomainEvent e)
         {
             context.CurrentEvent = e;
 
