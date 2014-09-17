@@ -19,7 +19,7 @@ using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Views.NewViewManager
 {
-    [TestFixture]
+    [TestFixture, Category(TestCategories.MongoDb)]
     public class TestNewViewManagerEventDispatcher : FixtureBase
     {
         NewViewManagerEventDispatcher _dispatcher;
