@@ -11,10 +11,10 @@ using TestContext = d60.Cirqus.TestHelpers.TestContext;
 
 namespace d60.Cirqus.Tests.Contracts.Views
 {
-    [TestFixture(typeof(MongoDbManagedViewFactory), Category = TestCategories.MongoDb)]
-    [TestFixture(typeof(MsSqlManagedViewFactory), Category = TestCategories.MsSql)]
-    [TestFixture(typeof(InMemoryManagedViewFactory))]
-    public class GeneralManagedViewTests<TFactory> : FixtureBase where TFactory : AbstractManagedViewFactory, new()
+    [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
+    [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
+    [TestFixture(typeof(InMemoryViewManagerFactory))]
+    public class GeneralViewManagerTests<TFactory> : FixtureBase where TFactory : AbstractViewManagerFactory, new()
     {
         readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(5);
 
@@ -35,7 +35,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
         {
             // arrange
             Console.WriteLine("Adding view manager for GeneratedIds");
-            var view = _factory.GetManagedView<GeneratedIds>();
+            var view = _factory.GetViewManager<GeneratedIds>();
             _context.AddViewManager(view);
 
             // act
@@ -69,7 +69,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             // act
             Console.WriteLine("Adding view manager for GeneratedIds");
-            var view = _factory.GetManagedView<GeneratedIds>();
+            var view = _factory.GetViewManager<GeneratedIds>();
             _context.AddViewManager(view);
 
             // assert
@@ -91,7 +91,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
         {
             // arrange
             Console.WriteLine("Adding view manager for GeneratedIds");
-            var view = _factory.GetManagedView<GeneratedIds>();
+            var view = _factory.GetViewManager<GeneratedIds>();
             _context.AddViewManager(view);
 
             Console.WriteLine("Processing 2 commands");
@@ -120,7 +120,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
         {
             // arrange
             const string customHeaderKey = "custom-header";
-            var view = _factory.GetManagedView<HeaderCounter>();
+            var view = _factory.GetViewManager<HeaderCounter>();
             _context.AddViewManager(view);
 
             // act

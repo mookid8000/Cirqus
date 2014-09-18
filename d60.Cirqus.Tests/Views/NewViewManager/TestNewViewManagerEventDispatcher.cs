@@ -86,13 +86,13 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
         public enum BlockOption
         {
             NoBlock,
-            BlockOnManagedView,
             BlockOnViewManager,
+            BlockOnEventDispatcher,
         }
 
         [TestCase(BlockOption.NoBlock)]
-        [TestCase(BlockOption.BlockOnManagedView)]
         [TestCase(BlockOption.BlockOnViewManager)]
+        [TestCase(BlockOption.BlockOnEventDispatcher)]
         public void CanBlockUntilViewIsUpdated(BlockOption blockOption)
         {
             // arrange
@@ -110,11 +110,12 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             // act
             switch (blockOption)
             {
-                case BlockOption.BlockOnManagedView:
+                case BlockOption.BlockOnViewManager:
                     Console.WriteLine("Waiting for {0} on the view...", result.GetNewPosition());
                     slowView.WaitUntilProcessed(result, TimeSpan.FromSeconds(2)).Wait();
                     break;
-                case BlockOption.BlockOnViewManager:
+
+                case BlockOption.BlockOnEventDispatcher:
                     Console.WriteLine("Waiting for {0} on the dispatcher...", result.GetNewPosition());
                     _dispatcher.WaitUntilProcessed<SlowView>(result, TimeSpan.FromSeconds(2)).Wait();
                     break;

@@ -1,7 +1,7 @@
 ﻿namespace d60.Cirqus.Views.ViewManagers
 {
     /// <summary>
-    /// Typed API for a managed view that allows for addressing type-specific view managers from the outside of the dispatcher
+    /// Typed API for a view manager that allows for addressing type-specific view managers from the outside of the dispatcher
     /// </summary>
     public interface IViewManager<TViewInstance> : IViewManager where TViewInstance : IViewInstance
     {

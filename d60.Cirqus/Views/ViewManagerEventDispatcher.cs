@@ -25,7 +25,7 @@ namespace d60.Cirqus.Views
         /// <summary>
         /// Use a concurrent queue to store views so that it's safe to traverse in the background even though new views may be added to it at runtime
         /// </summary>
-        readonly ConcurrentQueue<IViewManager> _managedViews = new ConcurrentQueue<IViewManager>();
+        readonly ConcurrentQueue<IViewManager> _viewManagers = new ConcurrentQueue<IViewManager>();
 
         readonly ConcurrentQueue<PieceOfWork> _work = new ConcurrentQueue<PieceOfWork>();
 
@@ -45,7 +45,7 @@ namespace d60.Cirqus.Views
             _aggregateRootRepository = aggregateRootRepository;
             _eventStore = eventStore;
 
-            viewManagers.ToList().ForEach(view => _managedViews.Enqueue(view));
+            viewManagers.ToList().ForEach(view => _viewManagers.Enqueue(view));
 
             _worker = new Thread(DoWork) { IsBackground = true };
 
@@ -58,14 +58,14 @@ namespace d60.Cirqus.Views
 
         public void AddViewManager(IViewManager viewManager)
         {
-            _logger.Info("Adding managed view: {0}", viewManager);
+            _logger.Info("Adding view manager: {0}", viewManager);
 
-            _managedViews.Enqueue(viewManager);
+            _viewManagers.Enqueue(viewManager);
         }
 
         public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
         {
-            _logger.Info("Initializing view manager with managed views: {0}", string.Join(", ", _managedViews));
+            _logger.Info("Initializing event dispatcher with view managers: {0}", string.Join(", ", _viewManagers));
 
             _work.Enqueue(PieceOfWork.FullCatchUp(purgeExistingViews: purgeExistingViews));
 
@@ -88,7 +88,7 @@ namespace d60.Cirqus.Views
 
         public async Task WaitUntilProcessed<TViewInstance>(CommandProcessingResult result, TimeSpan timeout) where TViewInstance : IViewInstance
         {
-            await Task.WhenAll(_managedViews
+            await Task.WhenAll(_viewManagers
                 .OfType<IViewManager<TViewInstance>>()
                 .Select(v => v.WaitUntilProcessed(result, timeout))
                 .ToArray());
@@ -96,7 +96,7 @@ namespace d60.Cirqus.Views
 
         public async Task WaitUntilProcessed(CommandProcessingResult result, TimeSpan timeout)
         {
-            await Task.WhenAll(_managedViews
+            await Task.WhenAll(_viewManagers
                 .Select(v => v.WaitUntilProcessed(result, timeout))
                 .ToArray());
         }
@@ -147,7 +147,7 @@ namespace d60.Cirqus.Views
 
                 try
                 {
-                    CatchUpTo(sequenceNumberToCatchUpTo, _eventStore, pieceOfWork.CanUseCachedInformation, pieceOfWork.PurgeViewsFirst, _managedViews.ToArray());
+                    CatchUpTo(sequenceNumberToCatchUpTo, _eventStore, pieceOfWork.CanUseCachedInformation, pieceOfWork.PurgeViewsFirst, _viewManagers.ToArray());
                 }
                 catch (Exception exception)
                 {
@@ -165,13 +165,13 @@ namespace d60.Cirqus.Views
 
             if (purgeViewsFirst)
             {
-                foreach (var managedView in viewManagers)
+                foreach (var viewManager in viewManagers)
                 {
-                    managedView.Purge();
+                    viewManager.Purge();
                 }
             }
 
-            // get the lowest position among all the managed views
+            // get the lowest position among all the view managers
             var lowestSequenceNumberSuccessfullyProcessed = viewManagers
                 .Min(v => v.GetPosition(canGetFromCache: cachedInformationAllowed));
 
@@ -188,11 +188,11 @@ namespace d60.Cirqus.Views
                 var context = new DefaultViewContext(_aggregateRootRepository);
                 var list = batch.ToList();
 
-                foreach (var managedView in viewManagers)
+                foreach (var viewManager in viewManagers)
                 {
-                    _logger.Debug("Dispatching batch of {0} events to {1}", list.Count, managedView);
+                    _logger.Debug("Dispatching batch of {0} events to {1}", list.Count, viewManager);
 
-                    managedView.Dispatch(context, list);
+                    viewManager.Dispatch(context, list);
                 }
             }
         }

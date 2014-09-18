@@ -13,10 +13,10 @@ using TestContext = d60.Cirqus.TestHelpers.TestContext;
 
 namespace d60.Cirqus.Tests.Contracts.Views
 {
-    [TestFixture(typeof(MongoDbManagedViewFactory), Category = TestCategories.MongoDb)]
-    [TestFixture(typeof(MsSqlManagedViewFactory), Category = TestCategories.MsSql)]
-    [TestFixture(typeof(InMemoryManagedViewFactory))]
-    public class LoadingStuffDuringViewLocation<TFactory> : FixtureBase where TFactory : AbstractManagedViewFactory, new()
+    [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
+    [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
+    [TestFixture(typeof(InMemoryViewManagerFactory))]
+    public class LoadingStuffDuringViewLocation<TFactory> : FixtureBase where TFactory : AbstractViewManagerFactory, new()
     {
         TFactory _factory;
         TestContext _context;
@@ -33,7 +33,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
         [Test]
         public void CanLoadRootsDuringViewLocation()
         {
-            _context.AddViewManager(_factory.GetManagedView<CountTheNodes>());
+            _context.AddViewManager(_factory.GetViewManager<CountTheNodes>());
 
             // arrange
             var rootNodeId = Guid.NewGuid();

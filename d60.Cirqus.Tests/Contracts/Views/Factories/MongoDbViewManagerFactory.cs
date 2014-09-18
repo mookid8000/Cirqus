@@ -5,20 +5,20 @@ using MongoDB.Driver;
 
 namespace d60.Cirqus.Tests.Contracts.Views.Factories
 {
-    public class MongoDbManagedViewFactory : AbstractManagedViewFactory
+    public class MongoDbViewManagerFactory : AbstractViewManagerFactory
     {
         readonly MongoDatabase _database;
 
-        public MongoDbManagedViewFactory()
+        public MongoDbViewManagerFactory()
         {
             _database = MongoHelper.InitializeTestDatabase();
         }
 
-        protected override IViewManager<TViewInstance> CreateManagedView<TViewInstance>()
+        protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>()
         {
-            var managedView = new MongoDbViewManager<TViewInstance>(_database);
+            var viewManager = new MongoDbViewManager<TViewInstance>(_database);
 
-            return managedView;
+            return viewManager;
         }
     }
 }

@@ -4,18 +4,18 @@ using d60.Cirqus.Views.ViewManagers;
 
 namespace d60.Cirqus.Tests.Contracts.Views.Factories
 {
-    public class MsSqlManagedViewFactory : AbstractManagedViewFactory
+    public class MsSqlViewManagerFactory : AbstractViewManagerFactory
     {
         readonly string _connectionString;
 
-        public MsSqlManagedViewFactory()
+        public MsSqlViewManagerFactory()
         {
             MsSqlTestHelper.EnsureTestDatabaseExists();
 
             _connectionString = MsSqlTestHelper.ConnectionString;
         }
 
-        protected override IViewManager<TViewInstance> CreateManagedView<TViewInstance>()
+        protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>()
         {
             var tableName = typeof(TViewInstance).Name;
 

@@ -13,9 +13,9 @@ using TestContext = d60.Cirqus.TestHelpers.TestContext;
 
 namespace d60.Cirqus.Tests.Contracts.Views
 {
-    [TestFixture(typeof(MongoDbManagedViewFactory), Category = TestCategories.MongoDb)]
-    [TestFixture(typeof(MsSqlManagedViewFactory), Category = TestCategories.MsSql)]
-    public class ViewLocators<TViewManagerFactory> : FixtureBase where TViewManagerFactory : AbstractManagedViewFactory, new()
+    [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
+    [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
+    public class ViewLocators<TViewManagerFactory> : FixtureBase where TViewManagerFactory : AbstractViewManagerFactory, new()
     {
         MongoDatabase _database;
         MongoDbEventStore _eventStore;
@@ -33,8 +33,8 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             _factory = new TViewManagerFactory();
 
-            _globalInstanceViewManager = _factory.GetManagedView<GlobalInstanceViewInstance>();
-            _instancePerAggregateRootViewManager = _factory.GetManagedView<InstancePerAggregateRootView>();
+            _globalInstanceViewManager = _factory.GetViewManager<GlobalInstanceViewInstance>();
+            _instancePerAggregateRootViewManager = _factory.GetViewManager<InstancePerAggregateRootView>();
 
             _context = RegisterForDisposal(new TestContext());
         }
