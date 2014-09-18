@@ -22,7 +22,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
         TViewManagerFactory _factory;
         TestContext _context;
-        
+
         IViewManager<InstancePerAggregateRootView> _instancePerAggregateRootViewManager;
         IViewManager<GlobalInstanceViewInstance> _globalInstanceViewManager;
 
@@ -36,7 +36,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _globalInstanceViewManager = _factory.GetViewManager<GlobalInstanceViewInstance>();
             _instancePerAggregateRootViewManager = _factory.GetViewManager<InstancePerAggregateRootView>();
 
-            _context = RegisterForDisposal(new TestContext());
+            _context = RegisterForDisposal(new TestContext { Asynchronous = true });
         }
 
 
@@ -90,7 +90,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _context.AddViewManager(_globalInstanceViewManager);
 
             Assert.DoesNotThrow(() => _context.Save(Guid.NewGuid(), new JustAnEvent()));
-         
+
             Assert.DoesNotThrow(() => _context.Save(Guid.NewGuid(), new AnotherEvent()));
         }
 
@@ -104,7 +104,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             }
         }
-        
+
         class CustomizedViewLocator : ViewLocator
         {
             protected override IEnumerable<string> GetViewIds(IViewContext context, DomainEvent e)

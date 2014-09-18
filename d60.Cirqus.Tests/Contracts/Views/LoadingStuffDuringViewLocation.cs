@@ -27,7 +27,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             _factory = new TFactory();
 
-            _context = RegisterForDisposal(new TestContext());
+            _context = RegisterForDisposal(new TestContext { Asynchronous = true });
         }
 
         [Test]
@@ -46,7 +46,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
                 child1.AttachTo(node);
                 child2.AttachTo(node);
-            
+
                 var subChild1 = uow.Get<Node>(Guid.NewGuid());
                 var subChild2 = uow.Get<Node>(Guid.NewGuid());
                 var subChild3 = uow.Get<Node>(Guid.NewGuid());
@@ -91,7 +91,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
                     node = context.Load<Node>(node.ParentNodeId);
                 }
 
-                return new[] {node.Id.ToString()};
+                return new[] { node.Id.ToString() };
             }
         }
 
