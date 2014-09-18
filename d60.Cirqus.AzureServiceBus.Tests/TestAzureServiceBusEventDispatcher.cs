@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using d60.Cirqus.Dispatch;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.TestHelpers.Internals;

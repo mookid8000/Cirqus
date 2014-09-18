@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using d60.Cirqus.Dispatch;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 

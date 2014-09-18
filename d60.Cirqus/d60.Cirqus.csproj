@@ -59,9 +59,11 @@
     <Compile Include="Commands\ICommandMapper.cs" />
     <Compile Include="CommandProcessor.cs" />
     <Compile Include="Commands\DefaultCommandContext.cs" />
+    <Compile Include="Config\Configurers\ConfigurationContainer.cs" />
     <Compile Include="Config\Configurers\ILoggingAndEventStoreConfigurationBuilderApi.cs" />
     <Compile Include="Config\Configurers\LoggingConfigurationBuilder.cs" />
     <Compile Include="Config\Configurers\ResolutionContext.cs" />
+    <Compile Include="Config\Configurers\ResolutionException.cs" />
     <Compile Include="Config\CoreConfigurationExtensions.cs" />
     <Compile Include="Config\Configurers\IAggregateRootRepositoryConfigurationBuilderApi.cs" />
     <Compile Include="Config\Configurers\IEventDispatcherConfigurationBuilderApi.cs" />
@@ -72,6 +74,7 @@
     <Compile Include="Config\Configurers\EventStoreConfigurationBuilder.cs" />
     <Compile Include="Config\Configurers\IRegistrar.cs" />
     <Compile Include="Config\Configurers\OptionsConfigurationBuilder.cs" />
+    <Compile Include="Dispatch\EventDispatcher.cs" />
     <Compile Include="ICommandProcessor.cs" />
     <Compile Include="Config\Options.cs" />
     <Compile Include="Config\Retryer.cs" />
@@ -125,7 +128,7 @@
     <Compile Include="Views\ViewManagers\Old\IViewManager.cs" />
     <Compile Include="Views\ViewManagers\ViewDispatcherHelper.cs" />
     <Compile Include="Views\ViewManagers\ViewLocator.cs" />
-    <Compile Include="Events\IEventDispatcher.cs" />
+    <Compile Include="Dispatch\IEventDispatcher.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

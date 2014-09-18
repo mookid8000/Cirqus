@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Policy;
 
 namespace d60.Cirqus.Config.Configurers
 {
@@ -22,7 +21,7 @@ namespace d60.Cirqus.Config.Configurers
             if (_cache.ContainsKey(typeof(TService)))
             {
                 var cachedResult = (TService)_cache[typeof(TService)];
-                
+
                 return cachedResult;
             }
 
@@ -33,7 +32,7 @@ namespace d60.Cirqus.Config.Configurers
 
             if (resolver == null)
             {
-                throw new InvalidOperationException(string.Format("Cannot provide an instance of {0} because an appropriate factory method has not been registered!", typeof(TService)));
+                throw new ResolutionException(typeof(TService), "No appropriate factory method has been registered!");
             }
 
             AddToLevel<TService>(1);
@@ -47,7 +46,14 @@ namespace d60.Cirqus.Config.Configurers
             AddToLevel<TService>(-1);
 
             return result;
+        }
 
+        public IEnumerable<TService> GetAll<TService>()
+        {
+            return _resolvers
+                .OfType<Resolver<TService>>()
+                .Where(r => r.Multi)
+                .Select(r => r.InvokeFactory(this));
         }
 
         void AddToLevel<TService>(int addend)
@@ -77,29 +83,33 @@ namespace d60.Cirqus.Config.Configurers
 
         public abstract class Resolver
         {
-            protected Resolver(Delegate factory, bool decorator)
+            protected Resolver(Delegate factory, bool decorator, bool multi)
             {
                 Factory = factory;
                 Decorator = decorator;
+                Multi = multi;
             }
 
             public Type Type { get; protected set; }
 
-            public Delegate Factory { get; set; }
+            public Delegate Factory { get; private set; }
 
-            public bool Decorator { get; set; }
+            public bool Decorator { get; private set; }
+
+            public bool Multi { get; private set; }
         }
 
         public class Resolver<TService> : Resolver
         {
-            public Resolver(Delegate factory, bool decorator) : base(factory, decorator)
+            public Resolver(Delegate factory, bool decorator, bool multi)
+                : base(factory, decorator, multi)
             {
-                Type = typeof (TService);
+                Type = typeof(TService);
             }
 
             public TService InvokeFactory(ResolutionContext resolutionContext)
             {
-                return ((Func<ResolutionContext, TService>) Factory)(resolutionContext);
+                return ((Func<ResolutionContext, TService>)Factory)(resolutionContext);
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using d60.Cirqus.Dispatch;
 using d60.Cirqus.Events;
 
 namespace d60.Cirqus.Tests.Stubs

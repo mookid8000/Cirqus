@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using d60.Cirqus.Events;
 
-namespace d60.Cirqus.Events
+namespace d60.Cirqus.Dispatch
 {
     /// <summary>
     /// Something that gets to dispatch newly persisted events to something (e.g. to trigger view generation)

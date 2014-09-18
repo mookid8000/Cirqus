@@ -1,6 +1,7 @@
 ﻿using System;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Config.Configurers;
+using d60.Cirqus.Dispatch;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Logging;
@@ -114,7 +115,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void PurgeExistingViews(this OptionsConfigurationBuilder builder, bool purgeViewsAtStartup = false)
         {
-            builder.Registrar.RegisterOptionConfig(o => o.PurgeExistingViews = purgeViewsAtStartup);
+            builder.Registrar.RegisterInstance<Action<Options>>(o => o.PurgeExistingViews = purgeViewsAtStartup);
         }
 
         /// <summary>
@@ -123,7 +124,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void AddDomainExceptionType<TException>(this OptionsConfigurationBuilder builder) where TException : Exception
         {
-            builder.Registrar.RegisterOptionConfig(o => o.AddDomainExceptionType<TException>());
+            builder.Registrar.RegisterInstance<Action<Options>>(o => o.AddDomainExceptionType<TException>());
         }
 
         /// <summary>
@@ -131,7 +132,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void SetMaxRetries(this OptionsConfigurationBuilder builder, int maxRetries)
         {
-            builder.Registrar.RegisterOptionConfig(o => o.MaxRetries = maxRetries);
+            builder.Registrar.RegisterInstance<Action<Options>>(o => o.MaxRetries = maxRetries);
         }
 
         /// <summary>

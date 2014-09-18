@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Config;
+using d60.Cirqus.Dispatch;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
