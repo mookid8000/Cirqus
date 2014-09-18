@@ -115,7 +115,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void PurgeExistingViews(this OptionsConfigurationBuilder builder, bool purgeViewsAtStartup = false)
         {
-            builder.Registrar.RegisterInstance<Action<Options>>(o => o.PurgeExistingViews = purgeViewsAtStartup);
+            builder.Registrar.RegisterInstance<Action<Options>>(o => o.PurgeExistingViews = purgeViewsAtStartup, multi: true);
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void AddDomainExceptionType<TException>(this OptionsConfigurationBuilder builder) where TException : Exception
         {
-            builder.Registrar.RegisterInstance<Action<Options>>(o => o.AddDomainExceptionType<TException>());
+            builder.Registrar.RegisterInstance<Action<Options>>(o => o.AddDomainExceptionType<TException>(), multi: true);
         }
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void SetMaxRetries(this OptionsConfigurationBuilder builder, int maxRetries)
         {
-            builder.Registrar.RegisterInstance<Action<Options>>(o => o.MaxRetries = maxRetries);
+            builder.Registrar.RegisterInstance<Action<Options>>(o => o.MaxRetries = maxRetries, multi: true);
         }
 
         /// <summary>
