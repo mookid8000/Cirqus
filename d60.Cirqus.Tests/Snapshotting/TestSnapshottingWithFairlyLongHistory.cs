@@ -11,9 +11,9 @@ using d60.Cirqus.Logging.Console;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.Snapshotting;
 using d60.Cirqus.Tests.MongoDb;
+using d60.Cirqus.Views;
 using MongoDB.Driver;
 using NUnit.Framework;
-using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagers.Old.ViewManagerEventDispatcher;
 
 namespace d60.Cirqus.Tests.Snapshotting
 {
@@ -98,7 +98,7 @@ caching in use: {3}",
 
             _timeTaker.InnerAggregateRootRepository = aggregateRootRepository;
 
-            var commandProcessor = new CommandProcessor(_timeTaker, _timeTaker, new ViewManagerEventDispatcher(_timeTaker));
+            var commandProcessor = new CommandProcessor(_timeTaker, _timeTaker, new ViewManagerEventDispatcher(_timeTaker, eventStore));
 
             RegisterForDisposal(commandProcessor);
 

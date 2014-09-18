@@ -141,11 +141,7 @@ namespace d60.Cirqus.Tests.Config
                 .Logging(l => l.UseConsole())
                 .EventStore(e => e.UseMongoDb(mongoConnectionString.ConnectionString, "Events"))
                 .AggregateRootRepository(r => r.EnableInMemorySnapshotCaching(10000))
-                .EventDispatcher(d =>
-                {
-                    d.UseOldViewManagerEventDispatcher();
-                    d.UseViewManagerEventDispatcher();
-                })
+                .EventDispatcher(d => d.UseViewManagerEventDispatcher())
                 .Options(o =>
                 {
                     o.PurgeExistingViews(true);

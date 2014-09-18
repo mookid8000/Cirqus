@@ -3,30 +3,28 @@ using System.Collections.Generic;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
-using d60.Cirqus.Tests.Contracts.Views.Old;
-using d60.Cirqus.Tests.Contracts.Views.Old.Factories;
+using d60.Cirqus.Tests.Contracts.Views.Factories;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
-using d60.Cirqus.Views.ViewManagers.Old;
 using MongoDB.Driver;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.TestHelpers.TestContext;
 
 namespace d60.Cirqus.Tests.Contracts.Views
 {
-    [TestFixture(typeof(MongoDbPullViewManagerFactory), Category = TestCategories.MongoDb)]
-    [TestFixture(typeof(MsSqlPullViewManagerFactory), Category = TestCategories.MsSql)]
-    [TestFixture(typeof(EntityFrameworkPullViewManagerFactory), Category = TestCategories.MsSql)]
-    public class ViewLocators<TViewManagerFactory> : FixtureBase where TViewManagerFactory : IPullViewManagerFactory, new()
+    [TestFixture(typeof(MongoDbManagedViewFactory), Category = TestCategories.MongoDb)]
+    [TestFixture(typeof(MsSqlManagedViewFactory), Category = TestCategories.MsSql)]
+    public class ViewLocators<TViewManagerFactory> : FixtureBase where TViewManagerFactory : AbstractManagedViewFactory, new()
     {
         MongoDatabase _database;
         MongoDbEventStore _eventStore;
 
-        IOldViewManager _globalInstanceViewManager;
         TViewManagerFactory _factory;
-        IOldViewManager _instancePerAggregateRootViewManager;
-        TestContext _testContext;
+        TestContext _context;
+        
+        IViewManager<InstancePerAggregateRootView> _instancePerAggregateRootViewManager;
+        IViewManager<GlobalInstanceViewInstance> _globalInstanceViewManager;
 
         protected override void DoSetUp()
         {
@@ -35,28 +33,30 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             _factory = new TViewManagerFactory();
 
-            _globalInstanceViewManager = _factory.GetPullViewManager<GlobalInstanceViewInstance>();
-            _instancePerAggregateRootViewManager = _factory.GetPullViewManager<InstancePerAggregateRootView>();
+            _globalInstanceViewManager = _factory.GetManagedView<GlobalInstanceViewInstance>();
+            _instancePerAggregateRootViewManager = _factory.GetManagedView<InstancePerAggregateRootView>();
 
-            _testContext = RegisterForDisposal(new TestContext());
+            _context = RegisterForDisposal(new TestContext());
         }
 
 
         [Test]
         public void WorksWithInstancePerAggregateRootView()
         {
-            _testContext.AddViewManager(_instancePerAggregateRootViewManager);
+            _context.AddViewManager(_instancePerAggregateRootViewManager);
 
             var rootId1 = Guid.NewGuid();
             var rootId2 = Guid.NewGuid();
 
-            _testContext.Save(rootId1, new ThisIsJustAnEvent());
-            _testContext.Save(rootId1, new ThisIsJustAnEvent());
-            _testContext.Save(rootId1, new ThisIsJustAnEvent());
+            _context.Save(rootId1, new ThisIsJustAnEvent());
+            _context.Save(rootId1, new ThisIsJustAnEvent());
+            _context.Save(rootId1, new ThisIsJustAnEvent());
 
-            _testContext.Save(rootId2, new ThisIsJustAnEvent());
-            _testContext.Save(rootId2, new ThisIsJustAnEvent());
-            _testContext.Save(rootId2, new ThisIsJustAnEvent());
+            _context.Save(rootId2, new ThisIsJustAnEvent());
+            _context.Save(rootId2, new ThisIsJustAnEvent());
+            _context.Save(rootId2, new ThisIsJustAnEvent());
+
+            _context.WaitForViewsToCatchUp();
 
             var view = _factory.Load<InstancePerAggregateRootView>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(rootId1));
             Assert.That(view.EventCounter, Is.EqualTo(3));
@@ -65,18 +65,20 @@ namespace d60.Cirqus.Tests.Contracts.Views
         [Test]
         public void WorksWithGlobalInstanceView()
         {
-            _testContext.AddViewManager(_globalInstanceViewManager);
+            _context.AddViewManager(_globalInstanceViewManager);
 
             var rootId1 = Guid.NewGuid();
             var rootId2 = Guid.NewGuid();
 
-            _testContext.Save(rootId1, new ThisIsJustAnEvent());
-            _testContext.Save(rootId1, new ThisIsJustAnEvent());
-            _testContext.Save(rootId1, new ThisIsJustAnEvent());
+            _context.Save(rootId1, new ThisIsJustAnEvent());
+            _context.Save(rootId1, new ThisIsJustAnEvent());
+            _context.Save(rootId1, new ThisIsJustAnEvent());
 
-            _testContext.Save(rootId2, new ThisIsJustAnEvent());
-            _testContext.Save(rootId2, new ThisIsJustAnEvent());
-            _testContext.Save(rootId2, new ThisIsJustAnEvent());
+            _context.Save(rootId2, new ThisIsJustAnEvent());
+            _context.Save(rootId2, new ThisIsJustAnEvent());
+            _context.Save(rootId2, new ThisIsJustAnEvent());
+
+            _context.WaitForViewsToCatchUp();
 
             var view = _factory.Load<GlobalInstanceViewInstance>(GlobalInstanceLocator.GetViewInstanceId());
             Assert.That(view.EventCounter, Is.EqualTo(6));
@@ -85,11 +87,11 @@ namespace d60.Cirqus.Tests.Contracts.Views
         [Test]
         public void DoesNotCallViewLocatorForIrrelevantEvents()
         {
-            _testContext.AddViewManager(_globalInstanceViewManager);
+            _context.AddViewManager(_globalInstanceViewManager);
 
-            Assert.DoesNotThrow(() => _testContext.Save(Guid.NewGuid(), new JustAnEvent()));
+            Assert.DoesNotThrow(() => _context.Save(Guid.NewGuid(), new JustAnEvent()));
          
-            Assert.DoesNotThrow(() => _testContext.Save(Guid.NewGuid(), new AnotherEvent()));
+            Assert.DoesNotThrow(() => _context.Save(Guid.NewGuid(), new AnotherEvent()));
         }
 
         class MyViewInstance : IViewInstance<CustomizedViewLocator>, ISubscribeTo<JustAnEvent>
@@ -102,11 +104,12 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             }
         }
+        
         class CustomizedViewLocator : ViewLocator
         {
             protected override IEnumerable<string> GetViewIds(IViewContext context, DomainEvent e)
             {
-                if (e is AnEvent)
+                if (e is JustAnEvent)
                 {
                     yield return "yay";
                 }

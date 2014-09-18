@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
+using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
-using d60.Cirqus.Views.ViewManagers.Old;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.TestHelpers.TestContext;
 
@@ -177,6 +178,8 @@ namespace d60.Cirqus.Tests.TestHelpers
 
             _context.Save(aggregateRootId, new AnEvent());
 
+            _context.WaitForViewsToCatchUp();
+
             Assert.That(viewMan.ReceivedDomainEvents.Count, Is.EqualTo(1));
         }
 
@@ -197,23 +200,44 @@ namespace d60.Cirqus.Tests.TestHelpers
         }
 
 
-        class SillyViewManager : IPushViewManager
+        class SillyViewManager : IViewManager
         {
+            long _position = -1;
+
             public SillyViewManager()
             {
                 ReceivedDomainEvents = new List<DomainEvent>();
             }
+            
             public List<DomainEvent> ReceivedDomainEvents { get; set; }
-            public void Initialize(IViewContext context, IEventStore eventStore, bool purgeExistingViews = false)
+            
+            public long GetPosition(bool canGetFromCache = true)
             {
-                ReceivedDomainEvents.AddRange(eventStore.Stream().ToList());
+                return _position;
             }
 
-            public bool Stopped { get; set; }
-
-            public void Dispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events)
+            public void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
             {
-                ReceivedDomainEvents.AddRange(events);
+                ReceivedDomainEvents.AddRange(batch);
+
+                if (!batch.Any()) return;
+
+                _position = batch.Max(e => e.GetGlobalSequenceNumber());
+            }
+
+            public async Task WaitUntilProcessed(CommandProcessingResult result, TimeSpan timeout)
+            {
+                if (!result.EventsWereEmitted) return;
+
+                while (_position < result.GetNewPosition())
+                {
+                    await Task.Delay(100);
+                }
+            }
+
+            public void Purge()
+            {
+                ReceivedDomainEvents.Clear();
             }
         }
 

@@ -9,7 +9,6 @@ using d60.Cirqus.Logging.Null;
 using d60.Cirqus.Snapshotting;
 using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
-using d60.Cirqus.Views.ViewManagers.Old;
 using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagerEventDispatcher;
 
 namespace d60.Cirqus.Config
@@ -43,15 +42,6 @@ namespace d60.Cirqus.Config
         {
             builder.Registrar
                 .Register<IAggregateRootRepository>(context => new DefaultAggregateRootRepository(context.Get<IEventStore>()));
-        }
-
-        /// <summary>
-        /// Registers the OLD <see cref="Views.ViewManagers.Old.ViewManagerEventDispatcher"/>
-        /// </summary>
-        [Obsolete("ViewManagerEventDispatcher will be replaced with an inmproved one some time soon")]
-        public static void UseOldViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IOldViewManager[] viewManagers)
-        {
-            AddEventDispatcherRegistration(builder, context => new Views.ViewManagers.Old.ViewManagerEventDispatcher(context.Get<IAggregateRootRepository>(), viewManagers));
         }
 
         /// <summary>

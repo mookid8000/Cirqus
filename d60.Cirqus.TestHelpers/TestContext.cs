@@ -10,8 +10,6 @@ using d60.Cirqus.Serialization;
 using d60.Cirqus.TestHelpers.Internals;
 using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
-using d60.Cirqus.Views.ViewManagers.Old;
-using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagerEventDispatcher;
 
 namespace d60.Cirqus.TestHelpers
 {
@@ -23,7 +21,6 @@ namespace d60.Cirqus.TestHelpers
         readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
         readonly InMemoryEventStore _eventStore = new InMemoryEventStore();
         readonly DefaultAggregateRootRepository _aggregateRootRepository;
-        readonly Views.ViewManagers.Old.ViewManagerEventDispatcher _oldViewManagerEventDispatcher;
         readonly ViewManagerEventDispatcher _viewManagerEventDispatcher;
         readonly CompositeEventDispatcher _eventDispatcher;
         readonly ViewManagerWaitHandle _waitHandle = new ViewManagerWaitHandle();
@@ -35,19 +32,11 @@ namespace d60.Cirqus.TestHelpers
         {
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
 
-            _oldViewManagerEventDispatcher = new Views.ViewManagers.Old.ViewManagerEventDispatcher(_aggregateRootRepository);
             _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore);
 
             _waitHandle.Register(_viewManagerEventDispatcher);
 
-            _eventDispatcher = new CompositeEventDispatcher(_oldViewManagerEventDispatcher,
-                _viewManagerEventDispatcher);
-        }
-
-        public TestContext AddViewManager(IOldViewManager viewManager)
-        {
-            _oldViewManagerEventDispatcher.Add(viewManager);
-            return this;
+            _eventDispatcher = new CompositeEventDispatcher(_viewManagerEventDispatcher);
         }
 
         public TestContext AddViewManager(IViewManager viewManager)
@@ -81,7 +70,7 @@ namespace d60.Cirqus.TestHelpers
         {
             EnsureInitialized();
 
-            return new TestUnitOfWork(_aggregateRootRepository, _eventStore, _oldViewManagerEventDispatcher);
+            return new TestUnitOfWork(_aggregateRootRepository, _eventStore, _eventDispatcher);
         }
 
         public void SetCurrentTime(DateTime fixedCurrentTime)
@@ -128,7 +117,6 @@ namespace d60.Cirqus.TestHelpers
         {
             if (!_initialized)
             {
-                _oldViewManagerEventDispatcher.Initialize(_eventStore, purgeExistingViews: true);
                 _viewManagerEventDispatcher.Initialize(_eventStore, purgeExistingViews: true);
                 _initialized = true;
             }
@@ -239,6 +227,17 @@ namespace d60.Cirqus.TestHelpers
             }
 
             _disposed = true;
+        }
+
+        public void WaitForViewsToCatchUp()
+        {
+            var allGlobalSequenceNumbers = History.Select(h => h.GetGlobalSequenceNumber()).ToArray();
+
+            if (!allGlobalSequenceNumbers.Any()) return;
+
+            var result = CommandProcessingResult.WithNewPosition(allGlobalSequenceNumbers.Max());
+
+            _waitHandle.WaitForAll(result, TimeSpan.FromSeconds(10)).Wait();
         }
 
         public void WaitForViewToCatchUp<TViewInstance>() where TViewInstance : IViewInstance

@@ -56,7 +56,6 @@
     <Compile Include="Commands\CommandMapper.cs" />
     <Compile Include="Commands\CompositeCommand.cs" />
     <Compile Include="Commands\ICommandContext.cs" />
-    <Compile Include="Commands\ICommandMapper.cs" />
     <Compile Include="CommandProcessor.cs" />
     <Compile Include="Commands\DefaultCommandContext.cs" />
     <Compile Include="Config\Configurers\ConfigurationContainer.cs" />
@@ -109,7 +108,6 @@
     <Compile Include="Snapshotting\InMemorySnapshotCache.cs" />
     <Compile Include="Snapshotting\ISnapshotCache.cs" />
     <Compile Include="Snapshotting\Sturdylizer.cs" />
-    <Compile Include="Views\AsyncEventDispatcher.cs" />
     <Compile Include="Views\CompositeEventDispatcher.cs" />
     <Compile Include="Views\ViewManagers\Locators\HandlerViewLocator.cs" />
     <Compile Include="Views\ViewManagers\IGetViewIdsFor.cs" />
@@ -118,14 +116,11 @@
     <Compile Include="Views\ViewManagers\InMemoryViewManager.cs" />
     <Compile Include="Views\ViewManagerEventDispatcher.cs" />
     <Compile Include="Views\ViewManagers\ViewManagerWaitHandle.cs" />
-    <Compile Include="Views\ViewManagers\Old\ViewManagerEventDispatcher.cs" />
-    <Compile Include="Views\ViewManagers\Old\InMemoryViewManager.cs" />
     <Compile Include="Views\ViewManagers\IViewContext.cs" />
     <Compile Include="Views\ViewManagers\Locators\GlobalInstanceLocator.cs" />
     <Compile Include="Views\ViewManagers\Locators\InstancePerAggregateRootLocator.cs" />
     <Compile Include="Views\ViewManagers\ISubscribeTo.cs" />
     <Compile Include="Views\ViewManagers\IViewInstance.cs" />
-    <Compile Include="Views\ViewManagers\Old\IOldViewManager.cs" />
     <Compile Include="Views\ViewManagers\ViewDispatcherHelper.cs" />
     <Compile Include="Views\ViewManagers\Locators\ViewLocator.cs" />
     <Compile Include="Views\IEventDispatcher.cs" />

@@ -257,3 +257,6 @@
 
 * Added `HandlerViewLocator` that allows for implementing `IGetViewIdsFor<TDomainEvent>` where `TDomainEvent` is a domain event or an interface - makes view ID mapping really neat in some situations.
 
+## 0.21.0
+
+* All the old view manager stuff has now been completely replaced by the new view manager.

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
@@ -8,9 +9,9 @@ using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.TestHelpers.Internals;
 using d60.Cirqus.Tests.Stubs;
+using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
-using d60.Cirqus.Views.ViewManagers.Old;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Views
@@ -19,20 +20,24 @@ namespace d60.Cirqus.Tests.Views
     public class TestLoadAggregatesFromView : FixtureBase
     {
         CommandProcessor _cirqus;
-        Cirqus.Views.ViewManagers.Old.InMemoryViewManager<MyViewInstance> _viewManager1;
-        Cirqus.Views.ViewManagers.Old.InMemoryViewManager<MyViewInstanceImplicit> _viewManager2;
-        Cirqus.Views.ViewManagers.Old.InMemoryViewManager<MyViewInstanceEmitting> _viewManager3;
+        InMemoryViewManager<MyViewInstance> _viewManager1;
+        InMemoryViewManager<MyViewInstanceImplicit> _viewManager2;
+        InMemoryViewManager<MyViewInstanceEmitting> _viewManager3;
+        ViewManagerEventDispatcher _eventDispatcher;
 
         protected override void DoSetUp()
         {
             var eventStore = new InMemoryEventStore();
-            _viewManager1 = new Cirqus.Views.ViewManagers.Old.InMemoryViewManager<MyViewInstance>();
-            _viewManager2 = new Cirqus.Views.ViewManagers.Old.InMemoryViewManager<MyViewInstanceImplicit>();
-            _viewManager3 = new Cirqus.Views.ViewManagers.Old.InMemoryViewManager<MyViewInstanceEmitting>();
+
+            _viewManager1 = new InMemoryViewManager<MyViewInstance>();
+            _viewManager2 = new InMemoryViewManager<MyViewInstanceImplicit>();
+            _viewManager3 = new InMemoryViewManager<MyViewInstanceEmitting>();
 
             var basicAggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
 
-            _cirqus = new CommandProcessor(eventStore, basicAggregateRootRepository, new ViewManagerEventDispatcher(basicAggregateRootRepository, _viewManager1, _viewManager2, _viewManager3));
+            _eventDispatcher = new ViewManagerEventDispatcher(basicAggregateRootRepository, eventStore);
+
+            _cirqus = new CommandProcessor(eventStore, basicAggregateRootRepository, _eventDispatcher);
 
             _cirqus.Initialize();
 
@@ -42,11 +47,15 @@ namespace d60.Cirqus.Tests.Views
         [Test]
         public void ExceptionIsThrownIfAggregateRootEmitsFromView()
         {
+            _eventDispatcher.AddViewManager(_viewManager3);
+
             var listLoggerFactory = new ListLoggerFactory();
             CirqusLoggerFactory.Current = listLoggerFactory;
             var aggregateRootId = Guid.NewGuid();
 
-            _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
+            var result = _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
+
+            Thread.Sleep(300);
 
             var relevantLines = listLoggerFactory
                 .LoggedLines
@@ -66,13 +75,17 @@ namespace d60.Cirqus.Tests.Views
         [Test]
         public void CanAccessAggregateRootInView()
         {
+            _eventDispatcher.AddViewManager(_viewManager1);
+
             var aggregateRootId = Guid.NewGuid();
 
             _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
             _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
             _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
             _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
-            _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
+            var lastResult = _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
+
+            _eventDispatcher.WaitUntilProcessed(lastResult, TimeSpan.FromSeconds(3)).Wait();
 
             var view = _viewManager1.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(aggregateRootId));
 
@@ -83,13 +96,18 @@ namespace d60.Cirqus.Tests.Views
         [Test]
         public void CanAccessAggregateRootInViewWithImplicitDeductionOfGlobalSequenceNumberInView()
         {
+            _eventDispatcher.AddViewManager(_viewManager2);
+
             var aggregateRootId = Guid.NewGuid();
 
             _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
             _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
             _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
             _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
-            _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
+            
+            var lastResult = _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
+
+            _eventDispatcher.WaitUntilProcessed(lastResult, TimeSpan.FromSeconds(3)).Wait();
 
             var view = _viewManager2.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(aggregateRootId));
 
@@ -118,7 +136,9 @@ namespace d60.Cirqus.Tests.Views
             {
                 Emit(new AnEvent { EventNumber = LastEmittedEventNumber + 1 });
             }
+
             public int LastEmittedEventNumber { get; set; }
+            
             public void Apply(AnEvent e)
             {
                 LastEmittedEventNumber = e.EventNumber;
@@ -167,7 +187,9 @@ namespace d60.Cirqus.Tests.Views
         class MyViewInstanceEmitting : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
         {
             public string Id { get; set; }
+            
             public long LastGlobalSequenceNumber { get; set; }
+            
             public void Handle(IViewContext context, AnEvent domainEvent)
             {
                 var root = context.Load<MyRoot>(domainEvent.GetAggregateRootId());
