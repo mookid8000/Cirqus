@@ -265,3 +265,7 @@ This is a big update that completes the transition to the new, vastly improved v
 * `TestContext` now has an `Asynchronous` property that can be used to specify that it is to work asynchronously (more realistic with regards to event dispatch).
 * Replaced the `ProcessCommand` method on `TestContext` with one that matched the one on `ICommandProcessor`
 
+## 0.22.0
+
+* Added `InMemoryViewEventDispatcher` which a special in-mem view manager that has events dispatched to it directly - suitable for in-mem, in-process views only (but they're very fast...)
+
