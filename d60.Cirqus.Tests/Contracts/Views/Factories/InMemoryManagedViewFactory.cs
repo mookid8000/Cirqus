@@ -6,8 +6,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
     {
         protected override IManagedView<TViewInstance> CreateManagedView<TViewInstance>()
         {
-         //   return new In
-            return null;
+            return new InMemoryViewManager<TViewInstance>();
         }
     }
 }

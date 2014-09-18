@@ -16,14 +16,14 @@ namespace d60.Cirqus.Tests.Views
     [TestFixture]
     public class TestInMemoryViewManager : FixtureBase
     {
-        InMemoryViewManager<SomeViewInstance> _viewManager;
+        Cirqus.Views.ViewManagers.Old.InMemoryViewManager<SomeViewInstance> _viewManager;
         ViewManagerEventDispatcher _eventDispatcher;
         InMemoryEventStore _eventStore;
         long _currentSequenceNumber;
 
         protected override void DoSetUp()
         {
-            _viewManager = new InMemoryViewManager<SomeViewInstance>();
+            _viewManager = new Cirqus.Views.ViewManagers.Old.InMemoryViewManager<SomeViewInstance>();
             _eventStore = new InMemoryEventStore();
             _eventDispatcher = new ViewManagerEventDispatcher(new DefaultAggregateRootRepository(_eventStore), new IViewManager[] { _viewManager });
             _eventDispatcher.Initialize(_eventStore);

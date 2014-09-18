@@ -14,6 +14,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
 {
     [TestFixture(typeof(MongoDbManagedViewFactory), Category = TestCategories.MongoDb)]
     [TestFixture(typeof(MsSqlManagedViewFactory), Category = TestCategories.MsSql)]
+    [TestFixture(typeof(InMemoryManagedViewFactory))]
     public class LoadingStuffDuringViewLocation<TFactory> : FixtureBase where TFactory : AbstractManagedViewFactory, new()
     {
         TFactory _factory;

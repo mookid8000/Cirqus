@@ -20,16 +20,16 @@ namespace d60.Cirqus.Tests.Views
     public class TestLoadAggregatesFromView : FixtureBase
     {
         CommandProcessor _cirqus;
-        InMemoryViewManager<MyViewInstance> _viewManager1;
-        InMemoryViewManager<MyViewInstanceImplicit> _viewManager2;
-        InMemoryViewManager<MyViewInstanceEmitting> _viewManager3;
+        Cirqus.Views.ViewManagers.Old.InMemoryViewManager<MyViewInstance> _viewManager1;
+        Cirqus.Views.ViewManagers.Old.InMemoryViewManager<MyViewInstanceImplicit> _viewManager2;
+        Cirqus.Views.ViewManagers.Old.InMemoryViewManager<MyViewInstanceEmitting> _viewManager3;
 
         protected override void DoSetUp()
         {
             var eventStore = new InMemoryEventStore();
-            _viewManager1 = new InMemoryViewManager<MyViewInstance>();
-            _viewManager2 = new InMemoryViewManager<MyViewInstanceImplicit>();
-            _viewManager3 = new InMemoryViewManager<MyViewInstanceEmitting>();
+            _viewManager1 = new Cirqus.Views.ViewManagers.Old.InMemoryViewManager<MyViewInstance>();
+            _viewManager2 = new Cirqus.Views.ViewManagers.Old.InMemoryViewManager<MyViewInstanceImplicit>();
+            _viewManager3 = new Cirqus.Views.ViewManagers.Old.InMemoryViewManager<MyViewInstanceEmitting>();
 
             var basicAggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
 

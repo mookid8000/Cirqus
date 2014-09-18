@@ -12,14 +12,14 @@ namespace d60.Cirqus.Tests.Contracts.Views.Old.Factories
 
         public IPushViewManager GetPushViewManager<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
         {
-            var viewManager = new InMemoryViewManager<TView>();
+            var viewManager = new Cirqus.Views.ViewManagers.Old.InMemoryViewManager<TView>();
             _viewManagers.Add(viewManager);
             return new PushOnlyWrapper(viewManager);
         }
 
         public TView Load<TView>(string viewId) where TView : class, IViewInstance, ISubscribeTo, new()
         {
-            var matchingViewManagers = _viewManagers.OfType<InMemoryViewManager<TView>>().ToList();
+            var matchingViewManagers = _viewManagers.OfType<Cirqus.Views.ViewManagers.Old.InMemoryViewManager<TView>>().ToList();
 
             if (matchingViewManagers.Count != 1)
             {

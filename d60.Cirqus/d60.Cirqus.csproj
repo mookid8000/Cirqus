@@ -112,6 +112,7 @@
     <Compile Include="Views\ViewManagers\IGetViewIdsFor.cs" />
     <Compile Include="Views\ViewManagers\DefaultViewContext.cs" />
     <Compile Include="Views\ViewManagers\IManagedView.cs" />
+    <Compile Include="Views\ViewManagers\InMemoryViewManager.cs" />
     <Compile Include="Views\ViewManagers\ViewManagerEventDispatcher.cs" />
     <Compile Include="Views\ViewManagers\ViewManagerWaitHandle.cs" />
     <Compile Include="Views\ViewManagers\Old\ViewManagerEventDispatcher.cs" />
