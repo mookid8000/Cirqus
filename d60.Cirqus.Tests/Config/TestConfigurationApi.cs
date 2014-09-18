@@ -35,10 +35,10 @@ namespace d60.Cirqus.Tests.Config
                 .EventStore(e => e.UseMongoDb(database, "Events"))
                 .EventDispatcher(d =>
                 {
-                    d.UseNewViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view1"));
-                    d.UseNewViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view2"));
-                    d.UseNewViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view3"));
-                    d.UseNewViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view4"));
+                    d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view1"));
+                    d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view2"));
+                    d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view3"));
+                    d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view4"));
                 })
                 .Create();
 
@@ -144,8 +144,8 @@ namespace d60.Cirqus.Tests.Config
                 .AggregateRootRepository(r => r.EnableInMemorySnapshotCaching(10000))
                 .EventDispatcher(d =>
                 {
+                    d.UseOldViewManagerEventDispatcher();
                     d.UseViewManagerEventDispatcher();
-                    d.UseNewViewManagerEventDispatcher();
                 })
                 .Options(o =>
                 {

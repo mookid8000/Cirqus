@@ -49,7 +49,7 @@ namespace d60.Cirqus.Config
         /// Registers the OLD <see cref="Views.ViewManagers.Old.ViewManagerEventDispatcher"/>
         /// </summary>
         [Obsolete("ViewManagerEventDispatcher will be replaced with an inmproved one some time soon")]
-        public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IViewManager[] viewManagers)
+        public static void UseOldViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IViewManager[] viewManagers)
         {
             AddEventDispatcherRegistration(builder, context => new Views.ViewManagers.Old.ViewManagerEventDispatcher(context.Get<IAggregateRootRepository>(), viewManagers));
         }
@@ -58,7 +58,7 @@ namespace d60.Cirqus.Config
         /// Registers a <see cref="ViewManagerEventDispatcher"/> to manage the given views. Can be called multiple times in order to register
         /// multiple "pools" of views (each will be managed by a dedicated worker thread).
         /// </summary>
-        public static void UseNewViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IManagedView[] managedViews)
+        public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IManagedView[] managedViews)
         {
             AddEventDispatcherRegistration(builder, context => new ViewManagerEventDispatcher(
                 context.Get<IAggregateRootRepository>(),
@@ -70,7 +70,7 @@ namespace d60.Cirqus.Config
         /// multiple "pools" of views (each will be managed by a dedicated worker thread). The event dispatcher will register itself with the
         /// given <seealso cref="waitHandle"/>, allowing for optionally blocking until views have been updated to a certain point.
         /// </summary>
-        public static void UseNewViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, ViewManagerWaitHandle waitHandle, params IManagedView[] managedViews)
+        public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, ViewManagerWaitHandle waitHandle, params IManagedView[] managedViews)
         {
             AddEventDispatcherRegistration(builder, context =>
             {
