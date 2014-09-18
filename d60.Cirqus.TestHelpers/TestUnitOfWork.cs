@@ -23,6 +23,8 @@ namespace d60.Cirqus.TestHelpers
             _eventDispatcher = eventDispatcher;
         }
 
+        internal event Action Committed = delegate { }; 
+
         public TAggregateRoot Get<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
             var aggregateRootFromCache = _unitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId, long.MaxValue);
@@ -76,6 +78,8 @@ namespace d60.Cirqus.TestHelpers
             _wasCommitted = true;
 
             _eventDispatcher.Dispatch(_eventStore, domainEvents);
+
+            Committed();
         }
 
         public void Dispose()

@@ -260,3 +260,4 @@
 ## 0.21.0
 
 * All the old view manager stuff has now been completely replaced by the new view manager.
+* `TestContext` now has an `Asynchronous` property that can be used to specify that it is to work asynchronously (more realistic with regards to event dispatch).

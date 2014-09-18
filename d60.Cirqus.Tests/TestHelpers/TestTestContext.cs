@@ -72,8 +72,8 @@ namespace d60.Cirqus.Tests.TestHelpers
             _context.ProcessCommand(new RootCommand(id2));
 
             // act
-            var root1 = _context.AggregateRootsInHistory.OfType<Root>().Single(i => i.Id == id1);
-            var root2 = _context.AggregateRootsInHistory.OfType<Root>().Single(i => i.Id == id2);
+            var root1 = _context.AggregateRoots.OfType<Root>().Single(i => i.Id == id1);
+            var root2 = _context.AggregateRoots.OfType<Root>().Single(i => i.Id == id2);
 
             // assert
             Assert.That(root1.DidStuffCount, Is.EqualTo(2));
