@@ -259,6 +259,8 @@
 
 ## 0.21.0
 
+This is a big update that completes the transition to the new, vastly improved view managers and makes a load of stuff much more consistent.
+
 * All the old view manager stuff has now been completely replaced by the new view manager.
 * `TestContext` now has an `Asynchronous` property that can be used to specify that it is to work asynchronously (more realistic with regards to event dispatch).
 * Replaced the `ProcessCommand` method on `TestContext` with one that matched the one on `ICommandProcessor`
