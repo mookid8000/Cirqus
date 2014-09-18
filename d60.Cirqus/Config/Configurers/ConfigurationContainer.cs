@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using d60.Cirqus.Aggregates;
-using d60.Cirqus.Dispatch;
 using d60.Cirqus.Events;
+using d60.Cirqus.Projections;
 
 namespace d60.Cirqus.Config.Configurers
 {
@@ -77,6 +77,11 @@ namespace d60.Cirqus.Config.Configurers
                 : _resolvers
                     .OfType<ResolutionContext.Resolver<TService>>()
                     .Any();
+        }
+
+        internal void InsertResolversInto(ConfigurationContainer otherContainer)
+        {
+            otherContainer._resolvers.AddRange(_resolvers);
         }
 
         internal void LogServicesTo(TextWriter writer)

@@ -7,9 +7,10 @@ using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.MongoDb.Events;
+using d60.Cirqus.MongoDb.Projections.Views.Old;
+using d60.Cirqus.Projections.Views.ViewManagers;
+using d60.Cirqus.Projections.Views.ViewManagers.Locators;
 using d60.Cirqus.Tests.Stubs;
-using d60.Cirqus.Views.ViewManagers;
-using d60.Cirqus.Views.ViewManagers.Locators;
 using MongoDB.Driver;
 using NUnit.Framework;
 
@@ -21,7 +22,7 @@ namespace d60.Cirqus.Tests.MongoDb
         readonly Random _random = new Random();
 
         MongoDatabase _database;
-        Cirqus.MongoDb.Views.Old.MongoDbViewManager<MyView> _viewManager;
+        MongoDbViewManager<MyView> _viewManager;
         MongoDbEventStore _eventStore;
         Guid[] _aggregateRootIds;
         Dictionary<Guid, long> _sequenceNumbers;
@@ -36,7 +37,7 @@ namespace d60.Cirqus.Tests.MongoDb
             _eventStore = new MongoDbEventStore(_database, "events");
             _sequenceNumbers = new Dictionary<Guid, long>();
 
-            _viewManager = new Cirqus.MongoDb.Views.Old.MongoDbViewManager<MyView>(_database, "views")
+            _viewManager = new MongoDbViewManager<MyView>(_database, "views")
             {
                 MaxDomainEventsBetweenFlush = 10
             };

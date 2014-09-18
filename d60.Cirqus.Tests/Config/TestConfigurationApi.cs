@@ -10,10 +10,10 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.MongoDb.Config;
-using d60.Cirqus.MongoDb.Views;
+using d60.Cirqus.MongoDb.Projections.Views;
+using d60.Cirqus.Projections.Views.ViewManagers;
+using d60.Cirqus.Projections.Views.ViewManagers.Locators;
 using d60.Cirqus.Tests.MongoDb;
-using d60.Cirqus.Views.ViewManagers;
-using d60.Cirqus.Views.ViewManagers.Locators;
 using MongoDB.Driver.Builders;
 using NUnit.Framework;
 

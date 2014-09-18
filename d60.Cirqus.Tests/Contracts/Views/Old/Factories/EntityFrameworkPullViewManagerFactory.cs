@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.EntityFramework;
+using d60.Cirqus.Projections.Views.ViewManagers;
+using d60.Cirqus.Projections.Views.ViewManagers.Old;
 using d60.Cirqus.Tests.MsSql;
-using d60.Cirqus.Views.ViewManagers;
-using d60.Cirqus.Views.ViewManagers.Old;
 
 namespace d60.Cirqus.Tests.Contracts.Views.Old.Factories
 {

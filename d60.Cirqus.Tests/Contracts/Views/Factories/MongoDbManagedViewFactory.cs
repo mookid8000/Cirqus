@@ -1,6 +1,6 @@
-﻿using d60.Cirqus.MongoDb.Views;
+﻿using d60.Cirqus.MongoDb.Projections.Views;
+using d60.Cirqus.Projections.Views.ViewManagers;
 using d60.Cirqus.Tests.MongoDb;
-using d60.Cirqus.Views.ViewManagers;
 using MongoDB.Driver;
 
 namespace d60.Cirqus.Tests.Contracts.Views.Factories

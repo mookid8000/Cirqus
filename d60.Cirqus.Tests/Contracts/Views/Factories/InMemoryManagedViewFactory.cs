@@ -1,4 +1,4 @@
-﻿using d60.Cirqus.Views.ViewManagers;
+﻿using d60.Cirqus.Projections.Views.ViewManagers;
 
 namespace d60.Cirqus.Tests.Contracts.Views.Factories
 {

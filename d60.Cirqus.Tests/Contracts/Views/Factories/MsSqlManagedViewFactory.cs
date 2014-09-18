@@ -1,6 +1,6 @@
-﻿using d60.Cirqus.MsSql.Views;
+﻿using d60.Cirqus.MsSql.Projections.Views;
+using d60.Cirqus.Projections.Views.ViewManagers;
 using d60.Cirqus.Tests.MsSql;
-using d60.Cirqus.Views.ViewManagers;
 
 namespace d60.Cirqus.Tests.Contracts.Views.Factories
 {

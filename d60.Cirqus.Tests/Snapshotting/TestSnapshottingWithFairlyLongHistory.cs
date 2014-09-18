@@ -13,7 +13,7 @@ using d60.Cirqus.Snapshotting;
 using d60.Cirqus.Tests.MongoDb;
 using MongoDB.Driver;
 using NUnit.Framework;
-using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagers.Old.ViewManagerEventDispatcher;
+using ViewManagerEventDispatcher = d60.Cirqus.Projections.Views.ViewManagers.Old.ViewManagerEventDispatcher;
 
 namespace d60.Cirqus.Tests.Snapshotting
 {

@@ -2,15 +2,15 @@
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
+using d60.Cirqus.Projections.Views.ViewManagers;
+using d60.Cirqus.Projections.Views.ViewManagers.Locators;
+using d60.Cirqus.Projections.Views.ViewManagers.Old;
 using d60.Cirqus.Tests.Contracts.Views.Old.Factories;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Stubs;
-using d60.Cirqus.Views.ViewManagers;
-using d60.Cirqus.Views.ViewManagers.Locators;
-using d60.Cirqus.Views.ViewManagers.Old;
 using MongoDB.Driver;
 using NUnit.Framework;
-using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagers.Old.ViewManagerEventDispatcher;
+using ViewManagerEventDispatcher = d60.Cirqus.Projections.Views.ViewManagers.Old.ViewManagerEventDispatcher;
 
 namespace d60.Cirqus.Tests.Contracts.Views.Old
 {

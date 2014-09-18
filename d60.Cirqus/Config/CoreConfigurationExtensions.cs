@@ -1,17 +1,16 @@
 ﻿using System;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Config.Configurers;
-using d60.Cirqus.Dispatch;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Logging.Null;
+using d60.Cirqus.Projections;
+using d60.Cirqus.Projections.Views.ViewManagers;
+using d60.Cirqus.Projections.Views.ViewManagers.Old;
 using d60.Cirqus.Snapshotting;
-using d60.Cirqus.Views;
-using d60.Cirqus.Views.ViewManagers;
-using d60.Cirqus.Views.ViewManagers.Old;
-using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagers.ViewManagerEventDispatcher;
+using ViewManagerEventDispatcher = d60.Cirqus.Projections.Views.ViewManagers.ViewManagerEventDispatcher;
 
 namespace d60.Cirqus.Config
 {
@@ -47,12 +46,12 @@ namespace d60.Cirqus.Config
         }
 
         /// <summary>
-        /// Registers the OLD <see cref="Views.ViewManagers.Old.ViewManagerEventDispatcher"/>
+        /// Registers the OLD <see cref="Projections.Views.ViewManagers.Old.ViewManagerEventDispatcher"/>
         /// </summary>
         [Obsolete("ViewManagerEventDispatcher will be replaced with an inmproved one some time soon")]
         public static void UseOldViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IViewManager[] viewManagers)
         {
-            AddEventDispatcherRegistration(builder, context => new Views.ViewManagers.Old.ViewManagerEventDispatcher(context.Get<IAggregateRootRepository>(), viewManagers));
+            AddEventDispatcherRegistration(builder, context => new Projections.Views.ViewManagers.Old.ViewManagerEventDispatcher(context.Get<IAggregateRootRepository>(), viewManagers));
         }
 
         /// <summary>

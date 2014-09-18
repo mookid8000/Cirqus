@@ -5,8 +5,8 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
+using d60.Cirqus.Projections.Views.ViewManagers;
 using d60.Cirqus.Tests.Contracts.Views.Factories;
-using d60.Cirqus.Views.ViewManagers;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.TestHelpers.TestContext;
 
