@@ -13,16 +13,36 @@ namespace d60.Cirqus
 
     public class CommandProcessingResult
     {
-        public CommandProcessingResult(long[] globalSequenceNumbersOfEmittedEvents)
+        readonly long? _newPosition;
+
+        protected CommandProcessingResult(long? newPosition)
         {
-            GlobalSequenceNumbersOfEmittedEvents = globalSequenceNumbersOfEmittedEvents;
+            _newPosition = newPosition;
         }
 
-        public long[] GlobalSequenceNumbersOfEmittedEvents { get; private set; }
+        public static CommandProcessingResult NoEvents()
+        {
+            return new CommandProcessingResult(null);
+        }
+
+        public static CommandProcessingResult WithNewPosition(long newPosition)
+        {
+            return new CommandProcessingResult(newPosition);
+        }
 
         public bool EventsWereEmitted
         {
-            get { return GlobalSequenceNumbersOfEmittedEvents.Length > 0; }
+            get { return _newPosition.HasValue; }
+        }
+
+        public long GetNewPosition()
+        {
+            if (!_newPosition.HasValue)
+            {
+                throw new InvalidOperationException("Cannot get new position from a command processing result when no events were emitted!");
+            }
+
+            return _newPosition.Value;
         }
     }
 }

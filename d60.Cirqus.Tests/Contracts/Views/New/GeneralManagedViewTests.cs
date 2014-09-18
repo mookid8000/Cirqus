@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
@@ -45,7 +44,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
             var last = _context.ProcessCommand(new GenerateNewId(IdGenerator.InstanceId) { IdBase = "bom" });
 
             // assert
-            Console.WriteLine("Waiting until dispatched: {0}", last.GlobalSequenceNumbersOfEmittedEvents.Max());
+            Console.WriteLine("Waiting until dispatched: {0}", last.GetNewPosition());
             view.WaitUntilProcessed(last, _defaultTimeout).Wait();
 
             var idsView = view.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));
@@ -73,7 +72,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New
             _context.AddViewManager(view);
 
             // assert
-            Console.WriteLine("Waiting until dispatched: {0}", last.GlobalSequenceNumbersOfEmittedEvents.Max());
+            Console.WriteLine("Waiting until dispatched: {0}", last.GetNewPosition());
             view.WaitUntilProcessed(last, _defaultTimeout).Wait();
 
             var idsView = view.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));

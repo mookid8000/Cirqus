@@ -12,6 +12,7 @@ using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.New;
 using d60.Cirqus.Views.ViewManagers.Old;
+using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagers.New.ViewManagerEventDispatcher;
 
 namespace d60.Cirqus.TestHelpers
 {
@@ -23,8 +24,8 @@ namespace d60.Cirqus.TestHelpers
         readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
         readonly InMemoryEventStore _eventStore = new InMemoryEventStore();
         readonly DefaultAggregateRootRepository _aggregateRootRepository;
+        readonly Views.ViewManagers.Old.ViewManagerEventDispatcher _oldViewManagerEventDispatcher;
         readonly ViewManagerEventDispatcher _viewManagerEventDispatcher;
-        readonly NewViewManagerEventDispatcher _newViewManagerEventDispatcher;
         readonly CompositeEventDispatcher _eventDispatcher;
         readonly ViewManagerWaitHandle _waitHandle = new ViewManagerWaitHandle();
 
@@ -35,24 +36,24 @@ namespace d60.Cirqus.TestHelpers
         {
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
 
-            _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository);
-            _newViewManagerEventDispatcher = new NewViewManagerEventDispatcher(_aggregateRootRepository, _eventStore);
+            _oldViewManagerEventDispatcher = new Views.ViewManagers.Old.ViewManagerEventDispatcher(_aggregateRootRepository);
+            _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore);
 
-            _waitHandle.Register(_newViewManagerEventDispatcher);
+            _waitHandle.Register(_viewManagerEventDispatcher);
 
-            _eventDispatcher = new CompositeEventDispatcher(_viewManagerEventDispatcher,
-                _newViewManagerEventDispatcher);
+            _eventDispatcher = new CompositeEventDispatcher(_oldViewManagerEventDispatcher,
+                _viewManagerEventDispatcher);
         }
 
         public TestContext AddViewManager(IViewManager viewManager)
         {
-            _viewManagerEventDispatcher.Add(viewManager);
+            _oldViewManagerEventDispatcher.Add(viewManager);
             return this;
         }
 
         public TestContext AddViewManager(IManagedView managedView)
         {
-            _newViewManagerEventDispatcher.AddViewManager(managedView);
+            _viewManagerEventDispatcher.AddViewManager(managedView);
             return this;
         }
 
@@ -81,7 +82,7 @@ namespace d60.Cirqus.TestHelpers
         {
             EnsureInitialized();
 
-            return new TestUnitOfWork(_aggregateRootRepository, _eventStore, _viewManagerEventDispatcher);
+            return new TestUnitOfWork(_aggregateRootRepository, _eventStore, _oldViewManagerEventDispatcher);
         }
 
         public void SetCurrentTime(DateTime fixedCurrentTime)
@@ -128,8 +129,8 @@ namespace d60.Cirqus.TestHelpers
         {
             if (!_initialized)
             {
+                _oldViewManagerEventDispatcher.Initialize(_eventStore, purgeExistingViews: true);
                 _viewManagerEventDispatcher.Initialize(_eventStore, purgeExistingViews: true);
-                _newViewManagerEventDispatcher.Initialize(_eventStore, purgeExistingViews: true);
                 _initialized = true;
             }
         }
@@ -235,7 +236,7 @@ namespace d60.Cirqus.TestHelpers
 
             if (disposing)
             {
-                _newViewManagerEventDispatcher.Dispose();
+                _viewManagerEventDispatcher.Dispose();
             }
 
             _disposed = true;
@@ -245,8 +246,11 @@ namespace d60.Cirqus.TestHelpers
         {
             var allGlobalSequenceNumbers = History.Select(h => h.GetGlobalSequenceNumber()).ToArray();
 
-            _waitHandle.WaitFor<TViewInstance>(new CommandProcessingResult(allGlobalSequenceNumbers),
-                TimeSpan.FromSeconds(10)).Wait();
+            if (!allGlobalSequenceNumbers.Any()) return;
+
+            var result = CommandProcessingResult.WithNewPosition(allGlobalSequenceNumbers.Max());
+
+            _waitHandle.WaitFor<TViewInstance>(result, TimeSpan.FromSeconds(10)).Wait();
         }
     }
 
@@ -255,7 +259,7 @@ namespace d60.Cirqus.TestHelpers
         readonly List<DomainEvent> _events;
 
         public CommandProcessingResultWithEvents(IEnumerable<DomainEvent> events)
-            : base(events.Select(e => e.GetGlobalSequenceNumber()).ToArray())
+            : base(events.Any() ? events.Max(e => e.GetGlobalSequenceNumber()) : default(long?))
         {
             _events = events.ToList();
         }

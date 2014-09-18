@@ -12,11 +12,11 @@ using Timer = System.Timers.Timer;
 
 namespace d60.Cirqus.Views.ViewManagers.New
 {
-    public class NewViewManagerEventDispatcher : IEventDispatcher, IDisposable
+    public class ViewManagerEventDispatcher : IEventDispatcher, IDisposable
     {
         static Logger _logger;
 
-        static NewViewManagerEventDispatcher()
+        static ViewManagerEventDispatcher()
         {
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
         }
@@ -39,7 +39,7 @@ namespace d60.Cirqus.Views.ViewManagers.New
         TimeSpan _automaticCatchUpInterval = TimeSpan.FromSeconds(1);
         long _sequenceNumberToCatchUpTo = -1;
 
-        public NewViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, params IManagedView[] managedViews)
+        public ViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, params IManagedView[] managedViews)
         {
             _aggregateRootRepository = aggregateRootRepository;
             _eventStore = eventStore;
@@ -170,9 +170,9 @@ namespace d60.Cirqus.Views.ViewManagers.New
                 }
             }
 
-            // get the lowest low watermark
+            // get the lowest position among all the managed views
             var lowestSequenceNumberSuccessfullyProcessed = managedViews
-                .Min(v => v.GetLowWatermark(canGetFromCache: cachedInformationAllowed));
+                .Min(v => v.GetPosition(canGetFromCache: cachedInformationAllowed));
 
             // if we've already been there, don't do anything
             if (lowestSequenceNumberSuccessfullyProcessed >= sequenceNumberToCatchUpTo) return;
@@ -240,7 +240,7 @@ namespace d60.Cirqus.Views.ViewManagers.New
 
         bool _disposed;
 
-        ~NewViewManagerEventDispatcher()
+        ~ViewManagerEventDispatcher()
         {
             Dispose(false);
         }

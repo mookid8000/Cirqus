@@ -19,40 +19,22 @@ namespace d60.Cirqus.MongoDb.Views.New
 {
     public class NewMongoDbViewManager<TViewInstance> : IManagedView<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
-        const string LowWatermarkDocId = "__low_watermark__";
-        const string LowWatermarkPropertyName = "LastGlobalSequenceNumber";
-        const long DefaultLowWatermark = -1;
+        const string CurrentPositionDocId = "__current_position__";
+        const string CurrentPositionPropertyName = "LastGlobalSequenceNumber";
+        const long DefaultPosition = -1;
 
         readonly ViewDispatcherHelper<TViewInstance> _dispatcherHelper = new ViewDispatcherHelper<TViewInstance>();
         readonly MongoCollection<TViewInstance> _viewCollection;
         readonly ViewLocator _viewLocator;
 
-        static Logger _logger;
+        Logger _logger;
 
-        static NewMongoDbViewManager()
-        {
-            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
-        }
-
-        long _cachedLowWatermark;
-
-        public NewMongoDbViewManager(string mongoDbConnectionString)
-            : this(GetDatabaseFromConnectionString(mongoDbConnectionString))
-        {
-        }
-
-        public NewMongoDbViewManager(string mongoDbConnectionString, string collectionName)
-            : this(GetDatabaseFromConnectionString(mongoDbConnectionString), collectionName)
-        {
-        }
-
-        public NewMongoDbViewManager(MongoDatabase database)
-            : this(database, typeof(TViewInstance).Name)
-        {
-        }
+        long _cachedPosition;
 
         public NewMongoDbViewManager(MongoDatabase database, string collectionName)
         {
+            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+
             try
             {
                 _viewLocator = ViewLocator.GetLocatorFor<TViewInstance>();
@@ -71,8 +53,23 @@ namespace d60.Cirqus.MongoDb.Views.New
 
             _viewCollection = database.GetCollection<TViewInstance>(collectionName);
 
-            _logger.Info("Create index in '{0}': '{1}'", collectionName, LowWatermarkPropertyName);
-            _viewCollection.CreateIndex(IndexKeys<TViewInstance>.Ascending(i => i.LastGlobalSequenceNumber), IndexOptions.SetName(LowWatermarkPropertyName));
+            _logger.Info("Create index in '{0}': '{1}'", collectionName, CurrentPositionPropertyName);
+            _viewCollection.CreateIndex(IndexKeys<TViewInstance>.Ascending(i => i.LastGlobalSequenceNumber), IndexOptions.SetName(CurrentPositionPropertyName));
+        }
+
+        public NewMongoDbViewManager(string mongoDbConnectionString)
+            : this(GetDatabaseFromConnectionString(mongoDbConnectionString))
+        {
+        }
+
+        public NewMongoDbViewManager(string mongoDbConnectionString, string collectionName)
+            : this(GetDatabaseFromConnectionString(mongoDbConnectionString), collectionName)
+        {
+        }
+
+        public NewMongoDbViewManager(MongoDatabase database)
+            : this(database, typeof(TViewInstance).Name)
+        {
         }
 
         public TViewInstance Load(string viewId)
@@ -80,24 +77,24 @@ namespace d60.Cirqus.MongoDb.Views.New
             return _viewCollection.FindOneById(viewId);
         }
 
-        public long GetLowWatermark(bool canGetFromCache = true)
+        public long GetPosition(bool canGetFromCache = true)
         {
             if (canGetFromCache && false)
             {
-                return GetLowWatermarkFromMemory()
-                       ?? GetLowWatermarkFromPersistentCache()
-                       ?? GetLowWatermarkFromViewInstances()
-                       ?? GetDefaultLowWatermark();
+                return GetPositionFromMemory()
+                       ?? GetPositionFromPersistentCache()
+                       ?? GetPositionFromViewInstances()
+                       ?? GetDefaultPosition();
             }
 
-            return GetLowWatermarkFromPersistentCache()
-                       ?? GetLowWatermarkFromViewInstances()
-                       ?? GetDefaultLowWatermark();
+            return GetPositionFromPersistentCache()
+                       ?? GetPositionFromViewInstances()
+                       ?? GetDefaultPosition();
         }
 
-        static long GetDefaultLowWatermark()
+        static long GetDefaultPosition()
         {
-            return DefaultLowWatermark;
+            return DefaultPosition;
         }
 
         public void Purge()
@@ -106,18 +103,18 @@ namespace d60.Cirqus.MongoDb.Views.New
 
             _viewCollection.RemoveAll();
 
-            Interlocked.Exchange(ref _cachedLowWatermark, DefaultLowWatermark);
+            Interlocked.Exchange(ref _cachedPosition, DefaultPosition);
         }
 
         public async Task WaitUntilProcessed(CommandProcessingResult result, TimeSpan timeout)
         {
             if (!result.EventsWereEmitted) return;
 
-            var mostRecentGlobalSequenceNumber = result.GlobalSequenceNumbersOfEmittedEvents.Max();
+            var mostRecentGlobalSequenceNumber = result.GetNewPosition();
 
             var stopwatch = Stopwatch.StartNew();
 
-            while (GetLowWatermark(canGetFromCache: false) < mostRecentGlobalSequenceNumber)
+            while (GetPosition(canGetFromCache: false) < mostRecentGlobalSequenceNumber)
             {
                 if (stopwatch.Elapsed > timeout)
                 {
@@ -129,15 +126,15 @@ namespace d60.Cirqus.MongoDb.Views.New
             }
         }
 
-        void UpdateLowWatermark(long newLowWatermark)
+        void UpdatePersistentCache(long newPosition)
         {
-            _logger.Debug("Updating persistent low watermark to {0}", newLowWatermark);
+            _logger.Debug("Updating persistent position cache to {0}", newPosition);
 
-            _viewCollection.Update(Query.EQ("_id", LowWatermarkDocId),
-                Update.Set(LowWatermarkPropertyName, newLowWatermark),
+            _viewCollection.Update(Query.EQ("_id", CurrentPositionDocId),
+                Update.Set(CurrentPositionPropertyName, newPosition),
                 UpdateFlags.Upsert);
 
-            Interlocked.Exchange(ref _cachedLowWatermark, newLowWatermark);
+            Interlocked.Exchange(ref _cachedPosition, newPosition);
         }
 
         public void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
@@ -164,7 +161,7 @@ namespace d60.Cirqus.MongoDb.Views.New
 
             FlushCacheToDatabase(cachedViewInstances);
 
-            UpdateLowWatermark(eventList.Max(e => e.GetGlobalSequenceNumber()));
+            UpdatePersistentCache(eventList.Max(e => e.GetGlobalSequenceNumber()));
         }
 
         void FlushCacheToDatabase(Dictionary<string, TViewInstance> cachedViewInstances)
@@ -194,43 +191,51 @@ namespace d60.Cirqus.MongoDb.Views.New
             return instanceToReturn;
         }
 
-        long? GetLowWatermarkFromMemory()
+        long? GetPositionFromMemory()
         {
-            var value = Interlocked.Read(ref _cachedLowWatermark);
+            var value = Interlocked.Read(ref _cachedPosition);
 
-            if (value != DefaultLowWatermark)
+            if (value != DefaultPosition)
                 return value;
 
             return null;
         }
 
-        long? GetLowWatermarkFromPersistentCache()
+        long? GetPositionFromPersistentCache()
         {
-            var lowWatermarkDocument = _viewCollection
-                .FindOneByIdAs<BsonDocument>(LowWatermarkDocId);
+            var currentPositionDocument = _viewCollection
+                .FindOneByIdAs<BsonDocument>(CurrentPositionDocId);
 
-            if (lowWatermarkDocument == null) return null;
+            if (currentPositionDocument == null) return null;
             
-            var lowWatermark = lowWatermarkDocument[LowWatermarkPropertyName].AsInt64;
+            var currentPosition = currentPositionDocument[CurrentPositionPropertyName].AsInt64;
 
-            return lowWatermark;
+            return currentPosition;
         }
 
-        long? GetLowWatermarkFromViewInstances()
+        long? GetPositionFromViewInstances()
         {
+            // with MongoDB, we cannot know for sure how many events we've successfully processed of those that
+            // have sequence numbers between the MIN and MAX sequence numbers currently stored in our views
+            // - therefore, to be safe, we need to pick the MIN as our starting point....
+
+            var onlyTheSequenceNumber = Fields<TViewInstance>.Include(i => i.LastGlobalSequenceNumber).Exclude(i => i.Id);
+            
+            var ascendingBySequenceNumber = SortBy<TViewInstance>.Ascending(v => v.LastGlobalSequenceNumber);
+
             var viewWithTheLowestGlobalSequenceNumber =
                 _viewCollection
                     .FindAll()
-                    .SetFields(Fields<TViewInstance>.Include(i => i.LastGlobalSequenceNumber).Exclude(i => i.Id))
+                    .SetFields(onlyTheSequenceNumber)
                     .SetLimit(1)
-                    .SetSortOrder(SortBy<TViewInstance>.Ascending(v => v.LastGlobalSequenceNumber))
+                    .SetSortOrder(ascendingBySequenceNumber)
                     .FirstOrDefault();
 
             if (viewWithTheLowestGlobalSequenceNumber == null) return null;
             
-            var lowWatermark = viewWithTheLowestGlobalSequenceNumber.LastGlobalSequenceNumber;
+            var lowPosition = viewWithTheLowestGlobalSequenceNumber.LastGlobalSequenceNumber;
 
-            return lowWatermark;
+            return lowPosition;
         }
 
         static MongoDatabase GetDatabaseFromConnectionString(string mongoDbConnectionString)

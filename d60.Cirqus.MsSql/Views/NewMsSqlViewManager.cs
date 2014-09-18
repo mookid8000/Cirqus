@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,25 +16,22 @@ namespace d60.Cirqus.MsSql.Views
 {
     public class NewMsSqlViewManager<TViewInstance> : IManagedView<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
-        static Logger _logger;
-
-        static NewMsSqlViewManager()
-        {
-            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
-        }
-
         const int PrimaryKeySize = 100;
-        const int DefaultLowWatermark = -1;
+        const int DefaultPosition = -1;
 
         readonly ViewDispatcherHelper<TViewInstance> _dispatcher = new ViewDispatcherHelper<TViewInstance>();
         readonly string _connectionString;
         readonly string _tableName;
         readonly Prop[] _schema;
 
-        long _cachedLowWatermark;
+        Logger _logger;
+
+        long _cachedPosition;
 
         public NewMsSqlViewManager(string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true)
         {
+            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+
             _connectionString = SqlHelper.GetConnectionString(connectionStringOrConnectionStringName);
             _tableName = tableName;
             _schema = SchemaHelper.GetSchema<TViewInstance>();
@@ -51,24 +47,24 @@ namespace d60.Cirqus.MsSql.Views
         {
         }
 
-        public long GetLowWatermark(bool canGetFromCache = true)
+        public long GetPosition(bool canGetFromCache = true)
         {
             if (canGetFromCache && false)
             {
-                return GetLowWatermarkFromMemory()
-                       ?? GetLowWatermarkFromDb()
-                       ?? DefaultLowWatermark;
+                return GetPositionFromMemory()
+                       ?? GetPositionFromDb()
+                       ?? DefaultPosition;
             }
 
-            return GetLowWatermarkFromDb()
-                   ?? DefaultLowWatermark;
+            return GetPositionFromDb()
+                   ?? DefaultPosition;
         }
 
-        long? GetLowWatermarkFromMemory()
+        long? GetPositionFromMemory()
         {
-            var value = Interlocked.Read(ref _cachedLowWatermark);
+            var value = Interlocked.Read(ref _cachedPosition);
 
-            if (value != DefaultLowWatermark)
+            if (value != DefaultPosition)
             {
                 return value;
             }
@@ -76,7 +72,7 @@ namespace d60.Cirqus.MsSql.Views
             return null;
         }
 
-        long? GetLowWatermarkFromDb()
+        long? GetPositionFromDb()
         {
             using (var conn = new SqlConnection(_connectionString))
             {
@@ -139,18 +135,18 @@ namespace d60.Cirqus.MsSql.Views
                 }
             }
 
-            Interlocked.Exchange(ref _cachedLowWatermark, eventList.Max(e => e.GetGlobalSequenceNumber()));
+            Interlocked.Exchange(ref _cachedPosition, eventList.Max(e => e.GetGlobalSequenceNumber()));
         }
 
         public async Task WaitUntilProcessed(CommandProcessingResult result, TimeSpan timeout)
         {
             if (!result.EventsWereEmitted) return;
 
-            var mostRecentGlobalSequenceNumber = result.GlobalSequenceNumbersOfEmittedEvents.Max();
+            var mostRecentGlobalSequenceNumber = result.GetNewPosition();
 
             var stopwatch = Stopwatch.StartNew();
 
-            while (GetLowWatermark(canGetFromCache: false) < mostRecentGlobalSequenceNumber)
+            while (GetPosition(canGetFromCache: false) < mostRecentGlobalSequenceNumber)
             {
                 if (stopwatch.Elapsed > timeout)
                 {
@@ -196,7 +192,7 @@ namespace d60.Cirqus.MsSql.Views
                 }
             }
 
-            Interlocked.Exchange(ref _cachedLowWatermark, DefaultLowWatermark);
+            Interlocked.Exchange(ref _cachedPosition, DefaultPosition);
         }
 
         TViewInstance FindOneById(string viewId, SqlTransaction tx, SqlConnection conn)

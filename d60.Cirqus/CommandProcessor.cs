@@ -118,7 +118,9 @@ namespace d60.Cirqus
                 throw new ApplicationException(message, exception);
             }
 
-            return new CommandProcessingResult(emittedDomainEvents.Select(d => d.GetGlobalSequenceNumber()).ToArray());
+            return emittedDomainEvents.Any() 
+                ? CommandProcessingResult.WithNewPosition(emittedDomainEvents.Max(e => e.GetGlobalSequenceNumber())) 
+                : CommandProcessingResult.NoEvents();
         }
 
         IEnumerable<DomainEvent> InnerProcessCommand(Command command)

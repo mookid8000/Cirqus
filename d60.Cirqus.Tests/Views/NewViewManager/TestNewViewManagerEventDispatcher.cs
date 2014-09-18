@@ -22,7 +22,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
     [TestFixture, Category(TestCategories.MongoDb)]
     public class TestNewViewManagerEventDispatcher : FixtureBase
     {
-        NewViewManagerEventDispatcher _dispatcher;
+        ViewManagerEventDispatcher _dispatcher;
 
         ICommandProcessor _commandProcessor;
         MongoDatabase _mongoDatabase;
@@ -41,7 +41,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
                     var repository = r.Get<IAggregateRootRepository>();
                     var eventStore = r.Get<IEventStore>();
 
-                    _dispatcher = new NewViewManagerEventDispatcher(repository, eventStore);
+                    _dispatcher = new ViewManagerEventDispatcher(repository, eventStore);
 
                     return _dispatcher;
                 }))
@@ -65,7 +65,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
 
             var lastResult = _commandProcessor.ProcessCommand(new BitePotato(Guid.NewGuid(), .01m));
 
-            Console.WriteLine("Waiting until {0} has been dispatched to the view...", lastResult.GlobalSequenceNumbersOfEmittedEvents.Max());
+            Console.WriteLine("Waiting until {0} has been dispatched to the view...", lastResult.GetNewPosition());
             allPotatoesView.WaitUntilProcessed(lastResult, TimeSpan.FromSeconds(2)).Wait();
 
             var viewOnFirstLoad = allPotatoesView.Load(GlobalInstanceLocator.GetViewInstanceId());
@@ -74,7 +74,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             Console.WriteLine("Purging the view!");
             allPotatoesView.Purge();
 
-            Console.WriteLine("Waiting until {0} has been dispatched to the view...", lastResult.GlobalSequenceNumbersOfEmittedEvents.Max());
+            Console.WriteLine("Waiting until {0} has been dispatched to the view...", lastResult.GetNewPosition());
             allPotatoesView.WaitUntilProcessed(lastResult, TimeSpan.FromSeconds(2)).Wait();
 
             var viewOnNextLoad = allPotatoesView.Load(GlobalInstanceLocator.GetViewInstanceId());
@@ -111,11 +111,11 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             switch (blockOption)
             {
                 case BlockOption.BlockOnManagedView:
-                    Console.WriteLine("Waiting for {0} on the view...", result.GlobalSequenceNumbersOfEmittedEvents.Max());
+                    Console.WriteLine("Waiting for {0} on the view...", result.GetNewPosition());
                     slowView.WaitUntilProcessed(result, TimeSpan.FromSeconds(2)).Wait();
                     break;
                 case BlockOption.BlockOnViewManager:
-                    Console.WriteLine("Waiting for {0} on the dispatcher...", result.GlobalSequenceNumbersOfEmittedEvents.Max());
+                    Console.WriteLine("Waiting for {0} on the dispatcher...", result.GetNewPosition());
                     _dispatcher.WaitUntilProcessed<SlowView>(result, TimeSpan.FromSeconds(2)).Wait();
                     break;
             }
