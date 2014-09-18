@@ -51,16 +51,11 @@ namespace d60.Cirqus.TestHelpers
         /// <summary>
         /// Processes the specified command in a unit of work.
         /// </summary>
-        /// <typeparam name="TAggregateRoot"></typeparam>
-        /// <param name="command"></param>
-        /// <returns></returns>
-        public CommandProcessingResultWithEvents ProcessCommand<TAggregateRoot>(Command<TAggregateRoot> command) where TAggregateRoot : AggregateRoot, new()
+        public CommandProcessingResultWithEvents ProcessCommand(Command command)
         {
             using (var unitOfWork = BeginUnitOfWork())
             {
-                var aggregateRoot = unitOfWork.Get<TAggregateRoot>(command.AggregateRootId);
-
-                command.Execute(aggregateRoot);
+                command.Execute(new DefaultCommandContext(unitOfWork.RealUnitOfWork, _aggregateRootRepository));
 
                 var eventsToReturn = unitOfWork.EmittedEvents.ToList();
 
