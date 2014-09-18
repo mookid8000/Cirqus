@@ -10,7 +10,7 @@ using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using Timer = System.Timers.Timer;
 
-namespace d60.Cirqus.Views.ViewManagers.New
+namespace d60.Cirqus.Views.ViewManagers
 {
     public class ViewManagerEventDispatcher : IEventDispatcher, IDisposable
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace d60.Cirqus.Views.ViewManagers.New
+namespace d60.Cirqus.Views.ViewManagers
 {
     /// <summary>
     /// The wait handle is used to provide a uniform interface to the ability to wait in a blocking fashion for one or

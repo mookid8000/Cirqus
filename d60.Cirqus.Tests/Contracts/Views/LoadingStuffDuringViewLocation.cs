@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using d60.Cirqus.Aggregates;
-using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
-using d60.Cirqus.Tests.Contracts.Views.New.Factories;
+using d60.Cirqus.Tests.Contracts.Views.Factories;
 using d60.Cirqus.Views.ViewManagers;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.TestHelpers.TestContext;
 
-namespace d60.Cirqus.Tests.Contracts.Views.New
+namespace d60.Cirqus.Tests.Contracts.Views
 {
     [TestFixture(typeof(MongoDbManagedViewFactory), Category = TestCategories.MongoDb)]
     [TestFixture(typeof(MsSqlManagedViewFactory), Category = TestCategories.MsSql)]

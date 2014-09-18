@@ -10,9 +10,8 @@ using d60.Cirqus.Serialization;
 using d60.Cirqus.TestHelpers.Internals;
 using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
-using d60.Cirqus.Views.ViewManagers.New;
 using d60.Cirqus.Views.ViewManagers.Old;
-using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagers.New.ViewManagerEventDispatcher;
+using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagers.ViewManagerEventDispatcher;
 
 namespace d60.Cirqus.TestHelpers
 {

@@ -6,7 +6,7 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 
-namespace d60.Cirqus.Tests.Contracts.Views.New.Models
+namespace d60.Cirqus.Tests.Contracts.Views.Models
 {
     public class IdGenerator : AggregateRoot, IEmit<IdGenerated>
     {

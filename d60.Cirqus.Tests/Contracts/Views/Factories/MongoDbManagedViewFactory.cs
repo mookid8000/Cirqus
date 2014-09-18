@@ -1,9 +1,9 @@
-﻿using d60.Cirqus.MongoDb.Views.New;
+﻿using d60.Cirqus.MongoDb.Views;
 using d60.Cirqus.Tests.MongoDb;
-using d60.Cirqus.Views.ViewManagers.New;
+using d60.Cirqus.Views.ViewManagers;
 using MongoDB.Driver;
 
-namespace d60.Cirqus.Tests.Contracts.Views.New.Factories
+namespace d60.Cirqus.Tests.Contracts.Views.Factories
 {
     public class MongoDbManagedViewFactory : AbstractManagedViewFactory
     {
@@ -16,7 +16,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New.Factories
 
         protected override IManagedView<TViewInstance> CreateManagedView<TViewInstance>()
         {
-            var managedView = new NewMongoDbViewManager<TViewInstance>(_database);
+            var managedView = new MongoDbViewManager<TViewInstance>(_database);
 
             return managedView;
         }

@@ -7,13 +7,13 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.MongoDb.Config;
-using d60.Cirqus.MongoDb.Views.New;
+using d60.Cirqus.MongoDb.Views;
 using d60.Cirqus.Numbers;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Views.NewViewManager.Commands;
 using d60.Cirqus.Tests.Views.NewViewManager.Views;
+using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
-using d60.Cirqus.Views.ViewManagers.New;
 using MongoDB.Driver;
 using NUnit.Framework;
 
@@ -55,7 +55,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
         [TestCase(1000)]
         public void AutomaticallyReplaysEventsIfViewIsPurged(int numberOfCommands)
         {
-            var allPotatoesView = new NewMongoDbViewManager<AllPotatoesView>(_mongoDatabase);
+            var allPotatoesView = new MongoDbViewManager<AllPotatoesView>(_mongoDatabase);
             _dispatcher.AddViewManager(allPotatoesView);
 
             Console.WriteLine("Processing {0} commands....", numberOfCommands);
@@ -96,7 +96,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
         public void CanBlockUntilViewIsUpdated(BlockOption blockOption)
         {
             // arrange
-            var slowView = new NewMongoDbViewManager<SlowView>(_mongoDatabase);
+            var slowView = new MongoDbViewManager<SlowView>(_mongoDatabase);
             _dispatcher.AddViewManager(slowView);
 
             var potatoId = Guid.NewGuid();
@@ -139,8 +139,8 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
         [Test]
         public void BasicDispatchOfSomeEvents()
         {
-            var allPotatoesView = new NewMongoDbViewManager<AllPotatoesView>(_mongoDatabase);
-            var potatoTimeToBeConsumedView = new NewMongoDbViewManager<PotatoTimeToBeConsumedView>(_mongoDatabase);
+            var allPotatoesView = new MongoDbViewManager<AllPotatoesView>(_mongoDatabase);
+            var potatoTimeToBeConsumedView = new MongoDbViewManager<PotatoTimeToBeConsumedView>(_mongoDatabase);
             
             _dispatcher.AddViewManager(allPotatoesView);
             _dispatcher.AddViewManager(potatoTimeToBeConsumedView);

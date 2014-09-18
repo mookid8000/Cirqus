@@ -6,7 +6,7 @@ using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Views.ViewManagers;
 
-namespace d60.Cirqus.Tests.Contracts.Views.New.Models
+namespace d60.Cirqus.Tests.Contracts.Views.Models
 {
     public class EventEmitter : AggregateRoot, IEmit<AnEvent>
     {

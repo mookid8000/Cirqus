@@ -12,7 +12,7 @@ namespace d60.Cirqus.Tests.MsSql
     [TestFixture]
     public class TestNewMsSqlViewManager_AutomaticSchemaRegeneration : FixtureBase
     {
-        NewMsSqlViewManager<SomeView> _viewManager;
+        MsSqlViewManager<SomeView> _viewManager;
         string _connectionString;
 
         protected override void DoSetUp()
@@ -28,13 +28,13 @@ namespace d60.Cirqus.Tests.MsSql
         public void AutomaticallyRegeneratesSchemaIfColumnIsMissing()
         {
             // arrange
-            _viewManager = new NewMsSqlViewManager<SomeView>(_connectionString, "views", automaticallyCreateSchema: true);
+            _viewManager = new MsSqlViewManager<SomeView>(_connectionString, "views", automaticallyCreateSchema: true);
 
             // schema is generated now - let's drop a column and re-initialize the view manager
             DropColumn("views", "ColumnA");
 
             // act
-            _viewManager = new NewMsSqlViewManager<SomeView>(_connectionString, "views", automaticallyCreateSchema: true);
+            _viewManager = new MsSqlViewManager<SomeView>(_connectionString, "views", automaticallyCreateSchema: true);
 
             // assert
             _viewManager.Dispatch(new ThrowingViewContext(), new[]

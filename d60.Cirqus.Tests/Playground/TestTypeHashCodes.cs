@@ -49,6 +49,7 @@ namespace d60.Cirqus.Tests.Playground
     {
         class SomeClass { }
     }
+
     namespace N2
     {
         class SomeClass { }

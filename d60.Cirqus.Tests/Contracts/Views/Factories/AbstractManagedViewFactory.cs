@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Views.ViewManagers;
-using d60.Cirqus.Views.ViewManagers.New;
 
-namespace d60.Cirqus.Tests.Contracts.Views.New.Factories
+namespace d60.Cirqus.Tests.Contracts.Views.Factories
 {
     public abstract class AbstractManagedViewFactory
     {

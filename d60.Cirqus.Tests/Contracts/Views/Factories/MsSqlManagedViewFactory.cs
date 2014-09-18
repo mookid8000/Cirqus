@@ -1,8 +1,8 @@
 ﻿using d60.Cirqus.MsSql.Views;
 using d60.Cirqus.Tests.MsSql;
-using d60.Cirqus.Views.ViewManagers.New;
+using d60.Cirqus.Views.ViewManagers;
 
-namespace d60.Cirqus.Tests.Contracts.Views.New.Factories
+namespace d60.Cirqus.Tests.Contracts.Views.Factories
 {
     public class MsSqlManagedViewFactory : AbstractManagedViewFactory
     {
@@ -21,7 +21,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.New.Factories
 
             MsSqlTestHelper.DropTable(tableName);
 
-            var viewManager = new NewMsSqlViewManager<TViewInstance>(_connectionString, tableName);
+            var viewManager = new MsSqlViewManager<TViewInstance>(_connectionString, tableName);
 
             return viewManager;
         }

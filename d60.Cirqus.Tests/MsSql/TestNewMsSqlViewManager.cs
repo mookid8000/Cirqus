@@ -13,7 +13,7 @@ namespace d60.Cirqus.Tests.MsSql
     [TestFixture]
     public class TestNewMsSqlViewManager : FixtureBase
     {
-        NewMsSqlViewManager<ViewInstanceWithManyPropertyTypes> _viewManager;
+        MsSqlViewManager<ViewInstanceWithManyPropertyTypes> _viewManager;
 
         protected override void DoSetUp()
         {
@@ -23,7 +23,7 @@ namespace d60.Cirqus.Tests.MsSql
 
             MsSqlTestHelper.DropTable("views");
 
-            _viewManager = new NewMsSqlViewManager<ViewInstanceWithManyPropertyTypes>(connectionString, "views");
+            _viewManager = new MsSqlViewManager<ViewInstanceWithManyPropertyTypes>(connectionString, "views");
         }
 
         [Test]

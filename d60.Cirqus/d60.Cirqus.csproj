@@ -110,10 +110,10 @@
     <Compile Include="Views\CompositeEventDispatcher.cs" />
     <Compile Include="Views\ViewManagers\HandlerViewLocator.cs" />
     <Compile Include="Views\ViewManagers\IGetViewIdsFor.cs" />
-    <Compile Include="Views\ViewManagers\New\DefaultViewContext.cs" />
-    <Compile Include="Views\ViewManagers\New\IManagedView.cs" />
-    <Compile Include="Views\ViewManagers\New\ViewManagerEventDispatcher.cs" />
-    <Compile Include="Views\ViewManagers\New\ViewManagerWaitHandle.cs" />
+    <Compile Include="Views\ViewManagers\DefaultViewContext.cs" />
+    <Compile Include="Views\ViewManagers\IManagedView.cs" />
+    <Compile Include="Views\ViewManagers\ViewManagerEventDispatcher.cs" />
+    <Compile Include="Views\ViewManagers\ViewManagerWaitHandle.cs" />
     <Compile Include="Views\ViewManagers\Old\ViewManagerEventDispatcher.cs" />
     <Compile Include="Views\ViewManagers\Old\InMemoryViewManager.cs" />
     <Compile Include="Views\ViewManagers\IViewContext.cs" />

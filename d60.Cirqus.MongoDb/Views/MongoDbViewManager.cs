@@ -10,14 +10,13 @@ using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
-using d60.Cirqus.Views.ViewManagers.New;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 
-namespace d60.Cirqus.MongoDb.Views.New
+namespace d60.Cirqus.MongoDb.Views
 {
-    public class NewMongoDbViewManager<TViewInstance> : IManagedView<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
+    public class MongoDbViewManager<TViewInstance> : IManagedView<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
         const string CurrentPositionDocId = "__current_position__";
         const string CurrentPositionPropertyName = "LastGlobalSequenceNumber";
@@ -31,7 +30,7 @@ namespace d60.Cirqus.MongoDb.Views.New
 
         long _cachedPosition;
 
-        public NewMongoDbViewManager(MongoDatabase database, string collectionName)
+        public MongoDbViewManager(MongoDatabase database, string collectionName)
         {
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
 
@@ -57,17 +56,17 @@ namespace d60.Cirqus.MongoDb.Views.New
             _viewCollection.CreateIndex(IndexKeys<TViewInstance>.Ascending(i => i.LastGlobalSequenceNumber), IndexOptions.SetName(CurrentPositionPropertyName));
         }
 
-        public NewMongoDbViewManager(string mongoDbConnectionString)
+        public MongoDbViewManager(string mongoDbConnectionString)
             : this(GetDatabaseFromConnectionString(mongoDbConnectionString))
         {
         }
 
-        public NewMongoDbViewManager(string mongoDbConnectionString, string collectionName)
+        public MongoDbViewManager(string mongoDbConnectionString, string collectionName)
             : this(GetDatabaseFromConnectionString(mongoDbConnectionString), collectionName)
         {
         }
 
-        public NewMongoDbViewManager(MongoDatabase database)
+        public MongoDbViewManager(MongoDatabase database)
             : this(database, typeof(TViewInstance).Name)
         {
         }

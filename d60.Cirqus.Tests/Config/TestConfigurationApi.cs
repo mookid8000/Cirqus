@@ -11,11 +11,10 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.MongoDb.Config;
-using d60.Cirqus.MongoDb.Views.New;
+using d60.Cirqus.MongoDb.Views;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
-using d60.Cirqus.Views.ViewManagers.New;
 using MongoDB.Driver.Builders;
 using NUnit.Framework;
 
@@ -36,10 +35,10 @@ namespace d60.Cirqus.Tests.Config
                 .EventStore(e => e.UseMongoDb(database, "Events"))
                 .EventDispatcher(d =>
                 {
-                    d.UseNewViewManagerEventDispatcher(waiter, new NewMongoDbViewManager<ConfigTestView>(database, "view1"));
-                    d.UseNewViewManagerEventDispatcher(waiter, new NewMongoDbViewManager<ConfigTestView>(database, "view2"));
-                    d.UseNewViewManagerEventDispatcher(waiter, new NewMongoDbViewManager<ConfigTestView>(database, "view3"));
-                    d.UseNewViewManagerEventDispatcher(waiter, new NewMongoDbViewManager<ConfigTestView>(database, "view4"));
+                    d.UseNewViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view1"));
+                    d.UseNewViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view2"));
+                    d.UseNewViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view3"));
+                    d.UseNewViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view4"));
                 })
                 .Create();
 

@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Threading;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
-using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.TestHelpers.Internals;
 using d60.Cirqus.Tests.Stubs;
@@ -12,6 +11,7 @@ using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Old;
 using NUnit.Framework;
+using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagers.Old.ViewManagerEventDispatcher;
 
 namespace d60.Cirqus.Tests.Views
 {

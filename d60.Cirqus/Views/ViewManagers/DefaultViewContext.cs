@@ -4,7 +4,7 @@ using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 
-namespace d60.Cirqus.Views.ViewManagers.New
+namespace d60.Cirqus.Views.ViewManagers
 {
     /// <summary>
     /// View context implementation that works nicely with the existing view managers

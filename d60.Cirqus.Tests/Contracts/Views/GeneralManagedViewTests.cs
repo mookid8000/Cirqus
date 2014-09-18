@@ -2,17 +2,18 @@
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
-using d60.Cirqus.Tests.Contracts.Views.New.Factories;
-using d60.Cirqus.Tests.Contracts.Views.New.Models;
+using d60.Cirqus.Tests.Contracts.Views.Factories;
+using d60.Cirqus.Tests.Contracts.Views.Models;
+using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
-using d60.Cirqus.Views.ViewManagers.New;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.TestHelpers.TestContext;
 
-namespace d60.Cirqus.Tests.Contracts.Views.New
+namespace d60.Cirqus.Tests.Contracts.Views
 {
     [TestFixture(typeof(MongoDbManagedViewFactory), Category = TestCategories.MongoDb)]
     [TestFixture(typeof(MsSqlManagedViewFactory), Category = TestCategories.MsSql)]
+    [TestFixture(typeof(InMemoryManagedViewFactory))]
     public class GeneralManagedViewTests<TFactory> : FixtureBase where TFactory : AbstractManagedViewFactory, new()
     {
         readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(5);

@@ -6,7 +6,6 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
-using d60.Cirqus.Views.ViewManagers.New;
 
 namespace d60.Cirqus.Views.ViewManagers.Old
 {

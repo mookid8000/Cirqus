@@ -8,9 +8,9 @@ using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Logging.Null;
 using d60.Cirqus.Snapshotting;
 using d60.Cirqus.Views;
-using d60.Cirqus.Views.ViewManagers.New;
+using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Old;
-using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagers.New.ViewManagerEventDispatcher;
+using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagers.ViewManagerEventDispatcher;
 
 namespace d60.Cirqus.Config
 {
@@ -55,7 +55,7 @@ namespace d60.Cirqus.Config
         }
 
         /// <summary>
-        /// Registers a <see cref="Views.ViewManagers.New.ViewManagerEventDispatcher"/> to manage the given views. Can be called multiple times in order to register
+        /// Registers a <see cref="ViewManagerEventDispatcher"/> to manage the given views. Can be called multiple times in order to register
         /// multiple "pools" of views (each will be managed by a dedicated worker thread).
         /// </summary>
         public static void UseNewViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IManagedView[] managedViews)

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using d60.Cirqus.MongoDb.Views;
-using d60.Cirqus.MongoDb.Views.Old;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Old;
@@ -34,9 +32,9 @@ namespace d60.Cirqus.Tests.Contracts.Views.Old.Factories
             return new PushOnlyWrapper(viewManager);
         }
 
-        MongoDbViewManager<TView> GetMongoDbViewManager<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
+        Cirqus.MongoDb.Views.Old.MongoDbViewManager<TView> GetMongoDbViewManager<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
         {
-            var viewManager = new MongoDbViewManager<TView>(_database, typeof (TView).Name);
+            var viewManager = new Cirqus.MongoDb.Views.Old.MongoDbViewManager<TView>(_database, typeof (TView).Name);
 
             MaxDomainEventsBetweenFlushSet += maxEvents => viewManager.MaxDomainEventsBetweenFlush = maxEvents;
 
@@ -46,7 +44,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.Old.Factories
 
         public TView Load<TView>(string viewId) where TView : class, IViewInstance, ISubscribeTo, new()
         {
-            var viewManager = _viewManagers.OfType<MongoDbViewManager<TView>>().FirstOrDefault();
+            var viewManager = _viewManagers.OfType<Cirqus.MongoDb.Views.Old.MongoDbViewManager<TView>>().FirstOrDefault();
 
             if (viewManager == null)
             {

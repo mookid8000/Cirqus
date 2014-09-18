@@ -2,42 +2,38 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using d60.Cirqus.Events;
-using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Logging;
 using d60.Cirqus.Views.ViewManagers;
-using d60.Cirqus.Views.ViewManagers.Old;
 
 namespace d60.Cirqus.MsSql.Views
 {
-    public class MsSqlViewManager<TView> : IPushViewManager, IPullViewManager where TView : class, IViewInstance, ISubscribeTo, new()
+    public class MsSqlViewManager<TViewInstance> : IManagedView<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
         const int PrimaryKeySize = 100;
+        const int DefaultPosition = -1;
+
+        readonly ViewDispatcherHelper<TViewInstance> _dispatcher = new ViewDispatcherHelper<TViewInstance>();
+        readonly string _connectionString;
         readonly string _tableName;
-        readonly Func<SqlConnection> _connectionProvider;
-        readonly Action<SqlConnection> _cleanupAction;
         readonly Prop[] _schema;
-        readonly ViewDispatcherHelper<TView> _dispatcher = new ViewDispatcherHelper<TView>();
-        int _maxDomainEventsBetweenFlush;
-        bool _initialized;
+
+        Logger _logger;
+
+        long _cachedPosition;
 
         public MsSqlViewManager(string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true)
         {
+            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+
+            _connectionString = SqlHelper.GetConnectionString(connectionStringOrConnectionStringName);
             _tableName = tableName;
-
-            var connectionString = SqlHelper.GetConnectionString(connectionStringOrConnectionStringName);
-
-            _connectionProvider = () =>
-            {
-                var connection = new SqlConnection(connectionString);
-                connection.Open();
-                return connection;
-            };
-
-            _cleanupAction = connection => connection.Dispose();
-
-            _schema = SchemaHelper.GetSchema<TView>();
+            _schema = SchemaHelper.GetSchema<TViewInstance>();
 
             if (automaticallyCreateSchema)
             {
@@ -45,62 +41,143 @@ namespace d60.Cirqus.MsSql.Views
             }
         }
 
-        public void Initialize(IViewContext context, IEventStore eventStore, bool purgeExistingViews = false)
+        public MsSqlViewManager(string connectionString, bool automaticallyCreateSchema = true)
+            : this(connectionString, typeof(TViewInstance).Name, automaticallyCreateSchema)
         {
-            if (purgeExistingViews)
-            {
-                Purge();
-            }
-
-            CatchUp(context, eventStore, long.MaxValue);
-
-            _initialized = true;
         }
 
-        public void CatchUp(IViewContext context, IEventStore eventStore, long lastGlobalSequenceNumber)
+        public long GetPosition(bool canGetFromCache = true)
         {
-            var maxSequenceNumber = GetMaxSequenceNumber();
-            var globalSequenceNumberCutoff = maxSequenceNumber + 1;
-
-            var batches = eventStore.Stream(globalSequenceNumberCutoff).Batch(1000);
-
-            foreach (var partition in batches)
+            if (canGetFromCache && false)
             {
-                InnerDispatch(context, eventStore, partition);
+                return GetPositionFromMemory()
+                       ?? GetPositionFromDb()
+                       ?? DefaultPosition;
             }
+
+            return GetPositionFromDb()
+                   ?? DefaultPosition;
         }
 
-        public bool Stopped { get; set; }
-
-        long GetMaxSequenceNumber()
+        long? GetPositionFromMemory()
         {
-            var max = -1L;
+            var value = Interlocked.Read(ref _cachedPosition);
 
-            WithConnection(conn =>
+            if (value != DefaultPosition)
             {
+                return value;
+            }
+
+            return null;
+        }
+
+        long? GetPositionFromDb()
+        {
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+
                 using (var tx = conn.BeginTransaction())
                 {
                     using (var cmd = conn.CreateCommand())
                     {
                         cmd.Transaction = tx;
-                        cmd.CommandText = string.Format("SELECT MAX([GlobalSeqNo]) FROM [{0}]", _tableName);
+                        cmd.CommandText = string.Format("SELECT MAX([LastGlobalSequenceNumber]) FROM [{0}]", _tableName);
 
                         var result = cmd.ExecuteScalar();
 
-                        max = result != DBNull.Value
-                            ? (long)result
-                            : -1L;
+                        if (result != DBNull.Value)
+                        {
+                            return (long)result;
+                        }
                     }
                 }
-            });
+            }
 
-            return max;
+            return null;
+        }
+
+        public void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
+        {
+            var eventList = batch.ToList();
+
+            if (!eventList.Any()) return;
+
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+
+                using (var tx = conn.BeginTransaction())
+                {
+                    var locator = ViewLocator.GetLocatorFor<TViewInstance>();
+                    var activeViewsById = new Dictionary<string, TViewInstance>();
+
+                    foreach (var e in eventList)
+                    {
+                        if (!ViewLocator.IsRelevant<TViewInstance>(e)) continue;
+
+                        var viewIds = locator.GetAffectedViewIds(viewContext, e);
+
+                        foreach (var viewId in viewIds)
+                        {
+                            var view = activeViewsById
+                                .GetOrAdd(viewId, id => FindOneById(id, tx, conn)
+                                                        ?? _dispatcher.CreateNewInstance(viewId));
+
+                            _dispatcher.DispatchToView(viewContext, e, view);
+                        }
+                    }
+
+                    Save(activeViewsById, conn, tx);
+
+                    tx.Commit();
+                }
+            }
+
+            Interlocked.Exchange(ref _cachedPosition, eventList.Max(e => e.GetGlobalSequenceNumber()));
+        }
+
+        public async Task WaitUntilProcessed(CommandProcessingResult result, TimeSpan timeout)
+        {
+            if (!result.EventsWereEmitted) return;
+
+            var mostRecentGlobalSequenceNumber = result.GetNewPosition();
+
+            var stopwatch = Stopwatch.StartNew();
+
+            while (GetPosition(canGetFromCache: false) < mostRecentGlobalSequenceNumber)
+            {
+                if (stopwatch.Elapsed > timeout)
+                {
+                    throw new TimeoutException(string.Format("View for {0} did not catch up to {1} within {2} timeout!",
+                        typeof(TViewInstance), mostRecentGlobalSequenceNumber, timeout));
+                }
+
+                await Task.Delay(TimeSpan.FromMilliseconds(10));
+            }
+        }
+
+        public TViewInstance Load(string viewId)
+        {
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+
+                using (var tx = conn.BeginTransaction())
+                {
+                    return FindOneById(viewId, tx, conn);
+                }
+            }
         }
 
         public void Purge()
         {
-            WithConnection(conn =>
+            _logger.Info("Purging SQL Server table {0}", _tableName);
+
+            using (var conn = new SqlConnection(_connectionString))
             {
+                conn.Open();
+
                 using (var tx = conn.BeginTransaction())
                 {
                     using (var cmd = conn.CreateCommand())
@@ -109,149 +186,15 @@ namespace d60.Cirqus.MsSql.Views
                         cmd.CommandText = string.Format(@"DELETE FROM [{0}]", _tableName);
                         cmd.ExecuteNonQuery();
                     }
-                }
-            });
-        }
 
-        public void Dispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events)
-        {
-            if (!_initialized)
-            {
-                var message =
-                    string.Format("The view manager for {0} has not been initialized! Please make sure that the view" +
-                                  " manager is properly initialized, either by initializing it manually, or by having" +
-                                  " the event dispatcher do it (which is the preferred way when you\'re working with" +
-                                  " an event dispatcher)",
-                        typeof(TView));
-
-                throw new InvalidOperationException(message);
-            }
-
-            InnerDispatch(context, eventStore, events);
-        }
-
-        void InnerDispatch(IViewContext context, IEventStore eventStore, IEnumerable<DomainEvent> events)
-        {
-            var maxGlobalSequenceNumber = GetMaxSequenceNumber();
-
-            var eventsToDispatch = events
-                .Where(e => e.GetGlobalSequenceNumber() > maxGlobalSequenceNumber)
-                .ToList();
-
-            try
-            {
-                foreach (var batch in eventsToDispatch.Batch(MaxDomainEventsBetweenFlush))
-                {
-                    ProcessOneBatch(eventStore, batch, context);
+                    tx.Commit();
                 }
             }
-            catch (Exception)
-            {
-                try
-                {
-                    // make sure we flush after each single domain event
-                    foreach (var e in eventsToDispatch)
-                    {
-                        ProcessOneBatch(eventStore, new[] { e }, context);
-                    }
-                }
-                catch (ConsistencyException)
-                {
-                    throw;
-                }
-                catch (Exception)
-                {
-                }
-            }
+
+            Interlocked.Exchange(ref _cachedPosition, DefaultPosition);
         }
 
-        void ProcessOneBatch(IEventStore eventStore, IEnumerable<DomainEvent> batch, IViewContext context)
-        {
-            WithConnection(conn => ProcessOneBatch(eventStore, batch, conn, context));
-        }
-
-        void ProcessOneBatch(IEventStore eventStore, IEnumerable<DomainEvent> batch, SqlConnection conn, IViewContext context)
-        {
-            using (var tx = conn.BeginTransaction())
-            {
-                var locator = ViewLocator.GetLocatorFor<TView>();
-                var activeViewsById = new Dictionary<string, TView>();
-
-                foreach (var e in batch)
-                {
-                    if (!ViewLocator.IsRelevant<TView>(e)) continue;
-
-                    var viewIds = locator.GetAffectedViewIds(context, e);
-
-                    foreach (var viewId in viewIds)
-                    {
-                        var view = activeViewsById
-                            .GetOrAdd(viewId, id => FindOneById(id, tx, conn)
-                                                    ?? _dispatcher.CreateNewInstance(viewId));
-
-                        _dispatcher.DispatchToView(context, e, view);
-                    }
-                }
-
-                Save(activeViewsById, conn, tx);
-
-                tx.Commit();
-            }
-        }
-
-        void Save(Dictionary<string, TView> activeViewsById, SqlConnection conn, SqlTransaction tx)
-        {
-            foreach (var kvp in activeViewsById)
-            {
-                var id = kvp.Key;
-                var view = kvp.Value;
-
-                using (var cmd = conn.CreateCommand())
-                {
-                    cmd.Transaction = tx;
-                    cmd.CommandText = string.Format(@"
-
-MERGE [{0}] AS ViewTable
-
-USING (VALUES (@Id)) AS foo(Id)
-
-ON ViewTable.Id = foo.Id
-
-WHEN MATCHED THEN
-
-    UPDATE SET 
-{1},
-[GlobalSeqNo] = @GlobalSeqNo
-
-WHEN NOT MATCHED THEN
-
-    INSERT (
-{2},
-[GlobalSeqNo]
-) VALUES (
-{3},
-@GlobalSeqNo
-)
-    
-;
-", _tableName, FormatAssignments(_schema.Where(prop => !prop.IsPrimaryKey)), FormatColumnNames(_schema), FormatParameterNames(_schema));
-
-                    cmd.Parameters.Add("Id", SqlDbType.NChar, PrimaryKeySize).Value = id;
-                    cmd.Parameters.Add("GlobalSeqNo", SqlDbType.BigInt).Value = view.LastGlobalSequenceNumber;
-
-                    foreach (var prop in _schema.Where(p => !p.IsPrimaryKey))
-                    {
-                        var value = prop.Getter(view);
-
-                        cmd.Parameters.AddWithValue(prop.SqlParameterName, value);
-                    }
-
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
-        TView FindOneById(string id, SqlTransaction tx, SqlConnection conn)
+        TViewInstance FindOneById(string viewId, SqlTransaction tx, SqlConnection conn)
         {
             using (var cmd = conn.CreateCommand())
             {
@@ -260,20 +203,19 @@ WHEN NOT MATCHED THEN
 
 SELECT 
 
-{0},
-[GlobalSeqNo]
+{0}
 
 FROM [{1}] WHERE [Id] = @id
 
 ", FormatColumnNames(_schema), _tableName);
 
-                cmd.Parameters.Add("Id", SqlDbType.Char, PrimaryKeySize).Value = id;
+                cmd.Parameters.Add("Id", SqlDbType.Char, PrimaryKeySize).Value = viewId;
 
                 using (var reader = cmd.ExecuteReader())
                 {
                     if (reader.Read())
                     {
-                        var view = new TView();
+                        var view = _dispatcher.CreateNewInstance(viewId);
 
                         foreach (var prop in _schema)
                         {
@@ -306,55 +248,160 @@ FROM [{1}] WHERE [Id] = @id
                 schema.Select(prop => string.Format("[{0}]", prop.ColumnName)));
         }
 
-        public TView Load(string viewId)
+        void Save(Dictionary<string, TViewInstance> activeViewsById, SqlConnection conn, SqlTransaction tx)
         {
-            TView view = null;
+            _logger.Debug("Flushing {0} view instances to '{1}'", activeViewsById.Count, _tableName);
 
-            WithConnection(conn =>
+            foreach (var kvp in activeViewsById)
             {
-                using (var tx = conn.BeginTransaction())
-                {
-                    view = FindOneById(viewId, tx, conn);
-                }
-            });
+                var id = kvp.Key;
+                var view = kvp.Value;
 
-            return view;
-        }
-
-        public int MaxDomainEventsBetweenFlush
-        {
-            get { return _maxDomainEventsBetweenFlush; }
-            set
-            {
-                if (value <= 0)
+                using (var cmd = conn.CreateCommand())
                 {
-                    throw new ArgumentException(string.Format("Attempted to set max events between flush to {0}, but it must be greater than 0!", value));
+                    cmd.Transaction = tx;
+                    cmd.CommandText = string.Format(@"
+
+MERGE [{0}] AS ViewTable
+
+USING (VALUES (@Id)) AS foo(Id)
+
+ON ViewTable.Id = foo.Id
+
+WHEN MATCHED THEN
+
+    UPDATE SET 
+{1}
+
+WHEN NOT MATCHED THEN
+
+    INSERT (
+{2}
+) VALUES (
+{3}
+)
+    
+;
+", _tableName, FormatAssignments(_schema.Where(prop => !prop.IsPrimaryKey)), FormatColumnNames(_schema), FormatParameterNames(_schema));
+
+                    cmd.Parameters.Add("Id", SqlDbType.NChar, PrimaryKeySize).Value = id;
+
+                    foreach (var prop in _schema.Where(p => !p.IsPrimaryKey))
+                    {
+                        var value = prop.Getter(view);
+
+                        cmd.Parameters.AddWithValue(prop.SqlParameterName, value ?? DBNull.Value);
+                    }
+
+                    cmd.ExecuteNonQuery();
                 }
-                _maxDomainEventsBetweenFlush = value;
             }
         }
 
         void CreateSchema()
         {
-            WithConnection(conn =>
-            {
-                using (var cmd = conn.CreateCommand())
-                {
-                    var script = string.Format("[Id] [NCHAR]({0}) NOT NULL, ", PrimaryKeySize)
-                                 + Environment.NewLine
-                                 + string.Join("," + Environment.NewLine, _schema
-                                     .Where(c => !c.IsPrimaryKey)
-                                     .Select(c => string.Format("[{0}] [{1}]{2} NOT NULL", c.ColumnName, c.SqlDbType, string.IsNullOrWhiteSpace(c.Size) ? "" : "(" + c.Size + ")")));
+            _logger.Info("Ensuring that schema for '{0}' is created...", typeof(TViewInstance));
 
-                    var commandText = string.Format(@"
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+
+                if (!SchemaLooksRight(conn, _tableName))
+                {
+                    DropTable(conn, _tableName);
+                }
+
+                CreateTable(conn, _tableName);
+            }
+        }
+
+        bool SchemaLooksRight(SqlConnection conn, string tableName)
+        {
+            var columnsPresentInDatabase = new List<Prop>();
+
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = string.Format(@"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '{0}'", tableName);
+
+                var tableExists = Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+
+                if (!tableExists)
+                {
+                    return true;
+                }
+            }
+
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = string.Format(@"SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{0}'", tableName);
+
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var columnName = (string)reader["COLUMN_NAME"];
+                        var dataType = (string)reader["DATA_TYPE"];
+
+                        var sqlDbType = (SqlDbType)Enum.Parse(typeof(SqlDbType), dataType, true);
+
+                        columnsPresentInDatabase.Add(new Prop
+                        {
+                            ColumnName = columnName,
+                            SqlDbType = sqlDbType
+                        });
+                    }
+                }
+            }
+
+            var columnsPresentInSchemaMissingOrWithWrongTypeInDatabase = _schema
+                .Where(schemaColumn => !columnsPresentInDatabase.Any(c => c.Matches(schemaColumn)))
+                .ToList();
+
+            if (columnsPresentInSchemaMissingOrWithWrongTypeInDatabase.Any())
+            {
+                _logger.Warn("The table '{0}' is missing columns with the following names and types: {1}",
+                    tableName, string.Join(", ", columnsPresentInSchemaMissingOrWithWrongTypeInDatabase.Select(prop => string.Format("{0} ({1})", prop.ColumnName, prop.SqlDbType))));
+                return false;
+            }
+
+            return true;
+        }
+
+        void DropTable(SqlConnection conn, string tableName)
+        {
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = string.Format(@"
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '{0}')
+BEGIN
+    DROP TABLE [{0}]
+END
+", tableName);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        void CreateTable(SqlConnection conn, string tableName)
+        {
+            using (var cmd = conn.CreateCommand())
+            {
+                var script = string.Format("[Id] [NVARCHAR]({0}) NOT NULL, ", PrimaryKeySize)
+                             + Environment.NewLine
+                             + string.Join("," + Environment.NewLine, _schema
+                                 .Where(c => !c.IsPrimaryKey)
+                                 .Select(c => string.Format("[{0}] [{1}]{2} {3}",
+                                     c.ColumnName,
+                                     c.SqlDbType,
+                                     string.IsNullOrWhiteSpace(c.Size) ? "" : "(" + c.Size + ")",
+                                     c.IsNullable ? "NULL" : "NOT NULL")));
+
+                var commandText = string.Format(@"
 
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '{0}')
 BEGIN
     CREATE TABLE [dbo].[{0}] (
 
 {1},
-
-[GlobalSeqNo] [BigInt],
 
 
         CONSTRAINT [PK_{0}] PRIMARY KEY CLUSTERED 
@@ -364,33 +411,12 @@ BEGIN
     )
 END
 
-", _tableName, script);
+", tableName, script);
 
-                    cmd.CommandText = commandText;
+                cmd.CommandText = commandText;
 
-                    cmd.ExecuteNonQuery();
-                }
-            });
-        }
-
-        void WithConnection(Action<SqlConnection> action)
-        {
-            SqlConnection connection = null;
-
-            try
-            {
-                connection = _connectionProvider();
-
-                action(connection);
-            }
-            finally
-            {
-                if (connection != null)
-                {
-                    _cleanupAction(connection);
-                }
+                cmd.ExecuteNonQuery();
             }
         }
-
     }
 }
