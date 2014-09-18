@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using d60.Cirqus.Projections.Views.ViewManagers;
-using d60.Cirqus.Projections.Views.ViewManagers.Old;
+using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Old;
 
 namespace d60.Cirqus.Tests.Contracts.Views.Old.Factories
 {
@@ -12,14 +12,14 @@ namespace d60.Cirqus.Tests.Contracts.Views.Old.Factories
 
         public IPushViewManager GetPushViewManager<TView>() where TView : class, IViewInstance, ISubscribeTo, new()
         {
-            var viewManager = new Cirqus.Projections.Views.ViewManagers.Old.InMemoryViewManager<TView>();
+            var viewManager = new Cirqus.Views.ViewManagers.Old.InMemoryViewManager<TView>();
             _viewManagers.Add(viewManager);
             return new PushOnlyWrapper(viewManager);
         }
 
         public TView Load<TView>(string viewId) where TView : class, IViewInstance, ISubscribeTo, new()
         {
-            var matchingViewManagers = _viewManagers.OfType<Cirqus.Projections.Views.ViewManagers.Old.InMemoryViewManager<TView>>().ToList();
+            var matchingViewManagers = _viewManagers.OfType<Cirqus.Views.ViewManagers.Old.InMemoryViewManager<TView>>().ToList();
 
             if (matchingViewManagers.Count != 1)
             {

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
-using d60.Cirqus.Projections.Views.ViewManagers;
-using d60.Cirqus.Projections.Views.ViewManagers.Locators;
-using d60.Cirqus.Projections.Views.ViewManagers.Old;
 using d60.Cirqus.Tests.Contracts.Views.Old;
 using d60.Cirqus.Tests.Contracts.Views.Old.Factories;
 using d60.Cirqus.Tests.MongoDb;
+using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Locators;
+using d60.Cirqus.Views.ViewManagers.Old;
 using MongoDB.Driver;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.TestHelpers.TestContext;
@@ -23,9 +23,9 @@ namespace d60.Cirqus.Tests.Contracts.Views
         MongoDatabase _database;
         MongoDbEventStore _eventStore;
 
-        IViewManager _globalInstanceViewManager;
+        IOldViewManager _globalInstanceViewManager;
         TViewManagerFactory _factory;
-        IViewManager _instancePerAggregateRootViewManager;
+        IOldViewManager _instancePerAggregateRootViewManager;
         TestContext _testContext;
 
         protected override void DoSetUp()

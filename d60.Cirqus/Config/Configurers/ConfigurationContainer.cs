@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
-using d60.Cirqus.Projections;
+using d60.Cirqus.Views;
 
 namespace d60.Cirqus.Config.Configurers
 {

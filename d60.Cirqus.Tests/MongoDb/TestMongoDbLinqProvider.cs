@@ -2,9 +2,9 @@
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
-using d60.Cirqus.MongoDb.Projections.Views.Old;
-using d60.Cirqus.Projections.Views.ViewManagers;
-using d60.Cirqus.Projections.Views.ViewManagers.Locators;
+using d60.Cirqus.MongoDb.Views.Old;
+using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.TestHelpers.TestContext;
 

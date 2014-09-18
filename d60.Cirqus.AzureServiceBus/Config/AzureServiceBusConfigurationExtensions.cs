@@ -1,6 +1,6 @@
 ﻿using d60.Cirqus.Config.Configurers;
 using d60.Cirqus.Events;
-using d60.Cirqus.Projections;
+using d60.Cirqus.Views;
 
 namespace d60.Cirqus.AzureServiceBus.Config
 {

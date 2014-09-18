@@ -6,12 +6,12 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
-using d60.Cirqus.Projections;
-using d60.Cirqus.Projections.Views.ViewManagers;
-using d60.Cirqus.Projections.Views.ViewManagers.Old;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.TestHelpers.Internals;
-using ViewManagerEventDispatcher = d60.Cirqus.Projections.Views.ViewManagers.ViewManagerEventDispatcher;
+using d60.Cirqus.Views;
+using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Old;
+using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagerEventDispatcher;
 
 namespace d60.Cirqus.TestHelpers
 {
@@ -23,7 +23,7 @@ namespace d60.Cirqus.TestHelpers
         readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
         readonly InMemoryEventStore _eventStore = new InMemoryEventStore();
         readonly DefaultAggregateRootRepository _aggregateRootRepository;
-        readonly Projections.Views.ViewManagers.Old.ViewManagerEventDispatcher _oldViewManagerEventDispatcher;
+        readonly Views.ViewManagers.Old.ViewManagerEventDispatcher _oldViewManagerEventDispatcher;
         readonly ViewManagerEventDispatcher _viewManagerEventDispatcher;
         readonly CompositeEventDispatcher _eventDispatcher;
         readonly ViewManagerWaitHandle _waitHandle = new ViewManagerWaitHandle();
@@ -35,7 +35,7 @@ namespace d60.Cirqus.TestHelpers
         {
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
 
-            _oldViewManagerEventDispatcher = new Projections.Views.ViewManagers.Old.ViewManagerEventDispatcher(_aggregateRootRepository);
+            _oldViewManagerEventDispatcher = new Views.ViewManagers.Old.ViewManagerEventDispatcher(_aggregateRootRepository);
             _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore);
 
             _waitHandle.Register(_viewManagerEventDispatcher);
@@ -44,15 +44,15 @@ namespace d60.Cirqus.TestHelpers
                 _viewManagerEventDispatcher);
         }
 
-        public TestContext AddViewManager(IViewManager viewManager)
+        public TestContext AddViewManager(IOldViewManager viewManager)
         {
             _oldViewManagerEventDispatcher.Add(viewManager);
             return this;
         }
 
-        public TestContext AddViewManager(IManagedView managedView)
+        public TestContext AddViewManager(IViewManager viewManager)
         {
-            _viewManagerEventDispatcher.AddViewManager(managedView);
+            _viewManagerEventDispatcher.AddViewManager(viewManager);
             return this;
         }
 

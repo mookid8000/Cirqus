@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Events;
-using d60.Cirqus.Projections;
+using d60.Cirqus.Views;
 using Microsoft.ServiceBus.Messaging;
 
 namespace d60.Cirqus.AzureServiceBus

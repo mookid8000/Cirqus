@@ -9,7 +9,7 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
-using d60.Cirqus.Projections;
+using d60.Cirqus.Views;
 
 namespace d60.Cirqus
 {

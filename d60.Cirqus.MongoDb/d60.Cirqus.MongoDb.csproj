@@ -57,8 +57,8 @@
     <Compile Include="Events\MongoDbSerializer.cs" />
     <Compile Include="Logging\MongoDbLoggerFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Projections\Views\Old\MongoDbViewManager.cs" />
-    <Compile Include="Projections\Views\MongoDbViewManager.cs" />
+    <Compile Include="Views\Old\MongoDbViewManager.cs" />
+    <Compile Include="Views\MongoDbViewManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

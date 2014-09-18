@@ -1,7 +1,7 @@
 ﻿using System;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
-using d60.Cirqus.Projections.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers;
 
 namespace d60.Cirqus.Tests.Stubs
 {

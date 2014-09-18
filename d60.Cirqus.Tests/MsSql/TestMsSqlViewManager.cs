@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using d60.Cirqus.Events;
-using d60.Cirqus.MsSql.Projections.Views.Old;
-using d60.Cirqus.Projections.Views.ViewManagers;
-using d60.Cirqus.Projections.Views.ViewManagers.Locators;
+using d60.Cirqus.MsSql.Views.Old;
 using d60.Cirqus.TestHelpers.Internals;
 using d60.Cirqus.Tests.Stubs;
+using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.MsSql

@@ -5,12 +5,12 @@ using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.MsSql.Events;
-using d60.Cirqus.MsSql.Projections.Views.Old;
-using d60.Cirqus.Projections.Views.ViewManagers;
-using d60.Cirqus.Projections.Views.ViewManagers.Locators;
+using d60.Cirqus.MsSql.Views.Old;
 using d60.Cirqus.Tests.MsSql;
+using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
-using ViewManagerEventDispatcher = d60.Cirqus.Projections.Views.ViewManagers.Old.ViewManagerEventDispatcher;
+using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagers.Old.ViewManagerEventDispatcher;
 
 namespace d60.Cirqus.Tests.Examples
 {

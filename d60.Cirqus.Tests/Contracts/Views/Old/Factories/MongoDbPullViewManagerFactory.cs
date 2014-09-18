@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using d60.Cirqus.MongoDb.Projections.Views.Old;
-using d60.Cirqus.Projections.Views.ViewManagers;
-using d60.Cirqus.Projections.Views.ViewManagers.Old;
+using d60.Cirqus.MongoDb.Views.Old;
 using d60.Cirqus.Tests.MongoDb;
+using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Old;
 using MongoDB.Driver;
 
 namespace d60.Cirqus.Tests.Contracts.Views.Old.Factories
 {
     class MongoDbPullViewManagerFactory : IPullViewManagerFactory, IPushViewManagerFactory
     {
-        readonly List<IViewManager> _viewManagers = new List<IViewManager>();
+        readonly List<IOldViewManager> _viewManagers = new List<IOldViewManager>();
         readonly MongoDatabase _database;
 
         public MongoDbPullViewManagerFactory()
