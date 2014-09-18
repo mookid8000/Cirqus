@@ -205,7 +205,7 @@ namespace d60.Cirqus.TestHelpers
         /// <summary>
         /// Waits for all views to catch up with the entire history of events, timing out if that takes longer than 10 seconds
         /// </summary>
-        public void WaitForViewsToCatchUp()
+        public void WaitForViewsToCatchUp(int timeoutSeconds = 10)
         {
             var allGlobalSequenceNumbers = History.Select(h => h.GetGlobalSequenceNumber()).ToArray();
 
@@ -213,13 +213,13 @@ namespace d60.Cirqus.TestHelpers
 
             var result = CommandProcessingResult.WithNewPosition(allGlobalSequenceNumbers.Max());
 
-            _waitHandle.WaitForAll(result, TimeSpan.FromSeconds(10)).Wait();
+            _waitHandle.WaitForAll(result, TimeSpan.FromSeconds(timeoutSeconds)).Wait();
         }
 
         /// <summary>
         /// Waits for views managing the specified <see cref="TViewInstance"/> to catch up with the entire history of events, timing out if that takes longer than 10 seconds
         /// </summary>
-        public void WaitForViewToCatchUp<TViewInstance>() where TViewInstance : IViewInstance
+        public void WaitForViewToCatchUp<TViewInstance>(int timeoutSeconds = 10) where TViewInstance : IViewInstance
         {
             var allGlobalSequenceNumbers = History.Select(h => h.GetGlobalSequenceNumber()).ToArray();
 
@@ -227,7 +227,7 @@ namespace d60.Cirqus.TestHelpers
 
             var result = CommandProcessingResult.WithNewPosition(allGlobalSequenceNumbers.Max());
 
-            _waitHandle.WaitFor<TViewInstance>(result, TimeSpan.FromSeconds(10)).Wait();
+            _waitHandle.WaitFor<TViewInstance>(result, TimeSpan.FromSeconds(timeoutSeconds)).Wait();
         }
 
         void EnsureInitialized()

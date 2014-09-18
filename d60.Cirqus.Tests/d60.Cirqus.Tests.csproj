@@ -104,6 +104,7 @@
     <Compile Include="Contracts\Views\Models\IdGenerator.cs" />
     <Compile Include="Contracts\Views\LoadingStuffDuringViewLocation.cs" />
     <Compile Include="Contracts\Views\GeneralViewManagerTests.cs" />
+    <Compile Include="Contracts\Views\RecoveryTest.cs" />
     <Compile Include="Contracts\Views\ViewLocators.cs" />
     <Compile Include="Events\TestInMemoryEventStore.cs" />
     <Compile Include="Examples\ReadmeSnippet.cs" />
@@ -148,7 +149,7 @@
     <Compile Include="Views\NewViewManager\AggregateRoots\Potato.cs" />
     <Compile Include="Views\NewViewManager\Events\PotatoCreated.cs" />
     <Compile Include="Views\NewViewManager\Views\PotatoTimeToBeConsumedView.cs" />
-    <Compile Include="Views\NewViewManager\TestNewViewManagerEventDispatcher.cs" />
+    <Compile Include="Views\NewViewManager\TestViewManagerEventDispatcher.cs" />
     <Compile Include="Views\NewViewManager\Events\WasBitten.cs" />
     <Compile Include="Views\NewViewManager\Events\WasEaten.cs" />
     <Compile Include="Views\NewViewManager\Views\SlowView.cs" />
