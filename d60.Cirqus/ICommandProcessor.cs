@@ -44,5 +44,12 @@ namespace d60.Cirqus
 
             return _newPosition.Value;
         }
+
+        public override string ToString()
+        {
+            return EventsWereEmitted 
+                ? string.Format("New position: {0}", _newPosition) 
+                : "No events were emitted";
+        }
     }
 }

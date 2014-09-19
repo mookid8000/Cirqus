@@ -272,3 +272,7 @@ This is a big update that completes the transition to the new, vastly improved v
 ## 0.22.1
 
 * Fixed bug where loading a nonexistent aggregate root from a view did not throw an exception
+
+## 0.22.2
+
+* Better `ToString` on `CommandProcessingResult` 
