@@ -269,3 +269,6 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added `InMemoryViewEventDispatcher` which a special in-mem view manager that has events dispatched to it directly - suitable for in-mem, in-process views only (but they're very fast...)
 
+## 0.22.1
+
+* Fixed bug where loading a nonexistent aggregate root from a view did not throw an exception
