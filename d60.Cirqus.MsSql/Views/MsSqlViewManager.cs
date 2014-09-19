@@ -269,6 +269,19 @@ WHEN NOT MATCHED THEN
                         cmd.ExecuteNonQuery();
                     }
 
+                    using (var cmd = conn.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = string.Format(@"
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '{0}')
+BEGIN
+    DELETE FROM [{0}] WHERE Id = @id
+END
+", _positionTableName);
+                        cmd.Parameters.Add("id", SqlDbType.NVarChar, PrimaryKeySize).Value = _tableName;
+                        cmd.ExecuteNonQuery();
+                    }
+
                     tx.Commit();
                 }
             }
