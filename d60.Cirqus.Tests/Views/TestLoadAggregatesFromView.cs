@@ -24,6 +24,7 @@ namespace d60.Cirqus.Tests.Views
         InMemoryViewManager<MyViewInstanceImplicit> _viewManager2;
         InMemoryViewManager<MyViewInstanceEmitting> _viewManager3;
         ViewManagerEventDispatcher _eventDispatcher;
+        InMemoryViewManager<MyViewInstanceLoadingNonexistentRoot> _viewManager4;
 
         protected override void DoSetUp()
         {
@@ -32,6 +33,7 @@ namespace d60.Cirqus.Tests.Views
             _viewManager1 = new InMemoryViewManager<MyViewInstance>();
             _viewManager2 = new InMemoryViewManager<MyViewInstanceImplicit>();
             _viewManager3 = new InMemoryViewManager<MyViewInstanceEmitting>();
+            _viewManager4 = new InMemoryViewManager<MyViewInstanceLoadingNonexistentRoot>();
 
             var basicAggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
 
@@ -42,6 +44,33 @@ namespace d60.Cirqus.Tests.Views
             _cirqus.Initialize();
 
             RegisterForDisposal(_cirqus);
+        }
+
+        [Test]
+        public void ExceptionIsThrownIfAggregateRootDoesNotExist()
+        {
+            _eventDispatcher.AddViewManager(_viewManager4);
+
+            var listLoggerFactory = new ListLoggerFactory();
+            CirqusLoggerFactory.Current = listLoggerFactory;
+
+            _cirqus.ProcessCommand(new MyCommand(new Guid("FDC3AF8E-8E89-4129-9D76-33D1B461F40E")));
+
+            Thread.Sleep(300);
+
+            var relevantLines = listLoggerFactory
+                .LoggedLines
+                .Where(l => l.Level > Logger.Level.Info)
+                .ToList();
+
+            var stringWithTheLines = string.Join(Environment.NewLine, relevantLines);
+
+            Console.WriteLine("---------------------------------------------");
+            Console.WriteLine(stringWithTheLines);
+            Console.WriteLine("---------------------------------------------");
+
+            Assert.That(stringWithTheLines.ToLowerInvariant(), Contains.Substring("exception"));
+            Assert.That(stringWithTheLines.ToLowerInvariant(), Contains.Substring("does not exist"));
         }
 
         [Test]
@@ -69,6 +98,7 @@ namespace d60.Cirqus.Tests.Views
             Console.WriteLine("---------------------------------------------");
 
             Assert.That(stringWithTheLines.ToLowerInvariant(), Contains.Substring("frozen"));
+            Assert.That(stringWithTheLines.ToLowerInvariant(), Contains.Substring("exception"));
         }
 
 
@@ -195,6 +225,20 @@ namespace d60.Cirqus.Tests.Views
                 var root = context.Load<MyRoot>(domainEvent.GetAggregateRootId());
 
                 root.DoStuff();
+            }
+        }
+
+        class MyViewInstanceLoadingNonexistentRoot : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
+        {
+            public string Id { get; set; }
+            
+            public long LastGlobalSequenceNumber { get; set; }
+            
+            public void Handle(IViewContext context, AnEvent domainEvent)
+            {
+                var randomGuid = new Guid("6E421AEB-44E0-45E7-8EFF-744943C5106C");
+
+                var root = context.Load<MyRoot>(randomGuid);
             }
         }
     }
