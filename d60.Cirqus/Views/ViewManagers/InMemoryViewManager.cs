@@ -40,15 +40,17 @@ namespace d60.Cirqus.Views.ViewManagers
         {
             foreach (var e in batch)
             {
-                if (!ViewLocator.IsRelevant<TViewInstance>(e)) continue;
-
-                var affectedViewIds = _viewLocator.GetAffectedViewIds(viewContext, e);
-
-                foreach (var viewId in affectedViewIds)
+                if (ViewLocator.IsRelevant<TViewInstance>(e))
                 {
-                    var viewInstance = _views.GetOrAdd(viewId, id => _dispatcher.CreateNewInstance(id));
 
-                    _dispatcher.DispatchToView(viewContext, e, viewInstance);
+                    var affectedViewIds = _viewLocator.GetAffectedViewIds(viewContext, e);
+
+                    foreach (var viewId in affectedViewIds)
+                    {
+                        var viewInstance = _views.GetOrAdd(viewId, id => _dispatcher.CreateNewInstance(id));
+
+                        _dispatcher.DispatchToView(viewContext, e, viewInstance);
+                    }
                 }
 
                 Interlocked.Exchange(ref _position, e.GetGlobalSequenceNumber());
