@@ -276,3 +276,7 @@ This is a big update that completes the transition to the new, vastly improved v
 ## 0.22.2
 
 * Better `ToString` on `CommandProcessingResult` 
+
+## 0.23.0
+
+* Added ability for `MsSqlViewManager`-views to "find rest", which is crucial when you want to support blocking on a view - a separate table is used to implement this feature
