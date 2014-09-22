@@ -59,12 +59,16 @@ namespace d60.Cirqus.Tests.Config
             waiter.WaitForAll(lastResult, TimeSpan.FromSeconds(5)).Wait();
 
             Console.WriteLine("Done - checking collections");
-            var viewCollectionNames = new[] { "view1", "view2", "view3", "view4" };
+            var expectedViewCollectionNames = new[] { "view1", "view2", "view3", "view4" };
 
-            Assert.That(database.GetCollectionNames().OrderBy(n => n).Where(c => c.StartsWith("view")).ToArray(),
-                Is.EqualTo(viewCollectionNames));
+            var viewCollectionNames = database.GetCollectionNames()
+                .OrderBy(n => n)
+                .Where(c => c.StartsWith("view") && !c.EndsWith("Position"))
+                .ToArray();
+            
+            Assert.That(viewCollectionNames, Is.EqualTo(expectedViewCollectionNames));
 
-            viewCollectionNames.ToList()
+            expectedViewCollectionNames.ToList()
                 .ForEach(name =>
                 {
                     var doc = database.GetCollection<ConfigTestView>(name)
