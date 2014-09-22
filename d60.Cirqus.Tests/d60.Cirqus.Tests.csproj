@@ -104,6 +104,7 @@
     <Compile Include="Contracts\Views\Models\IdGenerator.cs" />
     <Compile Include="Contracts\Views\LoadingStuffDuringViewLocation.cs" />
     <Compile Include="Contracts\Views\GeneralViewManagerTests.cs" />
+    <Compile Include="Contracts\Views\PurgeTest.cs" />
     <Compile Include="Contracts\Views\RecoveryTest.cs" />
     <Compile Include="Contracts\Views\RestTest.cs" />
     <Compile Include="Contracts\Views\ViewLocators.cs" />

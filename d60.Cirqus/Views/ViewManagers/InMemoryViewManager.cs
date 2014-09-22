@@ -85,6 +85,7 @@ namespace d60.Cirqus.Views.ViewManagers
         public void Purge()
         {
             _views.Clear();
+            _position = -1;
         }
     }
 }

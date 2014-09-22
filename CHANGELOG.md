@@ -280,3 +280,7 @@ This is a big update that completes the transition to the new, vastly improved v
 ## 0.23.0
 
 * Added ability for `MsSqlViewManager`-views to "find rest", which is crucial when you want to support blocking on a view - a separate table is used to implement this feature
+
+## 0.24.0
+
+* Store current position in separate collection for `MongoDbViewManager` to avoid having to deal with the special position document popping up in query results

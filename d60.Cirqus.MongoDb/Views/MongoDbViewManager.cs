@@ -10,7 +10,6 @@ using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
-using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 
@@ -18,21 +17,24 @@ namespace d60.Cirqus.MongoDb.Views
 {
     public class MongoDbViewManager<TViewInstance> : IViewManager<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
-        const string CurrentPositionDocId = "__current_position__";
         const string CurrentPositionPropertyName = "LastGlobalSequenceNumber";
         const long DefaultPosition = -1;
 
         readonly ViewDispatcherHelper<TViewInstance> _dispatcherHelper = new ViewDispatcherHelper<TViewInstance>();
         readonly MongoCollection<TViewInstance> _viewCollection;
+        readonly MongoCollection<PositionDoc> _positionCollection;
         readonly ViewLocator _viewLocator;
+        readonly string _currentPositionDocId;
 
         Logger _logger;
 
         long _cachedPosition;
 
-        public MongoDbViewManager(MongoDatabase database, string collectionName)
+        public MongoDbViewManager(MongoDatabase database, string collectionName, string positionCollectionName = null)
         {
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+
+            positionCollectionName = positionCollectionName ?? collectionName + "Position";
 
             try
             {
@@ -54,6 +56,15 @@ namespace d60.Cirqus.MongoDb.Views
 
             _logger.Info("Create index in '{0}': '{1}'", collectionName, CurrentPositionPropertyName);
             _viewCollection.CreateIndex(IndexKeys<TViewInstance>.Ascending(i => i.LastGlobalSequenceNumber), IndexOptions.SetName(CurrentPositionPropertyName));
+
+            _positionCollection = database.GetCollection <PositionDoc>(positionCollectionName);
+            _currentPositionDocId = "__" + collectionName + "__position__";
+        }
+
+        class PositionDoc
+        {
+            public string Id { get; set; }
+            public long CurrentPosition { get; set; }
         }
 
         public MongoDbViewManager(string mongoDbConnectionString)
@@ -61,8 +72,8 @@ namespace d60.Cirqus.MongoDb.Views
         {
         }
 
-        public MongoDbViewManager(string mongoDbConnectionString, string collectionName)
-            : this(GetDatabaseFromConnectionString(mongoDbConnectionString), collectionName)
+        public MongoDbViewManager(string mongoDbConnectionString, string collectionName, string positionCollectionName = null)
+            : this(GetDatabaseFromConnectionString(mongoDbConnectionString), collectionName, positionCollectionName)
         {
         }
 
@@ -102,6 +113,8 @@ namespace d60.Cirqus.MongoDb.Views
 
             _viewCollection.RemoveAll();
 
+            UpdatePersistentCache(DefaultPosition);
+
             Interlocked.Exchange(ref _cachedPosition, DefaultPosition);
         }
 
@@ -129,9 +142,11 @@ namespace d60.Cirqus.MongoDb.Views
         {
             _logger.Debug("Updating persistent position cache to {0}", newPosition);
 
-            _viewCollection.Update(Query.EQ("_id", CurrentPositionDocId),
-                Update.Set(CurrentPositionPropertyName, newPosition),
-                UpdateFlags.Upsert);
+            _positionCollection.Save(new PositionDoc
+            {
+                Id = _currentPositionDocId,
+                CurrentPosition = newPosition
+            });
 
             Interlocked.Exchange(ref _cachedPosition, newPosition);
         }
@@ -202,14 +217,12 @@ namespace d60.Cirqus.MongoDb.Views
 
         long? GetPositionFromPersistentCache()
         {
-            var currentPositionDocument = _viewCollection
-                .FindOneByIdAs<BsonDocument>(CurrentPositionDocId);
+            var currentPositionDocument = _positionCollection
+                .FindOneById(_currentPositionDocId);
 
             if (currentPositionDocument == null) return null;
-            
-            var currentPosition = currentPositionDocument[CurrentPositionPropertyName].AsInt64;
 
-            return currentPosition;
+            return currentPositionDocument.CurrentPosition;
         }
 
         long? GetPositionFromViewInstances()

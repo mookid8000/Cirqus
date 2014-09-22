@@ -141,6 +141,8 @@ namespace d60.Cirqus.MsSql.Views
 
             if (!eventList.Any()) return;
 
+            var newPosition = eventList.Max(e => e.GetGlobalSequenceNumber());
+
             using (var conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
@@ -168,13 +170,13 @@ namespace d60.Cirqus.MsSql.Views
 
                     Save(activeViewsById, conn, tx);
 
-                    UpdatePosition(conn, tx, eventList.Max(e => e.GetGlobalSequenceNumber()));
+                    UpdatePosition(conn, tx, newPosition);
 
                     tx.Commit();
                 }
             }
 
-            Interlocked.Exchange(ref _cachedPosition, eventList.Max(e => e.GetGlobalSequenceNumber()));
+            Interlocked.Exchange(ref _cachedPosition, newPosition);
         }
 
         void UpdatePosition(SqlConnection conn, SqlTransaction tx, long newPosition)
@@ -262,31 +264,25 @@ WHEN NOT MATCHED THEN
 
                 using (var tx = conn.BeginTransaction())
                 {
-                    using (var cmd = conn.CreateCommand())
-                    {
-                        cmd.Transaction = tx;
-                        cmd.CommandText = string.Format(@"DELETE FROM [{0}]", _tableName);
-                        cmd.ExecuteNonQuery();
-                    }
+                    DeleteRows(conn, tx, _tableName);
 
-                    using (var cmd = conn.CreateCommand())
-                    {
-                        cmd.Transaction = tx;
-                        cmd.CommandText = string.Format(@"
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '{0}')
-BEGIN
-    DELETE FROM [{0}] WHERE Id = @id
-END
-", _positionTableName);
-                        cmd.Parameters.Add("id", SqlDbType.NVarChar, PrimaryKeySize).Value = _tableName;
-                        cmd.ExecuteNonQuery();
-                    }
+                    UpdatePosition(conn, tx, DefaultPosition);
 
                     tx.Commit();
                 }
             }
 
             Interlocked.Exchange(ref _cachedPosition, DefaultPosition);
+        }
+
+        void DeleteRows(SqlConnection conn, SqlTransaction tx, string tableName)
+        {
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.Transaction = tx;
+                cmd.CommandText = string.Format(@"DELETE FROM [{0}]", tableName);
+                cmd.ExecuteNonQuery();
+            }
         }
 
         TViewInstance FindOneById(string viewId, SqlTransaction tx, SqlConnection conn)
