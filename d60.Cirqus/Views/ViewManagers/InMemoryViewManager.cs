@@ -6,10 +6,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Views.ViewManagers.Locators;
 
 namespace d60.Cirqus.Views.ViewManagers
 {
-    public class InMemoryViewManager<TViewInstance> : IManagedView<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
+    /// <summary>
+    /// In-memory catch-up view manager that can be used when your command processing happens on multiple machines
+    /// or if you want your in-mem views to be residing on another machine than the one that does the command processing.
+    /// </summary>
+    public class InMemoryViewManager<TViewInstance> : IViewManager<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
         readonly ConcurrentDictionary<string, TViewInstance> _views = new ConcurrentDictionary<string, TViewInstance>();
         readonly ViewDispatcherHelper<TViewInstance> _dispatcher = new ViewDispatcherHelper<TViewInstance>();
@@ -35,15 +40,17 @@ namespace d60.Cirqus.Views.ViewManagers
         {
             foreach (var e in batch)
             {
-                if (!ViewLocator.IsRelevant<TViewInstance>(e)) continue;
-
-                var affectedViewIds = _viewLocator.GetAffectedViewIds(viewContext, e);
-
-                foreach (var viewId in affectedViewIds)
+                if (ViewLocator.IsRelevant<TViewInstance>(e))
                 {
-                    var viewInstance = _views.GetOrAdd(viewId, id => _dispatcher.CreateNewInstance(id));
 
-                    _dispatcher.DispatchToView(viewContext, e, viewInstance);
+                    var affectedViewIds = _viewLocator.GetAffectedViewIds(viewContext, e);
+
+                    foreach (var viewId in affectedViewIds)
+                    {
+                        var viewInstance = _views.GetOrAdd(viewId, id => _dispatcher.CreateNewInstance(id));
+
+                        _dispatcher.DispatchToView(viewContext, e, viewInstance);
+                    }
                 }
 
                 Interlocked.Exchange(ref _position, e.GetGlobalSequenceNumber());
@@ -78,6 +85,7 @@ namespace d60.Cirqus.Views.ViewManagers
         public void Purge()
         {
             _views.Clear();
+            _position = -1;
         }
     }
 }

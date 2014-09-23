@@ -10,10 +10,11 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Locators;
 
 namespace d60.Cirqus.MsSql.Views
 {
-    public class MsSqlViewManager<TViewInstance> : IManagedView<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
+    public class MsSqlViewManager<TViewInstance> : IViewManager<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
         const int PrimaryKeySize = 100;
         const int DefaultPosition = -1;
@@ -21,19 +22,27 @@ namespace d60.Cirqus.MsSql.Views
         readonly ViewDispatcherHelper<TViewInstance> _dispatcher = new ViewDispatcherHelper<TViewInstance>();
         readonly string _connectionString;
         readonly string _tableName;
-        readonly Prop[] _schema;
+        readonly string _positionTableName;
+        readonly Prop[] _viewTableSchema;
+
+        readonly Prop[] _positionTableSchema =
+        {
+            new Prop {ColumnName = "Id", SqlDbType = SqlDbType.NVarChar},
+            new Prop {ColumnName = "Position", SqlDbType = SqlDbType.BigInt},
+        };
 
         Logger _logger;
 
         long _cachedPosition;
 
-        public MsSqlViewManager(string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true)
+        public MsSqlViewManager(string connectionStringOrConnectionStringName, string tableName, string positionTableName = null, bool automaticallyCreateSchema = true)
         {
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
 
             _connectionString = SqlHelper.GetConnectionString(connectionStringOrConnectionStringName);
             _tableName = tableName;
-            _schema = SchemaHelper.GetSchema<TViewInstance>();
+            _positionTableName = positionTableName ?? tableName + "_Position";
+            _viewTableSchema = SchemaHelper.GetSchema<TViewInstance>();
 
             if (automaticallyCreateSchema)
             {
@@ -42,7 +51,7 @@ namespace d60.Cirqus.MsSql.Views
         }
 
         public MsSqlViewManager(string connectionString, bool automaticallyCreateSchema = true)
-            : this(connectionString, typeof(TViewInstance).Name, automaticallyCreateSchema)
+            : this(connectionString, typeof(TViewInstance).Name, automaticallyCreateSchema: automaticallyCreateSchema)
         {
         }
 
@@ -51,11 +60,12 @@ namespace d60.Cirqus.MsSql.Views
             if (canGetFromCache && false)
             {
                 return GetPositionFromMemory()
-                       ?? GetPositionFromDb()
+                       ?? GetPositionFromViews()
                        ?? DefaultPosition;
             }
 
-            return GetPositionFromDb()
+            return GetPositionFromPositionTable()
+                   ?? GetPositionFromViews()
                    ?? DefaultPosition;
         }
 
@@ -71,7 +81,35 @@ namespace d60.Cirqus.MsSql.Views
             return null;
         }
 
-        long? GetPositionFromDb()
+        long? GetPositionFromPositionTable()
+        {
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+
+                using (var tx = conn.BeginTransaction())
+                {
+                    using (var cmd = conn.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = string.Format("SELECT [Position] FROM [{0}] WHERE Id = @id", _positionTableName);
+
+                        cmd.Parameters.Add("id", SqlDbType.NVarChar, PrimaryKeySize).Value = _tableName;
+
+                        var result = cmd.ExecuteScalar();
+
+                        if (result != null && result != DBNull.Value)
+                        {
+                            return (long)result;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        long? GetPositionFromViews()
         {
             using (var conn = new SqlConnection(_connectionString))
             {
@@ -103,6 +141,8 @@ namespace d60.Cirqus.MsSql.Views
 
             if (!eventList.Any()) return;
 
+            var newPosition = eventList.Max(e => e.GetGlobalSequenceNumber());
+
             using (var conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
@@ -130,11 +170,55 @@ namespace d60.Cirqus.MsSql.Views
 
                     Save(activeViewsById, conn, tx);
 
+                    UpdatePosition(conn, tx, newPosition);
+
                     tx.Commit();
                 }
             }
 
-            Interlocked.Exchange(ref _cachedPosition, eventList.Max(e => e.GetGlobalSequenceNumber()));
+            Interlocked.Exchange(ref _cachedPosition, newPosition);
+        }
+
+        void UpdatePosition(SqlConnection conn, SqlTransaction tx, long newPosition)
+        {
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.Transaction = tx;
+                var commandText = string.Format(@"
+
+MERGE [{0}] AS ViewTable
+
+USING (VALUES (@Id)) AS foo(Id)
+
+ON ViewTable.Id = foo.Id
+
+WHEN MATCHED THEN
+
+    UPDATE SET 
+[Position] = @position
+
+WHEN NOT MATCHED THEN
+
+    INSERT (
+[Id],
+[Position]
+) VALUES (
+@id,
+@position
+)
+
+;
+
+", _positionTableName);
+                
+                cmd.CommandText = commandText;
+
+                cmd.Parameters.Add("id", SqlDbType.NVarChar, PrimaryKeySize).Value = _tableName;
+                cmd.Parameters.Add("position", SqlDbType.BigInt).Value = newPosition;
+
+                cmd.ExecuteNonQuery();
+            }
+
         }
 
         public async Task WaitUntilProcessed(CommandProcessingResult result, TimeSpan timeout)
@@ -180,18 +264,25 @@ namespace d60.Cirqus.MsSql.Views
 
                 using (var tx = conn.BeginTransaction())
                 {
-                    using (var cmd = conn.CreateCommand())
-                    {
-                        cmd.Transaction = tx;
-                        cmd.CommandText = string.Format(@"DELETE FROM [{0}]", _tableName);
-                        cmd.ExecuteNonQuery();
-                    }
+                    DeleteRows(conn, tx, _tableName);
+
+                    UpdatePosition(conn, tx, DefaultPosition);
 
                     tx.Commit();
                 }
             }
 
             Interlocked.Exchange(ref _cachedPosition, DefaultPosition);
+        }
+
+        void DeleteRows(SqlConnection conn, SqlTransaction tx, string tableName)
+        {
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.Transaction = tx;
+                cmd.CommandText = string.Format(@"DELETE FROM [{0}]", tableName);
+                cmd.ExecuteNonQuery();
+            }
         }
 
         TViewInstance FindOneById(string viewId, SqlTransaction tx, SqlConnection conn)
@@ -207,7 +298,7 @@ SELECT
 
 FROM [{1}] WHERE [Id] = @id
 
-", FormatColumnNames(_schema), _tableName);
+", FormatColumnNames(_viewTableSchema), _tableName);
 
                 cmd.Parameters.Add("Id", SqlDbType.Char, PrimaryKeySize).Value = viewId;
 
@@ -217,7 +308,7 @@ FROM [{1}] WHERE [Id] = @id
                     {
                         var view = _dispatcher.CreateNewInstance(viewId);
 
-                        foreach (var prop in _schema)
+                        foreach (var prop in _viewTableSchema)
                         {
                             prop.Setter(view, reader[prop.ColumnName]);
                         }
@@ -282,11 +373,11 @@ WHEN NOT MATCHED THEN
 )
     
 ;
-", _tableName, FormatAssignments(_schema.Where(prop => !prop.IsPrimaryKey)), FormatColumnNames(_schema), FormatParameterNames(_schema));
+", _tableName, FormatAssignments(_viewTableSchema.Where(prop => !prop.IsPrimaryKey)), FormatColumnNames(_viewTableSchema), FormatParameterNames(_viewTableSchema));
 
                     cmd.Parameters.Add("Id", SqlDbType.NChar, PrimaryKeySize).Value = id;
 
-                    foreach (var prop in _schema.Where(p => !p.IsPrimaryKey))
+                    foreach (var prop in _viewTableSchema.Where(p => !p.IsPrimaryKey))
                     {
                         var value = prop.Getter(view);
 
@@ -306,16 +397,23 @@ WHEN NOT MATCHED THEN
             {
                 conn.Open();
 
-                if (!SchemaLooksRight(conn, _tableName))
+                if (!SchemaLooksRight(conn, _tableName, _viewTableSchema, _logger))
                 {
                     DropTable(conn, _tableName);
                 }
 
-                CreateTable(conn, _tableName);
+                CreateTable(conn, _tableName, _viewTableSchema);
+
+                if (!SchemaLooksRight(conn, _positionTableName, _positionTableSchema, _logger))
+                {
+                    DropTable(conn, _positionTableName);
+                }
+
+                CreateTable(conn, _positionTableName, _positionTableSchema);
             }
         }
 
-        bool SchemaLooksRight(SqlConnection conn, string tableName)
+        static bool SchemaLooksRight(SqlConnection conn, string tableName, Prop[] targetSchema, Logger logger)
         {
             var columnsPresentInDatabase = new List<Prop>();
 
@@ -353,21 +451,22 @@ WHEN NOT MATCHED THEN
                 }
             }
 
-            var columnsPresentInSchemaMissingOrWithWrongTypeInDatabase = _schema
+            var columnsPresentInSchemaMissingOrWithWrongTypeInDatabase = targetSchema
                 .Where(schemaColumn => !columnsPresentInDatabase.Any(c => c.Matches(schemaColumn)))
                 .ToList();
 
             if (columnsPresentInSchemaMissingOrWithWrongTypeInDatabase.Any())
             {
-                _logger.Warn("The table '{0}' is missing columns with the following names and types: {1}",
+                logger.Warn("The table '{0}' is missing columns with the following names and types: {1}",
                     tableName, string.Join(", ", columnsPresentInSchemaMissingOrWithWrongTypeInDatabase.Select(prop => string.Format("{0} ({1})", prop.ColumnName, prop.SqlDbType))));
+
                 return false;
             }
 
             return true;
         }
 
-        void DropTable(SqlConnection conn, string tableName)
+        static void DropTable(SqlConnection conn, string tableName)
         {
             using (var cmd = conn.CreateCommand())
             {
@@ -381,13 +480,13 @@ END
             }
         }
 
-        void CreateTable(SqlConnection conn, string tableName)
+        static void CreateTable(SqlConnection conn, string tableName, Prop[] schema)
         {
             using (var cmd = conn.CreateCommand())
             {
                 var script = string.Format("[Id] [NVARCHAR]({0}) NOT NULL, ", PrimaryKeySize)
                              + Environment.NewLine
-                             + string.Join("," + Environment.NewLine, _schema
+                             + string.Join("," + Environment.NewLine, schema
                                  .Where(c => !c.IsPrimaryKey)
                                  .Select(c => string.Format("[{0}] [{1}]{2} {3}",
                                      c.ColumnName,

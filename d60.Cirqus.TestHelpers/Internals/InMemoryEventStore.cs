@@ -15,6 +15,7 @@ namespace d60.Cirqus.TestHelpers.Internals
         readonly Dictionary<string, object> _idAndSeqNoTuples = new Dictionary<string, object>();
         readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
         readonly List<EventBatch> _savedEventBatches = new List<EventBatch>();
+        readonly object _lock = new object();
 
         long _globalSequenceNumber;
 
@@ -28,41 +29,44 @@ namespace d60.Cirqus.TestHelpers.Internals
                 .Select(e => string.Format("{0}:{1}", e.GetAggregateRootId(), e.GetSequenceNumber()))
                 .ToList();
 
-            try
+            lock (_lock)
             {
-                foreach (var tuple in tuplesInBatch)
+                try
                 {
-                    if (_idAndSeqNoTuples.ContainsKey(tuple))
+                    foreach (var tuple in tuplesInBatch)
                     {
-                        throw new InvalidOperationException(string.Format("Found duplicate: {0}", tuple));
+                        if (_idAndSeqNoTuples.ContainsKey(tuple))
+                        {
+                            throw new InvalidOperationException(string.Format("Found duplicate: {0}", tuple));
+                        }
+                    }
+
+                    foreach (var tuple in tuplesInBatch)
+                    {
+                        _idAndSeqNoTuples.Add(tuple, null);
                     }
                 }
-
-                foreach (var tuple in tuplesInBatch)
+                catch (Exception exception)
                 {
-                    _idAndSeqNoTuples.Add(tuple, null);
+                    throw new ConcurrencyException(batchId, eventList, exception);
                 }
+
+                var sequenceNumbersToAllocate = eventList.Count;
+
+                var result = Interlocked.Add(ref _globalSequenceNumber, sequenceNumbersToAllocate);
+
+                result -= sequenceNumbersToAllocate;
+
+                foreach (var e in eventList)
+                {
+                    e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = result++;
+                    e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
+                }
+
+                EventValidation.ValidateBatchIntegrity(batchId, eventList);
+
+                _savedEventBatches.Add(new EventBatch(batchId, eventList.Select(CloneEvent)));
             }
-            catch (Exception exception)
-            {
-                throw new ConcurrencyException(batchId, eventList, exception);
-            }
-
-            var sequenceNumbersToAllocate = eventList.Count;
-
-            var result = Interlocked.Add(ref _globalSequenceNumber, sequenceNumbersToAllocate);
-
-            result -= sequenceNumbersToAllocate;
-
-            foreach (var e in eventList)
-            {
-                e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = result++;
-                e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
-            }
-
-            EventValidation.ValidateBatchIntegrity(batchId, eventList);
-
-            _savedEventBatches.Add(new EventBatch(batchId, eventList.Select(CloneEvent)));
         }
 
         DomainEvent CloneEvent(DomainEvent ev)
@@ -72,50 +76,66 @@ namespace d60.Cirqus.TestHelpers.Internals
 
         public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0, long limit = int.MaxValue/2)
         {
-            long maxSequenceNumber = firstSeq + limit;
+            lock (_lock)
+            {
+                var maxSequenceNumber = firstSeq + limit;
 
-            return this
-                .Select(e => new
-                {
-                    Event = e,
-                    AggregateRootId = e.GetAggregateRootId(),
-                    SequenceNumber = e.GetSequenceNumber()
-                })
-                .Where(e => e.AggregateRootId == aggregateRootId)
-                .Where(e => e.SequenceNumber >= firstSeq && e.SequenceNumber < maxSequenceNumber)
-                .OrderBy(e => e.SequenceNumber)
-                .Select(e => CloneEvent(e.Event));
+                return this
+                    .Select(e => new
+                    {
+                        Event = e,
+                        AggregateRootId = e.GetAggregateRootId(),
+                        SequenceNumber = e.GetSequenceNumber()
+                    })
+                    .Where(e => e.AggregateRootId == aggregateRootId)
+                    .Where(e => e.SequenceNumber >= firstSeq && e.SequenceNumber < maxSequenceNumber)
+                    .OrderBy(e => e.SequenceNumber)
+                    .Select(e => CloneEvent(e.Event))
+                    .ToList();
+            }
         }
 
         public IEnumerator<DomainEvent> GetEnumerator()
         {
-            return _savedEventBatches.SelectMany(b => b.Events).GetEnumerator();
+            lock (_lock)
+            {
+                var clone = _savedEventBatches.SelectMany(b => b.Events).ToList();
+
+                return clone.GetEnumerator();
+            }
         }
 
         public long GetNextSeqNo(Guid aggregateRootId)
         {
-            var domainEvents = _savedEventBatches
-                .SelectMany(b => b.Events)
-                .Where(e => e.GetAggregateRootId() == aggregateRootId)
-                .ToList();
+            lock (_lock)
+            {
+                var domainEvents = _savedEventBatches
+                    .SelectMany(b => b.Events)
+                    .Where(e => e.GetAggregateRootId() == aggregateRootId)
+                    .ToList();
 
-            return domainEvents.Any()
-                ? domainEvents.Max(e => e.GetSequenceNumber()) + 1
-                : 0;
+                return domainEvents.Any()
+                    ? domainEvents.Max(e => e.GetSequenceNumber()) + 1
+                    : 0;
+            }
         }
 
         public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
         {
-            return _savedEventBatches
-                .SelectMany(e => e.Events)
-                .Select(e => new
-                {
-                    Event = e,
-                    GlobalSequenceNumner = e.GetGlobalSequenceNumber()
-                })
-                .Where(a => a.GlobalSequenceNumner >= globalSequenceNumber)
-                .OrderBy(a => a.GlobalSequenceNumner)
-                .Select(a => CloneEvent(a.Event));
+            lock (_lock)
+            {
+                return _savedEventBatches
+                    .SelectMany(e => e.Events)
+                    .Select(e => new
+                    {
+                        Event = e,
+                        GlobalSequenceNumner = e.GetGlobalSequenceNumber()
+                    })
+                    .Where(a => a.GlobalSequenceNumner >= globalSequenceNumber)
+                    .OrderBy(a => a.GlobalSequenceNumner)
+                    .Select(a => CloneEvent(a.Event))
+                    .ToList();
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()

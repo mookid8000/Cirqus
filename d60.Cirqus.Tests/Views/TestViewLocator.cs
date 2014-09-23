@@ -3,6 +3,7 @@ using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Tests.Stubs;
 using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Views

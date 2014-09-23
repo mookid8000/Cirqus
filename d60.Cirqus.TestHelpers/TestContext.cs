@@ -10,20 +10,18 @@ using d60.Cirqus.Serialization;
 using d60.Cirqus.TestHelpers.Internals;
 using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
-using d60.Cirqus.Views.ViewManagers.Old;
-using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagers.ViewManagerEventDispatcher;
 
 namespace d60.Cirqus.TestHelpers
 {
     /// <summary>
-    /// Use this bad boy to test your CQRS+ES things
+    /// Use the test context to carry out realistic testing of command processing, aggregate roots, and 
+    /// event processing in view generation.
     /// </summary>
     public class TestContext : IDisposable
     {
         readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
         readonly InMemoryEventStore _eventStore = new InMemoryEventStore();
         readonly DefaultAggregateRootRepository _aggregateRootRepository;
-        readonly Views.ViewManagers.Old.ViewManagerEventDispatcher _oldViewManagerEventDispatcher;
         readonly ViewManagerEventDispatcher _viewManagerEventDispatcher;
         readonly CompositeEventDispatcher _eventDispatcher;
         readonly ViewManagerWaitHandle _waitHandle = new ViewManagerWaitHandle();
@@ -34,35 +32,30 @@ namespace d60.Cirqus.TestHelpers
         public TestContext()
         {
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
-
-            _oldViewManagerEventDispatcher = new Views.ViewManagers.Old.ViewManagerEventDispatcher(_aggregateRootRepository);
             _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore);
-
             _waitHandle.Register(_viewManagerEventDispatcher);
-
-            _eventDispatcher = new CompositeEventDispatcher(_oldViewManagerEventDispatcher,
-                _viewManagerEventDispatcher);
+            _eventDispatcher = new CompositeEventDispatcher(_viewManagerEventDispatcher);
         }
+
+        /// <summary>
+        /// Can be used to specify whether this test context will block & wait for views to catch up after each and every processed command
+        /// </summary>
+        public bool Asynchronous { get; set; }
 
         public TestContext AddViewManager(IViewManager viewManager)
         {
-            _oldViewManagerEventDispatcher.Add(viewManager);
+            _viewManagerEventDispatcher.AddViewManager(viewManager);
             return this;
         }
 
-        public TestContext AddViewManager(IManagedView managedView)
-        {
-            _viewManagerEventDispatcher.AddViewManager(managedView);
-            return this;
-        }
-
-        public CommandProcessingResultWithEvents ProcessCommand<TAggregateRoot>(Command<TAggregateRoot> command) where TAggregateRoot : AggregateRoot, new()
+        /// <summary>
+        /// Processes the specified command in a unit of work.
+        /// </summary>
+        public CommandProcessingResultWithEvents ProcessCommand(Command command)
         {
             using (var unitOfWork = BeginUnitOfWork())
             {
-                var aggregateRoot = unitOfWork.Get<TAggregateRoot>(command.AggregateRootId);
-
-                command.Execute(aggregateRoot);
+                command.Execute(new DefaultCommandContext(unitOfWork.RealUnitOfWork, _aggregateRootRepository));
 
                 var eventsToReturn = unitOfWork.EmittedEvents.ToList();
 
@@ -73,23 +66,58 @@ namespace d60.Cirqus.TestHelpers
 
                 unitOfWork.Commit();
 
-                return new CommandProcessingResultWithEvents(eventsToReturn);
+                var result = new CommandProcessingResultWithEvents(eventsToReturn);
+
+                if (!Asynchronous)
+                {
+                    WaitForViewsToCatchUp();
+                }
+
+                return result;
             }
         }
 
+        /// <summary>
+        /// Creates a new unit of work similar to the one within which a command is processed.
+        /// </summary>
         public TestUnitOfWork BeginUnitOfWork()
         {
             EnsureInitialized();
 
-            return new TestUnitOfWork(_aggregateRootRepository, _eventStore, _oldViewManagerEventDispatcher);
+            var unitOfWork = new TestUnitOfWork(_aggregateRootRepository, _eventStore, _eventDispatcher);
+
+            unitOfWork.Committed += () =>
+            {
+                if (!Asynchronous)
+                {
+                    WaitForViewsToCatchUp();
+                }
+            };
+
+            return unitOfWork;
         }
 
+        /// <summary>
+        /// Fixes the current time to the specified <see cref="fixedCurrentTime"/> which will cause emitted events to have that
+        /// time as their <see cref="DomainEvent.MetadataKeys.TimeUtc"/> header
+        /// </summary>
         public void SetCurrentTime(DateTime fixedCurrentTime)
         {
             _currentTime = fixedCurrentTime;
         }
 
-        public IEnumerable<AggregateRoot> AggregateRootsInHistory
+        /// <summary>
+        /// Gets the entire history of commited events from the event store
+        /// </summary>
+        public EventCollection History
+        {
+            get { return new EventCollection(_eventStore.Stream()); }
+        }
+
+        /// <summary>
+        /// Hydrates and returns all aggregate roots from the entire history of the test context
+        /// </summary>
+        public IEnumerable<AggregateRoot> AggregateRoots
         {
             get
             {
@@ -121,16 +149,6 @@ namespace d60.Cirqus.TestHelpers
                         }
                     })
                     .Where(aggregateRoot => aggregateRoot != null);
-            }
-        }
-
-        void EnsureInitialized()
-        {
-            if (!_initialized)
-            {
-                _oldViewManagerEventDispatcher.Initialize(_eventStore, purgeExistingViews: true);
-                _viewManagerEventDispatcher.Initialize(_eventStore, purgeExistingViews: true);
-                _initialized = true;
             }
         }
 
@@ -174,7 +192,51 @@ namespace d60.Cirqus.TestHelpers
 
             _eventDispatcher.Dispatch(_eventStore, domainEvents);
 
-            return new CommandProcessingResultWithEvents(domainEvents);
+            var result = new CommandProcessingResultWithEvents(domainEvents);
+
+            if (!Asynchronous)
+            {
+                WaitForViewsToCatchUp();
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Waits for all views to catch up with the entire history of events, timing out if that takes longer than 10 seconds
+        /// </summary>
+        public void WaitForViewsToCatchUp(int timeoutSeconds = 10)
+        {
+            var allGlobalSequenceNumbers = History.Select(h => h.GetGlobalSequenceNumber()).ToArray();
+
+            if (!allGlobalSequenceNumbers.Any()) return;
+
+            var result = CommandProcessingResult.WithNewPosition(allGlobalSequenceNumbers.Max());
+
+            _waitHandle.WaitForAll(result, TimeSpan.FromSeconds(timeoutSeconds)).Wait();
+        }
+
+        /// <summary>
+        /// Waits for views managing the specified <see cref="TViewInstance"/> to catch up with the entire history of events, timing out if that takes longer than 10 seconds
+        /// </summary>
+        public void WaitForViewToCatchUp<TViewInstance>(int timeoutSeconds = 10) where TViewInstance : IViewInstance
+        {
+            var allGlobalSequenceNumbers = History.Select(h => h.GetGlobalSequenceNumber()).ToArray();
+
+            if (!allGlobalSequenceNumbers.Any()) return;
+
+            var result = CommandProcessingResult.WithNewPosition(allGlobalSequenceNumbers.Max());
+
+            _waitHandle.WaitFor<TViewInstance>(result, TimeSpan.FromSeconds(timeoutSeconds)).Wait();
+        }
+
+        void EnsureInitialized()
+        {
+            if (!_initialized)
+            {
+                _viewManagerEventDispatcher.Initialize(_eventStore, purgeExistingViews: true);
+                _initialized = true;
+            }
         }
 
         void SetMetadata<TAggregateRoot>(Guid aggregateRootId, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
@@ -208,14 +270,6 @@ namespace d60.Cirqus.TestHelpers
             return timeToReturn;
         }
 
-        /// <summary>
-        /// Gets the entire history of commited events from the event store
-        /// </summary>
-        public EventCollection History
-        {
-            get { return new EventCollection(_eventStore.Stream()); }
-        }
-
         bool _disposed;
 
         ~TestContext()
@@ -239,17 +293,6 @@ namespace d60.Cirqus.TestHelpers
             }
 
             _disposed = true;
-        }
-
-        public void WaitForViewToCatchUp<TViewInstance>() where TViewInstance : IViewInstance
-        {
-            var allGlobalSequenceNumbers = History.Select(h => h.GetGlobalSequenceNumber()).ToArray();
-
-            if (!allGlobalSequenceNumbers.Any()) return;
-
-            var result = CommandProcessingResult.WithNewPosition(allGlobalSequenceNumbers.Max());
-
-            _waitHandle.WaitFor<TViewInstance>(result, TimeSpan.FromSeconds(10)).Wait();
         }
     }
 

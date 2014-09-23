@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Events;
 
-namespace d60.Cirqus.Views.ViewManagers
+namespace d60.Cirqus.Views.ViewManagers.Locators
 {
     /// <summary>
     /// Abstracts away the logic of determining the scope of view instances by mapping from a <see cref="DomainEvent"/> to a view id

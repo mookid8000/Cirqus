@@ -1,7 +1,6 @@
 ﻿using System;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Config.Configurers;
-using d60.Cirqus.Dispatch;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Logging;
@@ -10,8 +9,7 @@ using d60.Cirqus.Logging.Null;
 using d60.Cirqus.Snapshotting;
 using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
-using d60.Cirqus.Views.ViewManagers.Old;
-using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagers.ViewManagerEventDispatcher;
+using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagerEventDispatcher;
 
 namespace d60.Cirqus.Config
 {
@@ -47,23 +45,14 @@ namespace d60.Cirqus.Config
         }
 
         /// <summary>
-        /// Registers the OLD <see cref="Views.ViewManagers.Old.ViewManagerEventDispatcher"/>
-        /// </summary>
-        [Obsolete("ViewManagerEventDispatcher will be replaced with an inmproved one some time soon")]
-        public static void UseOldViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IViewManager[] viewManagers)
-        {
-            AddEventDispatcherRegistration(builder, context => new Views.ViewManagers.Old.ViewManagerEventDispatcher(context.Get<IAggregateRootRepository>(), viewManagers));
-        }
-
-        /// <summary>
-        /// Registers a <see cref="ViewManagerEventDispatcher"/> to manage the given views. Can be called multiple times in order to register
+        /// Registers a <see cref="Views.ViewManagerEventDispatcher"/> to manage the given views. Can be called multiple times in order to register
         /// multiple "pools" of views (each will be managed by a dedicated worker thread).
         /// </summary>
-        public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IManagedView[] managedViews)
+        public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IViewManager[] viewManagers)
         {
             AddEventDispatcherRegistration(builder, context => new ViewManagerEventDispatcher(
                 context.Get<IAggregateRootRepository>(),
-                context.Get<IEventStore>(), managedViews));
+                context.Get<IEventStore>(), viewManagers));
         }
 
         /// <summary>
@@ -71,13 +60,13 @@ namespace d60.Cirqus.Config
         /// multiple "pools" of views (each will be managed by a dedicated worker thread). The event dispatcher will register itself with the
         /// given <seealso cref="waitHandle"/>, allowing for optionally blocking until views have been updated to a certain point.
         /// </summary>
-        public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, ViewManagerWaitHandle waitHandle, params IManagedView[] managedViews)
+        public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, ViewManagerWaitHandle waitHandle, params IViewManager[] viewManagers)
         {
             AddEventDispatcherRegistration(builder, context =>
             {
                 var eventDispatcher = new ViewManagerEventDispatcher(
                     context.Get<IAggregateRootRepository>(),
-                    context.Get<IEventStore>(), managedViews);
+                    context.Get<IEventStore>(), viewManagers);
 
                 waitHandle.Register(eventDispatcher);
 

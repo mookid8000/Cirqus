@@ -257,3 +257,35 @@
 
 * Added `HandlerViewLocator` that allows for implementing `IGetViewIdsFor<TDomainEvent>` where `TDomainEvent` is a domain event or an interface - makes view ID mapping really neat in some situations.
 
+## 0.21.0
+
+This is a big update that completes the transition to the new, vastly improved view managers and makes a load of stuff much more consistent.
+
+* All the old view manager stuff has now been completely replaced by the new view manager.
+* `TestContext` now has an `Asynchronous` property that can be used to specify that it is to work asynchronously (more realistic with regards to event dispatch).
+* Replaced the `ProcessCommand` method on `TestContext` with one that matched the one on `ICommandProcessor`
+
+## 0.22.0
+
+* Added `InMemoryViewEventDispatcher` which a special in-mem view manager that has events dispatched to it directly - suitable for in-mem, in-process views only (but they're very fast...)
+
+## 0.22.1
+
+* Fixed bug where loading a nonexistent aggregate root from a view did not throw an exception
+
+## 0.22.2
+
+* Better `ToString` on `CommandProcessingResult` 
+
+## 0.23.0
+
+* Added ability for `MsSqlViewManager`-views to "find rest", which is crucial when you want to support blocking on a view - a separate table is used to implement this feature
+
+## 0.24.0
+
+* Store current position in separate collection for `MongoDbViewManager` to avoid having to deal with the special position document popping up in query results
+
+## 0.24.1
+
+* Made `InMemoryEventStore` reentrant by serializing access to the inner list of committed event batches
+

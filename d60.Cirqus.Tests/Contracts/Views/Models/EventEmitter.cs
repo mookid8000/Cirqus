@@ -5,6 +5,7 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Locators;
 
 namespace d60.Cirqus.Tests.Contracts.Views.Models
 {

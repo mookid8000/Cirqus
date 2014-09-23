@@ -59,12 +59,16 @@ namespace d60.Cirqus.Tests.Config
             waiter.WaitForAll(lastResult, TimeSpan.FromSeconds(5)).Wait();
 
             Console.WriteLine("Done - checking collections");
-            var viewCollectionNames = new[] { "view1", "view2", "view3", "view4" };
+            var expectedViewCollectionNames = new[] { "view1", "view2", "view3", "view4" };
 
-            Assert.That(database.GetCollectionNames().OrderBy(n => n).Where(c => c.StartsWith("view")).ToArray(),
-                Is.EqualTo(viewCollectionNames));
+            var viewCollectionNames = database.GetCollectionNames()
+                .OrderBy(n => n)
+                .Where(c => c.StartsWith("view") && !c.EndsWith("Position"))
+                .ToArray();
+            
+            Assert.That(viewCollectionNames, Is.EqualTo(expectedViewCollectionNames));
 
-            viewCollectionNames.ToList()
+            expectedViewCollectionNames.ToList()
                 .ForEach(name =>
                 {
                     var doc = database.GetCollection<ConfigTestView>(name)
@@ -141,11 +145,7 @@ namespace d60.Cirqus.Tests.Config
                 .Logging(l => l.UseConsole())
                 .EventStore(e => e.UseMongoDb(mongoConnectionString.ConnectionString, "Events"))
                 .AggregateRootRepository(r => r.EnableInMemorySnapshotCaching(10000))
-                .EventDispatcher(d =>
-                {
-                    d.UseOldViewManagerEventDispatcher();
-                    d.UseViewManagerEventDispatcher();
-                })
+                .EventDispatcher(d => d.UseViewManagerEventDispatcher())
                 .Options(o =>
                 {
                     o.PurgeExistingViews(true);

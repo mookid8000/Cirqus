@@ -7,15 +7,16 @@ using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Tests.Contracts.Views.Factories;
 using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.TestHelpers.TestContext;
 
 namespace d60.Cirqus.Tests.Contracts.Views
 {
-    [TestFixture(typeof(MongoDbManagedViewFactory), Category = TestCategories.MongoDb)]
-    [TestFixture(typeof(MsSqlManagedViewFactory), Category = TestCategories.MsSql)]
-    [TestFixture(typeof(InMemoryManagedViewFactory))]
-    public class LoadingStuffDuringViewLocation<TFactory> : FixtureBase where TFactory : AbstractManagedViewFactory, new()
+    [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
+    [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
+    [TestFixture(typeof(InMemoryViewManagerFactory))]
+    public class LoadingStuffDuringViewLocation<TFactory> : FixtureBase where TFactory : AbstractViewManagerFactory, new()
     {
         TFactory _factory;
         TestContext _context;
@@ -26,13 +27,13 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             _factory = new TFactory();
 
-            _context = RegisterForDisposal(new TestContext());
+            _context = RegisterForDisposal(new TestContext { Asynchronous = true });
         }
 
         [Test]
         public void CanLoadRootsDuringViewLocation()
         {
-            _context.AddViewManager(_factory.GetManagedView<CountTheNodes>());
+            _context.AddViewManager(_factory.GetViewManager<CountTheNodes>());
 
             // arrange
             var rootNodeId = Guid.NewGuid();
@@ -45,7 +46,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
                 child1.AttachTo(node);
                 child2.AttachTo(node);
-            
+
                 var subChild1 = uow.Get<Node>(Guid.NewGuid());
                 var subChild2 = uow.Get<Node>(Guid.NewGuid());
                 var subChild3 = uow.Get<Node>(Guid.NewGuid());
@@ -90,7 +91,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
                     node = context.Load<Node>(node.ParentNodeId);
                 }
 
-                return new[] {node.Id.ToString()};
+                return new[] { node.Id.ToString() };
             }
         }
 

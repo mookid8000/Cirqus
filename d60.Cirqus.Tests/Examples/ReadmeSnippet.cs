@@ -5,11 +5,12 @@ using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.MsSql.Events;
+using d60.Cirqus.MsSql.Views;
 using d60.Cirqus.Tests.MsSql;
+using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
-using ViewManagerEventDispatcher = d60.Cirqus.Views.ViewManagers.Old.ViewManagerEventDispatcher;
 
 namespace d60.Cirqus.Tests.Examples
 {
@@ -29,9 +30,9 @@ namespace d60.Cirqus.Tests.Examples
 
             var eventStore = new MsSqlEventStore(MsSqlTestHelper.ConnectionString, "events", automaticallyCreateSchema: true);
             var aggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
-            var viewManager = new Cirqus.MsSql.Views.Old.MsSqlViewManager<CounterView>(MsSqlTestHelper.ConnectionString, "counters", automaticallyCreateSchema: true);
+            var viewManager = new MsSqlViewManager<CounterView>(MsSqlTestHelper.ConnectionString, "counters", automaticallyCreateSchema: true);
 
-            var eventDispatcher = new ViewManagerEventDispatcher(aggregateRootRepository, viewManager);
+            var eventDispatcher = new ViewManagerEventDispatcher(aggregateRootRepository, eventStore, viewManager);
 
             var processor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher);
 

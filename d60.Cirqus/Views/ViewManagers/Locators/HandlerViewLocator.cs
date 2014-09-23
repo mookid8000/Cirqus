@@ -5,13 +5,13 @@ using System.Linq;
 using System.Reflection;
 using d60.Cirqus.Events;
 
-namespace d60.Cirqus.Views.ViewManagers
+namespace d60.Cirqus.Views.ViewManagers.Locators
 {
     public class HandlerViewLocator : ViewLocator
     {
         readonly ConcurrentDictionary<Type, MethodInfo> _handlerMethodsByDomainEventType = new ConcurrentDictionary<Type, MethodInfo>();
 
-        protected sealed override IEnumerable<string> GetViewIds(IViewContext context, DomainEvent e)
+        protected override IEnumerable<string> GetViewIds(IViewContext context, DomainEvent e)
         {
             var handlerMethod = _handlerMethodsByDomainEventType.GetOrAdd(e.GetType(), GetHandlerMethodFor);
 

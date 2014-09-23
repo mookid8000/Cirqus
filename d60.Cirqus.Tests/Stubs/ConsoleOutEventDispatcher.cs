@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using d60.Cirqus.Dispatch;
 using d60.Cirqus.Events;
+using d60.Cirqus.Views;
 
 namespace d60.Cirqus.Tests.Stubs
 {

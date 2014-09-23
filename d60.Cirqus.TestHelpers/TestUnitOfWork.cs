@@ -2,14 +2,14 @@ using System;
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
-using d60.Cirqus.Dispatch;
 using d60.Cirqus.Events;
+using d60.Cirqus.Views;
 
 namespace d60.Cirqus.TestHelpers
 {
     public class TestUnitOfWork : IDisposable
     {
-        readonly RealUnitOfWork _unitOfWork = new RealUnitOfWork();
+        readonly RealUnitOfWork _realUnitOfWork = new RealUnitOfWork();
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventStore _eventStore;
         readonly IEventDispatcher _eventDispatcher;
@@ -23,22 +23,29 @@ namespace d60.Cirqus.TestHelpers
             _eventDispatcher = eventDispatcher;
         }
 
+        internal RealUnitOfWork RealUnitOfWork
+        {
+            get { return _realUnitOfWork; }
+        }
+
+        internal event Action Committed = delegate { }; 
+
         public TAggregateRoot Get<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
-            var aggregateRootFromCache = _unitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId, long.MaxValue);
+            var aggregateRootFromCache = _realUnitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId, long.MaxValue);
             if (aggregateRootFromCache != null)
             {
                 return aggregateRootFromCache;
             }
 
-            var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, _unitOfWork);
+            var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, _realUnitOfWork);
             var aggregateRoot = aggregateRootInfo.AggregateRoot;
 
-            _unitOfWork.AddToCache(aggregateRoot, long.MaxValue);
+            _realUnitOfWork.AddToCache(aggregateRoot, long.MaxValue);
 
-            aggregateRoot.UnitOfWork = _unitOfWork;
+            aggregateRoot.UnitOfWork = _realUnitOfWork;
 
-            _unitOfWork.AddToCache(aggregateRoot, aggregateRootInfo.LastGlobalSeqNo);
+            _realUnitOfWork.AddToCache(aggregateRoot, aggregateRootInfo.LastGlobalSeqNo);
 
             if (aggregateRootInfo.IsNew)
             {
@@ -53,7 +60,7 @@ namespace d60.Cirqus.TestHelpers
         /// </summary>
         public EventCollection EmittedEvents
         {
-            get { return new EventCollection(_unitOfWork.EmittedEvents); }
+            get { return new EventCollection(_realUnitOfWork.EmittedEvents); }
         }
 
         /// <summary>
@@ -76,6 +83,8 @@ namespace d60.Cirqus.TestHelpers
             _wasCommitted = true;
 
             _eventDispatcher.Dispatch(_eventStore, domainEvents);
+
+            Committed();
         }
 
         public void Dispose()

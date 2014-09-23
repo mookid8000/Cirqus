@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Config;
-using d60.Cirqus.Dispatch;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
@@ -13,7 +12,7 @@ using d60.Cirqus.Numbers;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Views.NewViewManager.Commands;
 using d60.Cirqus.Tests.Views.NewViewManager.Views;
-using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using MongoDB.Driver;
 using NUnit.Framework;
@@ -21,7 +20,7 @@ using NUnit.Framework;
 namespace d60.Cirqus.Tests.Views.NewViewManager
 {
     [TestFixture, Category(TestCategories.MongoDb)]
-    public class TestNewViewManagerEventDispatcher : FixtureBase
+    public class TestViewManagerEventDispatcher : FixtureBase
     {
         ViewManagerEventDispatcher _dispatcher;
 
@@ -87,13 +86,13 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
         public enum BlockOption
         {
             NoBlock,
-            BlockOnManagedView,
             BlockOnViewManager,
+            BlockOnEventDispatcher,
         }
 
         [TestCase(BlockOption.NoBlock)]
-        [TestCase(BlockOption.BlockOnManagedView)]
         [TestCase(BlockOption.BlockOnViewManager)]
+        [TestCase(BlockOption.BlockOnEventDispatcher)]
         public void CanBlockUntilViewIsUpdated(BlockOption blockOption)
         {
             // arrange
@@ -111,11 +110,12 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             // act
             switch (blockOption)
             {
-                case BlockOption.BlockOnManagedView:
+                case BlockOption.BlockOnViewManager:
                     Console.WriteLine("Waiting for {0} on the view...", result.GetNewPosition());
                     slowView.WaitUntilProcessed(result, TimeSpan.FromSeconds(2)).Wait();
                     break;
-                case BlockOption.BlockOnViewManager:
+
+                case BlockOption.BlockOnEventDispatcher:
                     Console.WriteLine("Waiting for {0} on the dispatcher...", result.GetNewPosition());
                     _dispatcher.WaitUntilProcessed<SlowView>(result, TimeSpan.FromSeconds(2)).Wait();
                     break;
