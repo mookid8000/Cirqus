@@ -20,6 +20,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
     [TestFixture(typeof(InMemoryEventStoreFactory))]
     [TestFixture(typeof(MsSqlEventStoreFactory), Category = TestCategories.MsSql)]
     [TestFixture(typeof(PostgreSqlEventStoreFactory), Category = TestCategories.PostgreSql)]
+    [TestFixture(typeof(NtfsEventStoreFactory))]
     public class EventStoreTest<TEventStoreFactory> : FixtureBase where TEventStoreFactory : IEventStoreFactory, new()
     {
         TEventStoreFactory _eventStoreFactory;
@@ -30,6 +31,9 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             _eventStoreFactory = new TEventStoreFactory();
 
             _eventStore = _eventStoreFactory.GetEventStore();
+
+            if (_eventStore is IDisposable)
+                RegisterForDisposal((IDisposable)_eventStore);
         }
 
         [Test]

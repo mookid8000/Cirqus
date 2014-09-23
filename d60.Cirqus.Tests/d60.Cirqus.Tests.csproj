@@ -92,6 +92,7 @@
     <Compile Include="Aggregates\TestEventApplication.cs" />
     <Compile Include="Commands\TestCustomMetadata.cs" />
     <Compile Include="Contracts\EventStore\EventStoreTest.cs" />
+    <Compile Include="Contracts\EventStore\Factories\NtfsEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\Factories\PostgreSqlEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\IEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\Factories\InMemoryEventStoreFactory.cs" />
@@ -188,6 +189,10 @@
     <ProjectReference Include="..\d60.Cirqus.MsSql\d60.Cirqus.MsSql.csproj">
       <Project>{6EEBCA35-9B61-4A95-8E72-3AF583C14F32}</Project>
       <Name>d60.Cirqus.MsSql</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\d60.Cirqus.NTFS\d60.Cirqus.NTFS.csproj">
+      <Project>{475EA928-1AE9-47CC-A706-31FBCD97BE7E}</Project>
+      <Name>d60.Cirqus.NTFS</Name>
     </ProjectReference>
     <ProjectReference Include="..\d60.Cirqus.PostgreSql\d60.Cirqus.PostgreSql.csproj">
       <Project>{1DCEE03D-8316-443B-92D5-DD89D368837C}</Project>
