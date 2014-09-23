@@ -284,3 +284,8 @@ This is a big update that completes the transition to the new, vastly improved v
 ## 0.24.0
 
 * Store current position in separate collection for `MongoDbViewManager` to avoid having to deal with the special position document popping up in query results
+
+## 0.24.1
+
+* Made `InMemoryEventStore` reentrant by serializing access to the inner list of committed event batches
+
