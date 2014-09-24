@@ -292,3 +292,7 @@ This is a big update that completes the transition to the new, vastly improved v
 ## 0.24.2
 
 * Added experimental TypeScript code generator
+
+## 0.24.3
+
+* Silly `Assembly.LoadFile` must always be called with an absolute path

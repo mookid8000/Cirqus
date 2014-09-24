@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using d60.Cirqus.TsClient.Model;
@@ -68,7 +69,7 @@ namespace d60.Cirqus.TsClient.Generation
             try
             {
                 _writer.Print("Loading DLL {0}", filePath);
-                return Assembly.LoadFile(filePath);
+                return Assembly.LoadFile(Path.GetFullPath(filePath));
             }
             catch (BadImageFormatException exception)
             {
