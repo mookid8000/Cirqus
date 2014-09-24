@@ -13,15 +13,25 @@ namespace d60.Cirqus.TsClient
         {
             try
             {
+                Writer.Print(@"-----------------------------------------------------------------------------
+             d60 Cirqus TypeScript client code generator
+-----------------------------------------------------------------------------");
+
                 Run(args);
 
                 return 0;
+            }
+            catch (PrettyException exception)
+            {
+                Writer.Print(exception.Message);
+
+                return 1;
             }
             catch (Exception exception)
             {
                 Writer.Print("Unhandled exception: {0}", exception);
 
-                return 1;
+                return 2;
             }
         }
 
@@ -29,7 +39,13 @@ namespace d60.Cirqus.TsClient
         {
             if (args.Length != 2)
             {
-                throw new ArgumentException(string.Format("Invalid number of args: {0}", args.Length));
+                throw new PrettyException(@"Please call the tool like this:
+
+    d60.Cirqus.TsClient <path-to-DLL> <output-directory>
+
+where <path-to-DLL> should point to an assembly containing all of your commands,
+and <output-directory> should be the directory in which you want the generated
+'commands.ts' and 'commandProcessor.ts' to be put.");
             }
 
             var sourceDll = args[0];
