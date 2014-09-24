@@ -70,7 +70,8 @@ namespace d60.Cirqus.TsClient.Generation
         }
 
         const string HeaderTemplate = @"/* 
-    Generated with d60.Cirqus.TsClient.... should probably not be edited directly, should probably be regenerated instead... :)
+    Generated with d60.Cirqus.TsClient.exe
+    Should not be edited directly - should probably be regenerated instead :)
     {0}{1}
 */";
         const string HashPrefix = "Hash: ";

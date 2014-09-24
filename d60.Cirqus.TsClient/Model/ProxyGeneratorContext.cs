@@ -33,6 +33,8 @@ namespace d60.Cirqus.TsClient.Model
             AddBuiltInType(new BuiltInTypeDef(typeof(string), "", "string"));
             AddBuiltInType(new BuiltInTypeDef(typeof(DateTime), "", "Date"));
 
+            AddBuiltInType(new BuiltInTypeDef(typeof(object), "", "any"));
+
             AddBuiltInType(new BuiltInTypeDef(typeof(Command), @"interface Command {
     Meta?: any;
 }", "Command"));
