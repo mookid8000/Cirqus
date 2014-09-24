@@ -25,6 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspec", "nuspec", "{407E21
 		nuspec\d60.Circus.nuspec = nuspec\d60.Circus.nuspec
 		nuspec\d60.Circus.PostgreSql.nuspec = nuspec\d60.Circus.PostgreSql.nuspec
 		nuspec\d60.Circus.TestHelpers.nuspec = nuspec\d60.Circus.TestHelpers.nuspec
+		nuspec\d60.Circus.TsClient.nuspec = nuspec\d60.Circus.TsClient.nuspec
 		nuspec\d60.Cirqus.Serilog.nuspec = nuspec\d60.Cirqus.Serilog.nuspec
 	EndProjectSection
 EndProject
@@ -74,6 +75,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "serilog", "serilog", "{FD32DF41-628D-4C88-8369-E2E66A6CC34D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Cirqus.Serilog", "d60.Cirqus.Serilog\d60.Cirqus.Serilog.csproj", "{1890E729-AA72-4812-8EB4-48F475D67D25}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "typescript", "typescript", "{87A98A37-1B2E-44A1-B6EE-53B75E80C816}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Cirqus.TsClient", "d60.Cirqus.TsClient\d60.Cirqus.TsClient.csproj", "{9FF2E2C5-2FF8-4E9E-B131-5DA2515890FC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -125,6 +130,10 @@ Global
 		{1890E729-AA72-4812-8EB4-48F475D67D25}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1890E729-AA72-4812-8EB4-48F475D67D25}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1890E729-AA72-4812-8EB4-48F475D67D25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9FF2E2C5-2FF8-4E9E-B131-5DA2515890FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9FF2E2C5-2FF8-4E9E-B131-5DA2515890FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9FF2E2C5-2FF8-4E9E-B131-5DA2515890FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9FF2E2C5-2FF8-4E9E-B131-5DA2515890FC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -149,5 +158,7 @@ Global
 		{1DCEE03D-8316-443B-92D5-DD89D368837C} = {B3C09C49-9BB5-401B-BD4E-E164D0E4B2A6}
 		{FD32DF41-628D-4C88-8369-E2E66A6CC34D} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
 		{1890E729-AA72-4812-8EB4-48F475D67D25} = {FD32DF41-628D-4C88-8369-E2E66A6CC34D}
+		{87A98A37-1B2E-44A1-B6EE-53B75E80C816} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
+		{9FF2E2C5-2FF8-4E9E-B131-5DA2515890FC} = {87A98A37-1B2E-44A1-B6EE-53B75E80C816}
 	EndGlobalSection
 EndGlobal

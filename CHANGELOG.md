@@ -289,3 +289,6 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Made `InMemoryEventStore` reentrant by serializing access to the inner list of committed event batches
 
+## 0.24.2
+
+* Added experimental TypeScript code generator
