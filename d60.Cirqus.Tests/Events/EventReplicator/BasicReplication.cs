@@ -3,19 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using d60.Cirqus.Events;
-using d60.Cirqus.Extensions;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.Tests.MongoDb;
 using NUnit.Framework;
 
-namespace d60.Cirqus.Tests.Events
+namespace d60.Cirqus.Tests.Events.EventReplicator
 {
     [TestFixture, Category(TestCategories.MongoDb)]
-    public class TestEventReplicator : FixtureBase
+    public class BasicReplication : FixtureBase
     {
         readonly Dictionary<Guid, int> _seqNos = new Dictionary<Guid, int>();
 
-        EventReplicator _replicator;
+        Cirqus.Events.EventReplicator _replicator;
         MongoDbEventStore _source;
         MongoDbEventStore _destination;
 
@@ -28,7 +27,7 @@ namespace d60.Cirqus.Tests.Events
             _source = new MongoDbEventStore(database, "EventSrc");
             _destination = new MongoDbEventStore(database, "EventDst");
 
-            _replicator = new EventReplicator(_source, _destination);
+            _replicator = new Cirqus.Events.EventReplicator(_source, _destination);
 
             RegisterForDisposal(_replicator);
 
@@ -76,7 +75,7 @@ namespace d60.Cirqus.Tests.Events
                 batchId2.ToString()
             };
 
-            Assert.That(myKindOfEvents.Select(e => e.Meta[EventReplicator.SourceEventBatchId]).ToArray(), Is.EqualTo(expectedSourceBatchIds));
+            Assert.That(myKindOfEvents.Select(e => e.Meta[Cirqus.Events.EventReplicator.SourceEventBatchId]).ToArray(), Is.EqualTo(expectedSourceBatchIds));
         }
 
 
