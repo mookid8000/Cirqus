@@ -73,6 +73,7 @@
     <Compile Include="Config\Configurers\EventStoreConfigurationBuilder.cs" />
     <Compile Include="Config\Configurers\IRegistrar.cs" />
     <Compile Include="Config\Configurers\OptionsConfigurationBuilder.cs" />
+    <Compile Include="Events\EventReplicator.cs" />
     <Compile Include="ICommandProcessor.cs" />
     <Compile Include="Config\Options.cs" />
     <Compile Include="Config\Retryer.cs" />

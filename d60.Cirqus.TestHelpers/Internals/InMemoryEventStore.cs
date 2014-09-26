@@ -69,6 +69,11 @@ namespace d60.Cirqus.TestHelpers.Internals
             }
         }
 
+        public long GetNextGlobalSequenceNumber()
+        {
+            return _globalSequenceNumber;
+        }
+
         DomainEvent CloneEvent(DomainEvent ev)
         {
             return _domainEventSerializer.Deserialize(_domainEventSerializer.Serialize(ev));

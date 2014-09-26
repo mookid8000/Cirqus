@@ -108,6 +108,7 @@
     <Compile Include="Contracts\Views\RecoveryTest.cs" />
     <Compile Include="Contracts\Views\RestTest.cs" />
     <Compile Include="Contracts\Views\ViewLocators.cs" />
+    <Compile Include="Events\TestEventReplicator.cs" />
     <Compile Include="Events\TestInMemoryEventStore.cs" />
     <Compile Include="Examples\ReadmeSnippet.cs" />
     <Compile Include="Extensions\Helpful.cs" />

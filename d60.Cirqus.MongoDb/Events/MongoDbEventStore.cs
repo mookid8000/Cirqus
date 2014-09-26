@@ -23,6 +23,7 @@ namespace d60.Cirqus.MongoDb.Events
         static readonly string AggregateRootIdDocPath = string.Format("{0}.{1}.{2}", EventsDocPath, MetaDocPath, DomainEvent.MetadataKeys.AggregateRootId);
 
         readonly MongoDbSerializer _serializer = new MongoDbSerializer();
+
         readonly MongoCollection _eventBatches;
 
         public MongoDbEventStore(MongoDatabase database, string eventCollectionName, bool automaticallyCreateIndexes = true)
@@ -117,7 +118,7 @@ namespace d60.Cirqus.MongoDb.Events
 
             events.ForEach(e => _serializer.EnsureSerializability(e));
 
-            var nextGlobalSeqNo = GetNextGlobalSeqNo();
+            var nextGlobalSeqNo = GetNextGlobalSequenceNumber();
 
             foreach (var e in events)
             {
@@ -143,7 +144,7 @@ namespace d60.Cirqus.MongoDb.Events
             }
         }
 
-        long GetNextGlobalSeqNo()
+        public long GetNextGlobalSequenceNumber()
         {
             var doc = _eventBatches
                 .FindAllAs<BsonDocument>()

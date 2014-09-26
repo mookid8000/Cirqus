@@ -49,7 +49,7 @@ namespace d60.Cirqus.MsSql.Events
                 {
                     using (var tx = conn.BeginTransaction())
                     {
-                        var globalSequenceNumber = GetNextSequenceNumber(conn, tx);
+                        var globalSequenceNumber = GetNextGlobalSequenceNumber(conn, tx);
 
                         foreach (var e in eventList)
                         {
@@ -106,7 +106,22 @@ INSERT INTO [{0}] (
             }
         }
 
-        long GetNextSequenceNumber(SqlConnection conn, SqlTransaction tx)
+        public long GetNextGlobalSequenceNumber()
+        {
+            var globalSequenceNumber = 0L;
+
+            WithConnection(conn =>
+            {
+                using (var tx = conn.BeginTransaction())
+                {
+                    globalSequenceNumber = GetNextGlobalSequenceNumber(conn, tx);
+                }
+            });
+
+            return globalSequenceNumber;
+        }
+
+        long GetNextGlobalSequenceNumber(SqlConnection conn, SqlTransaction tx)
         {
             using (var cmd = conn.CreateCommand())
             {
