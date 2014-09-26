@@ -41,19 +41,24 @@ namespace d60.Cirqus.Tests.Events.EventReplicator
             _replicator.Start();
         }
 
-        [Test]
-        public void CanReplicateEventsEvenWhenErrorsOccurVeryOften()
+        [TestCase(10)]
+        [TestCase(20)]
+        [TestCase(100)]
+        [TestCase(200, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(1000, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(10000, Ignore = TestCategories.IgnoreLongRunning)]
+        public void CanReplicateEventsEvenWhenErrorsOccurVeryOften(int numberOfEvents)
         {
             try
             {
-                Enumerable.Range(0, 100)
+                Enumerable.Range(0, numberOfEvents)
                     .Select(i => CreateNewEvent(Guid.NewGuid(), "event no " + i))
                     .ToList()
                     .ForEach(e => _source.Save(Guid.NewGuid(), new[] {e}));
 
-                while (_destination.GetNextGlobalSequenceNumber() < 100)
+                while (_destination.GetNextGlobalSequenceNumber() < numberOfEvents)
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(numberOfEvents);
                 }
 
                 Thread.Sleep(500);
@@ -64,9 +69,9 @@ namespace d60.Cirqus.Tests.Events.EventReplicator
                     .OfType<Event>()
                     .ToList();
 
-                Assert.That(myKindOfEvents.Count, Is.EqualTo(100));
+                Assert.That(myKindOfEvents.Count, Is.EqualTo(numberOfEvents));
                 Assert.That(myKindOfEvents.Select(e => e.Data),
-                    Is.EqualTo(Enumerable.Range(0, 100).Select(i => "event no " + i)));
+                    Is.EqualTo(Enumerable.Range(0, numberOfEvents).Select(i => "event no " + i)));
 
             }
             finally
