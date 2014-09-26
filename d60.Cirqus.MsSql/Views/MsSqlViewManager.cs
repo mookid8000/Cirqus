@@ -55,6 +55,8 @@ namespace d60.Cirqus.MsSql.Views
         {
         }
 
+        public event ViewInstanceUpdatedHandler<TViewInstance> Updated = delegate { };
+
         public long GetPosition(bool canGetFromCache = true)
         {
             if (canGetFromCache && false)
@@ -170,6 +172,8 @@ namespace d60.Cirqus.MsSql.Views
 
                     Save(activeViewsById, conn, tx);
 
+                    RaiseEvents(activeViewsById.Values);
+
                     UpdatePosition(conn, tx, newPosition);
 
                     tx.Commit();
@@ -177,6 +181,14 @@ namespace d60.Cirqus.MsSql.Views
             }
 
             Interlocked.Exchange(ref _cachedPosition, newPosition);
+        }
+
+        void RaiseEvents(IEnumerable<TViewInstance > viewInstances)
+        {
+            foreach (var instance in viewInstances)
+            {
+                Updated(instance);
+            }
         }
 
         void UpdatePosition(SqlConnection conn, SqlTransaction tx, long newPosition)

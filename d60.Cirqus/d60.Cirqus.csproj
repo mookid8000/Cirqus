@@ -117,6 +117,7 @@
     <Compile Include="Views\IViewManager.cs" />
     <Compile Include="Views\ViewManagers\InMemoryViewManager.cs" />
     <Compile Include="Views\ViewManagerEventDispatcher.cs" />
+    <Compile Include="Views\ViewManagers\ViewInstanceUpdatedHandler.cs" />
     <Compile Include="Views\ViewManagers\ViewManagerWaitHandle.cs" />
     <Compile Include="Views\ViewManagers\IViewContext.cs" />
     <Compile Include="Views\ViewManagers\Locators\GlobalInstanceLocator.cs" />

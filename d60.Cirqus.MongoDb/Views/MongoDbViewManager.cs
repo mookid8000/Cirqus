@@ -61,6 +61,8 @@ namespace d60.Cirqus.MongoDb.Views
             _currentPositionDocId = "__" + collectionName + "__position__";
         }
 
+        public event ViewInstanceUpdatedHandler<TViewInstance> Updated = delegate { };
+
         class PositionDoc
         {
             public string Id { get; set; }
@@ -175,7 +177,17 @@ namespace d60.Cirqus.MongoDb.Views
 
             FlushCacheToDatabase(cachedViewInstances);
 
+            RaiseUpdatedEvent(cachedViewInstances.Values);
+
             UpdatePersistentCache(eventList.Max(e => e.GetGlobalSequenceNumber()));
+        }
+
+        void RaiseUpdatedEvent(IEnumerable<TViewInstance> viewInstances)
+        {
+            foreach (var instance in viewInstances)
+            {
+                Updated(instance);
+            }
         }
 
         void FlushCacheToDatabase(Dictionary<string, TViewInstance> cachedViewInstances)

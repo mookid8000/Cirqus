@@ -107,6 +107,7 @@
     <Compile Include="Contracts\Views\PurgeTest.cs" />
     <Compile Include="Contracts\Views\RecoveryTest.cs" />
     <Compile Include="Contracts\Views\RestTest.cs" />
+    <Compile Include="Contracts\Views\UpdatedEvent.cs" />
     <Compile Include="Contracts\Views\ViewLocators.cs" />
     <Compile Include="Events\EventReplicator\ErrorHandling.cs" />
     <Compile Include="Events\EventReplicator\BasicReplication.cs" />

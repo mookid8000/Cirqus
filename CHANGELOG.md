@@ -304,3 +304,4 @@ This is a big update that completes the transition to the new, vastly improved v
 ## 0.25.0
 
 * Added initial version of an `EventReplicator` - can probably be brought to do all kinds of interesting things :)
+* Added `Updated` event to the typed view manager and made all the existing view managers raise the event at the right time.

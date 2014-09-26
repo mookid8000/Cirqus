@@ -31,6 +31,8 @@ namespace d60.Cirqus.Views.ViewManagers
                 : null;
         }
 
+        public event ViewInstanceUpdatedHandler<TViewInstance> Updated = delegate { };
+
         public long GetPosition(bool canGetFromCache = true)
         {
             return InnerGetPosition();
@@ -42,7 +44,6 @@ namespace d60.Cirqus.Views.ViewManagers
             {
                 if (ViewLocator.IsRelevant<TViewInstance>(e))
                 {
-
                     var affectedViewIds = _viewLocator.GetAffectedViewIds(viewContext, e);
 
                     foreach (var viewId in affectedViewIds)
@@ -50,6 +51,8 @@ namespace d60.Cirqus.Views.ViewManagers
                         var viewInstance = _views.GetOrAdd(viewId, id => _dispatcher.CreateNewInstance(id));
 
                         _dispatcher.DispatchToView(viewContext, e, viewInstance);
+
+                        Updated(viewInstance);
                     }
                 }
 
