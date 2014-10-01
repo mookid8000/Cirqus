@@ -305,8 +305,6 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added initial version of an `EventReplicator` - can probably be brought to do all kinds of interesting things :)
 * Added `Updated` event to the typed view manager and made all the existing view managers raise the event at the right time.
-
-## 0.26.0
-
 * Fixed usage of `Nullable<>` on data types like `Guid`, `int`, etc. on `MsSqlViewManager`
+
 

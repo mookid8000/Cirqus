@@ -4,6 +4,9 @@ using d60.Cirqus.Events;
 
 namespace d60.Cirqus.Views.ViewManagers
 {
+    /// <summary>
+    /// Defines a context of stuff that a view can take advantage of
+    /// </summary>
     public interface IViewContext
     {
         /// <summary>

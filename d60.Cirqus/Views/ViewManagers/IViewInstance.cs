@@ -4,7 +4,8 @@ using d60.Cirqus.Views.ViewManagers.Locators;
 namespace d60.Cirqus.Views.ViewManagers
 {
     /// <summary>
-    /// Base interface of views
+    /// Base interface of views - marks a class as a representation of one instance of a view model that can
+    /// have events dispatched to it.
     /// </summary>
     public interface IViewInstance
     {
