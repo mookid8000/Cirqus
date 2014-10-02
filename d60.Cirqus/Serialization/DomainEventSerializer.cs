@@ -11,18 +11,19 @@ namespace d60.Cirqus.Serialization
     public class DomainEventSerializer
     {
         readonly TypeAliasBinder _binder;
-        readonly JsonSerializerSettings _settings;
 
         public DomainEventSerializer(string virtualNamespaceName)
         {
             _binder = new TypeAliasBinder(virtualNamespaceName);
-            _settings = new JsonSerializerSettings
+            Settings = new JsonSerializerSettings
             {
                 Binder = _binder.AddType(typeof(Metadata)),
                 TypeNameHandling = TypeNameHandling.Objects,
                 Formatting = Formatting.Indented
             };
         }
+
+        public JsonSerializerSettings Settings { get; private set; }
 
         public DomainEventSerializer AddAliasFor(Type type)
         {
@@ -48,7 +49,7 @@ namespace d60.Cirqus.Serialization
         {
             try
             {
-                return JsonConvert.SerializeObject(e, _settings);
+                return JsonConvert.SerializeObject(e, Settings);
             }
             catch (Exception exception)
             {
@@ -60,7 +61,7 @@ namespace d60.Cirqus.Serialization
         {
             try
             {
-                var deserializedObject = JsonConvert.DeserializeObject(text, _settings);
+                var deserializedObject = JsonConvert.DeserializeObject(text, Settings);
 
                 // if the $type property is not first in the JSON (e.g. after having been roundtripped to Postgres), it will come back as a JObject - therefore:
                 if (deserializedObject is JObject)

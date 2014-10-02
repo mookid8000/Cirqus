@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Config;
@@ -385,12 +387,50 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             Assert.That(allEventsForAgg2.GetSeq(), Is.EqualTo(new[] { 3, 6 }));
         }
 
+        [Test]
+        public void SaveIsAtomic()
+        {
+            var agg1 = Guid.NewGuid();
+            var agg2 = Guid.NewGuid();
+
+            try
+            {
+                _eventStore.Save(Guid.NewGuid(), new[]
+                {
+                    Event(1, agg1),
+                    Event(1, agg2),
+                    new ThrowingEvent
+                    {
+                        Meta =
+                        {
+                            {DomainEvent.MetadataKeys.SequenceNumber, 2},
+                            {DomainEvent.MetadataKeys.AggregateRootId, agg2}
+                        }
+                    }
+                });
+            }
+            catch {
+                // ignore it!
+            }
+
+            Assert.AreEqual(0, _eventStore.Stream().Count());
+            Assert.AreEqual(0, _eventStore.Load(agg1).Count());
+            Assert.AreEqual(0, _eventStore.Load(agg2).Count());
+        }
+
+        [Test]
+        public void LoadingFromEmptyStreamDoesNotFail()
+        {
+            Assert.AreEqual(0, _eventStore.Stream().Count());
+            Assert.AreEqual(0, _eventStore.Load(Guid.NewGuid()).Count());
+        }
+
         [TestCase(100, 3)]
         [TestCase(1000, 10, Ignore = TestCategories.IgnoreLongRunning)]
         [TestCase(10000, 10, Ignore = TestCategories.IgnoreLongRunning)]
         [TestCase(1000, 100, Ignore = TestCategories.IgnoreLongRunning)]
         [TestCase(1000, 1000, Ignore = TestCategories.IgnoreLongRunning)]
-        public void ComparePerformance(int numberOfBatches, int numberOfEventsPerBatch)
+        public void CompareSavePerformance(int numberOfBatches, int numberOfEventsPerBatch)
         {
             CirqusLoggerFactory.Current = new NullLoggerFactory();
 
@@ -411,6 +451,21 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                 });
         }
 
+        [TestCase(1000)]
+        [TestCase(10000, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(100000, Ignore = TestCategories.IgnoreLongRunning)]
+        public void CompareStreamPerformance(int numberOfEvents)
+        {
+            CirqusLoggerFactory.Current = new NullLoggerFactory();
+
+            var seqNo = 0;
+            var id = Guid.NewGuid();
+            _eventStore.Save(Guid.NewGuid(), Enumerable.Range(0, numberOfEvents).Select(i => Event(seqNo++, id)));
+
+            TakeTime(
+                string.Format("Read stream of {0} events", numberOfEvents),
+                () => _eventStore.Stream().ToList());
+        }
 
         static DomainEvent Event(int seq, Guid aggregateRootId)
         {
@@ -428,6 +483,15 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         class SomeEvent : DomainEvent
         {
             public string SomeValue { get; set; }
+        }
+
+        class ThrowingEvent : DomainEvent
+        {
+            [OnSerializing()]
+            internal void OnSerializingMethod(StreamingContext context)
+            {
+                throw new SerializationException("I ruin your batch!");
+            }
         }
     }
 }
