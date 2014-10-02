@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
@@ -15,7 +13,7 @@ using MongoDB.Driver.Builders;
 
 namespace d60.Cirqus.MongoDb.Views
 {
-    public class MongoDbViewManager<TViewInstance> : IViewManager<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
+    public class MongoDbViewManager<TViewInstance> : AbstractViewManager<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
         const string CurrentPositionPropertyName = "LastGlobalSequenceNumber";
         const long DefaultPosition = -1;
@@ -23,7 +21,7 @@ namespace d60.Cirqus.MongoDb.Views
         readonly ViewDispatcherHelper<TViewInstance> _dispatcherHelper = new ViewDispatcherHelper<TViewInstance>();
         readonly MongoCollection<TViewInstance> _viewCollection;
         readonly MongoCollection<PositionDoc> _positionCollection;
-        readonly ViewLocator _viewLocator;
+        readonly ViewLocator _viewLocator = ViewLocator.GetLocatorFor<TViewInstance>();
         readonly string _currentPositionDocId;
 
         Logger _logger;
@@ -35,22 +33,6 @@ namespace d60.Cirqus.MongoDb.Views
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
 
             positionCollectionName = positionCollectionName ?? collectionName + "Position";
-
-            try
-            {
-                _viewLocator = ViewLocator.GetLocatorFor<TViewInstance>();
-            }
-            catch (Exception exception)
-            {
-                var message =
-                    string.Format("Could not successfully retrieve the view locator for the type {0} - please make" +
-                                  " sure that your view class implements IViewInstance<T> where T is one of the" +
-                                  " available view locators (e.g. {1} or {2} or a custom locator)",
-                        typeof(TViewInstance), typeof(InstancePerAggregateRootLocator).Name,
-                        typeof(GlobalInstanceLocator).Name);
-
-                throw new ArgumentException(message, exception);
-            }
 
             _viewCollection = database.GetCollection<TViewInstance>(collectionName);
 
@@ -82,12 +64,12 @@ namespace d60.Cirqus.MongoDb.Views
         {
         }
 
-        public TViewInstance Load(string viewId)
+        public override TViewInstance Load(string viewId)
         {
             return _viewCollection.FindOneById(viewId);
         }
 
-        public long GetPosition(bool canGetFromCache = true)
+        public override long GetPosition(bool canGetFromCache = true)
         {
             if (canGetFromCache && false)
             {
@@ -107,7 +89,7 @@ namespace d60.Cirqus.MongoDb.Views
             return DefaultPosition;
         }
 
-        public void Purge()
+        public override void Purge()
         {
             _logger.Info("Purging '{0}'", _viewCollection.Name);
 
@@ -116,26 +98,6 @@ namespace d60.Cirqus.MongoDb.Views
             UpdatePersistentCache(DefaultPosition);
 
             Interlocked.Exchange(ref _cachedPosition, DefaultPosition);
-        }
-
-        public async Task WaitUntilProcessed(CommandProcessingResult result, TimeSpan timeout)
-        {
-            if (!result.EventsWereEmitted) return;
-
-            var mostRecentGlobalSequenceNumber = result.GetNewPosition();
-
-            var stopwatch = Stopwatch.StartNew();
-
-            while (GetPosition(canGetFromCache: false) < mostRecentGlobalSequenceNumber)
-            {
-                if (stopwatch.Elapsed > timeout)
-                {
-                    throw new TimeoutException(string.Format("View for {0} did not catch up to {1} within {2} timeout!",
-                        typeof(TViewInstance), mostRecentGlobalSequenceNumber, timeout));
-                }
-
-                await Task.Delay(TimeSpan.FromMilliseconds(10));
-            }
         }
 
         void UpdatePersistentCache(long newPosition)
@@ -151,7 +113,7 @@ namespace d60.Cirqus.MongoDb.Views
             Interlocked.Exchange(ref _cachedPosition, newPosition);
         }
 
-        public void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
+        public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
         {
             var cachedViewInstances = new Dictionary<string, TViewInstance>();
 
@@ -174,6 +136,8 @@ namespace d60.Cirqus.MongoDb.Views
             }
 
             FlushCacheToDatabase(cachedViewInstances);
+
+            RaiseUpdatedEventFor(cachedViewInstances.Values);
 
             UpdatePersistentCache(eventList.Max(e => e.GetGlobalSequenceNumber()));
         }

@@ -88,7 +88,7 @@ END$$;
                 using (var tx = connection.BeginTransaction())
                 {
 
-                    var nextSequenceNumber = GetNextSequenceNumber(connection, tx);
+                    var nextSequenceNumber = GetNextGlobalSequenceNumber(connection, tx);
 
                     foreach (var e in eventList)
                     {
@@ -146,7 +146,7 @@ INSERT INTO ""{0}"" (
             }
         }
 
-        long GetNextSequenceNumber(NpgsqlConnection conn, NpgsqlTransaction tx)
+        long GetNextGlobalSequenceNumber(NpgsqlConnection conn, NpgsqlTransaction tx)
         {
             using (var cmd = conn.CreateCommand())
             {
@@ -232,6 +232,17 @@ SELECT ""data"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY ""globSeqNo
                             }
                         }
                     }
+                }
+            }
+        }
+
+        public long GetNextGlobalSequenceNumber()
+        {
+            using (var connection = GetConnection())
+            {
+                using (var tx = connection.BeginTransaction())
+                {
+                    return GetNextGlobalSequenceNumber(connection, tx);
                 }
             }
         }

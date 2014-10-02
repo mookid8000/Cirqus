@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using d60.Cirqus.Aggregates;
-using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Tests.Contracts.Views.Factories;
+using d60.Cirqus.Tests.Contracts.Views.Models.RecoveryTest;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
@@ -17,6 +15,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
 {
     [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
     [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
+    [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql, Ignore = true, IgnoreReason = "The contained List<int> cannot be persisted by EF")]
     [TestFixture(typeof(InMemoryViewManagerFactory))]
     public class RecoveryTest<TFactory> : FixtureBase where TFactory : AbstractViewManagerFactory, new()
     {
@@ -28,10 +27,10 @@ namespace d60.Cirqus.Tests.Contracts.Views
         {
             CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel: Logger.Level.Warn);
 
-            _factory = new TFactory();
+            _factory = RegisterForDisposal(new TFactory());
 
             _context = RegisterForDisposal(new TestContext { Asynchronous = true });
-            
+
             _viewManager = _factory.GetViewManager<View>();
         }
 
@@ -80,42 +79,6 @@ Failed every {1} seconds (total fail count: {2})
             var viewInstance = _viewManager.Load(GlobalInstanceLocator.GetViewInstanceId());
 
             Assert.That(viewInstance.EventIds, Is.EqualTo(eventIds));
-        }
-
-        public class View : IViewInstance<GlobalInstanceLocator>, ISubscribeTo<Event>
-        {
-            public static bool Fail { get; set; }
-
-            public View()
-            {
-                EventIds = new List<int>();
-            }
-
-            public string Id { get; set; }
-
-            public long LastGlobalSequenceNumber { get; set; }
-
-            public List<int> EventIds { get; set; }
-
-            public void Handle(IViewContext context, Event domainEvent)
-            {
-                if (Fail)
-                {
-                    Console.WriteLine("FAILING!!");
-                    throw new BarrierPostPhaseException("oh noes!");
-                }
-
-                Console.WriteLine("Adding {0} ... ", domainEvent.EventId);
-                EventIds.Add(domainEvent.EventId);
-                Thread.Sleep(10);
-            }
-        }
-
-        public class Root : AggregateRoot { }
-
-        public class Event : DomainEvent<Root>
-        {
-            public int EventId { get; set; }
         }
     }
 }

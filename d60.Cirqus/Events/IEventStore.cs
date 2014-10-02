@@ -22,5 +22,10 @@ namespace d60.Cirqus.Events
         /// Streams all events with a global sequence number that is greater than or equal to the one given
         /// </summary>
         IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0);
+
+        /// <summary>
+        /// Gets the next available global sequence number. This will be the number used on the first event in the next saved event batch.
+        /// </summary>
+        long GetNextGlobalSequenceNumber();
     }
 }

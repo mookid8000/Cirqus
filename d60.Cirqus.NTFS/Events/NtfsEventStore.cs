@@ -111,6 +111,7 @@ namespace d60.Cirqus.NTFS.Events
                 }
 
                 // commit the batch
+                // todo: write a checksum to ensure that commit is fully written (maybe just g-seq twice?)
                 _commitsWriter.Write(globalSequenceNumber);
                 _commitsWriter.Flush();
             }
@@ -126,6 +127,7 @@ namespace d60.Cirqus.NTFS.Events
             if (!Directory.Exists(aggregateDirectory))
                 return Enumerable.Empty<DomainEvent>();
 
+            // todo: don't read longer than last known good commit (writer might be working concurrently here)
             return from path in Directory.EnumerateFiles(aggregateDirectory)
                    let seq = int.Parse(Path.GetFileName(path))
                    where seq >= firstSeq && seq < firstSeq + limit
@@ -141,6 +143,7 @@ namespace d60.Cirqus.NTFS.Events
             {
                 seqReadStream.Seek(globalSequenceNumber*sizeofSeqRecord, SeekOrigin.Begin);
 
+                // todo: don't read longer than last known good commit (writer might be working concurrently here)
                 while (seqReadStream.Position < seqReadStream.Length)
                 {
                     var record = ReadGlobalSequenceRecord(seqReader);
@@ -149,6 +152,11 @@ namespace d60.Cirqus.NTFS.Events
                     yield return ReadEvent(dataFileName);
                 }
             }
+        }
+
+        public long GetNextGlobalSequenceNumber()
+        {
+            return ReadGlobalSequenceNumber();
         }
 
         long ReadGlobalSequenceNumber()
@@ -178,6 +186,8 @@ namespace d60.Cirqus.NTFS.Events
             {
                 seqReadStream.Seek(globalSequenceNumber * sizeofSeqRecord, SeekOrigin.Begin);
 
+                // todo: don't read past end of file
+                // todo: check the validity of each record with checksum 
                 while (seqReadStream.Position < seqReadStream.Length)
                 {
                     var record = ReadGlobalSequenceRecord(seqReader);

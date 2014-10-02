@@ -171,6 +171,11 @@ caching in use: {3}",
             {
                 return InnerEventStore.Stream(globalSequenceNumber);
             }
+
+            public long GetNextGlobalSequenceNumber()
+            {
+                return InnerEventStore.GetNextGlobalSequenceNumber();
+            }
         }
 
         public class Beetroot : AggregateRoot, IEmit<BeetrootSquashed>, IEmit<BeetrootCrushed>

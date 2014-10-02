@@ -73,6 +73,7 @@
     <Compile Include="Config\Configurers\EventStoreConfigurationBuilder.cs" />
     <Compile Include="Config\Configurers\IRegistrar.cs" />
     <Compile Include="Config\Configurers\OptionsConfigurationBuilder.cs" />
+    <Compile Include="Events\EventReplicator.cs" />
     <Compile Include="ICommandProcessor.cs" />
     <Compile Include="Config\Options.cs" />
     <Compile Include="Config\Retryer.cs" />
@@ -100,6 +101,7 @@
     <Compile Include="Numbers\TimeMachine.cs" />
     <Compile Include="Numbers\MetaAttribute.cs" />
     <Compile Include="Views\InMemoryViewEventDispatcher.cs" />
+    <Compile Include="Views\ViewManagers\AbstractViewManager.cs" />
     <Compile Include="Views\ViewManagers\IViewManager.cs" />
     <Compile Include="Serialization\DomainEventSerializer.cs" />
     <Compile Include="Serialization\GenericSerializer.cs" />
@@ -116,6 +118,7 @@
     <Compile Include="Views\IViewManager.cs" />
     <Compile Include="Views\ViewManagers\InMemoryViewManager.cs" />
     <Compile Include="Views\ViewManagerEventDispatcher.cs" />
+    <Compile Include="Views\ViewManagers\ViewInstanceUpdatedHandler.cs" />
     <Compile Include="Views\ViewManagers\ViewManagerWaitHandle.cs" />
     <Compile Include="Views\ViewManagers\IViewContext.cs" />
     <Compile Include="Views\ViewManagers\Locators\GlobalInstanceLocator.cs" />

@@ -13,6 +13,8 @@ namespace d60.Cirqus.Tests.MsSql
     [TestFixture]
     public class TestNewMsSqlViewManager : FixtureBase
     {
+        static readonly Guid SomeKnownGuid = new Guid("2EBD4883-7DC9-44B0-9D6A-49581315404D");
+
         MsSqlViewManager<ViewInstanceWithManyPropertyTypes> _viewManager;
 
         protected override void DoSetUp()
@@ -39,6 +41,9 @@ namespace d60.Cirqus.Tests.MsSql
             Assert.That(view.NullString, Is.Null);
             Assert.That(view.NullInt, Is.Null);
             Assert.That(view.String, Is.EqualTo("a string"));
+            Assert.That(view.Guid, Is.EqualTo(SomeKnownGuid));
+            Assert.That(view.NullableGuid, Is.EqualTo(SomeKnownGuid));
+            Assert.That(view.NullableGuidWithNullValue, Is.EqualTo(null));
             Assert.That(view.Integer, Is.EqualTo(2));
             Assert.That(view.Shorty, Is.EqualTo(3));
             Assert.That(view.Long, Is.EqualTo(4));
@@ -102,6 +107,10 @@ namespace d60.Cirqus.Tests.MsSql
                 Decimal = 2.4m;
                 Float = 1.2f;
 
+                Guid = SomeKnownGuid;
+                NullableGuid = SomeKnownGuid;
+                NullableGuidWithNullValue = null;
+
                 ListOfString = new List<string> { "hello", "there" };
                 ListOfInt = new List<int> { 6, 7 };
                 ListOfDouble = new List<double> { 6, 7 };
@@ -150,6 +159,10 @@ namespace d60.Cirqus.Tests.MsSql
 
             public string Id { get; set; }
             public long LastGlobalSequenceNumber { get; set; }
+
+            public Guid Guid { get; set; }
+            public Guid? NullableGuid { get; set; }
+            public Guid? NullableGuidWithNullValue { get; set; }
 
             public string NullString { get; set; }
             public int? NullInt { get; set; }

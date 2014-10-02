@@ -50,8 +50,10 @@
 
   <Target Name="build_solution">
     <PropertyGroup>
-      <BuildOutputDirectory>$(Root)\d60.Cirqus\bin\Release</BuildOutputDirectory>
-      <DestinationForMergedFile>$(BuildOutputDirectory)\merged</DestinationForMergedFile>
+      <CoreBuildOutputDirectory>$(Root)\d60.Cirqus\bin\Release</CoreBuildOutputDirectory>
+      <CoreDestinationForMergedFile>$(CoreBuildOutputDirectory)\merged</CoreDestinationForMergedFile>
+      <TsClientBuildOutputDirectory>$(Root)\d60.Cirqus.TsClient\bin\Release</TsClientBuildOutputDirectory>
+      <TsClientDestinationForMergedFile>$(TsClientBuildOutputDirectory)\merged</TsClientDestinationForMergedFile>
       <ReferenceAssemblies>$(ProgramFiles)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5</ReferenceAssemblies>
     </PropertyGroup>
     
@@ -61,9 +63,11 @@
       <Output TaskParameter="TargetOutputs" ItemName="AssembliesBuilt" />
     </MSBuild>
     
-    <MakeDir Directories="$(DestinationForMergedFile)"/>
+    <MakeDir Directories="$(CoreDestinationForMergedFile)"/>
+    <MakeDir Directories="$(TsClientDestinationForMergedFile)"/>
     
-    <Exec Command="$(IlMerge) /out:$(DestinationForMergedFile)\d60.Cirqus.dll $(BuildOutputDirectory)\d60.Cirqus.dll $(BuildOutputDirectory)\Newtonsoft.Json.dll /targetplatform:&quot;v4,$(ReferenceAssemblies)&quot; /internalize" />
+    <Exec Command="$(IlMerge) /out:$(CoreDestinationForMergedFile)\d60.Cirqus.dll $(CoreBuildOutputDirectory)\d60.Cirqus.dll $(CoreBuildOutputDirectory)\Newtonsoft.Json.dll /targetplatform:&quot;v4,$(ReferenceAssemblies)&quot; /internalize" />
+    <Exec Command="$(IlMerge) /out:$(TsClientDestinationForMergedFile)\d60.Cirqus.TsClient.exe $(TsClientBuildOutputDirectory)\d60.Cirqus.TsClient.exe $(TsClientBuildOutputDirectory)\Newtonsoft.Json.dll /targetplatform:&quot;v4,$(ReferenceAssemblies)&quot; /internalize" />
   </Target>
 
   <Target Name="validate_version_is_present">

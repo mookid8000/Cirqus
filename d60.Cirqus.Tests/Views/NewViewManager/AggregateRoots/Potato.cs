@@ -23,7 +23,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager.AggregateRoots
 
         protected override void Created()
         {
-            var john = Load<John>(John.Id, createIfNotExists: true);
+            var john = Load<John>(John.TheJohnId, createIfNotExists: true);
 
             Emit(new PotatoCreated { Name = john.GetNextName() });
         }

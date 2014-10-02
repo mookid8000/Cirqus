@@ -14,12 +14,13 @@ using d60.Cirqus.Views.ViewManagers.Locators;
 
 namespace d60.Cirqus.MsSql.Views
 {
-    public class MsSqlViewManager<TViewInstance> : IViewManager<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
+    public class MsSqlViewManager<TViewInstance> : AbstractViewManager<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
         const int PrimaryKeySize = 100;
         const int DefaultPosition = -1;
 
         readonly ViewDispatcherHelper<TViewInstance> _dispatcher = new ViewDispatcherHelper<TViewInstance>();
+        readonly ViewLocator _viewLocator = ViewLocator.GetLocatorFor<TViewInstance>();
         readonly string _connectionString;
         readonly string _tableName;
         readonly string _positionTableName;
@@ -55,7 +56,7 @@ namespace d60.Cirqus.MsSql.Views
         {
         }
 
-        public long GetPosition(bool canGetFromCache = true)
+        public override long GetPosition(bool canGetFromCache = true)
         {
             if (canGetFromCache && false)
             {
@@ -135,7 +136,7 @@ namespace d60.Cirqus.MsSql.Views
             return null;
         }
 
-        public void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
+        public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
         {
             var eventList = batch.ToList();
 
@@ -149,14 +150,13 @@ namespace d60.Cirqus.MsSql.Views
 
                 using (var tx = conn.BeginTransaction())
                 {
-                    var locator = ViewLocator.GetLocatorFor<TViewInstance>();
                     var activeViewsById = new Dictionary<string, TViewInstance>();
 
                     foreach (var e in eventList)
                     {
                         if (!ViewLocator.IsRelevant<TViewInstance>(e)) continue;
 
-                        var viewIds = locator.GetAffectedViewIds(viewContext, e);
+                        var viewIds = _viewLocator.GetAffectedViewIds(viewContext, e);
 
                         foreach (var viewId in viewIds)
                         {
@@ -169,6 +169,8 @@ namespace d60.Cirqus.MsSql.Views
                     }
 
                     Save(activeViewsById, conn, tx);
+
+                    RaiseUpdatedEventFor(activeViewsById.Values);
 
                     UpdatePosition(conn, tx, newPosition);
 
@@ -241,7 +243,7 @@ WHEN NOT MATCHED THEN
             }
         }
 
-        public TViewInstance Load(string viewId)
+        public override TViewInstance Load(string viewId)
         {
             using (var conn = new SqlConnection(_connectionString))
             {
@@ -254,7 +256,7 @@ WHEN NOT MATCHED THEN
             }
         }
 
-        public void Purge()
+        public override void Purge()
         {
             _logger.Info("Purging SQL Server table {0}", _tableName);
 

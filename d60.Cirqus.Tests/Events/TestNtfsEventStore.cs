@@ -12,12 +12,5 @@ namespace d60.Cirqus.Tests.Events
         {
             _eventStore = new NtfsEventStore("testdata", dropEvents: true);
         }
-
-
-        [Test]
-        public void HandleCrashAt()
-        {
-            
-        }
     }
 }

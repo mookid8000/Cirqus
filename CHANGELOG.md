@@ -289,3 +289,26 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Made `InMemoryEventStore` reentrant by serializing access to the inner list of committed event batches
 
+## 0.24.2
+
+* Added experimental TypeScript code generator
+
+## 0.24.3
+
+* Silly `Assembly.LoadFile` must always be called with an absolute path
+
+## 0.24.4
+
+* Map `object` to `any`
+
+## 0.25.0
+
+* Added initial version of an `EventReplicator` - can probably be brought to do all kinds of interesting things :)
+* Added `Updated` event to the typed view manager and made all the existing view managers raise the event at the right time.
+* Fixed usage of `Nullable<>` on data types like `Guid`, `int`, etc. on `MsSqlViewManager`
+
+
+## 0.25.1
+
+* Re-introduced the Entity Framework-based view manager - be warned though: it leaves dereferenced child objects in the database with NULL foreign keys
+
