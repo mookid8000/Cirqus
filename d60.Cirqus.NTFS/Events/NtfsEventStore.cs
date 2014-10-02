@@ -15,8 +15,15 @@ using Newtonsoft.Json.Bson;
 namespace d60.Cirqus.NTFS.Events
 {
     /// <summary>
-    /// Event store that saves events directly to files for use in embedded scenarios. 
+    /// *Prototype* of event store that saves events directly to files for use in embedded scenarios. 
     /// Only supports a single process using the store at a time. 
+    /// Uses filesystem's index for easy lookup of single aggregate streams.
+    /// Uses a single file for global sequence index.
+    /// Uses a single file for commit log.
+    /// 
+    /// todo:
+    /// - Cache global sequence number
+    /// - Don't make load/stream wait for writes, read to last commit
     /// </summary>
     public class NtfsEventStore : IEventStore, IDisposable
     {
