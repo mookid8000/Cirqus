@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
@@ -15,7 +13,7 @@ using MongoDB.Driver.Builders;
 
 namespace d60.Cirqus.MongoDb.Views
 {
-    public class MongoDbViewManager<TViewInstance> : IViewManager<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
+    public class MongoDbViewManager<TViewInstance> : AbstractViewManager<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
         const string CurrentPositionPropertyName = "LastGlobalSequenceNumber";
         const long DefaultPosition = -1;
@@ -61,8 +59,6 @@ namespace d60.Cirqus.MongoDb.Views
             _currentPositionDocId = "__" + collectionName + "__position__";
         }
 
-        public event ViewInstanceUpdatedHandler<TViewInstance> Updated = delegate { };
-
         class PositionDoc
         {
             public string Id { get; set; }
@@ -84,12 +80,12 @@ namespace d60.Cirqus.MongoDb.Views
         {
         }
 
-        public TViewInstance Load(string viewId)
+        public override TViewInstance Load(string viewId)
         {
             return _viewCollection.FindOneById(viewId);
         }
 
-        public long GetPosition(bool canGetFromCache = true)
+        public override long GetPosition(bool canGetFromCache = true)
         {
             if (canGetFromCache && false)
             {
@@ -109,7 +105,7 @@ namespace d60.Cirqus.MongoDb.Views
             return DefaultPosition;
         }
 
-        public void Purge()
+        public override void Purge()
         {
             _logger.Info("Purging '{0}'", _viewCollection.Name);
 
@@ -118,26 +114,6 @@ namespace d60.Cirqus.MongoDb.Views
             UpdatePersistentCache(DefaultPosition);
 
             Interlocked.Exchange(ref _cachedPosition, DefaultPosition);
-        }
-
-        public async Task WaitUntilProcessed(CommandProcessingResult result, TimeSpan timeout)
-        {
-            if (!result.EventsWereEmitted) return;
-
-            var mostRecentGlobalSequenceNumber = result.GetNewPosition();
-
-            var stopwatch = Stopwatch.StartNew();
-
-            while (GetPosition(canGetFromCache: false) < mostRecentGlobalSequenceNumber)
-            {
-                if (stopwatch.Elapsed > timeout)
-                {
-                    throw new TimeoutException(string.Format("View for {0} did not catch up to {1} within {2} timeout!",
-                        typeof(TViewInstance), mostRecentGlobalSequenceNumber, timeout));
-                }
-
-                await Task.Delay(TimeSpan.FromMilliseconds(10));
-            }
         }
 
         void UpdatePersistentCache(long newPosition)
@@ -153,7 +129,7 @@ namespace d60.Cirqus.MongoDb.Views
             Interlocked.Exchange(ref _cachedPosition, newPosition);
         }
 
-        public void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
+        public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
         {
             var cachedViewInstances = new Dictionary<string, TViewInstance>();
 
@@ -177,17 +153,9 @@ namespace d60.Cirqus.MongoDb.Views
 
             FlushCacheToDatabase(cachedViewInstances);
 
-            RaiseUpdatedEvent(cachedViewInstances.Values);
+            RaiseUpdatedEventFor(cachedViewInstances.Values);
 
             UpdatePersistentCache(eventList.Max(e => e.GetGlobalSequenceNumber()));
-        }
-
-        void RaiseUpdatedEvent(IEnumerable<TViewInstance> viewInstances)
-        {
-            foreach (var instance in viewInstances)
-            {
-                Updated(instance);
-            }
         }
 
         void FlushCacheToDatabase(Dictionary<string, TViewInstance> cachedViewInstances)

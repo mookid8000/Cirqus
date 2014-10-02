@@ -2,12 +2,9 @@
 using System.Collections.Generic;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
-using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.Tests.Contracts.Views.Factories;
-using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
-using MongoDB.Driver;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.TestHelpers.TestContext;
 
@@ -15,11 +12,10 @@ namespace d60.Cirqus.Tests.Contracts.Views
 {
     [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
     [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
+    [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql)]
+    [TestFixture(typeof(InMemoryViewManagerFactory))]
     public class ViewLocators<TViewManagerFactory> : FixtureBase where TViewManagerFactory : AbstractViewManagerFactory, new()
     {
-        MongoDatabase _database;
-        MongoDbEventStore _eventStore;
-
         TViewManagerFactory _factory;
         TestContext _context;
 
@@ -28,9 +24,6 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
         protected override void DoSetUp()
         {
-            _database = MongoHelper.InitializeTestDatabase();
-            _eventStore = new MongoDbEventStore(_database, "events");
-
             _factory = new TViewManagerFactory();
 
             _globalInstanceViewManager = _factory.GetViewManager<GlobalInstanceViewInstance>();

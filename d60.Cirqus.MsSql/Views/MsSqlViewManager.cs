@@ -14,7 +14,7 @@ using d60.Cirqus.Views.ViewManagers.Locators;
 
 namespace d60.Cirqus.MsSql.Views
 {
-    public class MsSqlViewManager<TViewInstance> : IViewManager<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
+    public class MsSqlViewManager<TViewInstance> : AbstractViewManager<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
         const int PrimaryKeySize = 100;
         const int DefaultPosition = -1;
@@ -55,9 +55,7 @@ namespace d60.Cirqus.MsSql.Views
         {
         }
 
-        public event ViewInstanceUpdatedHandler<TViewInstance> Updated = delegate { };
-
-        public long GetPosition(bool canGetFromCache = true)
+        public override long GetPosition(bool canGetFromCache = true)
         {
             if (canGetFromCache && false)
             {
@@ -137,7 +135,7 @@ namespace d60.Cirqus.MsSql.Views
             return null;
         }
 
-        public void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
+        public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
         {
             var eventList = batch.ToList();
 
@@ -172,7 +170,7 @@ namespace d60.Cirqus.MsSql.Views
 
                     Save(activeViewsById, conn, tx);
 
-                    RaiseEvents(activeViewsById.Values);
+                    RaiseUpdatedEventFor(activeViewsById.Values);
 
                     UpdatePosition(conn, tx, newPosition);
 
@@ -181,14 +179,6 @@ namespace d60.Cirqus.MsSql.Views
             }
 
             Interlocked.Exchange(ref _cachedPosition, newPosition);
-        }
-
-        void RaiseEvents(IEnumerable<TViewInstance > viewInstances)
-        {
-            foreach (var instance in viewInstances)
-            {
-                Updated(instance);
-            }
         }
 
         void UpdatePosition(SqlConnection conn, SqlTransaction tx, long newPosition)
@@ -253,7 +243,7 @@ WHEN NOT MATCHED THEN
             }
         }
 
-        public TViewInstance Load(string viewId)
+        public override TViewInstance Load(string viewId)
         {
             using (var conn = new SqlConnection(_connectionString))
             {
@@ -266,7 +256,7 @@ WHEN NOT MATCHED THEN
             }
         }
 
-        public void Purge()
+        public override void Purge()
         {
             _logger.Info("Purging SQL Server table {0}", _tableName);
 

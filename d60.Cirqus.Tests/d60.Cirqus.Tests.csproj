@@ -97,6 +97,7 @@
     <Compile Include="Contracts\EventStore\Factories\MongoDbEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\Factories\MsSqlEventStoreFactory.cs" />
     <Compile Include="Contracts\Views\Factories\AbstractViewManagerFactory.cs" />
+    <Compile Include="Contracts\Views\Factories\EntityFrameworkViewManagerFactory.cs" />
     <Compile Include="Contracts\Views\Factories\InMemoryViewManagerFactory.cs" />
     <Compile Include="Contracts\Views\Factories\MongoDbViewManagerFactory.cs" />
     <Compile Include="Contracts\Views\Factories\MsSqlViewManagerFactory.cs" />
@@ -158,6 +159,7 @@
     <Compile Include="Views\NewViewManager\Events\WasBitten.cs" />
     <Compile Include="Views\NewViewManager\Events\WasEaten.cs" />
     <Compile Include="Views\NewViewManager\Views\SlowView.cs" />
+    <Compile Include="Contracts\Views\ObjectGraph.cs" />
     <Compile Include="Views\TestLoadAggregatesFromView.cs" />
     <Compile Include="Views\TestViewLocator.cs" />
   </ItemGroup>

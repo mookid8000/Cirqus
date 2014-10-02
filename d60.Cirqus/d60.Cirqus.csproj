@@ -101,6 +101,7 @@
     <Compile Include="Numbers\TimeMachine.cs" />
     <Compile Include="Numbers\MetaAttribute.cs" />
     <Compile Include="Views\InMemoryViewEventDispatcher.cs" />
+    <Compile Include="Views\ViewManagers\AbstractViewManager.cs" />
     <Compile Include="Views\ViewManagers\IViewManager.cs" />
     <Compile Include="Serialization\DomainEventSerializer.cs" />
     <Compile Include="Serialization\GenericSerializer.cs" />
