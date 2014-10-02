@@ -294,8 +294,8 @@ namespace d60.Cirqus.EntityFramework
 //        }
 //    }
 
-    public interface ILinqContext<TView> : IDisposable
-    {
-        IQueryable<TView> Query();
-    }
+    //public interface ILinqContext<TView> : IDisposable
+    //{
+    //    IQueryable<TView> Query();
+    //}
 }

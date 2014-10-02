@@ -1,15 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
 
 namespace d60.Cirqus.Tests.Contracts.Views.Factories
 {
-    public abstract class AbstractViewManagerFactory
+    public abstract class AbstractViewManagerFactory : IDisposable
     {
         readonly List<IViewManager> _viewManagers = new List<IViewManager>();
+        readonly List<IDisposable> _stuffToDispose = new List<IDisposable>();
 
-        public TViewInstance Load<TViewInstance>(string viewId) where TViewInstance : class, IViewInstance, ISubscribeTo, new()
+        public virtual TViewInstance Load<TViewInstance>(string viewId) where TViewInstance : class, IViewInstance, ISubscribeTo, new()
         {
             var viewManager = GetViewManager<TViewInstance>();
 
@@ -40,5 +42,21 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
         }
 
         protected abstract IViewManager<TViewInstance> CreateViewManager<TViewInstance>() where TViewInstance : class, IViewInstance, ISubscribeTo, new();
+        
+        public void Dispose()
+        {
+            foreach (var disposable in _stuffToDispose)
+            {
+                Console.WriteLine("Disposing {0}", disposable);
+                disposable.Dispose();
+            }
+
+            _stuffToDispose.Clear();
+        }
+
+        protected void RegisterDisposable(IDisposable disposable)
+        {
+            _stuffToDispose.Add(disposable);
+        }
     }
 }

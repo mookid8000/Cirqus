@@ -21,7 +21,7 @@ namespace d60.Cirqus.MongoDb.Views
         readonly ViewDispatcherHelper<TViewInstance> _dispatcherHelper = new ViewDispatcherHelper<TViewInstance>();
         readonly MongoCollection<TViewInstance> _viewCollection;
         readonly MongoCollection<PositionDoc> _positionCollection;
-        readonly ViewLocator _viewLocator;
+        readonly ViewLocator _viewLocator = ViewLocator.GetLocatorFor<TViewInstance>();
         readonly string _currentPositionDocId;
 
         Logger _logger;
@@ -33,22 +33,6 @@ namespace d60.Cirqus.MongoDb.Views
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
 
             positionCollectionName = positionCollectionName ?? collectionName + "Position";
-
-            try
-            {
-                _viewLocator = ViewLocator.GetLocatorFor<TViewInstance>();
-            }
-            catch (Exception exception)
-            {
-                var message =
-                    string.Format("Could not successfully retrieve the view locator for the type {0} - please make" +
-                                  " sure that your view class implements IViewInstance<T> where T is one of the" +
-                                  " available view locators (e.g. {1} or {2} or a custom locator)",
-                        typeof(TViewInstance), typeof(InstancePerAggregateRootLocator).Name,
-                        typeof(GlobalInstanceLocator).Name);
-
-                throw new ArgumentException(message, exception);
-            }
 
             _viewCollection = database.GetCollection<TViewInstance>(collectionName);
 

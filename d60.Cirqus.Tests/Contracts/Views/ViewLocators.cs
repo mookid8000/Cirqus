@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using d60.Cirqus.Aggregates;
-using d60.Cirqus.Events;
 using d60.Cirqus.Tests.Contracts.Views.Factories;
+using d60.Cirqus.Tests.Contracts.Views.Models.ViewLocators;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
@@ -14,9 +12,9 @@ namespace d60.Cirqus.Tests.Contracts.Views
     [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
     [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql)]
     [TestFixture(typeof(InMemoryViewManagerFactory))]
-    public class ViewLocators<TViewManagerFactory> : FixtureBase where TViewManagerFactory : AbstractViewManagerFactory, new()
+    public class ViewLocators<TFactory> : FixtureBase where TFactory : AbstractViewManagerFactory, new()
     {
-        TViewManagerFactory _factory;
+        TFactory _factory;
         TestContext _context;
 
         IViewManager<InstancePerAggregateRootView> _instancePerAggregateRootViewManager;
@@ -24,7 +22,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
         protected override void DoSetUp()
         {
-            _factory = new TViewManagerFactory();
+            _factory = RegisterForDisposal(new TFactory());
 
             _globalInstanceViewManager = _factory.GetViewManager<GlobalInstanceViewInstance>();
             _instancePerAggregateRootViewManager = _factory.GetViewManager<InstancePerAggregateRootView>();
@@ -86,67 +84,5 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             Assert.DoesNotThrow(() => _context.Save(Guid.NewGuid(), new AnotherEvent()));
         }
-
-        class MyViewInstance : IViewInstance<CustomizedViewLocator>, ISubscribeTo<JustAnEvent>
-        {
-            public string Id { get; set; }
-            public long LastGlobalSequenceNumber { get; set; }
-
-            public void Handle(IViewContext context, JustAnEvent domainEvent)
-            {
-
-            }
-        }
-
-        class CustomizedViewLocator : ViewLocator
-        {
-            protected override IEnumerable<string> GetViewIds(IViewContext context, DomainEvent e)
-            {
-                if (e is JustAnEvent)
-                {
-                    yield return "yay";
-                }
-                else
-                {
-                    throw new ApplicationException("oh noes!!!!");
-                }
-            }
-        }
-    }
-
-    class JustAnEvent : DomainEvent<Root>
-    {
-    }
-    class AnotherEvent : DomainEvent<Root>
-    {
-    }
-    class Root : AggregateRoot
-    {
-    }
-    class GlobalInstanceViewInstance : IViewInstance<GlobalInstanceLocator>, ISubscribeTo<ThisIsJustAnEvent>
-    {
-        public int EventCounter { get; set; }
-        public void Handle(IViewContext context, ThisIsJustAnEvent domainEvent)
-        {
-            EventCounter++;
-        }
-
-        public string Id { get; set; }
-        public long LastGlobalSequenceNumber { get; set; }
-    }
-    class InstancePerAggregateRootView : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<ThisIsJustAnEvent>
-    {
-        public int EventCounter { get; set; }
-        public void Handle(IViewContext context, ThisIsJustAnEvent domainEvent)
-        {
-            EventCounter++;
-        }
-
-        public string Id { get; set; }
-        public long LastGlobalSequenceNumber { get; set; }
-    }
-
-    class ThisIsJustAnEvent : DomainEvent<Root>
-    {
     }
 }

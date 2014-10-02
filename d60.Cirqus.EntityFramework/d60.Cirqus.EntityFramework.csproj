@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="EntityFrameworkViewManager.cs" />
     <Compile Include="EntityFrameworkViewManager_old.cs" />
+    <Compile Include="Position.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

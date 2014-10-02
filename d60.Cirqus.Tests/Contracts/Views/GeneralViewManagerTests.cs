@@ -3,7 +3,7 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Tests.Contracts.Views.Factories;
-using d60.Cirqus.Tests.Contracts.Views.Models;
+using d60.Cirqus.Tests.Contracts.Views.Models.GeneralViewManagerTest;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
@@ -26,7 +26,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
         {
             CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel:Logger.Level.Debug);
 
-            _factory = new TFactory();
+            _factory = RegisterForDisposal(new TFactory());
 
             _context = RegisterForDisposal(new TestContext{Asynchronous = true});
         }

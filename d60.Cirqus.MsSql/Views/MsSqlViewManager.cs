@@ -20,6 +20,7 @@ namespace d60.Cirqus.MsSql.Views
         const int DefaultPosition = -1;
 
         readonly ViewDispatcherHelper<TViewInstance> _dispatcher = new ViewDispatcherHelper<TViewInstance>();
+        readonly ViewLocator _viewLocator = ViewLocator.GetLocatorFor<TViewInstance>();
         readonly string _connectionString;
         readonly string _tableName;
         readonly string _positionTableName;
@@ -149,14 +150,13 @@ namespace d60.Cirqus.MsSql.Views
 
                 using (var tx = conn.BeginTransaction())
                 {
-                    var locator = ViewLocator.GetLocatorFor<TViewInstance>();
                     var activeViewsById = new Dictionary<string, TViewInstance>();
 
                     foreach (var e in eventList)
                     {
                         if (!ViewLocator.IsRelevant<TViewInstance>(e)) continue;
 
-                        var viewIds = locator.GetAffectedViewIds(viewContext, e);
+                        var viewIds = _viewLocator.GetAffectedViewIds(viewContext, e);
 
                         foreach (var viewId in viewIds)
                         {

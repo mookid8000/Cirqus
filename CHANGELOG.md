@@ -308,3 +308,7 @@ This is a big update that completes the transition to the new, vastly improved v
 * Fixed usage of `Nullable<>` on data types like `Guid`, `int`, etc. on `MsSqlViewManager`
 
 
+## 0.25.1
+
+* Re-introduced the Entity Framework-based view manager - be warned though: it leaves dereferenced child objects in the database with NULL foreign keys
+
