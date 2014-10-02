@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.SqlClient;
 using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
@@ -50,7 +49,7 @@ namespace d60.Cirqus.EntityFramework
 
             if (!eventList.Any()) return;
 
-            var updatedViewInstances = new HashSet<TViewInstance>();
+            var activeViewInstances = new Dictionary<string, TViewInstance>();
 
             using (var context = GetContext())
             {
@@ -62,12 +61,12 @@ namespace d60.Cirqus.EntityFramework
 
                     foreach (var viewId in viewIds)
                     {
-                        var viewInstance = context.ViewCollection.FirstOrDefault(v => v.Id == viewId)
-                                           ?? CreateAndAddNewViewInstance(viewId, context.ViewCollection);
+                        var viewInstance = activeViewInstances.ContainsKey(viewId)
+                            ? activeViewInstances[viewId]
+                            : (activeViewInstances[viewId] = context.ViewCollection.FirstOrDefault(v => v.Id == viewId)
+                                                             ?? CreateAndAddNewViewInstance(viewId, context.ViewCollection));
 
                         _dispatcherHelper.DispatchToView(viewContext, e, viewInstance);
-
-                        updatedViewInstances.Add(viewInstance);
                     }
                 }
 
@@ -76,7 +75,7 @@ namespace d60.Cirqus.EntityFramework
                 context.SaveChanges();
             }
 
-            RaiseUpdatedEventFor(updatedViewInstances);
+            RaiseUpdatedEventFor(activeViewInstances.Values);
         }
 
         void UpdatePersistentCache(GenericViewContext<TViewInstance> context, long newCurrentPosition)

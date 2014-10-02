@@ -13,7 +13,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
 {
     [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
     [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
-    [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql)]
+    [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql, Ignore = true, IgnoreReason = "The contained HashSet<string> cannot be persisted by EF")]
     [TestFixture(typeof(InMemoryViewManagerFactory))]
     public class GeneralViewManagerTests<TFactory> : FixtureBase where TFactory : AbstractViewManagerFactory, new()
     {
@@ -49,14 +49,16 @@ namespace d60.Cirqus.Tests.Contracts.Views
             Console.WriteLine("Waiting until dispatched: {0}", last.GetNewPosition());
             view.WaitUntilProcessed(last, _defaultTimeout).Wait();
 
-            var idsView = view.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));
+            var idsView = _factory.Load<GeneratedIds>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));
 
             Assert.That(idsView, Is.Not.Null, "Could not find view!");
-            Assert.That(idsView.AllIds.Count, Is.EqualTo(3));
+            
+            var storedIds = idsView.AllIds;
+            Assert.That(storedIds.Count, Is.EqualTo(3));
          
-            Assert.That(idsView.AllIds, Contains.Item("bim/0"));
-            Assert.That(idsView.AllIds, Contains.Item("bim/1"));
-            Assert.That(idsView.AllIds, Contains.Item("bom/0"));
+            Assert.That(storedIds, Contains.Item("bim/0"));
+            Assert.That(storedIds, Contains.Item("bim/1"));
+            Assert.That(storedIds, Contains.Item("bom/0"));
         }
 
         [Test]
@@ -77,14 +79,16 @@ namespace d60.Cirqus.Tests.Contracts.Views
             Console.WriteLine("Waiting until dispatched: {0}", last.GetNewPosition());
             view.WaitUntilProcessed(last, _defaultTimeout).Wait();
 
-            var idsView = view.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));
+            var idsView = _factory.Load<GeneratedIds>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));
 
             Assert.That(idsView, Is.Not.Null, "Could not find view!");
-            Assert.That(idsView.AllIds.Count, Is.EqualTo(3));
+            
+            var storedIds = idsView.AllIds;
+            Assert.That(storedIds.Count, Is.EqualTo(3));
 
-            Assert.That(idsView.AllIds, Contains.Item("bim/0"));
-            Assert.That(idsView.AllIds, Contains.Item("bim/1"));
-            Assert.That(idsView.AllIds, Contains.Item("bom/0"));
+            Assert.That(storedIds, Contains.Item("bim/0"));
+            Assert.That(storedIds, Contains.Item("bim/1"));
+            Assert.That(storedIds, Contains.Item("bom/0"));
         }
 
         [Test]
@@ -107,13 +111,16 @@ namespace d60.Cirqus.Tests.Contracts.Views
             // assert
             view.WaitUntilProcessed(last, _defaultTimeout).Wait();
 
-            var idsView = view.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));
+            var idsView = _factory
+                .Load<GeneratedIds>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));
 
-            Assert.That(idsView.AllIds.Count, Is.EqualTo(3));
+            var storedIds = idsView.AllIds;
 
-            Assert.That(idsView.AllIds, Contains.Item("bim/0"));
-            Assert.That(idsView.AllIds, Contains.Item("bim/1"));
-            Assert.That(idsView.AllIds, Contains.Item("bom/0"));
+            Assert.That(storedIds.Count, Is.EqualTo(3));
+
+            Assert.That(storedIds, Contains.Item("bim/0"));
+            Assert.That(storedIds, Contains.Item("bim/1"));
+            Assert.That(storedIds, Contains.Item("bom/0"));
         }
 
         [Test]

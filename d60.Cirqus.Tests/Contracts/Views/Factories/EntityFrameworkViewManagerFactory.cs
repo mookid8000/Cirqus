@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.EntityFramework;
+using d60.Cirqus.Tests.Contracts.Views.Models.GeneralViewManagerTest;
 using d60.Cirqus.Tests.Contracts.Views.Models.ObjectGraph;
 using d60.Cirqus.Tests.MsSql;
 using d60.Cirqus.Views;
@@ -29,6 +30,11 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
             if (typeof(TViewInstance) == typeof(ViewRoot))
             {
                 MsSqlTestHelper.DropTable("ViewChilds");
+            }
+
+            if (typeof(TViewInstance) == typeof(GeneratedIds))
+            {
+                MsSqlTestHelper.DropTable("StoredIds");
             }
 
             MsSqlTestHelper.DropTable(tableName);

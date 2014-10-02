@@ -15,7 +15,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
 {
     [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
     [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
-    [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql)]
+    [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql, Ignore = true, IgnoreReason = "The contained List<int> cannot be persisted by EF")]
     [TestFixture(typeof(InMemoryViewManagerFactory))]
     public class RecoveryTest<TFactory> : FixtureBase where TFactory : AbstractViewManagerFactory, new()
     {
@@ -30,7 +30,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _factory = RegisterForDisposal(new TFactory());
 
             _context = RegisterForDisposal(new TestContext { Asynchronous = true });
-            
+
             _viewManager = _factory.GetViewManager<View>();
         }
 
