@@ -19,6 +19,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspec", "nuspec", "{407E215D-36B1-46F9-A39F-39465ADC4F2D}"
 	ProjectSection(SolutionItems) = preProject
 		nuspec\d60.Circus.AzureServiceBus.nuspec = nuspec\d60.Circus.AzureServiceBus.nuspec
+		nuspec\d60.Circus.EntityFramework.nuspec = nuspec\d60.Circus.EntityFramework.nuspec
 		nuspec\d60.Circus.MongoDb.nuspec = nuspec\d60.Circus.MongoDb.nuspec
 		nuspec\d60.Circus.MsSql.nuspec = nuspec\d60.Circus.MsSql.nuspec
 		nuspec\d60.Circus.NLog.nuspec = nuspec\d60.Circus.NLog.nuspec
