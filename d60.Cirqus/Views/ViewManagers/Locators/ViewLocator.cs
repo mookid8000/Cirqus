@@ -28,7 +28,31 @@ namespace d60.Cirqus.Views.ViewManagers.Locators
             
             return CachedRelevancyChecks
                 .GetOrAdd(viewType, key => new ConcurrentDictionary<Type, bool>())
-                .GetOrAdd(domainEventType, key => typeof(ISubscribeTo<>).MakeGenericType(domainEventType).IsAssignableFrom(viewType));
+                .GetOrAdd(domainEventType, key => DetermineIfRelevant(domainEventType, viewType));
+        }
+
+        static bool DetermineIfRelevant(Type domainEventType, Type viewType)
+        {
+            var assignableTypes = GetAssignableTypes(domainEventType);
+            var subscriberTypes = assignableTypes
+                .Select(assignableType => typeof (ISubscribeTo<>).MakeGenericType(assignableType))
+                .ToList();
+
+            return subscriberTypes.Any(subscriberType => subscriberType.IsAssignableFrom(viewType));
+        }
+
+        static IEnumerable<Type> GetAssignableTypes(Type type)
+        {
+            var types = new[] {type}.ToList();
+
+            var baseType = type.BaseType;
+            while (baseType != null && typeof(DomainEvent).IsAssignableFrom(baseType))
+            {
+                types.Add(baseType);
+                baseType = baseType.BaseType;
+            }
+
+            return types;
         }
 
         /// <summary>

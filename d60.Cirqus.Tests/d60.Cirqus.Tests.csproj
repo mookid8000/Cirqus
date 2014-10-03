@@ -118,6 +118,12 @@
     <Compile Include="Contracts\Views\Models\LoadingStuffDuringViewLocation\NodeCreated.cs" />
     <Compile Include="Contracts\Views\Models\LoadingStuffDuringViewLocation\NodeAttachedToParentNode.cs" />
     <Compile Include="Contracts\Views\Models\LoadingStuffDuringViewLocation\Node.cs" />
+    <Compile Include="Contracts\Views\Models\PolymorphicDispatch\AnotherEvent.cs" />
+    <Compile Include="Contracts\Views\Models\PolymorphicDispatch\Event.cs" />
+    <Compile Include="Contracts\Views\Models\PolymorphicDispatch\Root.cs" />
+    <Compile Include="Contracts\Views\Models\PolymorphicDispatch\ViewThatSubscribesToEvents.cs" />
+    <Compile Include="Contracts\Views\Models\PolymorphicDispatch\ViewThatSubscribesToAggregateRootEvent.cs" />
+    <Compile Include="Contracts\Views\Models\PolymorphicDispatch\ViewThatSubscribesToAllEvents.cs" />
     <Compile Include="Contracts\Views\Models\PurgeTest\PurgeTestView.cs" />
     <Compile Include="Contracts\Views\Models\PurgeTest\Event.cs" />
     <Compile Include="Contracts\Views\Models\PurgeTest\Root.cs" />
@@ -138,6 +144,7 @@
     <Compile Include="Contracts\Views\Models\ViewLocators\MyViewInstance.cs" />
     <Compile Include="Contracts\Views\Models\ViewLocators\Root.cs" />
     <Compile Include="Contracts\Views\Models\ViewLocators\ThisIsJustAnEvent.cs" />
+    <Compile Include="Contracts\Views\PolymorphicDispatch.cs" />
     <Compile Include="Contracts\Views\PurgeTest.cs" />
     <Compile Include="Contracts\Views\RecoveryTest.cs" />
     <Compile Include="Contracts\Views\RestTest.cs" />

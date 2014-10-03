@@ -212,7 +212,7 @@ namespace d60.Cirqus.TestHelpers
             if (!allGlobalSequenceNumbers.Any()) return;
 
             var result = CommandProcessingResult.WithNewPosition(allGlobalSequenceNumbers.Max());
-
+            
             _waitHandle.WaitForAll(result, TimeSpan.FromSeconds(timeoutSeconds)).Wait();
         }
 

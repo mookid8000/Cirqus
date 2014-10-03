@@ -312,3 +312,7 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Re-introduced the Entity Framework-based view manager - be warned though: it leaves dereferenced child objects in the database with NULL foreign keys
 
+## 0.26.0
+
+* Changed view dispatcher to support polymorphic dispatch - i.e. views can now implement e.g. `ISubscribeTo<DomainEvent<SomeParticularRoot>>` in order to get everything that happens on `SomeParticularRoot` or `ISubscribeTo<DomainEvent>` to get everything
+
