@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
-using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
@@ -416,6 +414,24 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             Assert.AreEqual(0, _eventStore.Stream().Count());
             Assert.AreEqual(0, _eventStore.Load(agg1).Count());
             Assert.AreEqual(0, _eventStore.Load(agg2).Count());
+        }
+
+        [TestCase(0)]
+        [TestCase(1)]
+        [TestCase(10)]
+        public void CanGetNextGlobalSequenceNumber(int numberOfEvents)
+        {
+            for (var i = 0; i < numberOfEvents; i++)
+            {
+                _eventStore.Save(Guid.NewGuid(), new[]
+                {
+                    Event(1, Guid.NewGuid()),
+                });
+            }
+
+            var nextGlobalSequenceNumber = _eventStore.GetNextGlobalSequenceNumber();
+
+            Assert.AreEqual(numberOfEvents, nextGlobalSequenceNumber);
         }
 
         [Test]

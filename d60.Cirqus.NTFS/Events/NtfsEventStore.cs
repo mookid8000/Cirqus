@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
@@ -27,8 +28,8 @@ namespace d60.Cirqus.NTFS.Events
     /// </summary>
     public class NtfsEventStore : IEventStore, IDisposable
     {
-        const int sizeofSeqRecord = 56;
-        const int sizeofCommitRecord = 8;
+        internal const int SizeofSeqRecord = 32;
+        internal const int SizeofCommitRecord = sizeof(long);
 
         readonly object _lock = new object();
 
@@ -37,10 +38,6 @@ namespace d60.Cirqus.NTFS.Events
         readonly string _dataDirectory;
         readonly string _seqFilePath;
         readonly string _commitsFilePath;
-        readonly FileStream _seqWriteStream;
-        readonly BinaryWriter _seqWriter;
-        readonly FileStream _commitsWriteStream;
-        readonly BinaryWriter _commitsWriter;
         readonly FileStream _commitsReadStream;
         readonly BinaryReader _commitsReader;
 
@@ -56,15 +53,20 @@ namespace d60.Cirqus.NTFS.Events
 
             Directory.CreateDirectory(_dataDirectory);
 
-            _seqWriteStream = new FileStream(_seqFilePath, FileMode.Append, FileAccess.Write, FileShare.Read, 1024, FileOptions.None);
-            _seqWriter = new BinaryWriter(_seqWriteStream, Encoding.ASCII);
+            SeqWriter = new BinaryWriter(
+                new FileStream(_seqFilePath, FileMode.Append, FileSystemRights.AppendData, FileShare.Read, 1024, FileOptions.None), 
+                Encoding.ASCII, leaveOpen: false);
 
-            _commitsWriteStream = new FileStream(_commitsFilePath, FileMode.Append, FileAccess.Write, FileShare.Read, 1024, FileOptions.None);
-            _commitsWriter = new BinaryWriter(_commitsWriteStream, Encoding.ASCII);
+            CommitsWriter = new BinaryWriter(
+                new FileStream(_commitsFilePath, FileMode.Append, FileSystemRights.AppendData, FileShare.Read, 1024, FileOptions.None), 
+                Encoding.ASCII, leaveOpen: false);
 
             _commitsReadStream = new FileStream(_commitsFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1024, FileOptions.None);
             _commitsReader = new BinaryReader(_commitsReadStream, Encoding.ASCII);
         }
+
+        internal BinaryWriter SeqWriter { get; private set; }
+        internal BinaryWriter CommitsWriter { get; private set; }
 
         public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
         {
@@ -76,7 +78,7 @@ namespace d60.Cirqus.NTFS.Events
 
                 foreach (var domainEvent in events)
                 {
-                    domainEvent.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = globalSequenceNumber++;
+                    domainEvent.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = ++globalSequenceNumber;
                     domainEvent.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
                 }
 
@@ -84,32 +86,17 @@ namespace d60.Cirqus.NTFS.Events
 
                 foreach (var domainEvent in events)
                 {
-                    var aggregateRootId = domainEvent.GetAggregateRootId();
-                    var sequenceNumber = domainEvent.GetSequenceNumber();
-
-                    // write the sequence
-                    _seqWriter.Write(globalSequenceNumber);
-                    _seqWriter.Write(batchId.ToByteArray());
-                    _seqWriter.Write(events.Count);
-                    _seqWriter.Write(aggregateRootId.ToByteArray());
-                    _seqWriter.Write(sequenceNumber);
-                    _seqWriter.Write(123456);
+                    WriteEventToSeqIndex(globalSequenceNumber, batchId, domainEvent);
                 }
 
-                _seqWriter.Flush();
+                SeqWriter.Flush();
 
                 foreach (var domainEvent in events)
                 {
-                    var aggregateRootId = domainEvent.GetAggregateRootId();
-                    var sequenceNumber = domainEvent.GetSequenceNumber();
-
-                    var aggregateDirectory = Path.Combine(_dataDirectory, aggregateRootId.ToString());
-                    Directory.CreateDirectory(aggregateDirectory);
-
                     try
                     {
                         // write the data
-                        WriteEvent(Path.Combine(aggregateDirectory, GetFilename(sequenceNumber)), domainEvent);
+                        WriteEvent(domainEvent);
                     }
                     catch (IOException exception)
                     {
@@ -118,42 +105,47 @@ namespace d60.Cirqus.NTFS.Events
                 }
 
                 // commit the batch
-                // todo: write a checksum to ensure that commit is fully written (maybe just g-seq twice?)
-                _commitsWriter.Write(globalSequenceNumber);
-                _commitsWriter.Flush();
+                CommitsWriter.Write(globalSequenceNumber);
+                CommitsWriter.Write(globalSequenceNumber); // "checksum"
+                CommitsWriter.Flush();
             }
         }
 
-
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0, long limit = Int32.MaxValue)
+        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0, long limit = Int64.MaxValue)
         {
-            ReadGlobalSequenceNumber();
+            var currentGlobalSequenceNumber = ReadGlobalSequenceNumber();
 
             var aggregateDirectory = Path.Combine(_dataDirectory, aggregateRootId.ToString());
             
             if (!Directory.Exists(aggregateDirectory))
                 return Enumerable.Empty<DomainEvent>();
 
-            // todo: don't read longer than last known good commit (writer might be working concurrently here)
             return from path in Directory.EnumerateFiles(aggregateDirectory)
                    let seq = int.Parse(Path.GetFileName(path))
                    where seq >= firstSeq && seq < firstSeq + limit
-                   select ReadEvent(path);
+                   let @event = ReadEvent(path)
+                   where @event != null && @event.GetGlobalSequenceNumber(true) <= currentGlobalSequenceNumber
+                   select @event;
         }
 
         public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
         {
-            ReadGlobalSequenceNumber();
+            var currentGlobalSequenceNumber = ReadGlobalSequenceNumber();
 
-            using (var seqReadStream = new FileStream(_seqFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 100*sizeofSeqRecord, FileOptions.None))
+            using (var seqReadStream = new FileStream(_seqFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 100*SizeofSeqRecord, FileOptions.None))
             using (var seqReader = new BinaryReader(seqReadStream, Encoding.ASCII))
             {
-                seqReadStream.Seek(globalSequenceNumber*sizeofSeqRecord, SeekOrigin.Begin);
+                // todo: seek from begin/end whichever is closest
+                // todo: is the readstream changed as more is written to the file?
+                seqReadStream.Seek(globalSequenceNumber*SizeofSeqRecord, SeekOrigin.Begin);
 
                 // todo: don't read longer than last known good commit (writer might be working concurrently here)
                 while (seqReadStream.Position < seqReadStream.Length)
                 {
                     var record = ReadGlobalSequenceRecord(seqReader);
+
+                    if (record.GlobalSequenceNumber > currentGlobalSequenceNumber)
+                        break;
 
                     var dataFileName = Path.Combine(_dataDirectory, record.AggregateRootId.ToString(), GetFilename(record.LocalSequenceNumber));
                     yield return ReadEvent(dataFileName);
@@ -163,35 +155,52 @@ namespace d60.Cirqus.NTFS.Events
 
         public long GetNextGlobalSequenceNumber()
         {
-            return ReadGlobalSequenceNumber();
+            return ReadGlobalSequenceNumber() + 1;
         }
 
         long ReadGlobalSequenceNumber()
         {
-            lock (_lock)
+            if (_commitsReadStream.Length == 0) return -1;
+            
+            _commitsReadStream.Seek(0, SeekOrigin.End);
+
+            var garbage = _commitsReadStream.Length%SizeofCommitRecord;
+            if (garbage > 0)
             {
-                var globalSequenceNumber = 0L;
-                if (_commitsReadStream.Length > 0)
-                {
-                    _commitsReadStream.Seek(-sizeofCommitRecord, SeekOrigin.End);
-                    globalSequenceNumber = _commitsReader.ReadInt64();
-                }
-
-                MaybeRecoverFromFailure(globalSequenceNumber);
-
-                return globalSequenceNumber;
+                // we have a failed commit on our hands, skip the garbage
+                _commitsReadStream.Seek(-garbage, SeekOrigin.End);
             }
+
+            // read commit and checksum
+            if (_commitsReadStream.Length < garbage + SizeofCommitRecord*2) return -1;
+            _commitsReadStream.Seek(-SizeofCommitRecord*2, SeekOrigin.Current);
+            var globalSequenceNumber = _commitsReader.ReadInt64();
+            var checksum = _commitsReader.ReadInt64();
+
+            if (globalSequenceNumber == checksum)
+                return globalSequenceNumber;
+
+            // ok, the checksum was never written, skip the orphaned commit and try again
+            if (_commitsReadStream.Length < garbage + SizeofCommitRecord*3) return -1;
+            _commitsReadStream.Seek(-SizeofCommitRecord*3, SeekOrigin.Current);
+            globalSequenceNumber = _commitsReader.ReadInt64();
+            checksum = _commitsReader.ReadInt64();
+
+            if (globalSequenceNumber == checksum)
+                return globalSequenceNumber;
+
+            throw new InvalidOperationException("Commit file is unreadable.");
         }
 
         void MaybeRecoverFromFailure(long globalSequenceNumber)
         {
-            if (globalSequenceNumber == _seqWriteStream.Length / sizeofSeqRecord)
+            if (globalSequenceNumber == SeqWriter.BaseStream.Length / SizeofSeqRecord)
                 return;
 
-            using (var seqReadStream = new FileStream(_seqFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 100 * sizeofSeqRecord, FileOptions.None))
+            using (var seqReadStream = new FileStream(_seqFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 100 * SizeofSeqRecord, FileOptions.None))
             using (var seqReader = new BinaryReader(seqReadStream, Encoding.ASCII))
             {
-                seqReadStream.Seek(globalSequenceNumber * sizeofSeqRecord, SeekOrigin.Begin);
+                seqReadStream.Seek(globalSequenceNumber * SizeofSeqRecord, SeekOrigin.Begin);
 
                 // todo: don't read past end of file
                 // todo: check the validity of each record with checksum 
@@ -205,8 +214,19 @@ namespace d60.Cirqus.NTFS.Events
                 }
             }
 
-            _seqWriteStream.SetLength(globalSequenceNumber * sizeofSeqRecord);
-            _seqWriteStream.Flush();
+            SeqWriter.BaseStream.SetLength(globalSequenceNumber * SizeofSeqRecord);
+            SeqWriter.BaseStream.Flush();
+        }
+
+        internal void WriteEventToSeqIndex(long globalSequenceNumber, Guid batchId, DomainEvent domainEvent)
+        {
+            var aggregateRootId = domainEvent.GetAggregateRootId();
+            var sequenceNumber = domainEvent.GetSequenceNumber();
+
+            // write the sequence
+            SeqWriter.Write(globalSequenceNumber); //todo: wrong number here
+            SeqWriter.Write(aggregateRootId.ToByteArray());
+            SeqWriter.Write(sequenceNumber);
         }
 
         static GlobalSequenceRecord ReadGlobalSequenceRecord(BinaryReader seqReader)
@@ -214,28 +234,42 @@ namespace d60.Cirqus.NTFS.Events
             return new GlobalSequenceRecord
             {
                 GlobalSequenceNumber = seqReader.ReadInt64(),
-                BatchId = new Guid(seqReader.ReadBytes(16)),
-                BatchSize = seqReader.ReadInt32(),
                 AggregateRootId = new Guid(seqReader.ReadBytes(16)),
                 LocalSequenceNumber = seqReader.ReadInt64(),
-                Checksum = seqReader.ReadInt32()
             };
         }
 
         DomainEvent ReadEvent(string filename)
         {
-            using (var filestream = new FileStream(filename, FileMode.Open))
-            using (var reader = new BsonReader(filestream))
+            using (var fileStream = new FileStream(filename, FileMode.Open))
+            using (var bsonReader = new BsonReader(fileStream))
             {
-                return _serializer.Deserialize<DomainEvent>(reader);
+                if (fileStream.Length == 0)
+                    return null;
+
+                try
+                {
+                    return _serializer.Deserialize<DomainEvent>(bsonReader);
+                }
+                catch (Exception)
+                {
+                    return null;
+                }
             }
         }
 
-        void WriteEvent(string filename, DomainEvent domainEvent)
+        internal void WriteEvent(DomainEvent domainEvent)
         {
-            using (var eventFileStream = new FileStream(filename, FileMode.CreateNew, FileAccess.Write, FileShare.None, 1024, FileOptions.None))
-            using (var eventFileWriter = new BinaryWriter(eventFileStream))
-            using (var bsonWriter = new BsonWriter(eventFileWriter))
+            var aggregateRootId = domainEvent.GetAggregateRootId();
+            var sequenceNumber = domainEvent.GetSequenceNumber();
+
+            var aggregateDirectory = Path.Combine(_dataDirectory, aggregateRootId.ToString());
+            Directory.CreateDirectory(aggregateDirectory);
+
+            var filename = Path.Combine(aggregateDirectory, GetFilename(sequenceNumber));
+
+            using (var fileStream = new FileStream(filename, FileMode.CreateNew, FileAccess.Write, FileShare.None, 1024, FileOptions.None))
+            using (var bsonWriter = new BsonWriter(fileStream))
             {
                 _serializer.Serialize(bsonWriter, domainEvent);
             }
@@ -275,10 +309,8 @@ namespace d60.Cirqus.NTFS.Events
 
         public void Dispose()
         {
-            _seqWriter.Dispose();
-            _seqWriteStream.Dispose();
-            _commitsWriter.Dispose();
-            _commitsWriteStream.Dispose();
+            SeqWriter.Dispose();
+            CommitsWriter.Dispose();
             _commitsReader.Dispose();
             _commitsReadStream.Dispose();
         }
@@ -286,11 +318,8 @@ namespace d60.Cirqus.NTFS.Events
         public class GlobalSequenceRecord
         {
             public long GlobalSequenceNumber { get; set; }
-            public Guid BatchId { get; set; }
-            public int BatchSize { get; set; }
             public Guid AggregateRootId { get; set; }
             public long LocalSequenceNumber { get; set; }
-            public int Checksum { get; set; }
         }
     }
 }
