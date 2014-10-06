@@ -1,6 +1,6 @@
 ﻿using System;
 using d60.Cirqus.Aggregates;
-using d60.Cirqus.TestHelpers.Internals;
+using d60.Cirqus.Testing.Internals;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Aggregates

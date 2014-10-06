@@ -4,7 +4,7 @@ using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.MsSql.Events;
 using d60.Cirqus.PostgreSql;
-using d60.Cirqus.TestHelpers.Internals;
+using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.MsSql;
 using d60.Cirqus.Tests.PostgreSql;

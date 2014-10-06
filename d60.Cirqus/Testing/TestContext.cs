@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Aggregates;
@@ -7,11 +6,11 @@ using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Serialization;
-using d60.Cirqus.TestHelpers.Internals;
+using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
 
-namespace d60.Cirqus.TestHelpers
+namespace d60.Cirqus.Testing
 {
     /// <summary>
     /// Use the test context to carry out realistic testing of command processing, aggregate roots, and 
@@ -293,27 +292,6 @@ namespace d60.Cirqus.TestHelpers
             }
 
             _disposed = true;
-        }
-    }
-
-    public class CommandProcessingResultWithEvents : CommandProcessingResult, IEnumerable<DomainEvent>
-    {
-        readonly List<DomainEvent> _events;
-
-        public CommandProcessingResultWithEvents(IEnumerable<DomainEvent> events)
-            : base(events.Any() ? events.Max(e => e.GetGlobalSequenceNumber()) : default(long?))
-        {
-            _events = events.ToList();
-        }
-
-        public IEnumerator<DomainEvent> GetEnumerator()
-        {
-            return _events.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }

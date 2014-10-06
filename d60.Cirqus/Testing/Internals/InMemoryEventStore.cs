@@ -8,7 +8,7 @@ using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Serialization;
 
-namespace d60.Cirqus.TestHelpers.Internals
+namespace d60.Cirqus.Testing.Internals
 {
     class InMemoryEventStore : IEventStore, IEnumerable<DomainEvent>
     {

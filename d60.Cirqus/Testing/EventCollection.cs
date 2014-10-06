@@ -5,7 +5,7 @@ using System.Linq;
 using d60.Cirqus.Events;
 using Newtonsoft.Json;
 
-namespace d60.Cirqus.TestHelpers
+namespace d60.Cirqus.Testing
 {
     public class EventCollection : IEnumerable<DomainEvent>
     {

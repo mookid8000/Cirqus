@@ -12,9 +12,9 @@ using d60.Cirqus.Numbers;
 using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
 using NUnit.Framework;
-using TestContext = d60.Cirqus.TestHelpers.TestContext;
+using TestContext = d60.Cirqus.Testing.TestContext;
 
-namespace d60.Cirqus.Tests.TestHelpers
+namespace d60.Cirqus.Tests.Testing
 {
     [TestFixture]
     public class TestTestContext : FixtureBase

@@ -328,4 +328,8 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Re-publishing because silly NuGet.org failed in the middle of uploading 0.26.2
 
+## 0.27.0
+
+* Moved `TestContext` into core because it's just easier that way
+
 
