@@ -173,7 +173,6 @@
     <Compile Include="MsSql\TestNewMsSqlViewManager.cs" />
     <Compile Include="PostgreSql\PostgreSqlTestHelper.cs" />
     <Compile Include="SqlTestHelperBase.cs" />
-    <Compile Include="MsSql\TestEntityFrameworkViewManager.cs" />
     <Compile Include="MsSql\MsSqlTestHelper.cs" />
     <Compile Include="Playground\TestTypeHashCodes.cs" />
     <Compile Include="Snapshotting\ChallengingSnapshotSpeciments.cs" />

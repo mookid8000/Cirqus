@@ -316,3 +316,6 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Changed view dispatcher to support polymorphic dispatch - i.e. views can now implement e.g. `ISubscribeTo<DomainEvent<SomeParticularRoot>>` in order to get everything that happens on `SomeParticularRoot` or `ISubscribeTo<DomainEvent>` to get everything
 
+## 0.26.1
+
+* Changed Entity Framework view manager to use the _sloooow_ OR-mapper-way of purging data - it's slow, but it cascades to tables with FK constraints and whatnot

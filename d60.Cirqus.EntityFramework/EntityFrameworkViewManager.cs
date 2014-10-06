@@ -105,7 +105,12 @@ namespace d60.Cirqus.EntityFramework
             {
                 using (var tx = context.Database.BeginTransaction())
                 {
-                    context.Database.ExecuteSqlCommand(string.Format("delete from [{0}]", typeof(TViewInstance).Name));
+                    // accept the slowness for now... think of better way of flushing the view, including any tables with FKs
+                    foreach (var instance in context.ViewCollection)
+                    {
+                        context.ViewCollection.Remove(instance);
+                    }
+                    //context.Database.ExecuteSqlCommand(string.Format("delete from [{0}]", typeof(TViewInstance).Name));
                     context.Database.ExecuteSqlCommand(string.Format("delete from [{0}]", typeof(TViewInstance).Name + "_Position"));
 
                     tx.Commit();
