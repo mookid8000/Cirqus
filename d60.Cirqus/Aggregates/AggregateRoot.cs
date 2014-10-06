@@ -46,7 +46,9 @@ namespace d60.Cirqus.Aggregates
                         e, GetType()));
             }
 
-            var emitterInterface = typeof(IEmit<>).MakeGenericType(e.GetType());
+            var eventType = e.GetType();
+
+            var emitterInterface = typeof(IEmit<>).MakeGenericType(eventType);
             if (!emitterInterface.IsAssignableFrom(GetType()))
             {
                 throw new InvalidOperationException(
@@ -55,8 +57,6 @@ namespace d60.Cirqus.Aggregates
                         e, GetType().Name, e.GetType().Name));
             }
 
-            var eventType = e.GetType();
-
             if (UnitOfWork == null)
             {
                 throw new InvalidOperationException(string.Format("Attempted to emit event {0}, but the aggreate root does not have a unit of work!", e));
@@ -64,7 +64,7 @@ namespace d60.Cirqus.Aggregates
 
             if (ReplayState != ReplayState.None)
             {
-                
+                throw new InvalidOperationException(string.Format("Attempted to emit event {0}, but the aggreate root's replay state is {1}! - events can only be emitted when the root is not applying events", e, ReplayState));
             }
 
             if (typeof(TAggregateRoot) != GetType())
@@ -74,7 +74,7 @@ namespace d60.Cirqus.Aggregates
                         e, typeof(TAggregateRoot), GetType()));
             }
 
-            var now = Time.GetUtcNow();
+            var now = Time.UtcNow();
             var sequenceNumber = ++CurrentSequenceNumber;
 
             e.Meta[DomainEvent.MetadataKeys.AggregateRootId] = Id;
