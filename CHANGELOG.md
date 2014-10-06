@@ -324,3 +324,8 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Removed annoying log line from `ViewManagerEventDispatcher`
 
+## 0.26.3
+
+* Re-publishing because silly NuGet.org failed in the middle of uploading 0.26.2
+
+
