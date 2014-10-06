@@ -43,6 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Events\CommitLog.cs" />
+    <Compile Include="Events\DataStore.cs" />
+    <Compile Include="Events\GlobalSequenceIndex.cs" />
     <Compile Include="Events\NtfsEventStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

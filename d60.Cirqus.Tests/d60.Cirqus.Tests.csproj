@@ -149,8 +149,9 @@
     <Compile Include="Contracts\Views\Models\ObjectGraph\ViewRoot.cs" />
     <Compile Include="Events\EventReplicator\ErrorHandling.cs" />
     <Compile Include="Events\EventReplicator\BasicReplication.cs" />
+    <Compile Include="Events\Ntfs\TestCommitLog.cs" />
     <Compile Include="Events\TestInMemoryEventStore.cs" />
-    <Compile Include="Events\TestNtfsEventStore.cs" />
+    <Compile Include="Events\Ntfs\TestNtfsEventStore.cs" />
     <Compile Include="Examples\ReadmeSnippet.cs" />
     <Compile Include="Extensions\Helpful.cs" />
     <Compile Include="FixtureBase.cs" />
