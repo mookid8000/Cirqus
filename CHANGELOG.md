@@ -319,3 +319,8 @@ This is a big update that completes the transition to the new, vastly improved v
 ## 0.26.1
 
 * Changed Entity Framework view manager to use the _sloooow_ OR-mapper-way of purging data - it's slow, but it cascades to tables with FK constraints and whatnot
+
+## 0.26.2
+
+* Removed annoying log line from `ViewManagerEventDispatcher`
+

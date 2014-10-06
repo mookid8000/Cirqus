@@ -181,8 +181,6 @@ namespace d60.Cirqus.Views
             // ok, we must replay - start from here:
             var sequenceNumberToReplayFrom = lowestSequenceNumberSuccessfullyProcessed + 1;
 
-            _logger.Debug("Getting events from global sequence number {0} and on...", sequenceNumberToReplayFrom);
-
             foreach (var batch in eventStore.Stream(sequenceNumberToReplayFrom).Batch(MaxItemsPerBatch))
             {
                 var context = new DefaultViewContext(_aggregateRootRepository);
