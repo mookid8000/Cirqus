@@ -5,6 +5,9 @@ using d60.Cirqus.Extensions;
 
 namespace d60.Cirqus.Aggregates
 {
+    /// <summary>
+    /// Encapsulates information about an aggregate root instance
+    /// </summary>
     public abstract class AggregateRootInfo
     {
         public abstract long LastSeqNo { get; }
@@ -133,39 +136,5 @@ namespace d60.Cirqus.Aggregates
                 _root.UnitOfWork = _originalUnitOfWork;
             }
         }
-
-    //    void ApplyEvents<TAggregate>(TAggregate aggregate, IEnumerable<DomainEvent> domainEventsForThisAggregate)
-    //where TAggregate : AggregateRoot, new()
-    //    {
-    //        var dynamicAggregate = (dynamic)aggregate;
-    //        var previousCutoff = aggregate.GlobalSequenceNumberCutoff;
-
-    //        using (new ThrowingUnitOfWork(aggregate))
-    //        {
-    //            aggregate.ReplayState = ReplayState.ReplayApply;
-
-    //            foreach (var e in domainEventsForThisAggregate)
-    //            {
-    //                // ensure that other aggregates loaded during event application are historic if that's required
-    //                aggregate.GlobalSequenceNumberCutoff = e.GetGlobalSequenceNumber();
-
-    //                try
-    //                {
-    //                    dynamicAggregate.Apply((dynamic)e);
-    //                    aggregate.CurrentSequenceNumber = e.GetSequenceNumber();
-    //                }
-    //                catch (Exception exception)
-    //                {
-    //                    throw new ApplicationException(string.Format("Could not apply event {0} to {1}", e, aggregate),
-    //                        exception);
-    //                }
-    //            }
-    //        }
-
-    //        // restore the cutoff so we don't hinder the root's ability to load other aggregate roots from its emitter methods
-    //        aggregate.GlobalSequenceNumberCutoff = previousCutoff;
-    //        aggregate.ReplayState = ReplayState.None;
-    //    }
-
     }
 }

@@ -65,7 +65,7 @@ namespace d60.Cirqus.Snapshotting
             var numberOfEventsApplied = cloneInfo.LastSeqNo - lastSeqNo;
 
             if (timeElapsedFetchingAndApplyingEvents > TimeSpan.FromSeconds(0.1)
-                || numberOfEventsApplied > 2)
+                || numberOfEventsApplied > 10)
             {
                 _snapshotCache.PutCloneToCache(cloneInfo);
             }
