@@ -21,6 +21,47 @@ and then everything will flow from there.
 
 Check out [the official documentation wiki](https://github.com/d60/Cirqus/wiki).
 
+### Is Cirqus for you?
+
+It depends ;) to answer that question, it is necessary to think a little bit about your
+requirements. Cirqus is not in the _extreme high performance camp_ (if there is such a camp),
+although it doesn't mean that Cirqus cannot perform extremely well - it's more that on the
+following scale:
+
+    Raw performance                  Polished APIs and general usefulness
+    ================================================(+)==================
+
+Cirqus is positioned around the `(+)` - it doesn't mean that you cannot achieve great -
+excellent even - performance with Cirqus, it just means that certain choices have probably
+been made for your with Cirqus that makes certain things easier, even though it may
+sacrifice a little bit of raw performance.
+
+And on this scale:
+
+    Complex event processing        Domain-model-centric event processing
+    ================================================(+)==================
+
+Cirqus is again positioned around the `(+)` - it is mostly meant to be used in conjunction
+with an event-driven domain model, so if you're content with driving everything directly off
+of events, you will probably not benefit as much from using Cirqus.
+
+Again, it's not that Cirqus doesn't do complex event processing - Cirqus' views can
+easily be brought to do that - it's just that that is not really the focus (at least not with
+the existing implementations).
+
+Lastly, on this scale:
+
+    .NET-centric                                            Interoperable
+    =================(+)=================================================
+
+it shows that many things are just made extremely easy for you if you're using Cirqus and .NET.
+You can of course easily set up something else to read events since all the existing event
+stores are simply using JSON to represent their contents, but from time to time a .NET type name 
+might show up in the JSON data - which means that it's easier to use from .NET, but not impossible
+to use from something else (e.g. to have node.js-driven projections or whatever).
+
+
+
 ### Full example
 
 This is how you can set up a fully functioning command processor, including a view:
@@ -39,7 +80,7 @@ This is how you can set up a fully functioning command processor, including a vi
 
     // Cirqus will deliver emitted events to the event dispatcher when they have
     //  been persisted
-    var eventDispatcher = new BasicEventDispatcher(repository, viewManager);
+    var eventDispatcher = new ViewManagerEventDispatcher(repository, eventStore, viewManager);
 
     // we can create the processor now
     var processor = new CommandProcessor(eventStore, repository, eventDispatcher);
