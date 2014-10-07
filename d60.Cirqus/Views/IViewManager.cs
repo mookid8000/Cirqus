@@ -6,6 +6,10 @@ using d60.Cirqus.Views.ViewManagers;
 
 namespace d60.Cirqus.Views
 {
+    /// <summary>
+    /// Defines a projection that can have events dispatched to it while keeping track of how far it has processed
+    /// without any errors.
+    /// </summary>
     public interface IViewManager
     {
         /// <summary>
