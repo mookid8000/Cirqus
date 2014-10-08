@@ -8,6 +8,13 @@ namespace d60.Cirqus.NHibernate
 {
     public class NHibernateViewManager<TViewInstance> : IViewManager<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
+        readonly string _connectionString;
+
+        public NHibernateViewManager(string connectionStringOrConnectionStringName)
+        {
+            _connectionString = SqlHelper.GetConnectionString(connectionStringOrConnectionStringName);
+            
+        }
         public long GetPosition(bool canGetFromCache = true)
         {
             throw new NotImplementedException();
