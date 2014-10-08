@@ -163,6 +163,7 @@
     <Compile Include="Contracts\Views\Models\ObjectGraph\ViewChild.cs" />
     <Compile Include="Contracts\Views\ViewLocators.cs" />
     <Compile Include="Contracts\Views\Models\ObjectGraph\ViewRoot.cs" />
+    <Compile Include="EntityFramework\TestEntityFrameworkViewManager.cs" />
     <Compile Include="Events\EventReplicator\ErrorHandling.cs" />
     <Compile Include="Events\EventReplicator\BasicReplication.cs" />
     <Compile Include="Events\TestInMemoryEventStore.cs" />
@@ -245,9 +246,7 @@
       <Name>d60.Cirqus</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="EntityFramework\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

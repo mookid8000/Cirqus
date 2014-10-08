@@ -152,6 +152,11 @@ namespace d60.Cirqus.EntityFramework
 
                 base.OnModelCreating(modelBuilder);
             }
+
+            public override int SaveChanges()
+            {
+                return base.SaveChanges();
+            }
         }
 
         public IDbContext<TViewInstance> CreateContext()
