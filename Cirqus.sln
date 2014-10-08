@@ -78,6 +78,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "typescript", "typescript", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Cirqus.TsClient", "d60.Cirqus.TsClient\d60.Cirqus.TsClient.csproj", "{9FF2E2C5-2FF8-4E9E-B131-5DA2515890FC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Cirqus.NHibernate", "d60.Cirqus.NHibernate\d60.Cirqus.NHibernate.csproj", "{CF493838-3FB2-43F1-83DC-D263CA2280EC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -128,6 +130,10 @@ Global
 		{9FF2E2C5-2FF8-4E9E-B131-5DA2515890FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9FF2E2C5-2FF8-4E9E-B131-5DA2515890FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9FF2E2C5-2FF8-4E9E-B131-5DA2515890FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF493838-3FB2-43F1-83DC-D263CA2280EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF493838-3FB2-43F1-83DC-D263CA2280EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF493838-3FB2-43F1-83DC-D263CA2280EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF493838-3FB2-43F1-83DC-D263CA2280EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -153,5 +159,6 @@ Global
 		{1890E729-AA72-4812-8EB4-48F475D67D25} = {FD32DF41-628D-4C88-8369-E2E66A6CC34D}
 		{87A98A37-1B2E-44A1-B6EE-53B75E80C816} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
 		{9FF2E2C5-2FF8-4E9E-B131-5DA2515890FC} = {87A98A37-1B2E-44A1-B6EE-53B75E80C816}
+		{CF493838-3FB2-43F1-83DC-D263CA2280EC} = {9A508454-A284-4E81-BC28-2262A5FE200E}
 	EndGlobalSection
 EndGlobal

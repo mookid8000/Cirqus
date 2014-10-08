@@ -96,6 +96,7 @@
     <Compile Include="Contracts\EventStore\Factories\InMemoryEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\Factories\MongoDbEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\Factories\MsSqlEventStoreFactory.cs" />
+    <Compile Include="Contracts\Views\Factories\NHibernateViewManagerFactory.cs" />
     <Compile Include="Contracts\Views\Models\GeneralViewManagerTest\GeneratedIds.cs" />
     <Compile Include="Contracts\Views\Models\GeneralViewManagerTest\GenerateNewId.cs" />
     <Compile Include="Contracts\Views\Models\GeneralViewManagerTest\IdGenerated.cs" />
@@ -222,6 +223,10 @@
       <Project>{6EEBCA35-9B61-4A95-8E72-3AF583C14F32}</Project>
       <Name>d60.Cirqus.MsSql</Name>
     </ProjectReference>
+    <ProjectReference Include="..\d60.Cirqus.NHibernate\d60.Cirqus.NHibernate.csproj">
+      <Project>{CF493838-3FB2-43F1-83DC-D263CA2280EC}</Project>
+      <Name>d60.Cirqus.NHibernate</Name>
+    </ProjectReference>
     <ProjectReference Include="..\d60.Cirqus.PostgreSql\d60.Cirqus.PostgreSql.csproj">
       <Project>{1DCEE03D-8316-443B-92D5-DD89D368837C}</Project>
       <Name>d60.Cirqus.PostgreSql</Name>
@@ -231,7 +236,9 @@
       <Name>d60.Cirqus</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="EntityFramework\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
