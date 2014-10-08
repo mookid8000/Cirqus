@@ -1,45 +1,81 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Views.ViewManagers;
+using FluentNHibernate.Automapping;
+using FluentNHibernate.Cfg;
+using FluentNHibernate.Cfg.Db;
+using NHibernate;
+using NHibernate.Cfg;
 
 namespace d60.Cirqus.NHibernate
 {
-    public class NHibernateViewManager<TViewInstance> : IViewManager<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
+    public class NHibernateViewManager<TViewInstance> : AbstractViewManager<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
-        readonly string _connectionString;
+        readonly Configuration _configuration;
+        readonly ISessionFactory _sessionFactory;
 
         public NHibernateViewManager(string connectionStringOrConnectionStringName)
         {
-            _connectionString = SqlHelper.GetConnectionString(connectionStringOrConnectionStringName);
+            var connectionString = SqlHelper.GetConnectionString(connectionStringOrConnectionStringName);
+
+            _configuration = Fluently.Configure()
+                .Database(MsSqlConfiguration.MsSql2012)
+                .Mappings(m =>
+                {
+                    var automappingConfiguration = new DefaultAutomappingConfiguration();
+                    var model = new AutoPersistenceModel(automappingConfiguration);
+
+                    model.Add(typeof (Position));
+
+                    m.AutoMappings.Add(model);
+                })
+                .BuildConfiguration();
             
-        }
-        public long GetPosition(bool canGetFromCache = true)
-        {
-            throw new NotImplementedException();
+            _configuration.Properties["connection.connection_string"] = connectionString;
+
+            _sessionFactory = _configuration.BuildSessionFactory();
         }
 
-        public void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
+        public override long GetPosition(bool canGetFromCache = true)
         {
-            throw new NotImplementedException();
+            using (var session = _sessionFactory.OpenSession())
+            {
+                var currentPosition = session
+                    .QueryOver<Position>()
+                    .Where(p => p.Id == typeof(TViewInstance).Name)
+                    .List()
+                    .FirstOrDefault();
+
+                if (currentPosition == null)
+                    return -1;
+
+                return currentPosition.CurrentPosition;
+            }
         }
 
-        public Task WaitUntilProcessed(CommandProcessingResult result, TimeSpan timeout)
+        public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
         {
-            throw new NotImplementedException();
+         //   throw new NotImplementedException();
         }
 
-        public void Purge()
+        public override void Purge()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
-        public TViewInstance Load(string viewId)
+        public override TViewInstance Load(string viewId)
         {
-            throw new NotImplementedException();
-        }
+//            throw new NotImplementedException();
 
-        public event ViewInstanceUpdatedHandler<TViewInstance> Updated;
+            return null;
+        }
+    }
+
+    class Position
+    {
+        public virtual string Id { get; set; }
+     
+        public virtual long CurrentPosition { get; set; }
     }
 }
