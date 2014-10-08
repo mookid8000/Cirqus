@@ -332,4 +332,6 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Moved `TestContext` into core because it's just easier that way
 
+## 0.28.0
 
+* Removed JSON.NET dependency from MongoDB stuff by merging it in
