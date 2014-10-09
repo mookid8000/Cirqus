@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using d60.Cirqus.Events;
 using d60.Cirqus.Testing.Internals;
+using NHibernate.Exceptions;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Events.Replicator

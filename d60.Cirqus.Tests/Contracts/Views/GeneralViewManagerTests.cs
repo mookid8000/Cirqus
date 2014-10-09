@@ -13,7 +13,6 @@ namespace d60.Cirqus.Tests.Contracts.Views
 {
     [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
     [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
-    [TestFixture(typeof(NHibernateViewManagerFactory), Category = TestCategories.MsSql)]
     [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql, Ignore = true, IgnoreReason = "The contained HashSet<string> cannot be persisted by EF")]
     [TestFixture(typeof(InMemoryViewManagerFactory))]
     public class GeneralViewManagerTests<TFactory> : FixtureBase where TFactory : AbstractViewManagerFactory, new()
