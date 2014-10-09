@@ -18,7 +18,8 @@ namespace d60.Cirqus.NTFS.Events
         public const int SizeofSeqRecord = 32;
 
         readonly string _seqFilePath;
-        readonly BinaryWriter _writer;
+        
+        BinaryWriter _writer;
 
         public GlobalSequenceIndex(string basePath, bool dropEvents)
         {
@@ -27,9 +28,7 @@ namespace d60.Cirqus.NTFS.Events
             if (dropEvents && File.Exists(_seqFilePath)) 
                 File.Delete(_seqFilePath);
 
-            _writer = new BinaryWriter(
-                new FileStream(_seqFilePath, FileMode.Append, FileSystemRights.AppendData, FileShare.Read, 100 * SizeofSeqRecord, FileOptions.None),
-                Encoding.ASCII, leaveOpen: false);
+            OpenWriter();
         }
 
         public void Write(IEnumerable<DomainEvent> events)
@@ -62,7 +61,7 @@ namespace d60.Cirqus.NTFS.Events
             {
                 readStream.Seek(offset * SizeofSeqRecord, SeekOrigin.Begin);
 
-                while (readStream.Position <= lastCommittedGlobalSequenceNumber * SizeofSeqRecord)
+                while (readStream.Position + SizeofSeqRecord <= readStream.Length)
                 {
                     var record = new GlobalSequenceRecord
                     {
@@ -81,18 +80,33 @@ namespace d60.Cirqus.NTFS.Events
 
         public void DetectCorruptionAndRecover(DataStore store, long lastCommittedGlobalSequenceNumber)
         {
-            var expectedNumberOfRecords = _writer.BaseStream.Length/SizeofSeqRecord - 1;
+            var numberOfRecords = _writer.BaseStream.Length/SizeofSeqRecord;
+            var expectedNumberOfRecords = lastCommittedGlobalSequenceNumber + 1;
 
-            if (lastCommittedGlobalSequenceNumber == expectedNumberOfRecords)
+            if (expectedNumberOfRecords == numberOfRecords)
                 return;
 
-            foreach (var orphan in Read(expectedNumberOfRecords, lastCommittedGlobalSequenceNumber + 1))
+            _writer.Dispose();
+
+            foreach (var orphan in Read(long.MaxValue, lastCommittedGlobalSequenceNumber + 1))
             {
                 store.Truncate(orphan.AggregateRootId, orphan.LocalSequenceNumber);
             }
-            
-            _writer.BaseStream.SetLength(lastCommittedGlobalSequenceNumber * SizeofSeqRecord);
-            _writer.BaseStream.Flush();
+
+            using (var stream = new FileStream(_seqFilePath, FileMode.Open, FileSystemRights.Write, FileShare.Read, 1024, FileOptions.None))
+            {
+                stream.SetLength(expectedNumberOfRecords * SizeofSeqRecord);
+                stream.Flush();
+            }
+
+            OpenWriter();        
+        }
+
+        void OpenWriter()
+        {
+            _writer = new BinaryWriter(
+                new FileStream(_seqFilePath, FileMode.Append, FileSystemRights.AppendData, FileShare.Read, 100 * SizeofSeqRecord, FileOptions.None),
+                Encoding.ASCII, leaveOpen: false);
         }
 
         public void Dispose()

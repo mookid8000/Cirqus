@@ -11,8 +11,8 @@ namespace d60.Cirqus.NTFS.Events
     /// </summary>
     internal class CommitLog : IDisposable
     {
-        public const int SizeofCommit = sizeof(long);
-        public const int SizeofCommitAndChecksumRecord = SizeofCommit * 2;
+        public const int SizeofHalfRecord = sizeof(long);
+        public const int SizeofFullRecord = SizeofHalfRecord * 2;
 
         readonly string _commitsFilePath;
         
@@ -44,13 +44,21 @@ namespace d60.Cirqus.NTFS.Events
 
         public long Read()
         {
-            bool isCorrupted;
+            long isCorrupted;
             return Read(out isCorrupted);
         }
 
         public long Read(out bool isCorrupted)
         {
-            isCorrupted = false;
+            long garbage;
+            var read = Read(out garbage);
+            isCorrupted = garbage > 0;
+            return read;
+        }
+
+        long Read(out long garbage)
+        {
+            garbage = 0;
 
             var currentLength = _reader.BaseStream.Length;
 
@@ -58,36 +66,40 @@ namespace d60.Cirqus.NTFS.Events
 
             _reader.BaseStream.Seek(currentLength, SeekOrigin.Begin);
 
-            var garbage = currentLength % SizeofCommit;
+            garbage = currentLength % SizeofHalfRecord;
             if (garbage > 0)
             {
                 // we have a failed commit on our hands, skip the garbage
-                isCorrupted = true;
                 _reader.BaseStream.Seek(-garbage, SeekOrigin.Current);
             }
 
-            // there's no full commit
-            if (currentLength < garbage + SizeofCommitAndChecksumRecord)
+            if (currentLength < garbage + SizeofFullRecord)
             {
-                isCorrupted = true;
+                // there's no full commit, it's all garbage
+                garbage = currentLength;
                 return -1;
             }
 
             // read commit and checksum
-            _reader.BaseStream.Seek(-SizeofCommitAndChecksumRecord, SeekOrigin.Current);
+            _reader.BaseStream.Seek(-SizeofFullRecord, SeekOrigin.Current);
             var globalSequenceNumber = _reader.ReadInt64();
             var checksum = _reader.ReadInt64();
 
             if (globalSequenceNumber == checksum)
                 return globalSequenceNumber;
 
-            // ok, the checksum was wrong, try skip the orphaned commit and try again
-            isCorrupted = true;
-            
-            // there's no commit before this
-            if (currentLength < garbage + SizeofCommitAndChecksumRecord + SizeofCommit) return -1;
+            // checksum was wrong, mark as garbage
+            garbage = garbage + SizeofHalfRecord;
 
-            _reader.BaseStream.Seek(-(SizeofCommitAndChecksumRecord + SizeofCommit), SeekOrigin.Current);
+            if (currentLength < garbage + SizeofFullRecord)
+            {
+                // there's no commit before, this it's all garbage
+                garbage = currentLength;
+                return -1;
+            }
+
+            // try skip the orphaned commit and try again
+            _reader.BaseStream.Seek(-(SizeofHalfRecord + SizeofFullRecord), SeekOrigin.Current);
             globalSequenceNumber = _reader.ReadInt64();
             checksum = _reader.ReadInt64();
 
@@ -97,14 +109,23 @@ namespace d60.Cirqus.NTFS.Events
             throw new InvalidOperationException("Commit file is unreadable.");
         }
 
-        public void Recover(long lastKnownGoodCommit)
+        public void Recover()
         {
             _writer.Dispose();
 
+            long garbage;
+            Read(out garbage);
+
+            if (garbage == 0)
+            {
+                throw new InvalidOperationException(
+                    "Recover must not be called if there's is no garbage. Please check that before the call.");
+            }
+
             using (var stream = new FileStream(_commitsFilePath, FileMode.Open, FileSystemRights.Write, FileShare.Read, 1024, FileOptions.None))
             {
-                var numberOfRecords = lastKnownGoodCommit + 1;
-                stream.SetLength(numberOfRecords * SizeofCommitAndChecksumRecord);
+                stream.SetLength(stream.Length - garbage);
+                stream.Flush();
             }
 
             OpenWriter();

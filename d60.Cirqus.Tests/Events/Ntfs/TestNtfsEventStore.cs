@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Linq;
 using d60.Cirqus.Events;
+using d60.Cirqus.Extensions;
 using d60.Cirqus.NTFS.Events;
+using d60.Cirqus.Tests.Aggregates;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Events.Ntfs
@@ -84,8 +86,116 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             Assert.AreEqual(1, events.Count());
         }
 
+        [Test]
+        public void CanRecoverAfterWritingIndex()
+        {
+            var rootId = Guid.NewGuid();
+
+            // make one full commit
+            _eventStore.Save(rootId, new[]
+            {
+                new SomeEvent
+                {
+                    Meta =
+                    {
+                        {DomainEvent.MetadataKeys.SequenceNumber, 0},
+                        {DomainEvent.MetadataKeys.AggregateRootId, rootId}
+                    }
+                }
+            });
+
+            // make one that fails right after index write
+            _eventStore.GlobalSequenceIndex.Write(new[]
+            {
+                new GlobalSequenceIndex.GlobalSequenceRecord
+                {
+                    GlobalSequenceNumber = 1,
+                    AggregateRootId = rootId,
+                    LocalSequenceNumber = 1
+                }
+            });
+
+            // make one full commit
+            _eventStore.Save(rootId, new[]
+            {
+                new SomeEvent
+                {
+                    Meta =
+                    {
+                        {DomainEvent.MetadataKeys.SequenceNumber, 1},
+                        {DomainEvent.MetadataKeys.AggregateRootId, rootId}
+                    }
+                }
+            });
+
+            var stream = _eventStore.Stream().ToList();
+            Assert.AreEqual(1, stream.Last().GetGlobalSequenceNumber());
+            Assert.AreEqual(2, stream.Count());
+
+            var load = _eventStore.Load(rootId);
+            Assert.AreEqual(2, load.Count());
+        }
+
+        [Test]
+        public void CanRecoverAfterSavingEventData()
+        {
+            var rootId = Guid.NewGuid();
+
+            // make one full commit
+            _eventStore.Save(rootId, new[]
+            {
+                new SomeEvent
+                {
+                    Meta =
+                    {
+                        {DomainEvent.MetadataKeys.SequenceNumber, 0},
+                        {DomainEvent.MetadataKeys.AggregateRootId, rootId}
+                    }
+                }
+            });
+
+            // make one that fails right after index write
+            var domainEvent = new SomeEvent
+            {
+                Title = "The bad one",
+                Meta =
+                {
+                    {DomainEvent.MetadataKeys.SequenceNumber, 1},
+                    {DomainEvent.MetadataKeys.AggregateRootId, rootId},
+                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, 1}
+                }
+            };
+
+            _eventStore.GlobalSequenceIndex.Write(new[] { domainEvent });
+            _eventStore.DataStore.Write(domainEvent);
+
+            // make one full commit
+            _eventStore.Save(rootId, new[]
+            {
+                new SomeEvent
+                {
+                    Title = "The good one",
+                    Meta =
+                    {
+                        {DomainEvent.MetadataKeys.SequenceNumber, 1},
+                        {DomainEvent.MetadataKeys.AggregateRootId, rootId}
+                    }
+                }
+            });
+
+            var stream = _eventStore.Stream().ToList();
+            Assert.AreEqual(2, stream.Count());
+            Assert.AreEqual(1, stream.Last().GetGlobalSequenceNumber());
+
+            var load = _eventStore.Load(rootId).ToList();
+            Assert.AreEqual(2, load.Count());
+            Assert.AreEqual("The good one", ((SomeEvent)load.Last()).Title);
+        }
+
+
         class SomeEvent : DomainEvent
         {
+            public string Title { get; set; }
         }
     }
 }

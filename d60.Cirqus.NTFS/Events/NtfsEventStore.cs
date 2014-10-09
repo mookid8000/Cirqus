@@ -40,11 +40,7 @@ namespace d60.Cirqus.NTFS.Events
 
                 bool isCorrupted;
                 var globalSequenceNumber = CommitLog.Read(out isCorrupted);
-
-                if (isCorrupted)
-                {
-                    CommitLog.Recover(globalSequenceNumber);
-                }
+                if (isCorrupted) CommitLog.Recover();
 
                 GlobalSequenceIndex.DetectCorruptionAndRecover(DataStore, globalSequenceNumber);
 

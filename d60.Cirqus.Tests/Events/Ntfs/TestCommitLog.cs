@@ -55,7 +55,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             _log.Writer.Write((byte)0);
             _log.Writer.Flush();
 
-            _log.Recover(_log.Read());
+            _log.Recover();
 
             bool corrupted;
             var global = _log.Read(out corrupted);
@@ -85,7 +85,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             _log.Writer.Write((byte)0);
             _log.Writer.Flush();
 
-            _log.Recover(_log.Read());
+            _log.Recover();
 
             bool corrupted;
             var global = _log.Read(out corrupted);
@@ -112,7 +112,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             _log.Writer.Write(0L);
             _log.Writer.Flush();
 
-            _log.Recover(_log.Read());
+            _log.Recover();
 
             bool corrupted;
             var global = _log.Read(out corrupted);
@@ -148,7 +148,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             _log.Writer.Write((byte)11);
             _log.Writer.Flush();
 
-            _log.Recover(_log.Read());
+            _log.Recover();
 
             bool corrupted;
             var global = _log.Read(out corrupted);
@@ -186,7 +186,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             _log.Writer.Write((byte)11);
             _log.Writer.Flush();
 
-            _log.Recover(_log.Read());
+            _log.Recover();
 
             bool corrupted;
             var global = _log.Read(out corrupted);
@@ -222,7 +222,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             _log.Writer.Write(11L);
             _log.Writer.Flush();
 
-            _log.Recover(_log.Read());
+            _log.Recover();
 
             bool corrupted;
             var global = _log.Read(out corrupted);
