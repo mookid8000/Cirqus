@@ -164,8 +164,9 @@
     <Compile Include="Contracts\Views\ViewLocators.cs" />
     <Compile Include="Contracts\Views\Models\ObjectGraph\ViewRoot.cs" />
     <Compile Include="EntityFramework\TestEntityFrameworkViewManager.cs" />
-    <Compile Include="Events\EventReplicator\ErrorHandling.cs" />
-    <Compile Include="Events\EventReplicator\BasicReplication.cs" />
+    <Compile Include="Events\Replicator\ErrorHandling.cs" />
+    <Compile Include="Events\Replicator\BasicReplication.cs" />
+    <Compile Include="Events\Replicator\TestEventReplicator.cs" />
     <Compile Include="Events\TestInMemoryEventStore.cs" />
     <Compile Include="Examples\ReadmeSnippet.cs" />
     <Compile Include="Extensions\Helpful.cs" />

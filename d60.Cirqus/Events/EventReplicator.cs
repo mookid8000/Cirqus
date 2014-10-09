@@ -21,6 +21,7 @@ namespace d60.Cirqus.Events
         readonly Thread _workerThread;
 
         volatile bool _stop;
+        volatile bool _running;
 
         public EventReplicator(IEventStore sourceEventStore, IEventStore destinationEventStore)
         {
@@ -43,6 +44,8 @@ namespace d60.Cirqus.Events
 
         void Replicate()
         {
+            _running = true;
+
             while (!_stop)
             {
                 try
@@ -59,7 +62,7 @@ namespace d60.Cirqus.Events
         void PumpEvents()
         {
             var didGetEvents = false;
-            
+
             foreach (var newEvent in _sourceEventStore.Stream(_destinationEventStore.GetNextGlobalSequenceNumber()))
             {
                 var newEventBatchId = Guid.NewGuid();
@@ -67,8 +70,8 @@ namespace d60.Cirqus.Events
                 newEvent.Meta[SourceEventBatchId] = newEvent.GetBatchId();
 
                 _logger.Debug("Replicating event {0}", newEvent.GetGlobalSequenceNumber());
-                
-                _destinationEventStore.Save(newEventBatchId, new[] {newEvent});
+
+                _destinationEventStore.Save(newEventBatchId, new[] { newEvent });
                 didGetEvents = true;
             }
 
@@ -80,6 +83,8 @@ namespace d60.Cirqus.Events
 
         public void Dispose()
         {
+            if (!_running) return;
+
             _stop = true;
 
             _logger.Info("Stopping replicator worker thread...");
