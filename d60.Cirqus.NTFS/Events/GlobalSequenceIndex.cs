@@ -9,6 +9,10 @@ using d60.Cirqus.Extensions;
 
 namespace d60.Cirqus.NTFS.Events
 {
+    /// <summary>
+    /// Writes a reference to each event with it's global sequence number and link to event file.
+    /// Reading can be done concurrently. Writes/Recovers must be sequential.
+    /// </summary>
     internal class GlobalSequenceIndex : IDisposable
     {
         public const int SizeofSeqRecord = 32;

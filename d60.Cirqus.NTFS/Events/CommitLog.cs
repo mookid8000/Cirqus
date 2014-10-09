@@ -5,27 +5,29 @@ using System.Text;
 
 namespace d60.Cirqus.NTFS.Events
 {
-    public class CommitLog : IDisposable
+    /// <summary>
+    /// Writes last global sequence number of each batch to a log with a checksum. A full record indicates a successful commit of a full batch.
+    /// Reading is thread safe and can be done concurrently with writes. Writes/Recovers must be sequential.
+    /// </summary>
+    internal class CommitLog : IDisposable
     {
-        public const int SizeofCommitRecord = sizeof(long);
+        public const int SizeofCommit = sizeof(long);
+        public const int SizeofCommitAndChecksumRecord = SizeofCommit * 2;
 
-        readonly BinaryWriter _writer;
-        readonly BinaryReader _reader;
+        readonly string _commitsFilePath;
+        
+        BinaryWriter _writer;
+        BinaryReader _reader;
 
         public CommitLog(string basePath, bool dropEvents)
         {
-            var commitsFilePath = Path.Combine(basePath, "commits.idx");
+            _commitsFilePath = Path.Combine(basePath, "commits.idx");
 
-            if (dropEvents && File.Exists(commitsFilePath)) 
-                File.Delete(commitsFilePath);
+            if (dropEvents && File.Exists(_commitsFilePath)) 
+                File.Delete(_commitsFilePath);
 
-            _writer = new BinaryWriter(
-                new FileStream(commitsFilePath, FileMode.Append, FileSystemRights.AppendData, FileShare.Read, 1024, FileOptions.None),
-                Encoding.ASCII, leaveOpen: false);
-
-            _reader = new BinaryReader(
-                new FileStream(commitsFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1024, FileOptions.None), 
-                Encoding.ASCII, leaveOpen: false);
+            OpenWriter();
+            OpenReader();
         }
 
         public BinaryWriter Writer
@@ -56,7 +58,7 @@ namespace d60.Cirqus.NTFS.Events
 
             _reader.BaseStream.Seek(currentLength, SeekOrigin.Begin);
 
-            var garbage = currentLength % SizeofCommitRecord;
+            var garbage = currentLength % SizeofCommit;
             if (garbage > 0)
             {
                 // we have a failed commit on our hands, skip the garbage
@@ -64,19 +66,28 @@ namespace d60.Cirqus.NTFS.Events
                 _reader.BaseStream.Seek(-garbage, SeekOrigin.Current);
             }
 
+            // there's no full commit
+            if (currentLength < garbage + SizeofCommitAndChecksumRecord)
+            {
+                isCorrupted = true;
+                return -1;
+            }
+
             // read commit and checksum
-            if (currentLength < garbage + SizeofCommitRecord * 2) return -1;
-            _reader.BaseStream.Seek(-SizeofCommitRecord * 2, SeekOrigin.Current);
+            _reader.BaseStream.Seek(-SizeofCommitAndChecksumRecord, SeekOrigin.Current);
             var globalSequenceNumber = _reader.ReadInt64();
             var checksum = _reader.ReadInt64();
 
             if (globalSequenceNumber == checksum)
                 return globalSequenceNumber;
 
-            // ok, the checksum was never written, skip the orphaned commit and try again
+            // ok, the checksum was wrong, try skip the orphaned commit and try again
             isCorrupted = true;
-            if (currentLength < garbage + SizeofCommitRecord * 3) return -1;
-            _reader.BaseStream.Seek(-SizeofCommitRecord * 3, SeekOrigin.Current);
+            
+            // there's no commit before this
+            if (currentLength < garbage + SizeofCommitAndChecksumRecord + SizeofCommit) return -1;
+
+            _reader.BaseStream.Seek(-(SizeofCommitAndChecksumRecord + SizeofCommit), SeekOrigin.Current);
             globalSequenceNumber = _reader.ReadInt64();
             checksum = _reader.ReadInt64();
 
@@ -88,12 +99,34 @@ namespace d60.Cirqus.NTFS.Events
 
         public void Recover(long lastKnownGoodCommit)
         {
-            _writer.BaseStream.SetLength(lastKnownGoodCommit * SizeofCommitRecord);
+            _writer.Dispose();
+
+            using (var stream = new FileStream(_commitsFilePath, FileMode.Open, FileSystemRights.Write, FileShare.Read, 1024, FileOptions.None))
+            {
+                var numberOfRecords = lastKnownGoodCommit + 1;
+                stream.SetLength(numberOfRecords * SizeofCommitAndChecksumRecord);
+            }
+
+            OpenWriter();
+        }
+
+        void OpenWriter()
+        {
+            _writer = new BinaryWriter(
+                new FileStream(_commitsFilePath, FileMode.Append, FileSystemRights.AppendData, FileShare.Read, 1024, FileOptions.None),
+                Encoding.ASCII, leaveOpen: false);
+        }
+
+        void OpenReader()
+        {
+            _reader = new BinaryReader(
+                new FileStream(_commitsFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite, 1024, FileOptions.None),
+                Encoding.ASCII, leaveOpen: false);
         }
 
         public void Dispose()
         {
-            Writer.Dispose();
+            _writer.Dispose();
             _reader.Dispose();
         }
     }

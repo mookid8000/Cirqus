@@ -16,8 +16,10 @@ namespace d60.Cirqus.Tests.Events.Ntfs
         [Test]
         public void GetLastComittedGlobalSequenceNumberFromEmptyFile()
         {
-            var global = _log.Read();
+            bool corrupted;
+            var global = _log.Read(out corrupted);
             Assert.AreEqual(-1, global);
+            Assert.AreEqual(false, corrupted);
         }
 
         [Test]
@@ -27,8 +29,10 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             _log.Writer.Write(10L);
             _log.Writer.Flush();
 
-            var global = _log.Read();
+            bool corrupted;
+            var global = _log.Read(out corrupted);
             Assert.AreEqual(10, global);
+            Assert.AreEqual(false, corrupted);
         }
 
         [Test]
@@ -38,8 +42,25 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             _log.Writer.Write((byte)0);
             _log.Writer.Flush();
 
-            var global = _log.Read();
+            bool corrupted;
+            var global = _log.Read(out corrupted);
             Assert.AreEqual(-1, global);
+            Assert.AreEqual(true, corrupted);
+        }
+
+        [Test]
+        public void RecoverFileWithCorruptFirstCommit()
+        {
+            // a corrupted one
+            _log.Writer.Write((byte)0);
+            _log.Writer.Flush();
+
+            _log.Recover(_log.Read());
+
+            bool corrupted;
+            var global = _log.Read(out corrupted);
+            Assert.AreEqual(-1, global);
+            Assert.AreEqual(false, corrupted);
         }
 
         [Test]
@@ -50,8 +71,26 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             _log.Writer.Write((byte)0);
             _log.Writer.Flush();
 
-            var global = _log.Read();
+            bool corrupted;
+            var global = _log.Read(out corrupted);
             Assert.AreEqual(-1, global);
+            Assert.AreEqual(true, corrupted);
+        }
+
+        [Test]
+        public void RecoverFileWithCorruptFirstChecksum()
+        {
+            // a corrupted one
+            _log.Writer.Write(0L);
+            _log.Writer.Write((byte)0);
+            _log.Writer.Flush();
+
+            _log.Recover(_log.Read());
+
+            bool corrupted;
+            var global = _log.Read(out corrupted);
+            Assert.AreEqual(-1, global);
+            Assert.AreEqual(false, corrupted);
         }
 
         [Test]
@@ -61,8 +100,24 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             _log.Writer.Write(0L);
             _log.Writer.Flush();
 
-            var global = _log.Read();
+            bool corrupted;
+            var global = _log.Read(out corrupted);
             Assert.AreEqual(-1, global);
+            Assert.AreEqual(true, corrupted);
+        }
+        [Test]
+        public void RecoverFileWithMissingFirstChecksum()
+        {
+            // a commit without checksum
+            _log.Writer.Write(0L);
+            _log.Writer.Flush();
+
+            _log.Recover(_log.Read());
+
+            bool corrupted;
+            var global = _log.Read(out corrupted);
+            Assert.AreEqual(-1, global);
+            Assert.AreEqual(false, corrupted);
         }
 
         [Test]
@@ -76,8 +131,29 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             _log.Writer.Write((byte)11);
             _log.Writer.Flush();
 
-            var global = _log.Read();
+            bool corrupted;
+            var global = _log.Read(out corrupted);
             Assert.AreEqual(10, global);
+            Assert.AreEqual(true, corrupted);
+        }
+
+        [Test]
+        public void RecoverFileWithCorruptCommit()
+        {
+            // a good one
+            _log.Writer.Write(10L);
+            _log.Writer.Write(10L);
+
+            // a corrupted one
+            _log.Writer.Write((byte)11);
+            _log.Writer.Flush();
+
+            _log.Recover(_log.Read());
+
+            bool corrupted;
+            var global = _log.Read(out corrupted);
+            Assert.AreEqual(10, global);
+            Assert.AreEqual(false, corrupted);
         }
 
         [Test]
@@ -92,8 +168,30 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             _log.Writer.Write((byte)11);
             _log.Writer.Flush();
 
-            var global = _log.Read();
+            bool corrupted;
+            var global = _log.Read(out corrupted);
             Assert.AreEqual(10, global);
+            Assert.AreEqual(true, corrupted);
+        }
+
+        [Test]
+        public void RecvoerFileWithCorruptChecksum()
+        {
+            // a good one
+            _log.Writer.Write(10L);
+            _log.Writer.Write(10L);
+
+            // a corrupted one
+            _log.Writer.Write(11L);
+            _log.Writer.Write((byte)11);
+            _log.Writer.Flush();
+
+            _log.Recover(_log.Read());
+
+            bool corrupted;
+            var global = _log.Read(out corrupted);
+            Assert.AreEqual(10, global);
+            Assert.AreEqual(false, corrupted);
         }
 
         [Test]
@@ -107,8 +205,29 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             _log.Writer.Write(11L);
             _log.Writer.Flush();
 
-            var global = _log.Read();
+            bool corrupted;
+            var global = _log.Read(out corrupted);
             Assert.AreEqual(10, global);
+            Assert.AreEqual(true, corrupted);
+        }
+
+        [Test]
+        public void RecoverFileWithMissingChecksum()
+        {
+            // a good one
+            _log.Writer.Write(10L);
+            _log.Writer.Write(10L);
+
+            // a commit without checksum
+            _log.Writer.Write(11L);
+            _log.Writer.Flush();
+
+            _log.Recover(_log.Read());
+
+            bool corrupted;
+            var global = _log.Read(out corrupted);
+            Assert.AreEqual(10, global);
+            Assert.AreEqual(false, corrupted);
         }
     }
 }

@@ -13,6 +13,11 @@ using Newtonsoft.Json.Bson;
 
 namespace d60.Cirqus.NTFS.Events
 {
+    /// <summary>
+    /// Stores events as individual files utilizing the file system to do indexed lookup.
+    /// Enforces AggregateId/SequenceNumber uniqueness.
+    /// Reading and writing can be done concurrently.
+    /// </summary>
     internal class DataStore
     {
         readonly JsonSerializer _serializer;
