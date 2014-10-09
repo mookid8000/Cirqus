@@ -3,7 +3,7 @@ using System.IO;
 using System.Security.AccessControl;
 using System.Text;
 
-namespace d60.Cirqus.NTFS.Events
+namespace d60.Cirqus.Ntfs.Events
 {
     /// <summary>
     /// Writes last global sequence number of each batch to a log with a checksum. A full record indicates a successful commit of a full batch.

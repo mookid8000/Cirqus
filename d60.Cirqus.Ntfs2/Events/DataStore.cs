@@ -11,7 +11,7 @@ using d60.Cirqus.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 
-namespace d60.Cirqus.NTFS.Events
+namespace d60.Cirqus.Ntfs.Events
 {
     /// <summary>
     /// Stores events as individual files utilizing the file system to do indexed lookup.

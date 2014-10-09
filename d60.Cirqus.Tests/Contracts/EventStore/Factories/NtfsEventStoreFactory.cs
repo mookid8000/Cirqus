@@ -1,5 +1,5 @@
 ﻿using d60.Cirqus.Events;
-using d60.Cirqus.NTFS.Events;
+using d60.Cirqus.Ntfs.Events;
 
 namespace d60.Cirqus.Tests.Contracts.EventStore.Factories
 {

@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using d60.Cirqus.Events;
 
-namespace d60.Cirqus.NTFS.Events
+namespace d60.Cirqus.Ntfs.Events
 {
     /// <summary>
     /// Event store that saves events directly to files for use in embedded scenarios. 

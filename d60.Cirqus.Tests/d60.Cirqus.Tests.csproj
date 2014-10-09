@@ -219,7 +219,7 @@
       <Project>{6EEBCA35-9B61-4A95-8E72-3AF583C14F32}</Project>
       <Name>d60.Cirqus.MsSql</Name>
     </ProjectReference>
-    <ProjectReference Include="..\d60.Cirqus.NTFS\d60.Cirqus.NTFS.csproj">
+    <ProjectReference Include="..\d60.Cirqus.Ntfs2\d60.Cirqus.Ntfs2.csproj">
       <Project>{475EA928-1AE9-47CC-A706-31FBCD97BE7E}</Project>
       <Name>d60.Cirqus.NTFS</Name>
     </ProjectReference>

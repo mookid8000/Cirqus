@@ -7,7 +7,7 @@ using System.Text;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 
-namespace d60.Cirqus.NTFS.Events
+namespace d60.Cirqus.Ntfs.Events
 {
     /// <summary>
     /// Writes a reference to each event with it's global sequence number and link to event file.

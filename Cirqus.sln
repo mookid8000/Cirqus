@@ -81,7 +81,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "typescript", "typescript", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ntfs", "ntfs", "{6E038E45-A0FE-43D5-A304-B64233B751B9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Cirqus.NTFS", "d60.Cirqus.NTFS\d60.Cirqus.NTFS.csproj", "{475EA928-1AE9-47CC-A706-31FBCD97BE7E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Cirqus.Ntfs2", "d60.Cirqus.Ntfs2\d60.Cirqus.Ntfs2.csproj", "{475EA928-1AE9-47CC-A706-31FBCD97BE7E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Cirqus.TsClient", "d60.Cirqus.TsClient\d60.Cirqus.TsClient.csproj", "{9FF2E2C5-2FF8-4E9E-B131-5DA2515890FC}"
 EndProject

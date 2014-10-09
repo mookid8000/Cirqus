@@ -1,4 +1,4 @@
-using d60.Cirqus.NTFS.Events;
+using d60.Cirqus.Ntfs.Events;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Events.Ntfs
