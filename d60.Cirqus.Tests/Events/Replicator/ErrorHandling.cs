@@ -9,7 +9,7 @@ using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
 
-namespace d60.Cirqus.Tests.Events.EventReplicator
+namespace d60.Cirqus.Tests.Events.Replicator
 {
     [TestFixture, Category(TestCategories.MongoDb)]
     public class ErrorHandline : FixtureBase

@@ -312,3 +312,32 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Re-introduced the Entity Framework-based view manager - be warned though: it leaves dereferenced child objects in the database with NULL foreign keys
 
+## 0.26.0
+
+* Changed view dispatcher to support polymorphic dispatch - i.e. views can now implement e.g. `ISubscribeTo<DomainEvent<SomeParticularRoot>>` in order to get everything that happens on `SomeParticularRoot` or `ISubscribeTo<DomainEvent>` to get everything
+
+## 0.26.1
+
+* Changed Entity Framework view manager to use the _sloooow_ OR-mapper-way of purging data - it's slow, but it cascades to tables with FK constraints and whatnot
+
+## 0.26.2
+
+* Removed annoying log line from `ViewManagerEventDispatcher`
+
+## 0.26.3
+
+* Re-publishing because silly NuGet.org failed in the middle of uploading 0.26.2
+
+## 0.27.0
+
+* Moved `TestContext` into core because it's just easier that way
+
+## 0.28.0
+
+* Removed JSON.NET dependency from MongoDB stuff by merging it in
+
+
+## 0.29.0
+
+* Validate that collection properties of Entity Framework views are declared as virtual (otherwise the view might leave a trail of non-disconnected should-have-been-orphans in the database)
+

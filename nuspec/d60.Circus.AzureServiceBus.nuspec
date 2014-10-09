@@ -12,7 +12,7 @@
     <dependencies>
       <dependency id="d60.Cirqus" version="VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT" />
       <dependency id="Microsoft.WindowsAzure.ConfigurationManager" version="2.0.3" />
-      <dependency id="Newtonsoft.Json" version="6.0.4" />
+      <dependency id="Newtonsoft.Json" version="6.0.5" />
       <dependency id="WindowsAzure.ServiceBus" version="2.4.2.0" />
     </dependencies>
   </metadata>

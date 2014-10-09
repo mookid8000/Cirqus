@@ -2,10 +2,7 @@
 
 namespace d60.Cirqus.Numbers
 {
-    /// <summary>
-    /// Time machine that allows for fixing the current time to be able to test stuff
-    /// </summary>
-    public class TimeMachine
+    internal class TimeMachine
     {
         public static void Reset()
         {

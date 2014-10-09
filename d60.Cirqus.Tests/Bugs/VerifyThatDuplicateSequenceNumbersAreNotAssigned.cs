@@ -7,7 +7,7 @@ using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
-using TestContext = d60.Cirqus.TestHelpers.TestContext;
+using TestContext = d60.Cirqus.Testing.TestContext;
 
 namespace d60.Cirqus.Tests.Bugs
 {

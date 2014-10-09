@@ -7,7 +7,7 @@ using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.Tests.MongoDb;
 using NUnit.Framework;
 
-namespace d60.Cirqus.Tests.Events.EventReplicator
+namespace d60.Cirqus.Tests.Events.Replicator
 {
     [TestFixture, Category(TestCategories.MongoDb)]
     public class BasicReplication : FixtureBase

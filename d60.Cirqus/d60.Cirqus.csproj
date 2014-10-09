@@ -34,15 +34,11 @@
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.5\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggregates\AggregateRoot.cs" />
@@ -50,6 +46,7 @@
     <Compile Include="Aggregates\DefaultAggregateRootRepository.cs" />
     <Compile Include="Aggregates\IAggregateRootRepository.cs" />
     <Compile Include="Aggregates\ReplayState.cs" />
+    <Compile Include="CommandProcessingResult.cs" />
     <Compile Include="Config\Configurers\AggregateRootRepositoryConfigurationBuilder.cs" />
     <Compile Include="Config\Configurers\CommandProcessorConfigurationBuilder.cs" />
     <Compile Include="Commands\Command.cs" />
@@ -100,6 +97,12 @@
     <Compile Include="Numbers\Time.cs" />
     <Compile Include="Numbers\TimeMachine.cs" />
     <Compile Include="Numbers\MetaAttribute.cs" />
+    <Compile Include="Testing\CommandProcessingResultWithEvents.cs" />
+    <Compile Include="Testing\EventCollection.cs" />
+    <Compile Include="Testing\Internals\InMemoryEventStore.cs" />
+    <Compile Include="Testing\Internals\InMemoryUnitOfWork.cs" />
+    <Compile Include="Testing\TestContext.cs" />
+    <Compile Include="Testing\TestUnitOfWork.cs" />
     <Compile Include="Views\InMemoryViewEventDispatcher.cs" />
     <Compile Include="Views\ViewManagers\AbstractViewManager.cs" />
     <Compile Include="Views\ViewManagers\IViewManager.cs" />

@@ -4,7 +4,7 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Numbers;
 using NUnit.Framework;
-using TestContext = d60.Cirqus.TestHelpers.TestContext;
+using TestContext = d60.Cirqus.Testing.TestContext;
 
 namespace d60.Cirqus.Tests.Aggregates
 {

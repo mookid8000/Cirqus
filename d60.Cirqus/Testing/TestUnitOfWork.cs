@@ -5,7 +5,7 @@ using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Views;
 
-namespace d60.Cirqus.TestHelpers
+namespace d60.Cirqus.Testing
 {
     public class TestUnitOfWork : IDisposable
     {

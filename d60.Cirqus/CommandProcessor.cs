@@ -25,6 +25,9 @@ namespace d60.Cirqus
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
         }
 
+        /// <summary>
+        /// Creates a configuration builder that can help you build a fully functional command processor
+        /// </summary>
         public static ILoggingAndEventStoreConfigurationBuilderApi With()
         {
             return new CommandProcessorConfigurationBuilder();
@@ -48,7 +51,7 @@ namespace d60.Cirqus
         }
 
         /// <summary>
-        /// Initializes the views, giving them a chance to catch up to the current state
+        /// Initializes the event dispatcher, giving e.g. views a chance to catch up to the current state
         /// </summary>
         public CommandProcessor Initialize()
         {
@@ -57,6 +60,10 @@ namespace d60.Cirqus
             return this;
         }
 
+        /// <summary>
+        /// Accesses the options for this command processor. Mutating the options might/might not have any
+        /// effect if the command processor has been initialized
+        /// </summary>
         public Options Options
         {
             get { return _options; }

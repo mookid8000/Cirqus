@@ -17,14 +17,25 @@ namespace d60.Cirqus.Aggregates
             _eventStore = eventStore;
         }
 
-        public bool Exists<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue, IUnitOfWork unitOfWork = null) where TAggregate : AggregateRoot
+        /// <summary>
+        /// Checks whether one or more events exist for an aggregate root with the specified ID. If <seealso cref="maxGlobalSequenceNumber"/> is specified,
+        /// it will check whether the root instance existed at that point in time
+        /// </summary>
+        public bool Exists<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue, IUnitOfWork unitOfWork = null) 
+            where TAggregate : AggregateRoot
         {
             var firstEvent = _eventStore.Load(aggregateRootId, 0, 1).FirstOrDefault();
 
             return firstEvent != null && firstEvent.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber;
         }
 
-        public AggregateRootInfo<TAggregate> Get<TAggregate>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue) where TAggregate : AggregateRoot, new()
+        /// <summary>
+        /// Gets the aggregate root of the specified type with the specified ID by hydrating it with events from the event store. The
+        /// root will have events replayed until the specified <seealso cref="maxGlobalSequenceNumber"/> ceiling. If the root has
+        /// no events (i.e. it doesn't exist yet), a newly initialized instance is returned.
+        /// </summary>
+        public AggregateRootInfo<TAggregate> Get<TAggregate>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue) 
+            where TAggregate : AggregateRoot, new()
         {
             var aggregateRootInfo = CreateFreshAggregate<TAggregate>(aggregateRootId);
             var domainEventsForThisAggregate = _eventStore.Load(aggregateRootId);

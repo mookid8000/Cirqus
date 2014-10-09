@@ -12,6 +12,34 @@ namespace d60.Cirqus.Tests.Views
     public class TestViewLocator : FixtureBase
     {
         [Test]
+        public void CanDetermineIfRelevant()
+        {
+            Assert.That(ViewLocator.IsRelevant<SomeView>(new Event()), Is.EqualTo(true));
+            Assert.That(ViewLocator.IsRelevant<SomeView>(new AnotherEvent()), Is.EqualTo(false));
+        }
+
+        [Test]
+        public void CanDetermineIfRelevantWithPolymorphy()
+        {
+            Assert.That(ViewLocator.IsRelevant<AnotherView>(new Event()), Is.EqualTo(true));
+            Assert.That(ViewLocator.IsRelevant<AnotherView>(new AnotherEvent()), Is.EqualTo(true));
+        }
+
+        class AnotherView : ISubscribeTo<DomainEvent>
+        {
+            public void Handle(IViewContext context, DomainEvent domainEvent)
+            {
+            }
+        }
+
+        class SomeView : ISubscribeTo<Event>
+        {
+            public void Handle(IViewContext context, Event domainEvent)
+            {
+            }
+        }
+
+        [Test]
         public void CanGetViewIdsFromHandlerTypeViewLocatorWhenEventImplementsAnInterface()
         {
             // arrange

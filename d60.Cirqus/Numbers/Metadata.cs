@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using d60.Cirqus.Extensions;
@@ -34,10 +33,8 @@ namespace d60.Cirqus.Numbers
 
         public override string ToString()
         {
-            var lines = new[] { "Metadata:" }
-                .Concat(this.Select(kvp => string.Format("    {0}: {1}", kvp.Key, kvp.Value)));
-
-            return string.Join(Environment.NewLine, lines);
+            return string.Format("meta: ({0})",
+                string.Join(", ", this.Select(kvp => string.Format(@"""{0}"": ""{1}""", kvp.Key, kvp.Value))));
         }
     }
 }

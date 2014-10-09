@@ -6,7 +6,7 @@ using d60.Cirqus.Tests.Contracts.Views.Models.ObjectGraph;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
-using TestContext = d60.Cirqus.TestHelpers.TestContext;
+using TestContext = d60.Cirqus.Testing.TestContext;
 
 namespace d60.Cirqus.Tests.Contracts.Views
 {

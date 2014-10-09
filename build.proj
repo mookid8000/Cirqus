@@ -49,11 +49,22 @@
   </Target>
 
   <Target Name="build_solution">
+    <!--<ItemGroup>
+      <DllsToBeMerged Include="$(Root)\d60.Cirqus\bin\Release\d60.Cirqus.dll"/>
+      <DllsToBeMerged Include="$(Root)\d60.Cirqus.TsClient\bin\Release\d60.Cirqus.TsClient.exe"/>
+      <DllsToBeMerged Include="$(Root)\d60.Cirqus.MongoDb\bin\Release\d60.Cirqus.MongoDb.dll"/>
+    </ItemGroup>-->
+    
     <PropertyGroup>
       <CoreBuildOutputDirectory>$(Root)\d60.Cirqus\bin\Release</CoreBuildOutputDirectory>
       <CoreDestinationForMergedFile>$(CoreBuildOutputDirectory)\merged</CoreDestinationForMergedFile>
+      
+      <MongoDbBuildOutputDirectory>$(Root)\d60.Cirqus.MongoDb\bin\Release</MongoDbBuildOutputDirectory>
+      <MongoDbDestinationForMergedFile>$(MongoDbBuildOutputDirectory)\merged</MongoDbDestinationForMergedFile>
+      
       <TsClientBuildOutputDirectory>$(Root)\d60.Cirqus.TsClient\bin\Release</TsClientBuildOutputDirectory>
       <TsClientDestinationForMergedFile>$(TsClientBuildOutputDirectory)\merged</TsClientDestinationForMergedFile>
+
       <ReferenceAssemblies>$(ProgramFiles)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5</ReferenceAssemblies>
     </PropertyGroup>
     
@@ -64,9 +75,11 @@
     </MSBuild>
     
     <MakeDir Directories="$(CoreDestinationForMergedFile)"/>
+    <MakeDir Directories="$(MongoDbDestinationForMergedFile)"/>
     <MakeDir Directories="$(TsClientDestinationForMergedFile)"/>
     
     <Exec Command="$(IlMerge) /out:$(CoreDestinationForMergedFile)\d60.Cirqus.dll $(CoreBuildOutputDirectory)\d60.Cirqus.dll $(CoreBuildOutputDirectory)\Newtonsoft.Json.dll /targetplatform:&quot;v4,$(ReferenceAssemblies)&quot; /internalize" />
+    <Exec Command="$(IlMerge) /out:$(MongoDbDestinationForMergedFile)\d60.Cirqus.MongoDb.dll $(MongoDbBuildOutputDirectory)\d60.Cirqus.MongoDb.dll $(MongoDbBuildOutputDirectory)\Newtonsoft.Json.dll /targetplatform:&quot;v4,$(ReferenceAssemblies)&quot; /internalize" />
     <Exec Command="$(IlMerge) /out:$(TsClientDestinationForMergedFile)\d60.Cirqus.TsClient.exe $(TsClientBuildOutputDirectory)\d60.Cirqus.TsClient.exe $(TsClientBuildOutputDirectory)\Newtonsoft.Json.dll /targetplatform:&quot;v4,$(ReferenceAssemblies)&quot; /internalize" />
   </Target>
 

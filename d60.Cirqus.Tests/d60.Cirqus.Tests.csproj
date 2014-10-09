@@ -52,7 +52,7 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.5\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Npgsql, Version=2.1.3.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -119,6 +119,12 @@
     <Compile Include="Contracts\Views\Models\LoadingStuffDuringViewLocation\NodeCreated.cs" />
     <Compile Include="Contracts\Views\Models\LoadingStuffDuringViewLocation\NodeAttachedToParentNode.cs" />
     <Compile Include="Contracts\Views\Models\LoadingStuffDuringViewLocation\Node.cs" />
+    <Compile Include="Contracts\Views\Models\PolymorphicDispatch\AnotherEvent.cs" />
+    <Compile Include="Contracts\Views\Models\PolymorphicDispatch\Event.cs" />
+    <Compile Include="Contracts\Views\Models\PolymorphicDispatch\Root.cs" />
+    <Compile Include="Contracts\Views\Models\PolymorphicDispatch\ViewThatSubscribesToEvents.cs" />
+    <Compile Include="Contracts\Views\Models\PolymorphicDispatch\ViewThatSubscribesToAggregateRootEvent.cs" />
+    <Compile Include="Contracts\Views\Models\PolymorphicDispatch\ViewThatSubscribesToAllEvents.cs" />
     <Compile Include="Contracts\Views\Models\PurgeTest\PurgeTestView.cs" />
     <Compile Include="Contracts\Views\Models\PurgeTest\Event.cs" />
     <Compile Include="Contracts\Views\Models\PurgeTest\Root.cs" />
@@ -139,6 +145,7 @@
     <Compile Include="Contracts\Views\Models\ViewLocators\MyViewInstance.cs" />
     <Compile Include="Contracts\Views\Models\ViewLocators\Root.cs" />
     <Compile Include="Contracts\Views\Models\ViewLocators\ThisIsJustAnEvent.cs" />
+    <Compile Include="Contracts\Views\PolymorphicDispatch.cs" />
     <Compile Include="Contracts\Views\PurgeTest.cs" />
     <Compile Include="Contracts\Views\RecoveryTest.cs" />
     <Compile Include="Contracts\Views\RestTest.cs" />
@@ -147,9 +154,11 @@
     <Compile Include="Contracts\Views\Models\ObjectGraph\ViewChild.cs" />
     <Compile Include="Contracts\Views\ViewLocators.cs" />
     <Compile Include="Contracts\Views\Models\ObjectGraph\ViewRoot.cs" />
-    <Compile Include="Events\EventReplicator\ErrorHandling.cs" />
-    <Compile Include="Events\EventReplicator\BasicReplication.cs" />
+    <Compile Include="EntityFramework\TestEntityFrameworkViewManager.cs" />
+    <Compile Include="Events\Replicator\ErrorHandling.cs" />
     <Compile Include="Events\Ntfs\TestCommitLog.cs" />
+    <Compile Include="Events\Replicator\BasicReplication.cs" />
+    <Compile Include="Events\Replicator\TestEventReplicator.cs" />
     <Compile Include="Events\TestInMemoryEventStore.cs" />
     <Compile Include="Events\Ntfs\TestNtfsEventStore.cs" />
     <Compile Include="Examples\ReadmeSnippet.cs" />
@@ -169,7 +178,6 @@
     <Compile Include="MsSql\TestNewMsSqlViewManager.cs" />
     <Compile Include="PostgreSql\PostgreSqlTestHelper.cs" />
     <Compile Include="SqlTestHelperBase.cs" />
-    <Compile Include="MsSql\TestEntityFrameworkViewManager.cs" />
     <Compile Include="MsSql\MsSqlTestHelper.cs" />
     <Compile Include="Playground\TestTypeHashCodes.cs" />
     <Compile Include="Snapshotting\ChallengingSnapshotSpeciments.cs" />
@@ -186,7 +194,7 @@
     <Compile Include="MongoDb\TestMongoDbEventStoreIndexPerf.cs" />
     <Compile Include="Events\TestSerialization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestHelpers\TestTestContext.cs" />
+    <Compile Include="Testing\TestTestContext.cs" />
     <Compile Include="Views\NewViewManager\Views\AllPotatoesView.cs" />
     <Compile Include="Views\NewViewManager\Events\BaptizedSomeone.cs" />
     <Compile Include="Views\NewViewManager\Commands\BitePotato.cs" />
@@ -226,10 +234,6 @@
     <ProjectReference Include="..\d60.Cirqus.PostgreSql\d60.Cirqus.PostgreSql.csproj">
       <Project>{1DCEE03D-8316-443B-92D5-DD89D368837C}</Project>
       <Name>d60.Cirqus.PostgreSql</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\d60.Cirqus.TestHelpers\d60.Cirqus.TestHelpers.csproj">
-      <Project>{44D72FC8-F786-47A7-8D83-3D926D4E7DB0}</Project>
-      <Name>d60.Cirqus.TestHelpers</Name>
     </ProjectReference>
     <ProjectReference Include="..\d60.Cirqus\d60.Cirqus.csproj">
       <Project>{8E2DF6B4-A4DF-495E-8D74-5DCE6B333FB4}</Project>

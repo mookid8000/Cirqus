@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 
-namespace d60.Cirqus.TestHelpers.Internals
+namespace d60.Cirqus.Testing.Internals
 {
     class InMemoryUnitOfWork : RealUnitOfWork, IEnumerable<DomainEvent>
     {

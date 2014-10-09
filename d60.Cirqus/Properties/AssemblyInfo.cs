@@ -35,4 +35,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: InternalsVisibleTo("d60.Cirqus.Tests")]
-[assembly: InternalsVisibleTo("d60.Cirqus.TestHelpers")]
+[assembly: InternalsVisibleTo("d60.Cirqus.AzureServiceBus.Tests")]
