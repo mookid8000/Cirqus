@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Reflection;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Views.ViewManagers;
@@ -17,6 +18,8 @@ namespace d60.Cirqus.EntityFramework
 
         public EntityFrameworkViewManager(string connectionString, bool createDatabaseIfnotExist = true)
         {
+            ValidateVirtualCollectionProperties(typeof(TViewInstance));
+
             _connectionString = connectionString;
 
             Database.SetInitializer(new CreateDatabaseIfNotExists<GenericViewContext<TViewInstance>>());
@@ -28,6 +31,59 @@ namespace d60.Cirqus.EntityFramework
                     //touch tables to create them
                     context.Database.Initialize(true);
                 }
+            }
+        }
+
+        void ValidateVirtualCollectionProperties(Type type)
+        {
+            var errors = new List<string>();
+
+            ValidateVirtualCollectionProperties(type, errors);
+
+            if (errors.Any())
+            {
+                throw new InvalidOperationException(string.Format(@"Cannot create Entity Framework view manager for {0} because of the following issues:
+{1}", type.FullName, string.Join(Environment.NewLine, errors.Select(e => "    " + e))));
+            }
+        }
+
+        readonly HashSet<Type> _genericCollectionTypes = new HashSet<Type>
+        {
+            typeof (ICollection<>),
+            typeof (IList<>),
+            typeof (List<>),
+        };
+
+        void ValidateVirtualCollectionProperties(Type type, List<string> errors)
+        {
+            var collectionProperties = type.GetProperties()
+                .Select(p => new
+                {
+                    IsGeneric = p.PropertyType.IsGenericType,
+                    Property = p
+                })
+                .Where(a => a.IsGeneric)
+                .Select(a => new
+                {
+                    GenericTypeDefinition = a.Property.PropertyType.GetGenericTypeDefinition(),
+                    Property = a.Property
+                })
+                .Where(a => _genericCollectionTypes.Contains(a.GenericTypeDefinition))
+                .Select(a => new
+                {
+                    Property = a.Property,
+                    ItemType = a.Property.PropertyType.GetGenericArguments()[0]
+                })
+                .ToList();
+
+            foreach (var collectionProperty in collectionProperties)
+            {
+                if (!collectionProperty.Property.GetGetMethod().IsVirtual)
+                {
+                    errors.Add(string.Format("the collection property {0}.{1} must be declared virtual", collectionProperty.Property.DeclaringType, collectionProperty.Property.Name));
+                }
+
+                ValidateVirtualCollectionProperties(collectionProperty.ItemType);
             }
         }
 

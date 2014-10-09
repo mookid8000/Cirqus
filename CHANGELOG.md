@@ -335,3 +335,9 @@ This is a big update that completes the transition to the new, vastly improved v
 ## 0.28.0
 
 * Removed JSON.NET dependency from MongoDB stuff by merging it in
+
+
+## 0.29.0
+
+* Validate that collection properties of Entity Framework views are declared as virtual (otherwise the view might leave a trail of non-disconnected should-have-been-orphans in the database)
+

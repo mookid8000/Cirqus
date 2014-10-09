@@ -37,10 +37,10 @@ namespace d60.Cirqus.Tests.EntityFramework
                 .AddViewManager(_viewManager);
         }
 
-        [Test]
-        public void StatementOfSomething()
+        [Test, Description(@"This test was created when child objects were observed to be left in the DB *with their FKs intact* - i.e. they would not be disassociated with their parents as they should. The problem turned out to be due to a missing 'virtual' on the collection property")]
+        public void DoesNotLeaveConnectedOrphans()
         {
-            var ids = Enumerable.Range(0, 100).Select(_ => Guid.NewGuid());
+            var ids = Enumerable.Range(0, 10).Select(_ => Guid.NewGuid());
 
             foreach (var id in ids)
             {
@@ -52,6 +52,22 @@ namespace d60.Cirqus.Tests.EntityFramework
             //RunTestFor(new Guid("1798AA40-8E7C-4169-AABE-3EB8134F7428"));
             //RunTestFor(new Guid("8266A9C8-773A-4F8D-9568-12E54427B424"));
             //RunTestFor(new Guid("23B79D7F-1B48-4B2A-8197-59DC4267DF48"));
+        }
+
+        [Test]
+        public void ThrowsWhenMappingEntityWithNonVirtualCollectionProperty()
+        {
+            var exception = Assert
+                .Throws<InvalidOperationException>(() => new EntityFrameworkViewManager<ParentWithNonVirtualCollectionProperty>(MsSqlTestHelper.ConnectionString));
+
+            Assert.That(exception.Message, Contains.Substring("must be declared virtual"));
+        }
+
+        class ParentWithNonVirtualCollectionProperty : IViewInstance<GlobalInstanceLocator>, ISubscribeTo
+        {
+            public string Id { get; set; }
+            public long LastGlobalSequenceNumber { get; set; }
+            public List<SomeChild> Children { get; set; }
         }
 
         void RunTest(Guid id)
