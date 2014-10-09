@@ -27,6 +27,7 @@ namespace d60.Cirqus.Tests.EntityFramework
             MsSqlTestHelper.EnsureTestDatabaseExists();
             MsSqlTestHelper.DropTable("__MigrationHistory");
             MsSqlTestHelper.DropTable("SomeParent_Position");
+            MsSqlTestHelper.DropTable("AnotherChilds");
             MsSqlTestHelper.DropTable("SomeChilds");
             MsSqlTestHelper.DropTable("SomeParent");
 
