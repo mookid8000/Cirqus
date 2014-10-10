@@ -6,7 +6,6 @@ using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Serialization;
 using SQLite;
-using SQLiteConnection = SQLite.SQLiteConnection;
 
 namespace d60.Cirqus.SQLite
 {
@@ -31,15 +30,15 @@ namespace d60.Cirqus.SQLite
             }
             catch (BadImageFormatException e)
             {
-                throw new System.Data.SQLite.SQLiteException("Could not initialize SQLite connection - this is probably a sign that you've included sqlite3.dll for the wrong platform. Figure out whether your process is running as x86 or x64 and be sure to include a version of sqlite3.dll that is compiled for that platform", e);
+                throw new ApplicationException("Could not initialize SQLite connection - this is probably a sign that you've included sqlite3.dll for the wrong platform. Figure out whether your process is running as x86 or x64 and be sure to include a version of sqlite3.dll that is compiled for that platform", e);
             }
             catch (DllNotFoundException e)
             {
-                throw new System.Data.SQLite.SQLiteException(string.Format("Unable to load sqlite3.dll - you need to make sure that the sqlite3.dll is present in the runtime directory ({0}) of your program. Figure out whether your process is running as x86 or x64 and be sure to include a version of sqlite3.dll that is compiled for that platform", AppDomain.CurrentDomain.BaseDirectory), e);
+                throw new ApplicationException(string.Format("Unable to load sqlite3.dll - you need to make sure that the sqlite3.dll is present in the runtime directory ({0}) of your program. Figure out whether your process is running as x86 or x64 and be sure to include a version of sqlite3.dll that is compiled for that platform", AppDomain.CurrentDomain.BaseDirectory), e);
             }
             catch (Exception e)
             {
-                throw new System.Data.SQLite.SQLiteException(string.Format("An error occurred when attempting to initialize SQLite database {0}", databasePath), e);
+                throw new ApplicationException(string.Format("An error occurred when attempting to initialize SQLite database {0}", databasePath), e);
             }
         }
 
