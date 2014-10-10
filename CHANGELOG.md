@@ -341,3 +341,9 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Validate that collection properties of Entity Framework views are declared as virtual (otherwise the view might leave a trail of non-disconnected should-have-been-orphans in the database)
 
+## 0.30.0
+
+* Added file system-based event store implementation - thanks [asgerhallas]
+
+[asgerhallas]: https://github.com/asgerhallas
+
