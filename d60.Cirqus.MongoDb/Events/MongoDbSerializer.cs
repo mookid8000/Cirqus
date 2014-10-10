@@ -34,7 +34,14 @@ namespace d60.Cirqus.MongoDb.Events
         public DomainEvent Deserialize(BsonValue o)
         {
             var jsonText = o.ToString();
-            return DeserializeFromString(jsonText);
+            try
+            {
+                return DeserializeFromString(jsonText);
+            }
+            catch (Exception exception)
+            {
+                throw new FormatException(string.Format("Could not properly deserialize '{0}' into DomainEvent", jsonText), exception);
+            }
         }
 
         public void EnsureSerializability(DomainEvent domainEvent)
@@ -59,7 +66,7 @@ Result after roundtripping:
         static DomainEvent DeserializeFromString(string jsonText)
         {
             jsonText = Regex.Replace(jsonText, BsonTypePropertyRegex, JsonDotNetTypeProperty);
-            return (DomainEvent) JsonConvert.DeserializeObject(jsonText, JsonSerializerSettings);
+            return (DomainEvent)JsonConvert.DeserializeObject(jsonText, JsonSerializerSettings);
         }
 
         static string SerializeToString(DomainEvent e)

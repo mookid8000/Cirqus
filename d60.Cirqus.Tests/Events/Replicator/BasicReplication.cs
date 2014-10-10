@@ -14,7 +14,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
     {
         readonly Dictionary<Guid, int> _seqNos = new Dictionary<Guid, int>();
 
-        Cirqus.Events.EventReplicator _replicator;
+        EventReplicator _replicator;
         MongoDbEventStore _source;
         MongoDbEventStore _destination;
 
@@ -27,7 +27,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
             _source = new MongoDbEventStore(database, "EventSrc");
             _destination = new MongoDbEventStore(database, "EventDst");
 
-            _replicator = new Cirqus.Events.EventReplicator(_source, _destination);
+            _replicator = new EventReplicator(_source, _destination);
 
             RegisterForDisposal(_replicator);
 
@@ -75,7 +75,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 batchId2.ToString()
             };
 
-            Assert.That(myKindOfEvents.Select(e => e.Meta[Cirqus.Events.EventReplicator.SourceEventBatchId]).ToArray(), Is.EqualTo(expectedSourceBatchIds));
+            Assert.That(myKindOfEvents.Select(e => e.Meta[EventReplicator.SourceEventBatchId]).ToArray(), Is.EqualTo(expectedSourceBatchIds));
         }
 
 

@@ -40,33 +40,16 @@ namespace d60.Cirqus.MongoDb.Events
         {
             var globalSequenceNumberToQueryFor = globalSequenceNumber;
 
-            const int limit = 1000;
-
-            while (true)
-            {
-                var docs = _eventBatches
-                    .FindAs<BsonDocument>(Query.GTE(GlobalSeqNoDocPath, globalSequenceNumberToQueryFor))
-                    .SetLimit(limit)
-                    .ToList();
-
-                if (!docs.Any()) yield break;
-
-                foreach (var doc in docs)
+            return _eventBatches
+                .FindAs<BsonDocument>(Query.GTE(GlobalSeqNoDocPath, globalSequenceNumberToQueryFor))
+                .SelectMany(doc => doc[EventsDocPath].AsBsonArray)
+                .Select(eventDoc => new
                 {
-                    foreach (var e in doc[EventsDocPath].AsBsonArray)
-                    {
-                        var bsonValue = e[MetaDocPath][DomainEvent.MetadataKeys.GlobalSequenceNumber];
-                        var globalSequenceNumberOfThisEvent = GetLong(bsonValue);
-
-                        // skip events before cutoff
-                        if (globalSequenceNumberOfThisEvent < globalSequenceNumberToQueryFor) continue;
-
-                        yield return _serializer.Deserialize(e);
-
-                        globalSequenceNumberToQueryFor = globalSequenceNumberOfThisEvent + 1;
-                    }
-                }
-            }
+                    GlobalSequenceNumber = GetLong(eventDoc[MetaDocPath][DomainEvent.MetadataKeys.GlobalSequenceNumber]),
+                    EventDoc = eventDoc
+                })
+                .Where(a => a.GlobalSequenceNumber >= globalSequenceNumber)
+                .Select(a => _serializer.Deserialize(a.EventDoc));
         }
 
         public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
