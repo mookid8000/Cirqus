@@ -3,7 +3,6 @@ using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Tests.Contracts.Views.Factories;
 using d60.Cirqus.Tests.Contracts.Views.Models.ObjectGraph;
-using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.Testing.TestContext;
@@ -18,7 +17,6 @@ namespace d60.Cirqus.Tests.Contracts.Views
     {
         TFactory _factory;
         TestContext _context;
-        IViewManager<ViewRoot> _viewManager;
 
         protected override void DoSetUp()
         {
@@ -27,7 +25,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _factory = RegisterForDisposal(new TFactory());
             _context = RegisterForDisposal(new TestContext());
 
-            _context.AddViewManager(_viewManager = _factory.GetViewManager<ViewRoot>());
+            _context.AddViewManager(_factory.GetViewManager<ViewRoot>());
         }
 
         [Test]
@@ -38,6 +36,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _context.Save(root1, new Event {NumberOfChildren = 3});
 
             var view = _factory.Load<ViewRoot>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(root1));
+            
             Assert.That(view.Children.Count, Is.EqualTo(3));
         }
 
@@ -54,6 +53,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             var view1 = _factory.Load<ViewRoot>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(root1));
             var view2 = _factory.Load<ViewRoot>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(root2));
+            
             Assert.That(view1.Children.Count, Is.EqualTo(1));
             Assert.That(view2.Children.Count, Is.EqualTo(2));
         }
