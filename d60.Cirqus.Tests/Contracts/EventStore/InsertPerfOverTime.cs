@@ -38,7 +38,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                 RegisterForDisposal((IDisposable)_eventStore);
         }
 
-        [TestCase(60, 20)]
+        [TestCase(30, 10)]
         [TestCase(300, 20, Ignore = TestCategories.IgnoreLongRunning)]
         public void GenerateSaveReport(int testSeconds, int timeIntervals)
         {
