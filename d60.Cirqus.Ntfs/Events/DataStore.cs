@@ -66,16 +66,18 @@ namespace d60.Cirqus.Ntfs.Events
             }
         }
 
-        public IEnumerable<DomainEvent> Read(long lastCommittedGlobalSequenceNumber, Guid aggregateRootId, long offset, long take)
+        public IEnumerable<DomainEvent> Read(long lastCommittedGlobalSequenceNumber, Guid aggregateRootId, long offset)
         {
             var aggregateDirectory = Path.Combine(_dataDirectory, aggregateRootId.ToString());
 
             if (!Directory.Exists(aggregateDirectory))
+            {
                 return Enumerable.Empty<DomainEvent>();
+            }
 
             return from path in Directory.EnumerateFiles(aggregateDirectory)
                    let seq = long.Parse(Path.GetFileName(path))
-                   where seq >= offset && seq < offset + take
+                   where seq >= offset
                    let @event = TryRead(path)
                    where @event != null && @event.GetGlobalSequenceNumber(true) <= lastCommittedGlobalSequenceNumber
                    select @event;

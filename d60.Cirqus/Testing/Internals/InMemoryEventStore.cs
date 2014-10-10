@@ -79,12 +79,10 @@ namespace d60.Cirqus.Testing.Internals
             return _domainEventSerializer.Deserialize(_domainEventSerializer.Serialize(ev));
         }
 
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0, long limit = int.MaxValue/2)
+        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             lock (_lock)
             {
-                var maxSequenceNumber = firstSeq + limit;
-
                 return this
                     .Select(e => new
                     {
@@ -93,7 +91,7 @@ namespace d60.Cirqus.Testing.Internals
                         SequenceNumber = e.GetSequenceNumber()
                     })
                     .Where(e => e.AggregateRootId == aggregateRootId)
-                    .Where(e => e.SequenceNumber >= firstSeq && e.SequenceNumber < maxSequenceNumber)
+                    .Where(e => e.SequenceNumber >= firstSeq)
                     .OrderBy(e => e.SequenceNumber)
                     .Select(e => CloneEvent(e.Event))
                     .ToList();

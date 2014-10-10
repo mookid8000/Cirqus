@@ -72,12 +72,9 @@ namespace d60.Cirqus.MongoDb.Events
             }
         }
 
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0, long limit = int.MaxValue)
+        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
         {
-            var lastSeq = firstSeq + limit;
-            var criteria = Query.And(
-                Query.GTE(SeqNoDocPath, firstSeq),
-                Query.LT(SeqNoDocPath, lastSeq));
+            var criteria = Query.GTE(SeqNoDocPath, firstSeq);
 
             if (aggregateRootId != Guid.Empty)
             {
@@ -94,7 +91,7 @@ namespace d60.Cirqus.MongoDb.Events
                     SequenceNumber = e[MetaDocPath][DomainEvent.MetadataKeys.SequenceNumber].ToInt32(),
                     AggregateRootId = GetAggregateRootIdOrDefault(e)
                 })
-                .Where(e => e.SequenceNumber >= firstSeq && e.SequenceNumber < lastSeq);
+                .Where(e => e.SequenceNumber >= firstSeq);
 
             if (aggregateRootId != Guid.Empty)
             {

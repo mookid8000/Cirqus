@@ -171,11 +171,8 @@ INSERT INTO ""{0}"" (
             return connection;
         }
 
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0, long limit = Int32.MaxValue)
+        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
         {
-            var domainEvents = new List<DomainEvent>();
-            var lastSeqNo = firstSeq + limit == int.MaxValue ? int.MaxValue : firstSeq + limit;
-
             using (var connection = GetConnection())
             {
                 using (var tx = connection.BeginTransaction())
@@ -184,11 +181,9 @@ INSERT INTO ""{0}"" (
                     {
                         cmd.Transaction = tx;
 
-                        cmd.CommandText = string.Format(@"
-                                SELECT ""data"" FROM ""{0}"" WHERE ""aggId"" = @aggId AND ""seqNo"" >= @firstSeqNo AND ""seqNo"" < @lastSeqNo", _tableName);
+                        cmd.CommandText = string.Format(@"SELECT ""data"" FROM ""{0}"" WHERE ""aggId"" = @aggId AND ""seqNo"" >= @firstSeqNo", _tableName);
                         cmd.Parameters.AddWithValue("aggId", aggregateRootId);
                         cmd.Parameters.AddWithValue("firstSeqNo", firstSeq);
-                        cmd.Parameters.AddWithValue("lastSeqNo", lastSeqNo);
 
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -196,13 +191,12 @@ INSERT INTO ""{0}"" (
                             {
                                 var data = (string)reader["data"];
 
-                                domainEvents.Add(_domainEventSerializer.Deserialize(data));
+                                yield return _domainEventSerializer.Deserialize(data);
                             }
                         }
                     }
 
                     tx.Commit();
-                    return domainEvents;
                 }
             }
         }

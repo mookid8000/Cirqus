@@ -58,11 +58,11 @@ namespace d60.Cirqus.Ntfs.Events
             }
         }
 
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0, long limit = Int32.MaxValue)
+        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             var lastCommittedGlobalSequenceNumber = CommitLog.Read();
             
-            return DataStore.Read(lastCommittedGlobalSequenceNumber, aggregateRootId, firstSeq, limit);
+            return DataStore.Read(lastCommittedGlobalSequenceNumber, aggregateRootId, firstSeq);
         }
 
         public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)

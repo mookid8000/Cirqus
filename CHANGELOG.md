@@ -344,6 +344,8 @@ This is a big update that completes the transition to the new, vastly improved v
 ## 0.30.0
 
 * Added file system-based event store implementation - thanks [asgerhallas]
+* Added SQLite-based event store implementation
+
 
 [asgerhallas]: https://github.com/asgerhallas
 

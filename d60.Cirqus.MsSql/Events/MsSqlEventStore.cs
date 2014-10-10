@@ -136,13 +136,14 @@ INSERT INTO [{0}] (
             }
         }
 
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0, long limit = int.MaxValue)
+        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
         {
-            var domainEvents = new List<DomainEvent>();
-            var lastSeqNo = firstSeq + limit == int.MaxValue ? int.MaxValue : firstSeq + limit;
+            SqlConnection conn = null;
 
-            WithConnection(conn =>
+            try
             {
+                conn = _connectionProvider();
+
                 using (var tx = conn.BeginTransaction())
                 {
                     using (var cmd = conn.CreateCommand())
@@ -150,29 +151,33 @@ INSERT INTO [{0}] (
                         cmd.Transaction = tx;
                         cmd.CommandText = string.Format(@"
 
-SELECT [data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo AND [seqNo] < @lastSeqNo
+SELECT [data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo
 
 ", _tableName);
                         cmd.Parameters.Add("aggId", SqlDbType.UniqueIdentifier).Value = aggregateRootId;
                         cmd.Parameters.Add("firstSeqNo", SqlDbType.BigInt).Value = firstSeq;
-                        cmd.Parameters.Add("lastSeqNo", SqlDbType.BigInt).Value = lastSeqNo;
 
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
-                                var data = (string)reader["data"];
+                                var data = (string) reader["data"];
 
-                                domainEvents.Add(_domainEventSerializer.Deserialize(data));
+                                yield return _domainEventSerializer.Deserialize(data);
                             }
                         }
                     }
 
                     tx.Commit();
                 }
-            });
-
-            return domainEvents;
+            }
+            finally
+            {
+                if (conn != null)
+                {
+                    _cleanupAction(conn);
+                }
+            }
         }
 
         public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)

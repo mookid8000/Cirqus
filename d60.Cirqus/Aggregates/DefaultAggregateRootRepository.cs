@@ -24,7 +24,7 @@ namespace d60.Cirqus.Aggregates
         public bool Exists<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue, IUnitOfWork unitOfWork = null) 
             where TAggregate : AggregateRoot
         {
-            var firstEvent = _eventStore.Load(aggregateRootId, 0, 1).FirstOrDefault();
+            var firstEvent = _eventStore.Load(aggregateRootId).FirstOrDefault();
 
             return firstEvent != null && firstEvent.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber;
         }

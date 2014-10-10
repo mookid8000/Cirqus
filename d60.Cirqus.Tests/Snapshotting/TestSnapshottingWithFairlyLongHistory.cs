@@ -156,11 +156,11 @@ caching in use: {3}",
                 _timeSpentSavingEvents += stopwatch.Elapsed;
             }
 
-            public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0, long limit = Int32.MaxValue)
+            public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
             {
                 var stopwatch = Stopwatch.StartNew();
 
-                var domainEvents = InnerEventStore.Load(aggregateRootId, firstSeq, limit).ToList();
+                var domainEvents = InnerEventStore.Load(aggregateRootId, firstSeq).ToList();
 
                 _timeSpentLoadingEvents += stopwatch.Elapsed;
 

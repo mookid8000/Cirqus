@@ -127,11 +127,11 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 _innerEventStore.Save(batchId, batch);
             }
 
-            public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0, long limit = Int32.MaxValue)
+            public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
             {
                 PossiblyThrowError();
 
-                return _innerEventStore.Load(aggregateRootId, firstSeq, limit);
+                return _innerEventStore.Load(aggregateRootId, firstSeq);
             }
 
             public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)

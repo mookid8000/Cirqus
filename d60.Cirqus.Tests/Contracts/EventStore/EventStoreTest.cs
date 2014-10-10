@@ -21,6 +21,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
     [TestFixture(typeof(MsSqlEventStoreFactory), Category = TestCategories.MsSql)]
     [TestFixture(typeof(PostgreSqlEventStoreFactory), Category = TestCategories.PostgreSql)]
     [TestFixture(typeof(NtfsEventStoreFactory))]
+    [TestFixture(typeof(SQLiteEventStoreFactory))]
     public class EventStoreTest<TEventStoreFactory> : FixtureBase where TEventStoreFactory : IEventStoreFactory, new()
     {
         TEventStoreFactory _eventStoreFactory;
@@ -341,17 +342,17 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
             // act
             // assert
-            Assert.That(_eventStore.Load(aggregateRootId, 1, 1).Count(), Is.EqualTo(1));
-            Assert.That(_eventStore.Load(aggregateRootId, 1, 1).GetSeq(), Is.EqualTo(Enumerable.Range(1, 1)));
+            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(1).Count(), Is.EqualTo(1));
+            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(1).GetSeq(), Is.EqualTo(Enumerable.Range(1, 1)));
 
-            Assert.That(_eventStore.Load(aggregateRootId, 1, 2).Count(), Is.EqualTo(2));
-            Assert.That(_eventStore.Load(aggregateRootId, 1, 2).GetSeq(), Is.EqualTo(Enumerable.Range(1, 2)));
+            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(2).Count(), Is.EqualTo(2));
+            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(2).GetSeq(), Is.EqualTo(Enumerable.Range(1, 2)));
 
-            Assert.That(_eventStore.Load(aggregateRootId, 1, 10).Count(), Is.EqualTo(10));
-            Assert.That(_eventStore.Load(aggregateRootId, 1, 10).GetSeq(), Is.EqualTo(Enumerable.Range(1, 10)));
+            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(10).Count(), Is.EqualTo(10));
+            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(10).GetSeq(), Is.EqualTo(Enumerable.Range(1, 10)));
 
-            Assert.That(_eventStore.Load(aggregateRootId, 4, 10).Count(), Is.EqualTo(10));
-            Assert.That(_eventStore.Load(aggregateRootId, 4, 10).GetSeq(), Is.EqualTo(Enumerable.Range(4, 10)));
+            Assert.That(_eventStore.Load(aggregateRootId, 4).Take(10).Count(), Is.EqualTo(10));
+            Assert.That(_eventStore.Load(aggregateRootId, 4).Take(10).GetSeq(), Is.EqualTo(Enumerable.Range(4, 10)));
         }
 
         [Test]
@@ -374,8 +375,8 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             });
 
             // act
-            var allEventsForAgg1 = _eventStore.Load(agg1, 0, int.MaxValue).ToList();
-            var allEventsForAgg2 = _eventStore.Load(agg2, 0, int.MaxValue).ToList();
+            var allEventsForAgg1 = _eventStore.Load(agg1).ToList();
+            var allEventsForAgg2 = _eventStore.Load(agg2).ToList();
 
             // assert
             Assert.That(allEventsForAgg1.Count, Is.EqualTo(4));

@@ -36,7 +36,7 @@ namespace d60.Cirqus.Tests.MongoDb
                 }
             });
 
-            TakeTime("Execute " + numberOfQueries + " queries", () => numberOfQueries.Times(() => eventStore.Load(randomAggregateRootId(), 0, int.MaxValue).ToList()));
+            TakeTime("Execute " + numberOfQueries + " queries", () => numberOfQueries.Times(() => eventStore.Load(randomAggregateRootId()).ToList()));
         }
 
         static DomainEvent Event(int seq, Guid aggregateRootId)

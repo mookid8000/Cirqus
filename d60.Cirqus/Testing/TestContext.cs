@@ -124,7 +124,7 @@ namespace d60.Cirqus.Testing
                     .Select(e => e.GetAggregateRootId()).Distinct()
                     .Select(aggregateRootId =>
                     {
-                        var firstEvent = _eventStore.Load(aggregateRootId, 0, 1).First();
+                        var firstEvent = _eventStore.Load(aggregateRootId).First();
                         var typeName = (firstEvent.Meta[DomainEvent.MetadataKeys.Owner] ?? "").ToString();
                         var type = Type.GetType(typeName);
 
