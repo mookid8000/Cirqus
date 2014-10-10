@@ -90,8 +90,6 @@ namespace d60.Cirqus.MongoDb.Events
 
             foreach (var e in events)
             {
-                Console.WriteLine("Assigning {0} to {1}", nextGlobalSeqNo, e);
-
                 e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = nextGlobalSeqNo++;
                 e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
             }
