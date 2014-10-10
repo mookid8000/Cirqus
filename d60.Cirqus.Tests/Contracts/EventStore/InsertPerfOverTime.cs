@@ -38,6 +38,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         }
 
         [TestCase(60, 20)]
+        [TestCase(300, 20, Ignore = TestCategories.IgnoreLongRunning)]
         public void GenerateSaveReport(int testSeconds, int timeIntervals)
         {
             var stopwatch = Stopwatch.StartNew();
