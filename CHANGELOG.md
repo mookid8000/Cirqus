@@ -345,9 +345,6 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added file system-based event store implementation - thanks [asgerhallas]
 * Added SQLite-based event store implementation
-
-## 0.30.1
-
 * Include view positions in timeout exception when `TestContext` is waiting for views to catch up
 
 
