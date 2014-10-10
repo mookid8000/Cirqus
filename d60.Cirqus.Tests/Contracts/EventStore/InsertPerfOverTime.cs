@@ -44,7 +44,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         {
             var stopwatch = Stopwatch.StartNew();
 
-            Console.WriteLine("Running test for {0} s", testSeconds);
+            Console.WriteLine("Running test on {0} for {1} s", _eventStore.GetType().Name, testSeconds);
 
             while (stopwatch.Elapsed < TimeSpan.FromSeconds(testSeconds))
             {
