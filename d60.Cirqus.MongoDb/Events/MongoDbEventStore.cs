@@ -38,13 +38,14 @@ namespace d60.Cirqus.MongoDb.Events
 
         public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
         {
+            var globalSequenceNumberToQueryFor = globalSequenceNumber;
+
             const int limit = 1000;
-            var sequenceNumberToQueryFor = globalSequenceNumber;
 
             while (true)
             {
                 var docs = _eventBatches
-                    .FindAs<BsonDocument>(Query.GTE(GlobalSeqNoDocPath, sequenceNumberToQueryFor))
+                    .FindAs<BsonDocument>(Query.GTE(GlobalSeqNoDocPath, globalSequenceNumberToQueryFor))
                     .SetLimit(limit)
                     .ToList();
 
@@ -55,16 +56,14 @@ namespace d60.Cirqus.MongoDb.Events
                     foreach (var e in doc[EventsDocPath].AsBsonArray)
                     {
                         var bsonValue = e[MetaDocPath][DomainEvent.MetadataKeys.GlobalSequenceNumber];
-                        var sequenceNumberOfThisEvent = bsonValue.IsInt32
-                            ? bsonValue.AsInt32
-                            : bsonValue.AsInt64;
+                        var globalSequenceNumberOfThisEvent = GetLong(bsonValue);
 
                         // skip events before cutoff
-                        if (sequenceNumberOfThisEvent < sequenceNumberToQueryFor) continue;
+                        if (globalSequenceNumberOfThisEvent < globalSequenceNumberToQueryFor) continue;
 
                         yield return _serializer.Deserialize(e);
 
-                        sequenceNumberToQueryFor = sequenceNumberOfThisEvent + 1;
+                        globalSequenceNumberToQueryFor = globalSequenceNumberOfThisEvent + 1;
                     }
                 }
             }
@@ -83,7 +82,7 @@ namespace d60.Cirqus.MongoDb.Events
                 .Select(e => new
                 {
                     Event = e,
-                    SequenceNumber = GetSeqNo(e),
+                    SequenceNumber = GetLong(e[MetaDocPath][DomainEvent.MetadataKeys.SequenceNumber]),
                     AggregateRootId = GetAggregateRootIdOrDefault(e)
                 })
                 .Where(e => e.AggregateRootId == aggregateRootId && e.SequenceNumber >= firstSeq);
@@ -147,17 +146,16 @@ namespace d60.Cirqus.MongoDb.Events
                     .Max() + 1;
         }
 
-        long GetSeqNo(BsonValue e)
+        long GetLong(BsonValue bsonValue)
         {
-            var bsonValue = e[MetaDocPath][DomainEvent.MetadataKeys.SequenceNumber];
-
             if (bsonValue.IsInt32)
                 return bsonValue.ToInt32();
 
             if (bsonValue.IsInt64)
                 return bsonValue.ToInt64();
 
-            throw new FormatException(string.Format("Could not intepret BSON value '{0}' as int or long - its type is '{1}'", bsonValue, bsonValue.BsonType));
+            throw new FormatException(string.Format("Could not intepret BSON value '{0}' as int or long - its type is '{1}'",
+                bsonValue, bsonValue.BsonType));
         }
 
         Guid GetAggregateRootIdOrDefault(BsonValue e)
