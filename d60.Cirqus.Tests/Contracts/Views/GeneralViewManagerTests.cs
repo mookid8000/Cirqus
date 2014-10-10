@@ -104,6 +104,8 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _context.ProcessCommand(new GenerateNewId(IdGenerator.InstanceId) { IdBase = "bim" });
             var last = _context.ProcessCommand(new GenerateNewId(IdGenerator.InstanceId) { IdBase = "bom" });
 
+            view.WaitUntilProcessed(last, _defaultTimeout).Wait();
+
             // act
             Console.WriteLine("Purging view");
             _factory.PurgeView<GeneratedIds>();
