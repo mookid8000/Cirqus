@@ -60,9 +60,6 @@ namespace d60.Cirqus.Tests
 
         protected void TakeTime(string description, Action action, TimerCallback periodicCallback = null)
         {
-            //warmup
-            action();
-
             Console.WriteLine("Begin: {0}", description);
             
             var stopwatch = Stopwatch.StartNew();

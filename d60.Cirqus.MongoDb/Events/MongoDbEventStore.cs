@@ -14,7 +14,6 @@ namespace d60.Cirqus.MongoDb.Events
     {
         const string GlobalSeqUniquenessIndexName = "EnsureGlobalSeqUniqueness";
         const string SeqUniquenessIndexName = "EnsureSeqUniqueness";
-        const string AggregateRootIndexName = "AggregateRootId";
         const string EventsDocPath = "Events";
         const string MetaDocPath = "Meta";
 
@@ -33,8 +32,7 @@ namespace d60.Cirqus.MongoDb.Events
             if (automaticallyCreateIndexes)
             {
                 _eventBatches.CreateIndex(IndexKeys.Ascending(GlobalSeqNoDocPath), IndexOptions.SetUnique(true).SetName(GlobalSeqUniquenessIndexName));
-                _eventBatches.CreateIndex(IndexKeys.Ascending(SeqNoDocPath, AggregateRootIdDocPath), IndexOptions.SetUnique(true).SetName(SeqUniquenessIndexName));
-                _eventBatches.CreateIndex(IndexKeys.Ascending(AggregateRootIdDocPath), IndexOptions.SetName(AggregateRootIndexName));
+                _eventBatches.CreateIndex(IndexKeys.Ascending(AggregateRootIdDocPath, SeqNoDocPath), IndexOptions.SetUnique(true).SetName(SeqUniquenessIndexName));
             }
         }
 
@@ -74,12 +72,9 @@ namespace d60.Cirqus.MongoDb.Events
 
         public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
         {
-            var criteria = Query.GTE(SeqNoDocPath, firstSeq);
-
-            if (aggregateRootId != Guid.Empty)
-            {
-                criteria = Query.And(criteria, Query.EQ(AggregateRootIdDocPath, aggregateRootId.ToString()));
-            }
+            var criteria = Query.And(
+                Query.EQ(AggregateRootIdDocPath, aggregateRootId.ToString()),
+                Query.GTE(SeqNoDocPath, firstSeq));
 
             var docs = _eventBatches.FindAs<BsonDocument>(criteria);
 
@@ -91,13 +86,7 @@ namespace d60.Cirqus.MongoDb.Events
                     SequenceNumber = e[MetaDocPath][DomainEvent.MetadataKeys.SequenceNumber].ToInt32(),
                     AggregateRootId = GetAggregateRootIdOrDefault(e)
                 })
-                .Where(e => e.SequenceNumber >= firstSeq);
-
-            if (aggregateRootId != Guid.Empty)
-            {
-                eventsSatisfyingCriteria = eventsSatisfyingCriteria
-                    .Where(e => e.AggregateRootId == aggregateRootId);
-            }
+                .Where(e => e.AggregateRootId == aggregateRootId && e.SequenceNumber >= firstSeq);
 
             return eventsSatisfyingCriteria
                 .OrderBy(e => e.SequenceNumber)
@@ -119,6 +108,8 @@ namespace d60.Cirqus.MongoDb.Events
 
             foreach (var e in events)
             {
+                Console.WriteLine("Assigning {0} to {1}", nextGlobalSeqNo, e);
+
                 e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = nextGlobalSeqNo++;
                 e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
             }
