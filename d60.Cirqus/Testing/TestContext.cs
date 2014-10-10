@@ -24,6 +24,7 @@ namespace d60.Cirqus.Testing
         readonly ViewManagerEventDispatcher _viewManagerEventDispatcher;
         readonly CompositeEventDispatcher _eventDispatcher;
         readonly ViewManagerWaitHandle _waitHandle = new ViewManagerWaitHandle();
+        readonly List<IViewManager> _addedViews = new List<IViewManager>();
 
         DateTime _currentTime = DateTime.MinValue;
         bool _initialized;
@@ -43,6 +44,7 @@ namespace d60.Cirqus.Testing
 
         public TestContext AddViewManager(IViewManager viewManager)
         {
+            _addedViews.Add(viewManager);
             _viewManagerEventDispatcher.AddViewManager(viewManager);
             return this;
         }
@@ -172,7 +174,7 @@ namespace d60.Cirqus.Testing
         /// </summary>
         public CommandProcessingResultWithEvents Save<TAggregateRoot>(Guid aggregateRootId, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
         {
-            return Save(aggregateRootId, new[] {domainEvent});
+            return Save(aggregateRootId, new[] { domainEvent });
         }
 
         /// <summary>
@@ -211,8 +213,18 @@ namespace d60.Cirqus.Testing
             if (!allGlobalSequenceNumbers.Any()) return;
 
             var result = CommandProcessingResult.WithNewPosition(allGlobalSequenceNumbers.Max());
-            
-            _waitHandle.WaitForAll(result, TimeSpan.FromSeconds(timeoutSeconds)).Wait();
+
+            try
+            {
+                _waitHandle.WaitForAll(result, TimeSpan.FromSeconds(timeoutSeconds)).Wait();
+            }
+            catch (TimeoutException exception)
+            {
+                throw new TimeoutException(string.Format(@"One or more views did not catch up within {0} s timeout
+
+Current view positions:
+{1}", timeoutSeconds, string.Join(Environment.NewLine, _addedViews.Select(viewManager => string.Format("    {0}: {1}", viewManager.GetPosition().ToString().PadRight(5), viewManager.GetType().FullName)))), exception);
+            }
         }
 
         /// <summary>
