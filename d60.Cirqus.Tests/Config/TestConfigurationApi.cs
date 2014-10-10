@@ -139,11 +139,11 @@ namespace d60.Cirqus.Tests.Config
         [Test, Category(TestCategories.MongoDb)]
         public void CanDoTheConfigThing()
         {
-            var mongoConnectionString = ConfigurationManager.ConnectionStrings["mongotestdb"];
+            var database = MongoHelper.InitializeTestDatabase();
 
             var fullConfiguration = CommandProcessor.With()
                 .Logging(l => l.UseConsole())
-                .EventStore(e => e.UseMongoDb(mongoConnectionString.ConnectionString, "Events"))
+                .EventStore(e => e.UseMongoDb(database, "Events"))
                 .AggregateRootRepository(r => r.EnableInMemorySnapshotCaching(10000))
                 .EventDispatcher(d => d.UseViewManagerEventDispatcher())
                 .Options(o =>
