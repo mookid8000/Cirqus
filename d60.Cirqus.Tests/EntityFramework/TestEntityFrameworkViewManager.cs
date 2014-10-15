@@ -35,6 +35,8 @@ namespace d60.Cirqus.Tests.EntityFramework
 
             _context = new TestContext()
                 .AddViewManager(_viewManager);
+
+            RegisterForDisposal(_context);
         }
 
         [Test, Description(@"This test was created when child objects were observed to be left in the DB *with their FKs intact* - i.e. they would not be disassociated with their parents as they should. The problem turned out to be due to a missing 'virtual' on the collection property")]
