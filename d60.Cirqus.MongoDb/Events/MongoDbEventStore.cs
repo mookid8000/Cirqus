@@ -36,6 +36,16 @@ namespace d60.Cirqus.MongoDb.Events
             }
         }
 
+        public void AddSerializationMutator(IJsonEventMutator mutator)
+        {
+            _serializer.EventSerializationMutators.Add(mutator);
+        }
+
+        public void AddDeserializationMutator(IJsonEventMutator mutator)
+        {
+            _serializer.EventDeserializationMutators.Add(mutator);
+        }
+
         public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
         {
             var globalSequenceNumberToQueryFor = globalSequenceNumber;

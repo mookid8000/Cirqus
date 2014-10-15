@@ -351,6 +351,11 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Removed MongoDB dep from nuspec (it didn't actually depend on it anyway, since it was merge in)
 
+## 0.32.0
+
+* Added crude MongoDB JSON serialization/deserialization mutator hooks
+
+
 
 [asgerhallas]: https://github.com/asgerhallas
 

@@ -11,7 +11,7 @@ namespace d60.Cirqus.MongoDb.Config
 {
     public static class MongoDbConfigurationExtensions
     {
-        public static void UseMongoDb(this EventStoreConfigurationBuilder builder, string mongoDbConnectionString, string eventCollectionName, bool automaticallyCreateIndexes = true)
+        public static MongoDbConfigBuilder UseMongoDb(this EventStoreConfigurationBuilder builder, string mongoDbConnectionString, string eventCollectionName, bool automaticallyCreateIndexes = true)
         {
             if (builder == null) throw new ArgumentNullException("builder");
             if (mongoDbConnectionString == null) throw new ArgumentNullException("mongoDbConnectionString");
@@ -22,21 +22,40 @@ namespace d60.Cirqus.MongoDb.Config
             var database = new MongoClient(mongoUrl).GetServer()
                 .GetDatabase(mongoUrl.DatabaseName);
 
-            UseMongoDbEventStore(builder, database, eventCollectionName, automaticallyCreateIndexes);
+            return UseMongoDbEventStore(builder, database, eventCollectionName, automaticallyCreateIndexes);
         }
 
-        public static void UseMongoDb(this EventStoreConfigurationBuilder builder, MongoDatabase database, string eventCollectionName, bool automaticallyCreateIndexes = true)
+        public static MongoDbConfigBuilder UseMongoDb(this EventStoreConfigurationBuilder builder, MongoDatabase database, string eventCollectionName, bool automaticallyCreateIndexes = true)
         {
             if (builder == null) throw new ArgumentNullException("builder");
             if (database == null) throw new ArgumentNullException("database");
             if (eventCollectionName == null) throw new ArgumentNullException("eventCollectionName");
 
-            UseMongoDbEventStore(builder, database, eventCollectionName, automaticallyCreateIndexes);
+            return UseMongoDbEventStore(builder, database, eventCollectionName, automaticallyCreateIndexes);
         }
 
-        static void UseMongoDbEventStore(EventStoreConfigurationBuilder builder, MongoDatabase database, string eventCollectionName, bool automaticallyCreateIndexes)
+        static MongoDbConfigBuilder UseMongoDbEventStore(EventStoreConfigurationBuilder builder, MongoDatabase database, string eventCollectionName, bool automaticallyCreateIndexes)
         {
-            builder.Registrar.Register<IEventStore>(context => new MongoDbEventStore(database, eventCollectionName, automaticallyCreateIndexes: automaticallyCreateIndexes));
+            var configBuilder = new MongoDbConfigBuilder();
+
+            builder.Registrar.Register<IEventStore>(context =>
+            {
+                var eventStore = new MongoDbEventStore(database, eventCollectionName, automaticallyCreateIndexes: automaticallyCreateIndexes);
+
+                foreach (var serializationMutator in configBuilder.SerializationMutators)
+                {
+                    eventStore.AddSerializationMutator(serializationMutator);
+                }
+                
+                foreach (var serializationMutator in configBuilder.DeserializationMutators)
+                {
+                    eventStore.AddDeserializationMutator(serializationMutator);
+                }
+
+                return eventStore;
+            });
+
+            return configBuilder;
         }
 
         public static void UseMongoDb(this LoggingConfigurationBuilder builder, string mongoDbConnectionString, string logCollectionName)

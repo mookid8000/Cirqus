@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using d60.Cirqus.Events;
 using d60.Cirqus.Numbers;
@@ -24,16 +26,31 @@ namespace d60.Cirqus.MongoDb.Events
         const string BsonTypeProperty = @"""_t"":";
         public const string BsonTypePropertyRegex = @"""_t""[ \t]*\:";
 
+        public MongoDbSerializer()
+        {
+            EventSerializationMutators = new List<IJsonEventMutator>();
+            EventDeserializationMutators = new List<IJsonEventMutator>();
+        }
+
+        public List<IJsonEventMutator> EventSerializationMutators { get; private set; }
+
+        public List<IJsonEventMutator> EventDeserializationMutators { get; private set; }
+
         public BsonDocument Serialize(DomainEvent e)
         {
-            var jsonText = SerializeToString(e);
+            var jsonText = EventSerializationMutators
+                .Aggregate(SerializeToString(e), (current, mutator) => mutator.Mutate(current));
+
             var doc = BsonDocument.Parse(jsonText);
+            
             return doc;
         }
 
         public DomainEvent Deserialize(BsonValue o)
         {
-            var jsonText = o.ToString();
+            var jsonText = EventDeserializationMutators
+                .Aggregate(o.ToString(), (current, mutator) => mutator.Mutate(current));
+
             try
             {
                 return DeserializeFromString(jsonText);
