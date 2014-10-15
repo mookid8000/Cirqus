@@ -347,6 +347,10 @@ This is a big update that completes the transition to the new, vastly improved v
 * Added SQLite-based event store implementation
 * Include view positions in timeout exception when `TestContext` is waiting for views to catch up
 
+## 0.31.0
+
+* Removed MongoDB dep from nuspec (it didn't actually depend on it anyway, since it was merge in)
+
 
 [asgerhallas]: https://github.com/asgerhallas
 

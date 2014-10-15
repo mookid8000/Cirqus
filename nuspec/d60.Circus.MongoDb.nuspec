@@ -11,7 +11,6 @@
     <description>MongoDB stuff for d60 event sourcing + cqrs kit</description>
     <dependencies>
       <dependency id="d60.Cirqus" version="VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT" />
-      <dependency id="Newtonsoft.Json" version="6.0.5" />
       <dependency id="mongocsharpdriver" version="1.9.2" />
     </dependencies>
   </metadata>
