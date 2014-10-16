@@ -38,6 +38,7 @@ namespace d60.Cirqus
         readonly IEventStore _eventStore;
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventDispatcher _eventDispatcher;
+        bool _initialized;
 
         public CommandProcessor(IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, IEventDispatcher eventDispatcher)
         {
@@ -57,6 +58,7 @@ namespace d60.Cirqus
         {
             _logger.Info("Initializing event dispatcher");
             _eventDispatcher.Initialize(_eventStore, Options.PurgeExistingViews);
+            _initialized = true;
             return this;
         }
 
@@ -74,6 +76,11 @@ namespace d60.Cirqus
         /// </summary>
         public CommandProcessingResult ProcessCommand(Command command)
         {
+            if (!_initialized)
+            {
+                throw new InvalidOperationException("The command processor is not initialized! Make sure you initialized the command processor before using it.");
+            }
+
             _logger.Debug("Processing command: {0}", command);
 
             var emittedDomainEvents = new List<DomainEvent>();
