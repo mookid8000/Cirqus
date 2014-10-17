@@ -61,13 +61,34 @@ might show up in the JSON data - which means that it's easier to use from .NET, 
 to use from something else (e.g. to have node.js-driven projections or whatever).
 
 
-
-### Full example
+### Configuration example
 
 This is how you can set up a fully functioning command processor, including a view:
 
+    // configure one single view manager
+    var viewManager = new MsSqlViewManager<CounterView>("sqltestdb");
+
+    // let's create & initialize the command processor
+    var processor = CommandProcessor.With()
+        .EventStore(e => e.UseSqlServer("sqltestdb", "Events")
+        .EventDispatcher(e => e.UseViewManagerEventDispatcher(viewManager))
+        .Create();
+
+    // use the command processor, possibly from multiple threads,
+    // for the entire lifetime of your application....
+
+    // and then, when your application shuts down:
+    processor.Dispose();
+
+
+### Elaborate configuration example
+
+If you're interested in seeing which moving parts are involved in the command processor, here's the equivalent
+configuration where all the things are wired together manually. As you can see, it's actually fairly simple
+(although the configuration API is much more intuitive and concise).
+
     // this is the origin of truth - let's keep it in SQL Server!
-    var eventStore = new MsSqlEventStore("sqltestdb", "events", 
+    var eventStore = new MsSqlEventStore("sqltestdb", "Events", 
                                          automaticallyCreateSchema: true);
 
     // aggregate roots are simply built when needed by replaying events
@@ -75,7 +96,7 @@ This is how you can set up a fully functioning command processor, including a vi
     var repository = new DefaultAggregateRootRepository(eventStore);
 
     // configure one single view manager in another table in our SQL Server
-    var viewManager = new MsSqlViewManager<CounterView>("sqltestdb", "counters", 
+    var viewManager = new MsSqlViewManager<CounterView>("sqltestdb", "CounterView", 
                                                         automaticallyCreateSchema: true);
 
     // Cirqus will deliver emitted events to the event dispatcher when they have
@@ -84,6 +105,12 @@ This is how you can set up a fully functioning command processor, including a vi
 
     // we can create the processor now
     var processor = new CommandProcessor(eventStore, repository, eventDispatcher);
+
+    // and then, when your application shuts down:
+    processor.Dispose();
+
+
+### Code example
 
 This is an example of a command whose purpose it is to instruct the `Counter` aggregate root to increment itself by
 some specific value, as indicated by the given `delta` parameter:

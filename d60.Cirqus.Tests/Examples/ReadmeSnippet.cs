@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
-using d60.Cirqus.MsSql.Events;
+using d60.Cirqus.MsSql.Config;
 using d60.Cirqus.MsSql.Views;
 using d60.Cirqus.Tests.MsSql;
-using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
@@ -28,17 +28,14 @@ namespace d60.Cirqus.Tests.Examples
             MsSqlTestHelper.DropTable("events");
             MsSqlTestHelper.DropTable("counters");
 
-            var eventStore = new MsSqlEventStore(MsSqlTestHelper.ConnectionString, "events", automaticallyCreateSchema: true);
-            var aggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
             var viewManager = new MsSqlViewManager<CounterView>(MsSqlTestHelper.ConnectionString, "counters", automaticallyCreateSchema: true);
 
-            var eventDispatcher = new ViewManagerEventDispatcher(aggregateRootRepository, eventStore, viewManager);
-
-            var processor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher);
+            var processor = CommandProcessor.With()
+                .EventStore(e => e.UseSqlServer(MsSqlTestHelper.ConnectionString, "events", automaticallyCreateSchema: true))
+                .EventDispatcher(e => e.UseViewManagerEventDispatcher(viewManager))
+                .Create();
 
             RegisterForDisposal(processor);
-
-            processor.Initialize();
 
             var aggregateRootId = Guid.NewGuid();
             processor.ProcessCommand(new IncrementCounter(aggregateRootId, 1));
@@ -95,7 +92,7 @@ namespace d60.Cirqus.Tests.Examples
 
             public double GetSecretBizValue()
             {
-                return CurrentValue%2 == 0
+                return CurrentValue % 2 == 0
                     ? Math.PI
                     : CurrentValue;
             }
@@ -129,7 +126,7 @@ namespace d60.Cirqus.Tests.Examples
                 SomeRecentBizValues.Add(SecretBizValue);
 
                 // trim to 10 most recent biz values
-                while(SomeRecentBizValues.Count > 10) 
+                while (SomeRecentBizValues.Count > 10)
                     SomeRecentBizValues.RemoveAt(0);
             }
         }
