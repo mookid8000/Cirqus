@@ -4,6 +4,7 @@ using d60.Cirqus.Commands;
 
 namespace d60.Cirqus.Exceptions
 {
+    [Serializable]
     public class CommandProcessingException : ApplicationException
     {
         public CommandProcessingException(SerializationInfo info, StreamingContext context)

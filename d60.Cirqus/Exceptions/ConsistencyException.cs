@@ -6,6 +6,7 @@ namespace d60.Cirqus.Exceptions
     /// <summary>
     /// Exception that may be raised an inconsistency has been detected
     /// </summary>
+    [Serializable]
     public class ConsistencyException : ApplicationException
     {
         public ConsistencyException(SerializationInfo info, StreamingContext context)

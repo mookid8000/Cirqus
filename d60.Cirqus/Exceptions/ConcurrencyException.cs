@@ -9,6 +9,7 @@ namespace d60.Cirqus.Exceptions
     /// <summary>
     /// Exception that must be raised when an attempt to commit a batch of events has failed because one or more of the involved event sequence numbers have been taken
     /// </summary>
+    [Serializable]
     public class ConcurrencyException : ApplicationException
     {
         public ConcurrencyException(SerializationInfo info, StreamingContext context)

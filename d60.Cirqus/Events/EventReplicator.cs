@@ -81,22 +81,42 @@ namespace d60.Cirqus.Events
             }
         }
 
+        bool _disposed;
+
         public void Dispose()
         {
-            if (!_running) return;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            _stop = true;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
 
-            _logger.Info("Stopping replicator worker thread...");
-
-            var timeout = TimeSpan.FromSeconds(5);
-            if (!_workerThread.Join(timeout))
+            try
             {
-                _logger.Warn("Worker thread did not stop within {0} timeout!", timeout);
+                if (disposing)
+                {
+                    if (!_running) return;
+
+                    _stop = true;
+
+                    _logger.Info("Stopping replicator worker thread...");
+
+                    var timeout = TimeSpan.FromSeconds(5);
+                    if (!_workerThread.Join(timeout))
+                    {
+                        _logger.Warn("Worker thread did not stop within {0} timeout!", timeout);
+                    }
+                    else
+                    {
+                        _logger.Info("Stopped!");
+                    }
+                }
             }
-            else
+            finally
             {
-                _logger.Info("Stopped!");
+                _disposed = true;
             }
         }
     }
