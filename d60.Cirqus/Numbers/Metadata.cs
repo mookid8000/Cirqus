@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using d60.Cirqus.Extensions;
 
 namespace d60.Cirqus.Numbers
@@ -9,8 +11,18 @@ namespace d60.Cirqus.Numbers
     /// Metadata collection that stores a bunch of key-value pairs that can be used for
     /// cross-cutting concerns like e.g. handling multi-tenancy, auditing, etc.
     /// </summary>
-    public class Metadata : Dictionary<string, object>
+    [Serializable]
+    public sealed class Metadata : Dictionary<string, object>
     {
+        Metadata(SerializationInfo info, StreamingContext contest)
+            : base(info, contest)
+        {
+        }
+
+        public Metadata()
+        {
+        }
+
         internal void Merge(Metadata otherMeta)
         {
             foreach (var kvp in otherMeta)

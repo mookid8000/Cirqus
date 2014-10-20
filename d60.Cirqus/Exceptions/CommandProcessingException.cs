@@ -5,20 +5,23 @@ using d60.Cirqus.Commands;
 namespace d60.Cirqus.Exceptions
 {
     [Serializable]
-    public class CommandProcessingException : ApplicationException
+    public sealed class CommandProcessingException : ApplicationException
     {
+        public CommandProcessingException()
+        {
+        }
+
         public CommandProcessingException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
-
         }
-
-        public Command FailedCommand { get; private set; }
 
         CommandProcessingException(string message, Exception inner)
             : base(message, inner)
         {
         }
+
+        public Command FailedCommand { get; private set; }
 
         public static CommandProcessingException Create(Command command, Exception caughtException)
         {
