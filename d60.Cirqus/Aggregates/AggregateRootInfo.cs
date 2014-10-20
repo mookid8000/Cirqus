@@ -63,7 +63,6 @@ namespace d60.Cirqus.Aggregates
             AggregateRoot.UnitOfWork = unitOfWork;
 
             var dynamicAggregate = (dynamic)AggregateRoot;
-            var previousCutoff = AggregateRoot.GlobalSequenceNumberCutoff;
 
             using (new ThrowingUnitOfWork(AggregateRoot))
             {
@@ -83,6 +82,14 @@ namespace d60.Cirqus.Aggregates
                             throw new InvalidOperationException(string.Format("Attempted to apply event {0} to root {1} with ID {2}, but the expected next seq no is {3}!!!",
                                 e.GetSequenceNumber(), typeof(TAggregateRoot), AggregateRoot.Id, expectedNextSequenceNumber));
                         }
+
+                        //var applyMethod = AggregateRoot.GetType().GetMethod("Apply", new []{e.GetType()});
+                        //if (applyMethod == null)
+                        //{
+                        //    throw new ApplicationException(string.Format("Could not find appropriate Apply method - expects a method with a public void Apply({0}) signature", e.GetType().FullName));
+                        //}
+
+                        //applyMethod.Invoke(AggregateRoot, new object[] {e});
 
                         dynamicAggregate.Apply((dynamic)e);
                         AggregateRoot.CurrentSequenceNumber = e.GetSequenceNumber();

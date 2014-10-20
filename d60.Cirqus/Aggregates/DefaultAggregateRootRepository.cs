@@ -37,7 +37,7 @@ namespace d60.Cirqus.Aggregates
         public AggregateRootInfo<TAggregate> Get<TAggregate>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue) 
             where TAggregate : AggregateRoot, new()
         {
-            var aggregateRootInfo = CreateFreshAggregate<TAggregate>(aggregateRootId);
+            var aggregateRootInfo = CreateNewAggregateRootInstance<TAggregate>(aggregateRootId);
             var domainEventsForThisAggregate = _eventStore.Load(aggregateRootId);
 
             var eventsToApply = domainEventsForThisAggregate
@@ -48,7 +48,7 @@ namespace d60.Cirqus.Aggregates
             return aggregateRootInfo;
         }
 
-        AggregateRootInfo<TAggregateRoot> CreateFreshAggregate<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        AggregateRootInfo<TAggregateRoot> CreateNewAggregateRootInstance<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
             var aggregate = new TAggregateRoot();
             

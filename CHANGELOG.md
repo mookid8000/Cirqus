@@ -355,6 +355,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added crude MongoDB JSON serialization/deserialization mutator hooks
 
+## 0.33.0
+
+* Added simple profiler that can be used to record time spent doing various core operations
+
 
 
 [asgerhallas]: https://github.com/asgerhallas
