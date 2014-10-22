@@ -17,10 +17,10 @@ namespace d60.Cirqus.Tests.Snapshotting
             Assert.That(MethodInfo, Is.Not.Null, "Expected reflection to have found the test method RunHasCodeTestWith");
         }
 
-        [TestCase(typeof(ChallengingSnapshotSpeciments.SimpleRootWithOrdinaryField))]
-        [TestCase(typeof(ChallengingSnapshotSpeciments.SimpleRootWithProperty))]
-        [TestCase(typeof(ChallengingSnapshotSpeciments.SimpleRootWithPublicField))]
-        [TestCase(typeof(ChallengingSnapshotSpeciments.SomeRootWithVariousDifficultThingsGoingOnForIt))]
+        [TestCase(typeof(ChallengingSnapshotSpecimens.SimpleRootWithOrdinaryField))]
+        [TestCase(typeof(ChallengingSnapshotSpecimens.SimpleRootWithProperty))]
+        [TestCase(typeof(ChallengingSnapshotSpecimens.SimpleRootWithPublicField))]
+        [TestCase(typeof(ChallengingSnapshotSpecimens.SomeRootWithVariousDifficultThingsGoingOnForIt))]
         public void CanCloneDeepAndGoodWithMyRootsHashCodes(Type rootType)
         {
             MethodInfo

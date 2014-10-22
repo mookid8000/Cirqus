@@ -134,11 +134,11 @@ namespace d60.Cirqus.Aggregates
                 ? GlobalSequenceNumberCutoff
                 : long.MaxValue;
 
-            var cachedAggregateRoot = UnitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoffToLookFor);
+            var cachedAggregateRoot = UnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists);
 
             if (cachedAggregateRoot != null)
             {
-                return cachedAggregateRoot;
+                return cachedAggregateRoot.AggregateRoot;
             }
 
             if (!createIfNotExists && !UnitOfWork.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff: globalSequenceNumberCutoffToLookFor))

@@ -16,10 +16,10 @@ namespace d60.Cirqus.Tests.Snapshotting
             _sturdylizer = new Sturdylizer();
         }
 
-        [TestCase(typeof(ChallengingSnapshotSpeciments.SimpleRootWithOrdinaryField))]
-        [TestCase(typeof(ChallengingSnapshotSpeciments.SimpleRootWithProperty))]
-        [TestCase(typeof(ChallengingSnapshotSpeciments.SimpleRootWithPublicField))]
-        [TestCase(typeof(ChallengingSnapshotSpeciments.SomeRootWithVariousDifficultThingsGoingOnForIt))]
+        [TestCase(typeof(ChallengingSnapshotSpecimens.SimpleRootWithOrdinaryField))]
+        [TestCase(typeof(ChallengingSnapshotSpecimens.SimpleRootWithProperty))]
+        [TestCase(typeof(ChallengingSnapshotSpecimens.SimpleRootWithPublicField))]
+        [TestCase(typeof(ChallengingSnapshotSpecimens.SomeRootWithVariousDifficultThingsGoingOnForIt))]
         public void CanCloneDeepAndGoodWithMyRootsSerializationRoundtrip(Type rootType)
         {
             GetType()

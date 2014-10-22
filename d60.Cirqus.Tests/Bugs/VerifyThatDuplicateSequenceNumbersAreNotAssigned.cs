@@ -23,8 +23,8 @@ namespace d60.Cirqus.Tests.Bugs
 
             RegisterForDisposal(commandProcessor);
 
-            var root1Id = Guid.NewGuid();
-            var root2Id = Guid.NewGuid();
+            var root1Id = new Guid("10000000-0000-0000-0000-000000000000");
+            var root2Id = new Guid("20000000-0000-0000-0000-000000000000");
 
             // make sure all roots exist
             Console.WriteLine("Processing initial two commands");

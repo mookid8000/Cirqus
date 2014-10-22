@@ -128,11 +128,6 @@ namespace d60.Cirqus.Aggregates
                     _root.GetType(), _root.Id, e));
             }
 
-            public TAggregateRoot GetAggregateRootFromCache<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
-            {
-                return _originalUnitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
-            }
-
             public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
             {
                 _originalUnitOfWork.AddToCache(aggregateRoot, globalSequenceNumberCutoff);
@@ -143,7 +138,7 @@ namespace d60.Cirqus.Aggregates
                 return _originalUnitOfWork.Exists<TAggregateRootToLoad>(aggregateRootId, globalSequenceNumberCutoff);
             }
 
-            public AggregateRootInfo<TAggregateRootToLoad> Get<TAggregateRootToLoad>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRootToLoad : AggregateRoot, new()
+            public AggregateRootInfo<TAggregateRootToLoad> Get<TAggregateRootToLoad>(Guid aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists) where TAggregateRootToLoad : AggregateRoot, new()
             {
                 return _originalUnitOfWork.Get<TAggregateRootToLoad>(aggregateRootId, globalSequenceNumberCutoff);
             }

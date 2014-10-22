@@ -56,7 +56,7 @@ namespace d60.Cirqus.Testing
         {
             using (var unitOfWork = BeginUnitOfWork())
             {
-                command.Execute(new DefaultCommandContext(unitOfWork.RealUnitOfWork, _aggregateRootRepository));
+                command.Execute(new DefaultCommandContext(unitOfWork.RealUnitOfWork));
 
                 var eventsToReturn = unitOfWork.EmittedEvents.ToList();
 

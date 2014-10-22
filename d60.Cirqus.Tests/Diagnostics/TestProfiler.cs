@@ -58,12 +58,12 @@ namespace d60.Cirqus.Tests.Diagnostics
             Console.WriteLine(string.Join(Environment.NewLine, nextLines));
 
             Assert.That(string.Join("; ", firstLines.Select(l => l.Substring(0, l.IndexOf('.')))),
-                Is.EqualTo("RecordAggregateRootGet 00:00:00; RecordAggregateRootGet 00:00:00; RecordEventBatchSave 00:00:00"),
-                "Expected that two loads and one save were performed, each taking way less than a second");
+                Is.EqualTo("RecordAggregateRootGet 00:00:00; RecordAggregateRootGet 00:00:00"),
+                "Expected that two loads were performed, each taking way less than a second");
 
             Assert.That(string.Join("; ", nextLines.Select(l => l.Substring(0, l.IndexOf('.')))),
-                Is.EqualTo("RecordAggregateRootGet 00:00:01; RecordAggregateRootGet 00:00:01; RecordEventBatchSave 00:00:00"),
-                "Expected that two loads taking sligtly > 1 s each would have been performed, followed by one save");
+                Is.EqualTo("RecordAggregateRootGet 00:00:01; RecordAggregateRootGet 00:00:01"),
+                "Expected that two loads taking sligtly > 1 s each would have been performed");
         }
 
         public class DoStuffCommand : Command<Root>
@@ -121,6 +121,11 @@ namespace d60.Cirqus.Tests.Diagnostics
         {
             readonly List<string> _calls = new List<string>();
 
+            public List<string> Calls
+            {
+                get { return _calls; }
+            }
+
             public void Space()
             {
                 _calls.Add("");
@@ -133,22 +138,14 @@ namespace d60.Cirqus.Tests.Diagnostics
 
             public void RecordAggregateRootExists(TimeSpan elapsed, Guid aggregateRootId)
             {
-                _calls.Add(string.Format("RecordAggregateRootExists {0}, {1}", elapsed, aggregateRootId));
-            }
-
-            public List<string> Calls
-            {
-                get { return _calls; }
             }
 
             public void RecordEventBatchSave(TimeSpan elapsed, Guid batchId)
             {
-                _calls.Add(string.Format("RecordEventBatchSave {0}, {1}", elapsed, batchId));
             }
 
             public void RecordGlobalSequenceNumberGetNext(TimeSpan elapsed)
             {
-                _calls.Add(string.Format("RecordGlobalSequenceNumberGetNext {0}", elapsed));
             }
         }
     }

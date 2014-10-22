@@ -29,24 +29,14 @@ namespace d60.Cirqus.Testing
             get { return _realUnitOfWork; }
         }
 
-        internal event Action Committed = delegate { }; 
+        internal event Action Committed = delegate { };
 
         public TAggregateRoot Get<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
-            var aggregateRootFromCache = _realUnitOfWork.GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId, long.MaxValue);
-            if (aggregateRootFromCache != null)
-            {
-                return aggregateRootFromCache;
-            }
-
-            var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, _realUnitOfWork);
+            var aggregateRootInfo = _realUnitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true);
             var aggregateRoot = aggregateRootInfo.AggregateRoot;
 
-            _realUnitOfWork.AddToCache(aggregateRoot, long.MaxValue);
-
             aggregateRoot.UnitOfWork = _realUnitOfWork;
-
-            _realUnitOfWork.AddToCache(aggregateRoot, aggregateRootInfo.LastGlobalSeqNo);
 
             if (aggregateRootInfo.IsNew)
             {

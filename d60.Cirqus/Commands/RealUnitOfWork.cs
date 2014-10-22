@@ -28,7 +28,45 @@ namespace d60.Cirqus.Commands
             Events.Add(e);
         }
 
-        public TAggregateRoot GetAggregateRootFromCache<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+        public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+        {
+            var cacheWithThisVersion = CachedAggregateRoots.GetOrAdd(globalSequenceNumberCutoff, cutoff => new Dictionary<Guid, AggregateRoot>());
+
+            cacheWithThisVersion[aggregateRoot.Id] = aggregateRoot;
+        }
+
+        public bool Exists<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+        {
+            return _aggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
+        }
+
+        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
+        {
+            var aggregateRootInfoFromCache = GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
+
+            if (aggregateRootInfoFromCache != null)
+            {
+                return aggregateRootInfoFromCache;
+            }
+
+            if (!_aggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId) && !createIfNotExists)
+            {
+                throw new ArgumentException(string.Format("Could not find aggregate root of type {0} with ID {1}", typeof(TAggregateRoot), aggregateRootId));
+            }
+            
+            var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff);
+
+            // make sure to cache under long.MaxValue if we're "unbounded"
+            var lastGlobalSeqNoToCacheUnder = globalSequenceNumberCutoff == long.MaxValue
+                ? long.MaxValue
+                : aggregateRootInfo.LastGlobalSeqNo;
+
+            AddToCache(aggregateRootInfo.AggregateRoot, lastGlobalSeqNoToCacheUnder);
+
+            return aggregateRootInfo;
+        }
+
+        AggregateRootInfo<TAggregateRoot> GetAggregateRootFromCache<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
         {
             if (!CachedAggregateRoots.ContainsKey(globalSequenceNumberCutoff)) return null;
             if (!CachedAggregateRoots[globalSequenceNumberCutoff].ContainsKey(aggregateRootId)) return null;
@@ -42,24 +80,7 @@ namespace d60.Cirqus.Commands
                         aggregateRoot.GetType(), aggregateRootId, typeof (TAggregateRoot)));
             }
 
-            return (TAggregateRoot) aggregateRoot;
-        }
-
-        public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
-        {
-            var cacheWithThisVersion = CachedAggregateRoots.GetOrAdd(globalSequenceNumberCutoff, cutoff => new Dictionary<Guid, AggregateRoot>());
-
-            cacheWithThisVersion[aggregateRoot.Id] = aggregateRoot;
-        }
-
-        public bool Exists<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
-        {
-            return _aggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
-        }
-
-        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot, new()
-        {
-            return _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff);
+            return AggregateRootInfo<TAggregateRoot>.Create((TAggregateRoot)aggregateRoot);
         }
     }
 }

@@ -4,7 +4,7 @@ using d60.Cirqus.Aggregates;
 
 namespace d60.Cirqus.Tests.Snapshotting
 {
-    public class ChallengingSnapshotSpeciments
+    public class ChallengingSnapshotSpecimens
     {
         public class SimpleRootWithOrdinaryField : AggregateRoot
         {

@@ -135,7 +135,7 @@ namespace d60.Cirqus
         {
             var unitOfWork = new RealUnitOfWork(_aggregateRootRepository);
 
-            command.Execute(new DefaultCommandContext(unitOfWork, _aggregateRootRepository));
+            command.Execute(new DefaultCommandContext(unitOfWork));
 
             var emittedEvents = unitOfWork.EmittedEvents.ToList();
 

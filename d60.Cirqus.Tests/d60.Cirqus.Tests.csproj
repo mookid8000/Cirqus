@@ -186,7 +186,7 @@
     <Compile Include="SqlTestHelperBase.cs" />
     <Compile Include="MsSql\MsSqlTestHelper.cs" />
     <Compile Include="Playground\TestTypeHashCodes.cs" />
-    <Compile Include="Snapshotting\ChallengingSnapshotSpeciments.cs" />
+    <Compile Include="Snapshotting\ChallengingSnapshotSpecimens.cs" />
     <Compile Include="Snapshotting\TestInMemorySnapshotCache.cs" />
     <Compile Include="Snapshotting\TestSnapshottingWithFairlyLongHistory.cs" />
     <Compile Include="Snapshotting\TestSturdylizer.cs" />
