@@ -362,6 +362,7 @@ This is a big update that completes the transition to the new, vastly improved v
 ## 0.34.0
 
 * Removed aggregate root repository reference from aggregate root because it would accidentally avoid decorators and this bypass caching
+* Added event dispatch timing to `IProfiler` 
 
 
 

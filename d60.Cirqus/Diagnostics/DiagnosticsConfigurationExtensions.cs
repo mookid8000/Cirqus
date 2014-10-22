@@ -4,6 +4,7 @@ using System.Diagnostics;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Config.Configurers;
 using d60.Cirqus.Events;
+using d60.Cirqus.Views;
 
 namespace d60.Cirqus.Diagnostics
 {
@@ -30,6 +31,14 @@ namespace d60.Cirqus.Diagnostics
                 {
                     var innnerAggregateRootRepository = c.Get<IAggregateRootRepository>();
                     return new AggregateRootRepositoryDecorator(innnerAggregateRootRepository, operationProfiler);
+                }, decorator: true);
+
+            builder
+                .Registrar
+                .Register<IEventDispatcher>(c =>
+                {
+                    var innerEventDispatcher = c.Get<IEventDispatcher>();
+                    return new EventDispatcherDecorator(innerEventDispatcher, operationProfiler);
                 }, decorator: true);
         }
 
@@ -60,6 +69,41 @@ namespace d60.Cirqus.Diagnostics
             public void RecordGlobalSequenceNumberGetNext(TimeSpan elapsed)
             {
                 _profiler.RecordGlobalSequenceNumberGetNext(elapsed);
+            }
+
+            public void RecordEventDispatch(TimeSpan elapsed)
+            {
+                _profiler.RecordEventDispatch(elapsed);
+            }
+        }
+
+        class EventDispatcherDecorator : IEventDispatcher
+        {
+            readonly IEventDispatcher _innerEventDispatcher;
+            readonly OperationProfiler _operationProfiler;
+
+            public EventDispatcherDecorator(IEventDispatcher innerEventDispatcher, OperationProfiler operationProfiler)
+            {
+                _innerEventDispatcher = innerEventDispatcher;
+                _operationProfiler = operationProfiler;
+            }
+
+            public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
+            {
+                _innerEventDispatcher.Initialize(eventStore, purgeExistingViews);
+            }
+
+            public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
+            {
+                var stopwatch = Stopwatch.StartNew();
+                try
+                {
+                    _innerEventDispatcher.Dispatch(eventStore, events);
+                }
+                finally
+                {
+                    _operationProfiler.RecordEventDispatch(stopwatch.Elapsed);
+                }
             }
         }
 

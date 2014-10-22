@@ -130,6 +130,11 @@ namespace d60.Cirqus.Tests.Diagnostics
             Interlocked.Add(ref _millisecondsSpentGettingNextSequenceNumber, (long)elapsed.TotalMilliseconds);
         }
 
+        public void RecordEventDispatch(TimeSpan elapsed)
+        {
+            
+        }
+
         public ConcurrentDictionary<Type, TimeSpan> AggregateRootHydrationTimes
         {
             get { return _aggregateRootHydrationTimes; }

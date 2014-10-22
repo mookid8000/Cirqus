@@ -147,6 +147,11 @@ namespace d60.Cirqus.Tests.Diagnostics
             public void RecordGlobalSequenceNumberGetNext(TimeSpan elapsed)
             {
             }
+
+            public void RecordEventDispatch(TimeSpan elapsed)
+            {
+                
+            }
         }
     }
 

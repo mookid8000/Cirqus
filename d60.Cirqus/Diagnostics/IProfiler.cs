@@ -26,5 +26,10 @@ namespace d60.Cirqus.Diagnostics
         /// Called after getting the next global sequence number from the event store
         /// </summary>
         void RecordGlobalSequenceNumberGetNext  (TimeSpan elapsed);
+
+        /// <summary>
+        /// Called after dispatching a successfully saved event batch
+        /// </summary>
+        void RecordEventDispatch(TimeSpan elapsed);
     }
 }
