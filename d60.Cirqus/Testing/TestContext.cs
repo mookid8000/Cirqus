@@ -132,7 +132,15 @@ namespace d60.Cirqus.Testing
 
                         if (type == null) return null;
 
-                        var parameters = new object[] { aggregateRootId, new RealUnitOfWork(_aggregateRootRepository), long.MaxValue, false };
+                        var unitOfWork = new RealUnitOfWork(_aggregateRootRepository);
+
+                        var parameters = new object[]
+                        {
+                            aggregateRootId, 
+                            unitOfWork, 
+                            long.MaxValue,      // max global sequence number
+                            false               // createIfNotExists
+                        };
 
                         try
                         {
