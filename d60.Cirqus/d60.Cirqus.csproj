@@ -95,6 +95,11 @@
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\DomainEventExtensions.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
+    <Compile Include="Ntfs\Config\NtfsConfigurationExtensions.cs" />
+    <Compile Include="Ntfs\Events\CommitLog.cs" />
+    <Compile Include="Ntfs\Events\DataStore.cs" />
+    <Compile Include="Ntfs\Events\GlobalSequenceIndex.cs" />
+    <Compile Include="Ntfs\Events\NtfsEventStore.cs" />
     <Compile Include="Numbers\Metadata.cs" />
     <Compile Include="Numbers\Time.cs" />
     <Compile Include="Numbers\TimeMachine.cs" />
