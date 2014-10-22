@@ -54,12 +54,9 @@ namespace d60.Cirqus.Snapshotting
                 where TAggregateRoot : AggregateRoot
             {
                 var rootInstance = aggregateRootInfo.AggregateRoot;
-                var aggregateRootRepository = rootInstance.AggregateRootRepository;
                 var unitOfWork = rootInstance.UnitOfWork;
                 try
                 {
-
-                    rootInstance.AggregateRootRepository = null;
                     rootInstance.UnitOfWork = null;
 
                     var data = Sturdylizer.SerializeObject(rootInstance);
@@ -77,7 +74,6 @@ namespace d60.Cirqus.Snapshotting
                 }
                 finally
                 {
-                    rootInstance.AggregateRootRepository = aggregateRootRepository;
                     rootInstance.UnitOfWork = unitOfWork;
                 }
             }

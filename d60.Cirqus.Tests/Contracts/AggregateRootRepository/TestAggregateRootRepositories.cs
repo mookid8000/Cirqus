@@ -30,7 +30,7 @@ namespace d60.Cirqus.Tests.Contracts.AggregateRootRepository
             _factory.SaveEvent<SomeEvent, SomeRoot>(NewEvent(aggregateRootId, 3));
             _factory.SaveEvent<SomeEvent, SomeRoot>(NewEvent(aggregateRootId, 4));
 
-            var instance = _repo.Get<SomeRoot>(aggregateRootId, new InMemoryUnitOfWork()).AggregateRoot;
+            var instance = _repo.Get<SomeRoot>(aggregateRootId, new InMemoryUnitOfWork(_repo)).AggregateRoot;
 
             Assert.That(instance.EventCounter, Is.EqualTo(5));
         }

@@ -10,7 +10,7 @@ namespace d60.Cirqus.Aggregates
 
         internal IUnitOfWork UnitOfWork { get; set; }
 
-        internal IAggregateRootRepository AggregateRootRepository { get; set; }
+        //internal IAggregateRootRepository AggregateRootRepository { get; set; }
 
         internal void Initialize(Guid id)
         {
@@ -116,14 +116,6 @@ namespace d60.Cirqus.Aggregates
 
         protected TAggregateRoot Load<TAggregateRoot>(Guid aggregateRootId, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
         {
-            if (AggregateRootRepository == null)
-            {
-                throw new InvalidOperationException(
-                    string.Format(
-                        "Attempted to Load {0} with ID {1} from {2}, but it has not been initialized with an aggregate root repository! The repository must be attached to the aggregate root in order to hydrate aggregate roots from events when they cannot be found in the current unit of work.",
-                        typeof(TAggregateRoot), aggregateRootId, GetType()));
-            }
-
             if (UnitOfWork == null)
             {
                 throw new InvalidOperationException(
@@ -149,12 +141,12 @@ namespace d60.Cirqus.Aggregates
                 return cachedAggregateRoot;
             }
 
-            if (!createIfNotExists && !AggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, maxGlobalSequenceNumber: globalSequenceNumberCutoffToLookFor))
+            if (!createIfNotExists && !UnitOfWork.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff: globalSequenceNumberCutoffToLookFor))
             {
                 throw new ArgumentException(string.Format("Aggregate root {0} with ID {1} does not exist!", typeof(TAggregateRoot), aggregateRootId), "aggregateRootId");
             }
 
-            var aggregateRootInfo = AggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, unitOfWork: UnitOfWork, maxGlobalSequenceNumber: globalSequenceNumberCutoffToLookFor);
+            var aggregateRootInfo = UnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff: globalSequenceNumberCutoffToLookFor);
             var aggregateRoot = aggregateRootInfo.AggregateRoot;
 
             var globalSequenceNumberToSaveUnder = ReplayState == ReplayState.None

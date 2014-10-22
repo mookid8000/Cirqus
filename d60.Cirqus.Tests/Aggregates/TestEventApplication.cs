@@ -16,12 +16,12 @@ namespace d60.Cirqus.Tests.Aggregates
         [Test]
         public void AppliesEmittedEvents()
         {
+            var aggregateRootRepository = new DefaultAggregateRootRepository(new InMemoryEventStore());
             var someAggregate = new SomeAggregate
             {
-                UnitOfWork = new ConsoleOutUnitOfWork(),
+                UnitOfWork = new ConsoleOutUnitOfWork(aggregateRootRepository),
             };
             someAggregate.Initialize(Guid.NewGuid());
-            someAggregate.AggregateRootRepository = new DefaultAggregateRootRepository(new InMemoryEventStore());
 
             someAggregate.DoSomething();
 
@@ -36,14 +36,14 @@ namespace d60.Cirqus.Tests.Aggregates
             var timeForNextEvent = timeForFirstEvent.AddMilliseconds(2);
 
             var aggregateRootId = Guid.NewGuid();
-            var eventCollector = new InMemoryUnitOfWork();
+            var aggregateRootRepository = new DefaultAggregateRootRepository(new InMemoryEventStore());
+            var eventCollector = new InMemoryUnitOfWork(aggregateRootRepository);
 
             var someAggregate = new SomeAggregate
             {
                 UnitOfWork = eventCollector,
             };
             someAggregate.Initialize(aggregateRootId);
-            someAggregate.AggregateRootRepository = new DefaultAggregateRootRepository(new InMemoryEventStore());
 
             TimeMachine.FixCurrentTimeTo(timeForFirstEvent);
 

@@ -7,7 +7,13 @@ namespace d60.Cirqus.Tests.Stubs
 {
     public class ConsoleOutUnitOfWork : IUnitOfWork
     {
+        readonly IAggregateRootRepository _aggregateRootRepository;
         readonly Dictionary<Guid, AggregateRoot> _cachedAggregateRoots = new Dictionary<Guid, AggregateRoot>();
+
+        public ConsoleOutUnitOfWork(IAggregateRootRepository aggregateRootRepository)
+        {
+            _aggregateRootRepository = aggregateRootRepository;
+        }
 
         public void AddEmittedEvent(DomainEvent e)
         {
@@ -33,6 +39,16 @@ namespace d60.Cirqus.Tests.Stubs
         public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
         {
             _cachedAggregateRoots[aggregateRoot.Id] = aggregateRoot;
+        }
+
+        public bool Exists<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+        {
+            return _aggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
+        }
+
+        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot, new()
+        {
+            return _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff);
         }
     }
 }

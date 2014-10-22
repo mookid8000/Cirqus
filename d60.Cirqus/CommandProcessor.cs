@@ -133,7 +133,7 @@ namespace d60.Cirqus
 
         IEnumerable<DomainEvent> InnerProcessCommand(Command command)
         {
-            var unitOfWork = new RealUnitOfWork();
+            var unitOfWork = new RealUnitOfWork(_aggregateRootRepository);
 
             command.Execute(new DefaultCommandContext(unitOfWork, _aggregateRootRepository));
 

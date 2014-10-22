@@ -12,11 +12,13 @@ namespace d60.Cirqus.Views.ViewManagers
     class DefaultViewContext : IViewContext, IUnitOfWork
     {
         readonly IAggregateRootRepository _aggregateRootRepository;
-        readonly RealUnitOfWork _realUnitOfWork = new RealUnitOfWork();
+        readonly RealUnitOfWork _realUnitOfWork;
 
         public DefaultViewContext(IAggregateRootRepository aggregateRootRepository)
         {
             _aggregateRootRepository = aggregateRootRepository;
+
+            _realUnitOfWork = new RealUnitOfWork(_aggregateRootRepository);
         }
 
         public TAggregateRoot Load<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
@@ -30,6 +32,16 @@ namespace d60.Cirqus.Views.ViewManagers
             }
 
             return Load<TAggregateRoot>(aggregateRootId, CurrentEvent.GetGlobalSequenceNumber());
+        }
+
+        public bool Exists<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+        {
+            return _aggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
+        }
+
+        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot, new()
+        {
+            return _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, _realUnitOfWork, globalSequenceNumberCutoff);
         }
 
         public TAggregateRoot Load<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
@@ -46,7 +58,6 @@ namespace d60.Cirqus.Views.ViewManagers
 
             var frozen = new FrozenAggregateRootService<TAggregateRoot>(aggregateRootInfo, _realUnitOfWork);
             aggregateRoot.UnitOfWork = frozen;
-            aggregateRoot.AggregateRootRepository = _aggregateRootRepository;
 
             return aggregateRoot;
         }
@@ -77,6 +88,16 @@ namespace d60.Cirqus.Views.ViewManagers
             public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
             {
                 _realUnitOfWork.AddToCache<TAggregateRoot>(aggregateRoot, globalSequenceNumberCutoff);
+            }
+
+            public bool Exists<TAggregateRoot1>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot1 : AggregateRoot
+            {
+                return _realUnitOfWork.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
+            }
+
+            public AggregateRootInfo<TAggregateRootToLoad> Get<TAggregateRootToLoad>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRootToLoad : AggregateRoot, new()
+            {
+                return _realUnitOfWork.Get<TAggregateRootToLoad>(aggregateRootId, globalSequenceNumberCutoff);
             }
         }
 

@@ -138,6 +138,16 @@ namespace d60.Cirqus.Aggregates
                 _originalUnitOfWork.AddToCache(aggregateRoot, globalSequenceNumberCutoff);
             }
 
+            public bool Exists<TAggregateRootToLoad>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRootToLoad : AggregateRoot
+            {
+                return _originalUnitOfWork.Exists<TAggregateRootToLoad>(aggregateRootId, globalSequenceNumberCutoff);
+            }
+
+            public AggregateRootInfo<TAggregateRootToLoad> Get<TAggregateRootToLoad>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRootToLoad : AggregateRoot, new()
+            {
+                return _originalUnitOfWork.Get<TAggregateRootToLoad>(aggregateRootId, globalSequenceNumberCutoff);
+            }
+
             public void Dispose()
             {
                 _root.UnitOfWork = _originalUnitOfWork;

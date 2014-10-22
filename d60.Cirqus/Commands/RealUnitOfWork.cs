@@ -8,8 +8,15 @@ namespace d60.Cirqus.Commands
 {
     public class RealUnitOfWork : IUnitOfWork
     {
+        readonly IAggregateRootRepository _aggregateRootRepository;
+        
         protected readonly List<DomainEvent> Events = new List<DomainEvent>();
         protected readonly Dictionary<long, Dictionary<Guid, AggregateRoot>> CachedAggregateRoots = new Dictionary<long, Dictionary<Guid, AggregateRoot>>();
+
+        public RealUnitOfWork(IAggregateRootRepository aggregateRootRepository)
+        {
+            _aggregateRootRepository = aggregateRootRepository;
+        }
 
         public IEnumerable<DomainEvent> EmittedEvents
         {
@@ -43,6 +50,16 @@ namespace d60.Cirqus.Commands
             var cacheWithThisVersion = CachedAggregateRoots.GetOrAdd(globalSequenceNumberCutoff, cutoff => new Dictionary<Guid, AggregateRoot>());
 
             cacheWithThisVersion[aggregateRoot.Id] = aggregateRoot;
+        }
+
+        public bool Exists<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+        {
+            return _aggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
+        }
+
+        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot, new()
+        {
+            return _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff);
         }
     }
 }

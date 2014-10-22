@@ -60,7 +60,7 @@ namespace d60.Cirqus.Tests.Diagnostics
                 });
 
                 var repo = new DefaultAggregateRootRepository(new MongoDbEventStore(database, "Events"));
-                var currentState = repo.Get<Root>(id, new ConsoleOutUnitOfWork());
+                var currentState = repo.Get<Root>(id, new ConsoleOutUnitOfWork(repo));
 
                 Assert.That(currentState.AggregateRoot.HowManyThingsHaveHappened, Is.EqualTo(1000));
             }

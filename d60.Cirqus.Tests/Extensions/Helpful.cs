@@ -8,7 +8,7 @@ namespace d60.Cirqus.Tests.Extensions
     {
         public static AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(this IAggregateRootRepository repo, Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
-            return repo.Get<TAggregateRoot>(aggregateRootId, new InMemoryUnitOfWork());
+            return repo.Get<TAggregateRoot>(aggregateRootId, new InMemoryUnitOfWork(repo));
         }
     }
 }

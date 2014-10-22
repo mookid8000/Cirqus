@@ -9,10 +9,10 @@ namespace d60.Cirqus.Testing
 {
     public class TestUnitOfWork : IDisposable
     {
-        readonly RealUnitOfWork _realUnitOfWork = new RealUnitOfWork();
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventStore _eventStore;
         readonly IEventDispatcher _eventDispatcher;
+        readonly RealUnitOfWork _realUnitOfWork;
 
         bool _wasCommitted;
 
@@ -21,6 +21,7 @@ namespace d60.Cirqus.Testing
             _aggregateRootRepository = aggregateRootRepository;
             _eventStore = eventStore;
             _eventDispatcher = eventDispatcher;
+            _realUnitOfWork = new RealUnitOfWork(aggregateRootRepository);
         }
 
         internal RealUnitOfWork RealUnitOfWork
