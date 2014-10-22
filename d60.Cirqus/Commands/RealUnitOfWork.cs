@@ -49,12 +49,7 @@ namespace d60.Cirqus.Commands
                 return aggregateRootInfoFromCache;
             }
 
-            if (!_aggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId) && !createIfNotExists)
-            {
-                throw new ArgumentException(string.Format("Could not find aggregate root of type {0} with ID {1}", typeof(TAggregateRoot), aggregateRootId));
-            }
-            
-            var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff);
+            var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff, createIfNotExists: createIfNotExists);
 
             // make sure to cache under long.MaxValue if we're "unbounded"
             var lastGlobalSeqNoToCacheUnder = globalSequenceNumberCutoff == long.MaxValue

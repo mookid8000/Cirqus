@@ -25,13 +25,13 @@ namespace d60.Cirqus.Snapshotting
             _eventStore = eventStore;
         }
 
-        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = Int64.MaxValue) where TAggregateRoot : AggregateRoot, new()
+        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
         {
             var cloneFromCache = PrepareCloneFromCache<TAggregateRoot>(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
 
             if (cloneFromCache != null) return cloneFromCache;
 
-            var fromRepository = GetFromInnerRepository<TAggregateRoot>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber);
+            var fromRepository = GetFromInnerRepository<TAggregateRoot>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber, createIfNotExists);
 
             if (fromRepository.LastSeqNo > 0)
             {
@@ -73,9 +73,9 @@ namespace d60.Cirqus.Snapshotting
             return cloneInfo;
         }
 
-        AggregateRootInfo<TAggregateRoot> GetFromInnerRepository<TAggregateRoot>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
+        AggregateRootInfo<TAggregateRoot> GetFromInnerRepository<TAggregateRoot>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber, bool createIfNotExists) where TAggregateRoot : AggregateRoot, new()
         {
-            var aggregateRootInfo = _innerAggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber);
+            var aggregateRootInfo = _innerAggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber, createIfNotExists);
 
             return aggregateRootInfo;
         }

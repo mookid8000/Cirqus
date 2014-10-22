@@ -74,13 +74,13 @@ namespace d60.Cirqus.Diagnostics
                 _operationProfiler = operationProfiler;
             }
 
-            public AggregateRootInfo<TAggregate> Get<TAggregate>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = Int64.MaxValue) where TAggregate : AggregateRoot, new()
+            public AggregateRootInfo<TAggregate> Get<TAggregate>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false) where TAggregate : AggregateRoot, new()
             {
                 var stopwatch = Stopwatch.StartNew();
                 try
                 {
                     return _innnerAggregateRootRepository
-                        .Get<TAggregate>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber);
+                        .Get<TAggregate>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber, createIfNotExists);
                 }
                 finally
                 {

@@ -21,8 +21,8 @@ namespace d60.Cirqus.Aggregates
         /// Checks whether one or more events exist for an aggregate root with the specified ID. If <seealso cref="maxGlobalSequenceNumber"/> is specified,
         /// it will check whether the root instance existed at that point in time
         /// </summary>
-        public bool Exists<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue, IUnitOfWork unitOfWork = null) 
-            where TAggregate : AggregateRoot
+        public bool Exists<TAggregateRoot>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue, IUnitOfWork unitOfWork = null) 
+            where TAggregateRoot : AggregateRoot
         {
             var firstEvent = _eventStore.Load(aggregateRootId).FirstOrDefault();
 
@@ -34,16 +34,21 @@ namespace d60.Cirqus.Aggregates
         /// root will have events replayed until the specified <seealso cref="maxGlobalSequenceNumber"/> ceiling. If the root has
         /// no events (i.e. it doesn't exist yet), a newly initialized instance is returned.
         /// </summary>
-        public AggregateRootInfo<TAggregate> Get<TAggregate>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue) 
-            where TAggregate : AggregateRoot, new()
+        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false) 
+            where TAggregateRoot : AggregateRoot, new()
         {
-            var aggregateRootInfo = CreateNewAggregateRootInstance<TAggregate>(aggregateRootId);
+            var aggregateRootInfo = CreateNewAggregateRootInstance<TAggregateRoot>(aggregateRootId);
             var domainEventsForThisAggregate = _eventStore.Load(aggregateRootId);
 
             var eventsToApply = domainEventsForThisAggregate
                 .Where(e => e.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber);
 
             aggregateRootInfo.Apply(eventsToApply, unitOfWork);
+
+            if (aggregateRootInfo.IsNew && !createIfNotExists)
+            {
+                throw new ArgumentException(string.Format("Could not find aggregate root of type {0} with ID {1}", typeof(TAggregateRoot), aggregateRootId));
+            }
 
             return aggregateRootInfo;
         }

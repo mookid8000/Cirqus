@@ -20,8 +20,8 @@ namespace d60.Cirqus.Tests.Diagnostics
     [TestFixture, Category(TestCategories.MongoDb)]
     public class TestLapTimes : FixtureBase
     {
-        [Test]
-        public void CanDoTheThing()
+        [TestCase(1000)]
+        public void CanDoTheThing(int numberOfCommandsToProcess)
         {
             var database = MongoHelper.InitializeTestDatabase();
             var profiler = new MyProfiler();
@@ -53,7 +53,7 @@ namespace d60.Cirqus.Tests.Diagnostics
 
                 var id = new Guid("67509467-C686-410C-8862-E910B5AF70F0");
 
-                1000.Times(() =>
+                numberOfCommandsToProcess.Times(() =>
                 {
                     commandProcessor.ProcessCommand(new MakeStuffHappen(id));
                     Interlocked.Increment(ref commandCounter);
@@ -62,7 +62,7 @@ namespace d60.Cirqus.Tests.Diagnostics
                 var repo = new DefaultAggregateRootRepository(new MongoDbEventStore(database, "Events"));
                 var currentState = repo.Get<Root>(id, new ConsoleOutUnitOfWork(repo));
 
-                Assert.That(currentState.AggregateRoot.HowManyThingsHaveHappened, Is.EqualTo(1000));
+                Assert.That(currentState.AggregateRoot.HowManyThingsHaveHappened, Is.EqualTo(numberOfCommandsToProcess));
             }
 
             Console.WriteLine(profiler);
