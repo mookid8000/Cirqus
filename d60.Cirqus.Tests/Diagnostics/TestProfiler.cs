@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Config;
@@ -23,7 +25,7 @@ namespace d60.Cirqus.Tests.Diagnostics
 
             var commandProcessor = CommandProcessor.With()
                 .Logging(l => l.UseConsole(minLevel:Logger.Level.Warn))
-                .EventStore(e => e.Registrar.Register<IEventStore>(c => new InMemoryEventStore()))
+                .EventStore(e => e.Registrar.Register<IEventStore>(c => new SlowWrapper(new InMemoryEventStore())))
                 .EventDispatcher(e => e.UseViewManagerEventDispatcher(waitHandle))
                 .Options(o => o.AddProfiler(profilero))
                 .Create();
@@ -39,7 +41,29 @@ namespace d60.Cirqus.Tests.Diagnostics
 
             commandProcessor.ProcessCommand(new DoStuffCommand(rootId) { OtherRootId = otherRootId });
 
-            Console.WriteLine(string.Join(Environment.NewLine, profilero.Calls));
+
+            var firstLines = profilero.Calls
+                .TakeWhile(c => !string.IsNullOrWhiteSpace(c))
+                .ToList();
+
+            var nextLines = profilero.Calls
+                .Skip(firstLines.Count())
+                .SkipWhile(string.IsNullOrWhiteSpace)
+                .ToList();
+
+            Console.WriteLine("Recorded calls with not history");
+            Console.WriteLine(string.Join(Environment.NewLine, firstLines));
+            Console.WriteLine();
+            Console.WriteLine("Recorded calls with 1 event in history for each aggregate root");
+            Console.WriteLine(string.Join(Environment.NewLine, nextLines));
+
+            Assert.That(string.Join("; ", firstLines.Select(l => l.Substring(0, l.IndexOf('.')))),
+                Is.EqualTo("RecordAggregateRootGet 00:00:00; RecordAggregateRootGet 00:00:00; RecordEventBatchSave 00:00:00"),
+                "Expected that two loads and one save were performed, each taking way less than a second");
+
+            Assert.That(string.Join("; ", nextLines.Select(l => l.Substring(0, l.IndexOf('.')))),
+                Is.EqualTo("RecordAggregateRootGet 00:00:01; RecordAggregateRootGet 00:00:01; RecordEventBatchSave 00:00:00"),
+                "Expected that two loads taking sligtly > 1 s each would have been performed, followed by one save");
         }
 
         public class DoStuffCommand : Command<Root>
@@ -126,6 +150,41 @@ namespace d60.Cirqus.Tests.Diagnostics
             {
                 _calls.Add(string.Format("RecordGlobalSequenceNumberGetNext {0}", elapsed));
             }
+        }
+    }
+
+    public class SlowWrapper : IEventStore
+    {
+        readonly IEventStore _innerEventStore;
+
+        public SlowWrapper(IEventStore innerEventStore)
+        {
+            _innerEventStore = innerEventStore;
+        }
+
+        public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
+        {
+            _innerEventStore.Save(batchId, batch);
+        }
+
+        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
+        {
+            foreach (var e in _innerEventStore.Load(aggregateRootId, firstSeq))
+            {
+                Thread.Sleep(1000);
+
+                yield return e;
+            }
+        }
+
+        public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+        {
+            return _innerEventStore.Stream(globalSequenceNumber);
+        }
+
+        public long GetNextGlobalSequenceNumber()
+        {
+            return _innerEventStore.GetNextGlobalSequenceNumber();
         }
     }
 }
