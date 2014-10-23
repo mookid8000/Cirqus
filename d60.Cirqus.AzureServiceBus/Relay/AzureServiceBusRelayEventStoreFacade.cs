@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
+using d60.Cirqus.AzureServiceBus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
@@ -9,6 +10,11 @@ using Microsoft.ServiceBus;
 
 namespace d60.Cirqus.AzureServiceBus.Relay
 {
+    /// <summary>
+    /// Event store facade that can be used to stream events from a <see cref="AzureServiceBusRelayEventDispatcher"/>, possibly installed
+    /// as an event dispatcher in a command processor by using the <see cref="AzureServiceBusConfigurationExtensions.UseAzureServiceBusRelayEventDispatcher"/>
+    /// configuration method
+    /// </summary>
     public class AzureServiceBusRelayEventStoreFacade : IEventStore, IDisposable
     {
         static Logger _logger;
@@ -20,7 +26,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
 
         readonly Serializer _serializer = new Serializer();
         readonly ChannelFactory<IHostService> _channelFactory;
-        
+
         IHostService _currentClientChannel;
         bool _disposed;
 
@@ -29,7 +35,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             var uri = ServiceBusEnvironment.CreateServiceUri("sb", serviceNamespace, servicePath);
 
             _logger.Info("Initializing event store facade for {0}", uri);
-            
+
             var binding = new NetTcpRelayBinding();
             _channelFactory = new ChannelFactory<IHostService>(binding, new EndpointAddress(uri));
 
@@ -57,16 +63,10 @@ namespace d60.Cirqus.AzureServiceBus.Relay
         {
             var client = GetClient();
 
-            while (true)
-            {
-                var transportMessage = client.Load(aggregateRootId, firstSeq);
-                var domainEvents = _serializer.Deserialize(transportMessage.Events);
-
-                foreach (var e in domainEvents)
-                {
-                    yield return e;
-                }
-            }
+            var transportMessage = client.Load(aggregateRootId, firstSeq);
+            var domainEvents = _serializer.Deserialize(transportMessage.Events);
+         
+            return domainEvents;
         }
 
         public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
@@ -101,7 +101,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             }
 
             _currentClientChannel = _channelFactory.CreateChannel();
-            
+
             return _currentClientChannel;
         }
 

@@ -9,11 +9,14 @@ using Microsoft.ServiceBus;
 
 namespace d60.Cirqus.AzureServiceBus.Relay
 {
-    public class AzureServiceBusRelayHost : IEventDispatcher, IDisposable
+    /// <summary>
+    /// Event dispatcher implementation that can relay events to any number of <see cref="AzureServiceBusRelayEventStoreFacade"/>s
+    /// </summary>
+    public class AzureServiceBusRelayEventDispatcher : IEventDispatcher, IDisposable
     {
         static Logger _logger;
 
-        static AzureServiceBusRelayHost()
+        static AzureServiceBusRelayEventDispatcher()
         {
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
         }
@@ -21,7 +24,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
         readonly ServiceHost _serviceHost;
         bool _disposed;
 
-        public AzureServiceBusRelayHost(IEventStore eventStore, string serviceNamespace, string path, string keyName, string sharedAccessKey)
+        public AzureServiceBusRelayEventDispatcher(IEventStore eventStore, string serviceNamespace, string path, string keyName, string sharedAccessKey)
         {
             var uri = ServiceBusEnvironment.CreateServiceUri("sb", serviceNamespace, path);
 
@@ -40,7 +43,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             _serviceHost.Open();
         }
 
-        ~AzureServiceBusRelayHost()
+        ~AzureServiceBusRelayEventDispatcher()
         {
             Dispose(false);
         }

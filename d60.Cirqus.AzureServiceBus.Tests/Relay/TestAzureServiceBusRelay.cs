@@ -6,7 +6,7 @@ using d60.Cirqus.AzureServiceBus.Relay;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Config;
 using d60.Cirqus.Events;
-using d60.Cirqus.Logging;
+using d60.Cirqus.Extensions;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
@@ -67,6 +67,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
             var view = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(id));
 
             Assert.That(view.AppliedEventsAccordingToView, Is.EqualTo(3));
+            Assert.That(view.AppliedEventsAccordingToRoot, Is.EqualTo(3));
         }
 
         CommandProcessingResult Process(Command command)
@@ -116,11 +117,25 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
             public string Id { get; set; }
             public long LastGlobalSequenceNumber { get; set; }
             public int AppliedEventsAccordingToView { get; set; }
+            public int AppliedEventsAccordingToRoot { get; set; }
             public void Handle(IViewContext context, Event domainEvent)
             {
                 Console.WriteLine("Event dispatched to view: {0}", domainEvent);
-                
-                AppliedEventsAccordingToView++;
+
+                try
+                {
+                    var root = context.Load<Root>(domainEvent.GetAggregateRootId());
+                    AppliedEventsAccordingToRoot = root.AppliedEvents;
+
+                    AppliedEventsAccordingToView++;
+
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine("Error dispatching: {0}", exception);
+
+                    throw;
+                }
             }
         }
     }

@@ -61,7 +61,7 @@
     <Compile Include="Dispatcher\DispatchNotification.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Relay\AzureServiceBusRelayEventStoreFacade.cs" />
-    <Compile Include="Relay\AzureServiceBusRelayHost.cs" />
+    <Compile Include="Relay\AzureServiceBusRelayEventDispatcher.cs" />
     <Compile Include="Relay\TransportMessage.cs" />
     <Compile Include="Serializer.cs" />
   </ItemGroup>
