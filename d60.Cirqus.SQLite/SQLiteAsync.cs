@@ -28,7 +28,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SQLite
+namespace d60.Cirqus.SQLite
 {
 	public partial class SQLiteAsyncConnection
 	{

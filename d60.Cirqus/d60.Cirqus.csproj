@@ -37,8 +37,10 @@
       <HintPath>..\packages\Newtonsoft.Json.6.0.5\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Aggregates\AggregateRoot.cs" />
@@ -95,6 +97,14 @@
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\DomainEventExtensions.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
+    <Compile Include="MsSql\Config\MsSqlConfigurationExtensions.cs" />
+    <Compile Include="MsSql\Events\MsSqlEventStore.cs" />
+    <Compile Include="MsSql\SqlHelper.cs" />
+    <Compile Include="MsSql\Views\ColumnAttribute.cs" />
+    <Compile Include="MsSql\Views\JsonAttribute.cs" />
+    <Compile Include="MsSql\Views\MsSqlViewManager.cs" />
+    <Compile Include="MsSql\Views\NotNullAttribute.cs" />
+    <Compile Include="MsSql\Views\SchemaHelper.cs" />
     <Compile Include="Ntfs\Config\NtfsConfigurationExtensions.cs" />
     <Compile Include="Ntfs\Events\CommitLog.cs" />
     <Compile Include="Ntfs\Events\DataStore.cs" />

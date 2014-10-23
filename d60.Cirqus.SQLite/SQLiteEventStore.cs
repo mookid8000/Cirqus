@@ -5,10 +5,13 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Serialization;
-using SQLite;
 
 namespace d60.Cirqus.SQLite
 {
+    /// <summary>
+    /// Implementation of <see cref="IEventStore"/> that uses SQLite to store its events. Please remember to somehow copy the native
+    /// sqlite3.dll to the diretory in which your application will be running.
+    /// </summary>
     public class SQLiteEventStore : IEventStore, IDisposable
     {
         readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");

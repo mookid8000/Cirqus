@@ -364,6 +364,10 @@ This is a big update that completes the transition to the new, vastly improved v
 * Removed aggregate root repository reference from aggregate root because it would accidentally avoid decorators and this bypass caching
 * Added event dispatch timing to `IProfiler` 
 
+## 0.35.0
+
+* Moved file-based event store into core because it has no dependencies - thanks [asgerhallas]
+* Moved SQL Server event store and view manager into core because they too have no dependencies
 
 
 [asgerhallas]: https://github.com/asgerhallas
