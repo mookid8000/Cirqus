@@ -29,7 +29,7 @@ namespace d60.Cirqus.AzureServiceBus.Dispatcher
             _workerThread = new Thread(DoWork);
         }
 
-        public event Action<Exception> Error = delegate { }; 
+        public event Action<Exception> Error; 
 
         public void Initialize(bool purgeExistingViews = false)
         {
@@ -53,9 +53,20 @@ namespace d60.Cirqus.AzureServiceBus.Dispatcher
                 }
                 catch (Exception e)
                 {
-                    Error(e);
+                    RaiseError(e);
+
                     Thread.Sleep(2000);
                 }
+            }
+        }
+
+        void RaiseError(Exception e)
+        {
+            var errorHandlers = Error;
+            
+            if (errorHandlers != null)
+            {
+                errorHandlers(e);
             }
         }
 

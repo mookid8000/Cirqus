@@ -39,8 +39,6 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             var endpointBehavior = new TransportClientEndpointBehavior(tokenProvider);
             endpoint.Behaviors.Add(endpointBehavior);
 
-            _logger.Info("Opening connection");
-            _serviceHost.Open();
         }
 
         ~AzureServiceBusRelayEventDispatcher()
@@ -50,7 +48,8 @@ namespace d60.Cirqus.AzureServiceBus.Relay
 
         public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
         {
-
+            _logger.Info("Opening connection");
+            _serviceHost.Open();
         }
 
         public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
