@@ -6,6 +6,9 @@ namespace d60.Cirqus.PostgreSql.Config
 {
     public static class PostgreSqlConfigurationExtensions
     {
+        /// <summary>
+        /// Configures Cirqus to use Postgres as the event store
+        /// </summary>
         public static void UsePostgreSql(this EventStoreConfigurationBuilder builder, string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true)
         {
             if (builder == null) throw new ArgumentNullException("builder");
