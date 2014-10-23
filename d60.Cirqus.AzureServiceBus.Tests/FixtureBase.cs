@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Timers;
 using d60.Cirqus.Numbers;
@@ -8,6 +9,8 @@ namespace d60.Cirqus.AzureServiceBus.Tests
 {
     public class FixtureBase
     {
+        List<IDisposable> _stuffToDispose;
+
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
@@ -17,6 +20,8 @@ namespace d60.Cirqus.AzureServiceBus.Tests
         [SetUp]
         public void SetUp()
         {
+            _stuffToDispose = new List<IDisposable>();
+
             DoSetUp();
         }
 
@@ -24,6 +29,8 @@ namespace d60.Cirqus.AzureServiceBus.Tests
         public void TearDown()
         {
             DoTearDown();
+
+            DisposeStuff();
         }
 
         protected virtual  void DoSetUp()
@@ -34,6 +41,22 @@ namespace d60.Cirqus.AzureServiceBus.Tests
         }
 
         public delegate void TimerCallback(TimeSpan elapsedTotal);
+
+        protected TDisposable RegisterForDisposal<TDisposable>(TDisposable disposable) where TDisposable : IDisposable
+        {
+            _stuffToDispose.Add(disposable);
+            return disposable;
+        }
+
+        protected void DisposeStuff()
+        {
+            _stuffToDispose.ForEach(d =>
+            {
+                Console.WriteLine("Disposing {0}", d);
+                d.Dispose();
+            });
+            _stuffToDispose.Clear();
+        }
 
         protected void TakeTime(string description, Action action, TimerCallback periodicCallback = null)
         {

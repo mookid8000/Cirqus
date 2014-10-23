@@ -1,22 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
+using d60.Cirqus.AzureServiceBus.Dispatcher;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Views;
-using Microsoft.ServiceBus;
 using NUnit.Framework;
 
-namespace d60.Cirqus.AzureServiceBus.Tests
+namespace d60.Cirqus.AzureServiceBus.Tests.Dispatcher
 {
     [TestFixture, Category(TestCategories.Azure)]
     public class TestAzureServiceBusEventDispatcher : FixtureBase, IEventDispatcher
     {
-        const string TopicName = "cirqus";
-        const string SubscriptionName = "test";
         AzureServiceBusEventDispatcherSender _sender;
         AzureServiceBusEventDispatcherReceiver _receiver;
         List<string> _stuffThatHappened;
@@ -25,41 +22,15 @@ namespace d60.Cirqus.AzureServiceBus.Tests
 
         protected override void DoSetUp()
         {
-            var connectionString = File.ReadAllText(@"c:\path-to-azure-service-bus-connection-string");
-
-            CleanUp(connectionString);
+            TestAzureHelper.CleanUp();
 
             _stuffThatHappened = new List<string>();
             _resetEvent = new AutoResetEvent(false);
 
             _eventStore = new InMemoryEventStore();
 
-            _sender = new AzureServiceBusEventDispatcherSender(connectionString, TopicName);
-            _receiver = new AzureServiceBusEventDispatcherReceiver(connectionString, this, _eventStore, TopicName, SubscriptionName);
-        }
-
-        static void CleanUp(string connectionString)
-        {
-            var manager = NamespaceManager.CreateFromConnectionString(connectionString);
-            try
-            {
-                Console.WriteLine("Deleting subscription: {0}/{1}", TopicName, SubscriptionName);
-                manager.DeleteSubscription(TopicName, SubscriptionName);
-            }
-            catch(Exception exception)
-            {
-                Console.WriteLine(exception);
-            }
-
-            try
-            {
-                Console.WriteLine("Deleting topic: {0}", TopicName);
-                manager.DeleteTopic(TopicName);
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine(exception);
-            }
+            _sender = new AzureServiceBusEventDispatcherSender(TestAzureHelper.ConnectionString, TestAzureHelper.TopicName);
+            _receiver = new AzureServiceBusEventDispatcherReceiver(TestAzureHelper.ConnectionString, this, _eventStore, TestAzureHelper.TopicName, TestAzureHelper.SubscriptionName);
         }
 
         protected override void DoTearDown()
@@ -81,7 +52,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests
         {
             _receiver.Initialize();
 
-            _sender.Dispatch(_eventStore, new[] {AnEvent(0)});
+            _sender.Dispatch(_eventStore, new[] { AnEvent(0) });
 
             WaitResetEvent();
 
@@ -102,7 +73,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests
 
         class SomeDomainEvent : DomainEvent
         {
-            
+
         }
 
         void WaitResetEvent(int seconds = 5)

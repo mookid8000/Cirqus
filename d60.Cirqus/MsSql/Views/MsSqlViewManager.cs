@@ -51,8 +51,8 @@ namespace d60.Cirqus.MsSql.Views
             }
         }
 
-        public MsSqlViewManager(string connectionString, bool automaticallyCreateSchema = true)
-            : this(connectionString, typeof(TViewInstance).Name, automaticallyCreateSchema: automaticallyCreateSchema)
+        public MsSqlViewManager(string connectionStringOrConnectionStringName, bool automaticallyCreateSchema = true)
+            : this(connectionStringOrConnectionStringName, typeof(TViewInstance).Name, automaticallyCreateSchema: automaticallyCreateSchema)
         {
         }
 
