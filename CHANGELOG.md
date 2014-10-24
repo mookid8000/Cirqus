@@ -369,6 +369,10 @@ This is a big update that completes the transition to the new, vastly improved v
 * Moved file-based event store into core because it has no dependencies - thanks [asgerhallas]
 * Moved SQL Server event store and view manager into core because they too have no dependencies
 
+## 0.36.0
+
+* Added an Azure Service Bus Relay-based event store proxy and an `IEventDispatcher` implementation that is an event store (readonly-)host
+
 
 [asgerhallas]: https://github.com/asgerhallas
 

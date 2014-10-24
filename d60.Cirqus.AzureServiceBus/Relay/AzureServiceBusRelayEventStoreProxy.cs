@@ -11,15 +11,16 @@ using Microsoft.ServiceBus;
 namespace d60.Cirqus.AzureServiceBus.Relay
 {
     /// <summary>
-    /// Event store facade that can be used to stream events from a <see cref="AzureServiceBusRelayEventDispatcher"/>, possibly installed
+    /// Event store proxy that can be used to stream events from a <see cref="AzureServiceBusRelayEventDispatcher"/>, possibly installed
     /// as an event dispatcher in a command processor by using the <see cref="AzureServiceBusConfigurationExtensions.UseAzureServiceBusRelayEventDispatcher"/>
-    /// configuration method
+    /// configuration method. The event store proxy should most likely be used by a <see cref="EventReplicator"/> to move events off-site, and
+    /// then any views and stuff can do their work off of the off-site copy
     /// </summary>
-    public class AzureServiceBusRelayEventStoreFacade : IEventStore, IDisposable
+    public class AzureServiceBusRelayEventStoreProxy : IEventStore, IDisposable
     {
         static Logger _logger;
 
-        static AzureServiceBusRelayEventStoreFacade()
+        static AzureServiceBusRelayEventStoreProxy()
         {
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
         }
@@ -30,7 +31,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
         IHostService _currentClientChannel;
         bool _disposed;
 
-        public AzureServiceBusRelayEventStoreFacade(string serviceNamespace, string servicePath, string keyName, string sharedAccessKey)
+        public AzureServiceBusRelayEventStoreProxy(string serviceNamespace, string servicePath, string keyName, string sharedAccessKey)
         {
             var uri = ServiceBusEnvironment.CreateServiceUri("sb", serviceNamespace, servicePath);
 
@@ -44,7 +45,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             _channelFactory.Endpoint.Behaviors.Add(endpointBehavior);
         }
 
-        ~AzureServiceBusRelayEventStoreFacade()
+        ~AzureServiceBusRelayEventStoreProxy()
         {
             Dispose(false);
         }

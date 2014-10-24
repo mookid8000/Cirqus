@@ -10,7 +10,7 @@ using Microsoft.ServiceBus;
 namespace d60.Cirqus.AzureServiceBus.Relay
 {
     /// <summary>
-    /// Event dispatcher implementation that can relay events to any number of <see cref="AzureServiceBusRelayEventStoreFacade"/>s
+    /// Event dispatcher implementation that can relay events to any number of <see cref="AzureServiceBusRelayEventStoreProxy"/>s
     /// </summary>
     public class AzureServiceBusRelayEventDispatcher : IEventDispatcher, IDisposable
     {

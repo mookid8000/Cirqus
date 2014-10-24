@@ -18,7 +18,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
     [TestFixture]
     public class TestAzureServiceBusRelay : FixtureBase
     {
-        AzureServiceBusRelayEventStoreFacade _eventStoreFacade;
+        AzureServiceBusRelayEventStoreProxy _eventStoreProxy;
         ICommandProcessor _commandProcessor;
         IViewManager<View> _viewManager;
 
@@ -34,17 +34,17 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
 
             RegisterForDisposal(_commandProcessor);
 
-            _eventStoreFacade = new AzureServiceBusRelayEventStoreFacade("cirqus", servicePath, TestAzureHelper.KeyName, TestAzureHelper.SharedAccessKey);
+            _eventStoreProxy = new AzureServiceBusRelayEventStoreProxy("cirqus", servicePath, TestAzureHelper.KeyName, TestAzureHelper.SharedAccessKey);
 
-            RegisterForDisposal(_eventStoreFacade);
+            RegisterForDisposal(_eventStoreProxy);
 
             _viewManager = new InMemoryViewManager<View>();
             
-            var eventDispatcher = new ViewManagerEventDispatcher(new DefaultAggregateRootRepository(_eventStoreFacade), _eventStoreFacade, _viewManager);
+            var eventDispatcher = new ViewManagerEventDispatcher(new DefaultAggregateRootRepository(_eventStoreProxy), _eventStoreProxy, _viewManager);
 
             RegisterForDisposal(eventDispatcher);
 
-            eventDispatcher.Initialize(_eventStoreFacade);
+            eventDispatcher.Initialize(_eventStoreProxy);
         }
 
         protected override void DoTearDown()
