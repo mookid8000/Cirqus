@@ -377,6 +377,9 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added ability for `EventReplicator` to wait a configurable amount of time in the event that an error occurs (chill down, don't spam the logs...)
 
+## 0.36.2
+
+* Fixed bug in configuration API that would always register Azure event dispatchers as primary
 
 [asgerhallas]: https://github.com/asgerhallas
 

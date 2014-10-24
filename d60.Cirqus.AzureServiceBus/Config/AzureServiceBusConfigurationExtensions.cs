@@ -2,7 +2,6 @@
 using d60.Cirqus.AzureServiceBus.Relay;
 using d60.Cirqus.Config.Configurers;
 using d60.Cirqus.Events;
-using d60.Cirqus.Views;
 
 namespace d60.Cirqus.AzureServiceBus.Config
 {
@@ -10,7 +9,7 @@ namespace d60.Cirqus.AzureServiceBus.Config
     {
         public static void UseAzureServiceBusEventDispatcher(this EventDispatcherConfigurationBuilder builder, string connectionString, string topicName)
         {
-            builder.Registrar.Register<IEventDispatcher>(context => new AzureServiceBusEventDispatcherSender(connectionString, topicName));
+            builder.AddEventDispatcher(context => new AzureServiceBusEventDispatcherSender(connectionString, topicName));
         }
 
         /// <summary>
@@ -18,7 +17,7 @@ namespace d60.Cirqus.AzureServiceBus.Config
         /// </summary>
         public static void UseAzureServiceBusRelayEventDispatcher(this EventDispatcherConfigurationBuilder builder, string serviceNamespace, string servicePath, string keyName, string sharesAccessKey)
         {
-            builder.Registrar.Register<IEventDispatcher>(context =>
+            builder.AddEventDispatcher(context =>
             {
                 var eventStore = context.Get<IEventStore>();
 

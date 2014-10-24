@@ -88,15 +88,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         static void AddEventDispatcherRegistration(EventDispatcherConfigurationBuilder builder, Func<ResolutionContext, IEventDispatcher> eventDispatcherFunc)
         {
-            if (builder.Registrar.HasService<IEventDispatcher>())
-            {
-                builder.Registrar
-                    .Register<IEventDispatcher>(context => new CompositeEventDispatcher(context.Get<IEventDispatcher>(), eventDispatcherFunc(context)), decorator: true);
-            }
-            else
-            {
-                builder.Registrar.Register(eventDispatcherFunc);
-            }
+            builder.AddEventDispatcher(eventDispatcherFunc);
         }
 
         /// <summary>
