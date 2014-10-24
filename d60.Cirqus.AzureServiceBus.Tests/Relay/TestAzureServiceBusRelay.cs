@@ -26,15 +26,17 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
         {
             TestAzureHelper.CleanUp();
 
+            var servicePath = TestAzureHelper.GetPath("test");
+
             _commandProcessor = CommandProcessor.With()
                 .Logging(l => l.None())
                 .EventStore(e => e.Registrar.Register<IEventStore>(c => new InMemoryEventStore()))
-                .EventDispatcher(e => e.UseAzureServiceBusRelayEventDispatcher("cirqus", "test", TestAzureHelper.KeyName, TestAzureHelper.SharedAccessKey))
+                .EventDispatcher(e => e.UseAzureServiceBusRelayEventDispatcher("cirqus", servicePath, TestAzureHelper.KeyName, TestAzureHelper.SharedAccessKey))
                 .Create();
 
             RegisterForDisposal(_commandProcessor);
 
-            _eventStoreFacade = new AzureServiceBusRelayEventStoreFacade("cirqus", "test", TestAzureHelper.KeyName, TestAzureHelper.SharedAccessKey);
+            _eventStoreFacade = new AzureServiceBusRelayEventStoreFacade("cirqus", servicePath, TestAzureHelper.KeyName, TestAzureHelper.SharedAccessKey);
 
             RegisterForDisposal(_eventStoreFacade);
 

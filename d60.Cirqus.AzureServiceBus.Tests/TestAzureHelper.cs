@@ -49,5 +49,16 @@ namespace d60.Cirqus.AzureServiceBus.Tests
                 Console.WriteLine(exception);
             }
         }
+
+        public static string GetPath(string path)
+        {
+            var teamCityAgentNumber = Environment.GetEnvironmentVariable("tcagent");
+            int number;
+
+            if (string.IsNullOrWhiteSpace(teamCityAgentNumber) || !int.TryParse(teamCityAgentNumber, out number))
+                return path;
+
+            return string.Format("{0}agent{1}", path, number);
+        }
     }
 }
