@@ -33,8 +33,13 @@ namespace d60.Cirqus.Tests.Events.Replicator
             _source = new MongoDbEventStore(database, "EventSrc");
             _destination = new MongoDbEventStore(database, "EventDst");
 
-            _replicator = new Cirqus.Events.EventReplicator(new ThrowsAnErrorOnceInAWhile(_source, 0.5),
-                new ThrowsAnErrorOnceInAWhile(_destination, 0.5));
+            var source = new ThrowsAnErrorOnceInAWhile(_source, 0.5);
+            var destination = new ThrowsAnErrorOnceInAWhile(_destination, 0.5);
+
+            _replicator = new EventReplicator(source, destination)
+            {
+                TimeToPauseOnError = TimeSpan.FromMilliseconds(100)
+            };
 
             RegisterForDisposal(_replicator);
 

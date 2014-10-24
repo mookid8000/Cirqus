@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.ServiceBus;
-using NUnit.Framework;
 
 namespace d60.Cirqus.AzureServiceBus.Tests
 {
     public static class TestAzureHelper
     {
-        static List<string> _topicsToCleanUp = new List<string>();
+        static readonly List<string> TopicsToCleanUp = new List<string>();
 
         public static readonly string ConnectionString = GetConnectionString();
 
@@ -31,7 +30,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests
         {
             var manager = NamespaceManager.CreateFromConnectionString(ConnectionString);
 
-            _topicsToCleanUp.ForEach(topicName =>
+            TopicsToCleanUp.ForEach(topicName =>
             {
                 try
                 {
@@ -44,7 +43,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests
                 }
             });
 
-            _topicsToCleanUp.Clear();
+            TopicsToCleanUp.Clear();
         }
 
         public static string GetPath(string path)
@@ -56,7 +55,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests
         {
             var returnedTopicName = PossiblyWithTcAgentNumber(topicName);
             
-            _topicsToCleanUp.Add(returnedTopicName);
+            TopicsToCleanUp.Add(returnedTopicName);
             
             return returnedTopicName;
         }

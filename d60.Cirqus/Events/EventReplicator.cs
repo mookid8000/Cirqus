@@ -33,6 +33,8 @@ namespace d60.Cirqus.Events
                 IsBackground = true,
                 Name = "EventReplicator worker"
             };
+
+            TimeToPauseOnError = TimeSpan.FromSeconds(10);
         }
 
         public void Start()
@@ -54,10 +56,16 @@ namespace d60.Cirqus.Events
                 }
                 catch (Exception exception)
                 {
-                    _logger.Error(exception, "An error occurred while attempting to load events from {0} into {1}", _sourceEventStore, _destinationEventStore);
+                    _logger.Error(exception, "An error occurred while attempting to load events from {0} into {1} - waiting {2}",
+                        _sourceEventStore, _destinationEventStore, TimeToPauseOnError);
+                    
+                    // avoid thrashing
+                    Thread.Sleep(TimeToPauseOnError);
                 }
             }
         }
+
+        public TimeSpan TimeToPauseOnError { get; set; }
 
         void PumpEvents()
         {

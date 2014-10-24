@@ -373,6 +373,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added an Azure Service Bus Relay-based event store proxy and an `IEventDispatcher` implementation that is an event store (readonly-)host
 
+## 0.36.1
+
+* Added ability for `EventReplicator` to wait a configurable amount of time in the event that an error occurs (chill down, don't spam the logs...)
+
 
 [asgerhallas]: https://github.com/asgerhallas
 
