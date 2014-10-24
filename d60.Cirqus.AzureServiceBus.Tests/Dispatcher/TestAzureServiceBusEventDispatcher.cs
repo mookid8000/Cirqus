@@ -22,20 +22,23 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Dispatcher
 
         protected override void DoSetUp()
         {
-            TestAzureHelper.CleanUp();
-
             _stuffThatHappened = new List<string>();
             _resetEvent = new AutoResetEvent(false);
 
             _eventStore = new InMemoryEventStore();
 
-            _sender = new AzureServiceBusEventDispatcherSender(TestAzureHelper.ConnectionString, TestAzureHelper.TopicName);
-            _receiver = new AzureServiceBusEventDispatcherReceiver(TestAzureHelper.ConnectionString, this, _eventStore, TestAzureHelper.TopicName, TestAzureHelper.SubscriptionName);
+            var topicName = TestAzureHelper.GetTopicName("cirqus");
+            var subscriptionName = TestAzureHelper.GetSubscriptionName("testsubscriber");
+
+            _sender = new AzureServiceBusEventDispatcherSender(TestAzureHelper.ConnectionString, topicName);
+            _receiver = new AzureServiceBusEventDispatcherReceiver(TestAzureHelper.ConnectionString, this, _eventStore, topicName, subscriptionName);
         }
 
         protected override void DoTearDown()
         {
             _receiver.Dispose();
+
+            TestAzureHelper.CleanUp();
         }
 
         [Test]

@@ -1,14 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Microsoft.ServiceBus;
+using NUnit.Framework;
 
 namespace d60.Cirqus.AzureServiceBus.Tests
 {
-    public class TestAzureHelper
+    public static class TestAzureHelper
     {
-        public const string TopicName = "cirqus";
-        public const string SubscriptionName = "test";
-        
+        static List<string> _topicsToCleanUp = new List<string>();
+
         public static readonly string ConnectionString = GetConnectionString();
 
         public static string KeyName
@@ -29,28 +30,43 @@ namespace d60.Cirqus.AzureServiceBus.Tests
         public static void CleanUp()
         {
             var manager = NamespaceManager.CreateFromConnectionString(ConnectionString);
-            try
-            {
-                Console.WriteLine("Deleting subscription: {0}/{1}", TopicName, SubscriptionName);
-                manager.DeleteSubscription(TopicName, SubscriptionName);
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine(exception);
-            }
 
-            try
+            _topicsToCleanUp.ForEach(topicName =>
             {
-                Console.WriteLine("Deleting topic: {0}", TopicName);
-                manager.DeleteTopic(TopicName);
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine(exception);
-            }
+                try
+                {
+                    Console.WriteLine("Deleting topic: {0}", topicName);
+                    manager.DeleteTopic(topicName);
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception);
+                }
+            });
+
+            _topicsToCleanUp.Clear();
         }
 
         public static string GetPath(string path)
+        {
+            return PossiblyWithTcAgentNumber(path);
+        }
+
+        public static string GetTopicName(string topicName)
+        {
+            var returnedTopicName = PossiblyWithTcAgentNumber(topicName);
+            
+            _topicsToCleanUp.Add(returnedTopicName);
+            
+            return returnedTopicName;
+        }
+
+        public static string GetSubscriptionName(string subscriptionName)
+        {
+            return PossiblyWithTcAgentNumber(subscriptionName);
+        }
+
+        static string PossiblyWithTcAgentNumber(string path)
         {
             var teamCityAgentNumber = Environment.GetEnvironmentVariable("tcagent");
             int number;

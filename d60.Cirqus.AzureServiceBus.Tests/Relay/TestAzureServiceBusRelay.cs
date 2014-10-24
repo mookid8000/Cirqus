@@ -24,8 +24,6 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
 
         protected override void DoSetUp()
         {
-            TestAzureHelper.CleanUp();
-
             var servicePath = TestAzureHelper.GetPath("test");
 
             _commandProcessor = CommandProcessor.With()
@@ -47,6 +45,11 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
             RegisterForDisposal(eventDispatcher);
 
             eventDispatcher.Initialize(_eventStoreFacade);
+        }
+
+        protected override void DoTearDown()
+        {
+            TestAzureHelper.CleanUp();
         }
 
         [Test]
