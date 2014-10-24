@@ -12,7 +12,7 @@ using NUnit.Framework;
 namespace d60.Cirqus.Tests.Events.Replicator
 {
     [TestFixture, Category(TestCategories.MongoDb)]
-    public class ErrorHandline : FixtureBase
+    public class ErrorHandling : FixtureBase
     {
         readonly Dictionary<Guid, int> _seqNos = new Dictionary<Guid, int>();
 
@@ -38,7 +38,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
 
             _replicator = new EventReplicator(source, destination)
             {
-                TimeToPauseOnError = TimeSpan.FromMilliseconds(100)
+                TimeToPauseOnError = TimeSpan.Zero //< don't wait in this test
             };
 
             RegisterForDisposal(_replicator);
