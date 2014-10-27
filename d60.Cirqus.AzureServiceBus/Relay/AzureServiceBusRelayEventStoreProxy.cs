@@ -37,7 +37,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
 
             _logger.Info("Initializing event store facade for {0}", uri);
 
-            var binding = new NetTcpRelayBinding();
+            var binding = BindingHelper.CreateBinding();
             _channelFactory = new ChannelFactory<IHostService>(binding, new EndpointAddress(uri));
 
             var tokenProvider = TokenProvider.CreateSharedAccessSignatureTokenProvider(keyName, sharedAccessKey);

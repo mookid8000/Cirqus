@@ -32,7 +32,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
 
             _serviceHost = new ServiceHost(new HostService(eventStore));
 
-            var binding = new NetTcpRelayBinding();
+            var binding = BindingHelper.CreateBinding();
             var tokenProvider = TokenProvider.CreateSharedAccessSignatureTokenProvider(keyName, sharedAccessKey);
 
             var endpoint = _serviceHost.AddServiceEndpoint(typeof(IHostService), binding, uri);

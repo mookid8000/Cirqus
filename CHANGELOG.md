@@ -381,5 +381,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Fixed bug in configuration API that would always register Azure event dispatchers as primary
 
+## 0.36.3
+
+* Fixed max message size in ASB relay-based event store proxy
+
+
 [asgerhallas]: https://github.com/asgerhallas
 
