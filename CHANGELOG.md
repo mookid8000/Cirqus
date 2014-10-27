@@ -385,6 +385,11 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Fixed max message size in ASB relay-based event store proxy
 
+## 0.36.4
+
+* Made `NetTcpRelayBinding` configurable from the outside on ASB relay event store proxy thingie
+
+
 
 [asgerhallas]: https://github.com/asgerhallas
 

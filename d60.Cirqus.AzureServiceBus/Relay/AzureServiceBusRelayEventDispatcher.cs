@@ -24,7 +24,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
         readonly ServiceHost _serviceHost;
         bool _disposed;
 
-        public AzureServiceBusRelayEventDispatcher(IEventStore eventStore, string serviceNamespace, string path, string keyName, string sharedAccessKey)
+        public AzureServiceBusRelayEventDispatcher(IEventStore eventStore, string serviceNamespace, string path, string keyName, string sharedAccessKey, NetTcpRelayBinding netTcpRelayBinding = null)
         {
             var uri = ServiceBusEnvironment.CreateServiceUri("sb", serviceNamespace, path);
 
@@ -32,13 +32,12 @@ namespace d60.Cirqus.AzureServiceBus.Relay
 
             _serviceHost = new ServiceHost(new HostService(eventStore));
 
-            var binding = BindingHelper.CreateBinding();
+            var binding = netTcpRelayBinding ?? BindingHelper.CreateDefaultRelayBinding();
             var tokenProvider = TokenProvider.CreateSharedAccessSignatureTokenProvider(keyName, sharedAccessKey);
 
             var endpoint = _serviceHost.AddServiceEndpoint(typeof(IHostService), binding, uri);
             var endpointBehavior = new TransportClientEndpointBehavior(tokenProvider);
             endpoint.Behaviors.Add(endpointBehavior);
-
         }
 
         ~AzureServiceBusRelayEventDispatcher()

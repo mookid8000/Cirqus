@@ -31,13 +31,13 @@ namespace d60.Cirqus.AzureServiceBus.Relay
         IHostService _currentClientChannel;
         bool _disposed;
 
-        public AzureServiceBusRelayEventStoreProxy(string serviceNamespace, string servicePath, string keyName, string sharedAccessKey)
+        public AzureServiceBusRelayEventStoreProxy(string serviceNamespace, string servicePath, string keyName, string sharedAccessKey, NetTcpRelayBinding netTcpRelayBinding = null)
         {
             var uri = ServiceBusEnvironment.CreateServiceUri("sb", serviceNamespace, servicePath);
 
             _logger.Info("Initializing event store facade for {0}", uri);
 
-            var binding = BindingHelper.CreateBinding();
+            var binding = netTcpRelayBinding ?? BindingHelper.CreateDefaultRelayBinding();
             _channelFactory = new ChannelFactory<IHostService>(binding, new EndpointAddress(uri));
 
             var tokenProvider = TokenProvider.CreateSharedAccessSignatureTokenProvider(keyName, sharedAccessKey);
@@ -66,7 +66,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
 
             var transportMessage = client.Load(aggregateRootId, firstSeq);
             var domainEvents = _serializer.Deserialize(transportMessage.Events);
-         
+
             return domainEvents;
         }
 
