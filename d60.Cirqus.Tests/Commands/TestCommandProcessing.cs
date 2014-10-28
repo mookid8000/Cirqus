@@ -21,7 +21,7 @@ namespace d60.Cirqus.Tests.Commands
 
         protected override void DoSetUp()
         {
-            _eventStore = new InMemoryEventStore();
+            _eventStore = new InMemoryEventStore(_domainEventSerializer);
             var eventDispatcher = new ConsoleOutEventDispatcher();
 
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);

@@ -14,10 +14,11 @@ namespace d60.Cirqus.Tests.Events
     public class TestInMemoryEventStore : FixtureBase
     {
         InMemoryEventStore _eventStore;
+        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
 
         protected override void DoSetUp()
         {
-            _eventStore = new InMemoryEventStore();
+            _eventStore = new InMemoryEventStore(_domainEventSerializer);
         }
 
         [Test]
@@ -33,7 +34,7 @@ namespace d60.Cirqus.Tests.Events
                     {DomainEvent.MetadataKeys.GlobalSequenceNumber, 0.ToString(Metadata.NumberCulture)},
                 }
             };
-            _eventStore.Save(Guid.NewGuid(), new[] {someEvent}.Select(e => new DomainEventSerializer().DoSerialize(e)));
+            _eventStore.Save(Guid.NewGuid(), new[] {someEvent}.Select(e => _domainEventSerializer.DoSerialize(e)));
 
             someEvent.ListOfStuff.Add("WHOA?!!? WHERE DID YOU COME FROM??");
 

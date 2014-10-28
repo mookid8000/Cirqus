@@ -1,7 +1,6 @@
 ﻿using System;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
-using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
@@ -28,16 +27,17 @@ namespace d60.Cirqus.Tests.Integration
     {
         CommandProcessor _cirqus;
         DefaultAggregateRootRepository _aggregateRootRepository;
+        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
 
         protected override void DoSetUp()
         {
-            var eventStore = new InMemoryEventStore();
+            var eventStore = new InMemoryEventStore(_domainEventSerializer);
 
-            _aggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
+            _aggregateRootRepository = new DefaultAggregateRootRepository(eventStore, _domainEventSerializer);
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager, new DomainEventSerializer())
+            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager, _domainEventSerializer)
             {
                 Options =
                 {

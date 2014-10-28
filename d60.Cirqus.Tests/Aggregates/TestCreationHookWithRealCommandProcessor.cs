@@ -19,7 +19,7 @@ namespace d60.Cirqus.Tests.Aggregates
 
         protected override void DoSetUp()
         {
-            _eventStore = new InMemoryEventStore();
+            _eventStore = new InMemoryEventStore(_domainEventSerializer);
             var aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
             _commandProcessor = new CommandProcessor(_eventStore, aggregateRootRepository, new ConsoleOutEventDispatcher(), _domainEventSerializer);
             RegisterForDisposal(_commandProcessor);

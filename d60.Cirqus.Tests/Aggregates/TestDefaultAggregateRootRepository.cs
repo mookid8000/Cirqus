@@ -18,7 +18,7 @@ namespace d60.Cirqus.Tests.Aggregates
 
         protected override void DoSetUp()
         {
-            _eventStore = new InMemoryEventStore();
+            _eventStore = new InMemoryEventStore(_domainEventSerializer);
             _repository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
         }
 

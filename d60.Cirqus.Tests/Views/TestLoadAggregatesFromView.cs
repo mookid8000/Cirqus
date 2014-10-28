@@ -26,21 +26,22 @@ namespace d60.Cirqus.Tests.Views
         InMemoryViewManager<MyViewInstanceEmitting> _viewManager3;
         ViewManagerEventDispatcher _eventDispatcher;
         InMemoryViewManager<MyViewInstanceLoadingNonexistentRoot> _viewManager4;
+        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
 
         protected override void DoSetUp()
         {
-            var eventStore = new InMemoryEventStore();
+            var eventStore = new InMemoryEventStore(_domainEventSerializer);
 
             _viewManager1 = new InMemoryViewManager<MyViewInstance>();
             _viewManager2 = new InMemoryViewManager<MyViewInstanceImplicit>();
             _viewManager3 = new InMemoryViewManager<MyViewInstanceEmitting>();
             _viewManager4 = new InMemoryViewManager<MyViewInstanceLoadingNonexistentRoot>();
 
-            var basicAggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
+            var basicAggregateRootRepository = new DefaultAggregateRootRepository(eventStore, _domainEventSerializer);
 
-            _eventDispatcher = new ViewManagerEventDispatcher(basicAggregateRootRepository, eventStore);
+            _eventDispatcher = new ViewManagerEventDispatcher(basicAggregateRootRepository, eventStore, _domainEventSerializer);
 
-            _cirqus = new CommandProcessor(eventStore, basicAggregateRootRepository, _eventDispatcher, new DomainEventSerializer());
+            _cirqus = new CommandProcessor(eventStore, basicAggregateRootRepository, _eventDispatcher, _domainEventSerializer);
 
             _cirqus.Initialize();
 
@@ -135,7 +136,7 @@ namespace d60.Cirqus.Tests.Views
             _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
             _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
             _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
-            
+
             var lastResult = _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
 
             _eventDispatcher.WaitUntilProcessed(lastResult, TimeSpan.FromSeconds(3)).Wait();
@@ -169,7 +170,7 @@ namespace d60.Cirqus.Tests.Views
             }
 
             public int LastEmittedEventNumber { get; set; }
-            
+
             public void Apply(AnEvent e)
             {
                 LastEmittedEventNumber = e.EventNumber;
@@ -218,9 +219,9 @@ namespace d60.Cirqus.Tests.Views
         class MyViewInstanceEmitting : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
         {
             public string Id { get; set; }
-            
+
             public long LastGlobalSequenceNumber { get; set; }
-            
+
             public void Handle(IViewContext context, AnEvent domainEvent)
             {
                 var root = context.Load<MyRoot>(domainEvent.GetAggregateRootId());
@@ -232,9 +233,9 @@ namespace d60.Cirqus.Tests.Views
         class MyViewInstanceLoadingNonexistentRoot : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<AnEvent>
         {
             public string Id { get; set; }
-            
+
             public long LastGlobalSequenceNumber { get; set; }
-            
+
             public void Handle(IViewContext context, AnEvent domainEvent)
             {
                 var randomGuid = new Guid("6E421AEB-44E0-45E7-8EFF-744943C5106C");
