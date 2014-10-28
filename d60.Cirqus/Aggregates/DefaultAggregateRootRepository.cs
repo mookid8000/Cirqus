@@ -45,7 +45,7 @@ namespace d60.Cirqus.Aggregates
 
             var eventsToApply = domainEventsForThisAggregate
                 .Where(e => e.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber)
-                .Select(e => _domainEventSerializer.DoDeserialize(e));
+                .Select(e => _domainEventSerializer.Deserialize(e));
 
             aggregateRootInfo.Apply(eventsToApply, unitOfWork);
 

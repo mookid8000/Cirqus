@@ -33,7 +33,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
             var destination = new InMemoryEventStore(serializer);
             var seqNo = 0;
 
-            Func<string, Event> getRecognizableEvent = text => serializer.DoSerialize(new RecognizableEvent(text)
+            Func<string, Event> getRecognizableEvent = text => serializer.Serialize(new RecognizableEvent(text)
             {
                 Meta =
                 {

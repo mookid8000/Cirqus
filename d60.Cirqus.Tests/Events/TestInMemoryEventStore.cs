@@ -34,7 +34,7 @@ namespace d60.Cirqus.Tests.Events
                     {DomainEvent.MetadataKeys.GlobalSequenceNumber, 0.ToString(Metadata.NumberCulture)},
                 }
             };
-            _eventStore.Save(Guid.NewGuid(), new[] {someEvent}.Select(e => _domainEventSerializer.DoSerialize(e)));
+            _eventStore.Save(Guid.NewGuid(), new[] {someEvent}.Select(e => _domainEventSerializer.Serialize(e)));
 
             someEvent.ListOfStuff.Add("WHOA?!!? WHERE DID YOU COME FROM??");
 

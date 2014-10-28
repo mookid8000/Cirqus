@@ -61,7 +61,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 Enumerable.Range(0, numberOfEvents)
                     .Select(i => CreateNewEvent(Guid.NewGuid(), "event no " + i))
                     .ToList()
-                    .ForEach(e => _source.Save(Guid.NewGuid(), new[] {e}.Select(e2 => new DomainEventSerializer().DoSerialize(e2))));
+                    .ForEach(e => _source.Save(Guid.NewGuid(), new[] {e}.Select(e2 => new DomainEventSerializer().Serialize(e2))));
 
                 while (_destination.GetNextGlobalSequenceNumber() < numberOfEvents)
                 {

@@ -61,7 +61,7 @@ namespace d60.Cirqus.Snapshotting
             var eventsToApply = _eventStore
                 .Load(cloneInfo.AggregateRootId, cloneInfo.LastSeqNo + 1)
                 .Where(e => e.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber)
-                .Select(e => _domainEventSerializer.DoDeserialize(e));
+                .Select(e => _domainEventSerializer.Deserialize(e));
 
             cloneInfo.Apply(eventsToApply, unitOfWork);
 

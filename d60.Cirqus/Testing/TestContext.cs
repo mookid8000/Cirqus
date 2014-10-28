@@ -114,7 +114,7 @@ namespace d60.Cirqus.Testing
         /// </summary>
         public EventCollection History
         {
-            get { return new EventCollection(_eventStore.Stream().Select(e => _domainEventSerializer.DoDeserialize(e))); }
+            get { return new EventCollection(_eventStore.Stream().Select(e => _domainEventSerializer.Deserialize(e))); }
         }
 
         /// <summary>
@@ -199,7 +199,7 @@ namespace d60.Cirqus.Testing
                 SetMetadata(aggregateRootId, domainEvent);
             }
 
-            _eventStore.Save(Guid.NewGuid(), domainEvents.Select(e => _domainEventSerializer.DoSerialize(e)));
+            _eventStore.Save(Guid.NewGuid(), domainEvents.Select(e => _domainEventSerializer.Serialize(e)));
 
             _eventDispatcher.Dispatch(_eventStore, domainEvents);
 

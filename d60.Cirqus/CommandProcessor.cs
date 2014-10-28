@@ -94,7 +94,7 @@ namespace d60.Cirqus
 
                     // first: save the events
                     _logger.Debug("Saving batch {0} with {1} events", batchId, eventsFromThisUnitOfWork.Count);
-                    _eventStore.Save(batchId, eventsFromThisUnitOfWork.Select(e => _domainEventSerializer.DoSerialize(e)));
+                    _eventStore.Save(batchId, eventsFromThisUnitOfWork.Select(e => _domainEventSerializer.Serialize(e)));
 
                     emittedDomainEvents.AddRange(eventsFromThisUnitOfWork);
                 }, maxRetries: Options.MaxRetries);

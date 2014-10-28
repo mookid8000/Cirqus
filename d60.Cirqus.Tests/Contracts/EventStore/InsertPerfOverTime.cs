@@ -151,7 +151,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         {
             _eventStore.Save(Guid.NewGuid(), Enumerable.Range(0, numberOfEvents)
                 .Select(n => CreateEventWithRealisticPayload())
-                .Select(e => new DomainEventSerializer().DoSerialize(e)));
+                .Select(e => new DomainEventSerializer().Serialize(e)));
         }
 
         long GetNextFor(Guid aggregateRootId)
