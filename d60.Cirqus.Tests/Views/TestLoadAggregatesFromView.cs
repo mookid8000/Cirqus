@@ -7,6 +7,7 @@ using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Stubs;
 using d60.Cirqus.Views;
@@ -39,7 +40,7 @@ namespace d60.Cirqus.Tests.Views
 
             _eventDispatcher = new ViewManagerEventDispatcher(basicAggregateRootRepository, eventStore);
 
-            _cirqus = new CommandProcessor(eventStore, basicAggregateRootRepository, _eventDispatcher);
+            _cirqus = new CommandProcessor(eventStore, basicAggregateRootRepository, _eventDispatcher, new DomainEventSerializer());
 
             _cirqus.Initialize();
 

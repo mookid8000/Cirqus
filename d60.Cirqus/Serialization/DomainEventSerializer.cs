@@ -13,6 +13,11 @@ namespace d60.Cirqus.Serialization
     {
         readonly TypeAliasBinder _binder;
 
+        public DomainEventSerializer()
+            : this("<events>")
+        {
+        }
+
         public DomainEventSerializer(string virtualNamespaceName)
         {
             _binder = new TypeAliasBinder(virtualNamespaceName);
@@ -131,7 +136,7 @@ Result after roundtripping:
             var text = Encoding.UTF8.GetString(e.Data);
 
             var domainEvent = Deserialize(text);
-            
+
             return domainEvent;
         }
     }

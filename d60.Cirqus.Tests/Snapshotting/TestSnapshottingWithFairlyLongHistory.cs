@@ -9,6 +9,7 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.MongoDb.Events;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Snapshotting;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Views;
@@ -98,7 +99,7 @@ caching in use: {3}",
 
             _timeTaker.InnerAggregateRootRepository = aggregateRootRepository;
 
-            var commandProcessor = new CommandProcessor(_timeTaker, _timeTaker, new ViewManagerEventDispatcher(_timeTaker, eventStore));
+            var commandProcessor = new CommandProcessor(_timeTaker, _timeTaker, new ViewManagerEventDispatcher(_timeTaker, eventStore), new DomainEventSerializer());
 
             RegisterForDisposal(commandProcessor);
 

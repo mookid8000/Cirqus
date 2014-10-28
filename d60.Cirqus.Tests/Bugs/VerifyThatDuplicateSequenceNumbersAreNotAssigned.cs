@@ -4,8 +4,10 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Stubs;
+using d60.Cirqus.Views;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.Testing.TestContext;
 
@@ -19,7 +21,8 @@ namespace d60.Cirqus.Tests.Bugs
         {
             // arrange
             var eventStore = new MongoDbEventStore(MongoHelper.InitializeTestDatabase(), "events");
-            var commandProcessor = new CommandProcessor(eventStore, new DefaultAggregateRootRepository(eventStore), new ConsoleOutEventDispatcher());
+            var commandProcessor = new CommandProcessor(eventStore, new DefaultAggregateRootRepository(eventStore), new ConsoleOutEventDispatcher(),
+                new DomainEventSerializer());
 
             RegisterForDisposal(commandProcessor);
 

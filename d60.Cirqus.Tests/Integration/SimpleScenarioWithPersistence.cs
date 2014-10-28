@@ -3,6 +3,7 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.Extensions;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Stubs;
@@ -39,7 +40,7 @@ this time by using actual MongoDB underneath
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager);
+            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager, new DomainEventSerializer());
 
             RegisterForDisposal(_cirqus);
         }

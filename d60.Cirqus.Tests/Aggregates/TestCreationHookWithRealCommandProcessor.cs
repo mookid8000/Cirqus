@@ -3,6 +3,7 @@ using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
@@ -19,7 +20,7 @@ namespace d60.Cirqus.Tests.Aggregates
         {
             _eventStore = new InMemoryEventStore();
             var aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
-            _commandProcessor = new CommandProcessor(_eventStore, aggregateRootRepository, new ConsoleOutEventDispatcher());
+            _commandProcessor = new CommandProcessor(_eventStore, aggregateRootRepository, new ConsoleOutEventDispatcher(), new DomainEventSerializer());
             RegisterForDisposal(_commandProcessor);
         }
 

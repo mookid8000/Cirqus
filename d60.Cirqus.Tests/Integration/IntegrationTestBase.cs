@@ -4,11 +4,13 @@ using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.MsSql.Events;
 using d60.Cirqus.PostgreSql;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.MsSql;
 using d60.Cirqus.Tests.PostgreSql;
 using d60.Cirqus.Tests.Stubs;
+using d60.Cirqus.Views;
 using MongoDB.Driver;
 
 namespace d60.Cirqus.Tests.Integration
@@ -26,7 +28,8 @@ namespace d60.Cirqus.Tests.Integration
         {
             var eventStore = GetEventStore(eventStoreOption);
 
-            var commandProcessor = new CommandProcessor(eventStore, new DefaultAggregateRootRepository(eventStore), new ConsoleOutEventDispatcher());
+            var commandProcessor = new CommandProcessor(eventStore, new DefaultAggregateRootRepository(eventStore), new ConsoleOutEventDispatcher(),
+                new DomainEventSerializer());
 
             RegisterForDisposal(commandProcessor);
 

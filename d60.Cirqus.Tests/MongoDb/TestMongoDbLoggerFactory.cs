@@ -2,10 +2,13 @@
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Config;
+using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.MongoDb.Logging;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.Stubs;
+using d60.Cirqus.Views;
 using MongoDB.Driver;
 using NUnit.Framework;
 
@@ -27,7 +30,8 @@ namespace d60.Cirqus.Tests.MongoDb
 
             var eventStore = new MongoDbEventStore(_database, "events");
             var aggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
-            var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, new ConsoleOutEventDispatcher());
+            var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, new ConsoleOutEventDispatcher(),
+                new DomainEventSerializer());
             
             RegisterForDisposal(commandProcessor);
             

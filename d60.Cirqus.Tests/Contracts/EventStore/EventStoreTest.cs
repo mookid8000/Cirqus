@@ -9,6 +9,7 @@ using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Null;
 using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.Contracts.EventStore.Factories;
 using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
@@ -44,7 +45,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             var someUtcTime = someLocalTime.ToUniversalTime();
             TimeMachine.FixCurrentTimeTo(someUtcTime);
             
-            var processor = new CommandProcessor(_eventStore, new DefaultAggregateRootRepository(_eventStore), new ConsoleOutEventDispatcher());
+            var processor = new CommandProcessor(_eventStore, new DefaultAggregateRootRepository(_eventStore), new ConsoleOutEventDispatcher(), new DomainEventSerializer());
             
             RegisterForDisposal(processor);
             

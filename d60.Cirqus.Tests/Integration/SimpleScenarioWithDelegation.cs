@@ -5,6 +5,7 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Extensions;
 using d60.Cirqus.Tests.Stubs;
@@ -39,7 +40,7 @@ namespace d60.Cirqus.Tests.Integration
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _cirqus = new CommandProcessor(_eventStore, _aggregateRootRepository, viewManager);
+            _cirqus = new CommandProcessor(_eventStore, _aggregateRootRepository, viewManager, new DomainEventSerializer());
 
             RegisterForDisposal(_cirqus);
         }

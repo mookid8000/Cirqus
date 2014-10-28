@@ -4,8 +4,10 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Stubs;
+using d60.Cirqus.Views;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Commands
@@ -24,7 +26,8 @@ namespace d60.Cirqus.Tests.Commands
 
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
 
-            _cirqus = RegisterForDisposal(new CommandProcessor(_eventStore, _aggregateRootRepository, eventDispatcher));
+            _cirqus = RegisterForDisposal(new CommandProcessor(_eventStore, _aggregateRootRepository, eventDispatcher,
+                new DomainEventSerializer()));
         }
 
         [Test]
