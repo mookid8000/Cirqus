@@ -54,10 +54,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             _eventStore.Save(batch2, new[] { Event(0, Guid.NewGuid()), Event(0, Guid.NewGuid()), Event(0, Guid.NewGuid()) });
 
             // assert
-            var allEvents = _eventStore
-                .Stream()
-                .OrderBy(a => a.GetGlobalSequenceNumber())
-                .ToList();
+            var allEvents = _eventStore.Stream().ToList();
 
             Assert.That(allEvents.Count, Is.EqualTo(5));
 
