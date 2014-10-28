@@ -31,7 +31,7 @@ namespace d60.Cirqus.Ntfs.Events
             OpenWriter();
         }
 
-        public void Write(IEnumerable<DomainEvent> events)
+        public void Write(IEnumerable<Event> events)
         {
             Write(from @event in events
                   select new GlobalSequenceRecord

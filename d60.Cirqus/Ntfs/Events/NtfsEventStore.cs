@@ -35,43 +35,17 @@ namespace d60.Cirqus.Ntfs.Events
 
         public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
         {
-            lock (_lock)
-            {
-                var events = batch.ToList();
-
-                bool isCorrupted;
-                var globalSequenceNumber = CommitLog.Read(out isCorrupted);
-                if (isCorrupted) CommitLog.Recover();
-
-                GlobalSequenceIndex.DetectCorruptionAndRecover(DataStore, globalSequenceNumber);
-
-                foreach (var domainEvent in events)
-                {
-                    domainEvent.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (++globalSequenceNumber).ToString(Metadata.NumberCulture);
-                    domainEvent.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
-                }
-
-                EventValidation.ValidateBatchIntegrity(batchId, events);
-
-                GlobalSequenceIndex.Write(@events);
-                DataStore.Write(batchId, @events);
-                CommitLog.Write(globalSequenceNumber);
-            }
+            throw new NotImplementedException();
         }
 
         public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
         {
-            var lastCommittedGlobalSequenceNumber = CommitLog.Read();
-            
-            return DataStore.Read(lastCommittedGlobalSequenceNumber, aggregateRootId, firstSeq);
+           throw new NotImplementedException();
         }
 
         public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
         {
-            var lastCommittedGlobalSequenceNumber = CommitLog.Read();
-
-            return from record in GlobalSequenceIndex.Read(lastCommittedGlobalSequenceNumber, offset: globalSequenceNumber)
-                   select DataStore.Read(record.AggregateRootId, record.LocalSequenceNumber);
+            throw new NotImplementedException();
         }
 
         public long GetNextGlobalSequenceNumber()
@@ -81,16 +55,43 @@ namespace d60.Cirqus.Ntfs.Events
 
         public void Save(Guid batchId, IEnumerable<Event> events)
         {
+            lock (_lock)
+            {
+                var list = events.ToList();
+
+                bool isCorrupted;
+                var globalSequenceNumber = CommitLog.Read(out isCorrupted);
+                if (isCorrupted) CommitLog.Recover();
+
+                GlobalSequenceIndex.DetectCorruptionAndRecover(DataStore, globalSequenceNumber);
+
+                foreach (var domainEvent in list)
+                {
+                    domainEvent.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (++globalSequenceNumber).ToString(Metadata.NumberCulture);
+                    domainEvent.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
+                }
+
+                EventValidation.ValidateBatchIntegrity(batchId, list);
+
+                GlobalSequenceIndex.Write(list);
+                DataStore.Write(batchId, list);
+                CommitLog.Write(globalSequenceNumber);
+            }
         }
 
         public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
         {
-            return Enumerable.Empty<Event>();
+            var lastCommittedGlobalSequenceNumber = CommitLog.Read();
+
+            return DataStore.Read(lastCommittedGlobalSequenceNumber, aggregateRootId, firstSeq);
         }
 
         public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
         {
-            return Enumerable.Empty<Event>();
+            var lastCommittedGlobalSequenceNumber = CommitLog.Read();
+
+            return from record in GlobalSequenceIndex.Read(lastCommittedGlobalSequenceNumber, offset: globalSequenceNumber)
+                   select DataStore.Read(record.AggregateRootId, record.LocalSequenceNumber);
         }
 
         public void Dispose()
