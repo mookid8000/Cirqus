@@ -497,7 +497,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         {
             public override byte[] Data
             {
-                get { throw new SerializationException("I ruin your batch!"); }
+                get { throw new Exception("I ruin your batch!"); }
                 set { }
             }
         }
