@@ -13,14 +13,15 @@ namespace d60.Cirqus.Tests.Aggregates
     [TestFixture]
     public class TestCreationHookWithRealCommandProcessor : FixtureBase
     {
+        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
         ICommandProcessor _commandProcessor;
         InMemoryEventStore _eventStore;
 
         protected override void DoSetUp()
         {
             _eventStore = new InMemoryEventStore();
-            var aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
-            _commandProcessor = new CommandProcessor(_eventStore, aggregateRootRepository, new ConsoleOutEventDispatcher(), new DomainEventSerializer());
+            var aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
+            _commandProcessor = new CommandProcessor(_eventStore, aggregateRootRepository, new ConsoleOutEventDispatcher(), _domainEventSerializer);
             RegisterForDisposal(_commandProcessor);
         }
 

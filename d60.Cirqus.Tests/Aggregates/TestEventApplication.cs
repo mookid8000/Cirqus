@@ -4,6 +4,7 @@ using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
@@ -13,10 +14,12 @@ namespace d60.Cirqus.Tests.Aggregates
     [TestFixture]
     public class TestEventApplication
     {
+        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
+
         [Test]
         public void AppliesEmittedEvents()
         {
-            var aggregateRootRepository = new DefaultAggregateRootRepository(new InMemoryEventStore());
+            var aggregateRootRepository = CreateAggregateRootRepository();
             var someAggregate = new SomeAggregate
             {
                 UnitOfWork = new ConsoleOutUnitOfWork(aggregateRootRepository),
@@ -36,7 +39,7 @@ namespace d60.Cirqus.Tests.Aggregates
             var timeForNextEvent = timeForFirstEvent.AddMilliseconds(2);
 
             var aggregateRootId = Guid.NewGuid();
-            var aggregateRootRepository = new DefaultAggregateRootRepository(new InMemoryEventStore());
+            var aggregateRootRepository = CreateAggregateRootRepository();
             var eventCollector = new InMemoryUnitOfWork(aggregateRootRepository);
 
             var someAggregate = new SomeAggregate
@@ -67,6 +70,11 @@ namespace d60.Cirqus.Tests.Aggregates
             Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.Owner], Is.EqualTo("d60.Cirqus.Tests.Aggregates.TestEventApplication+SomeAggregate, d60.Cirqus.Tests"));
             Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber], Is.EqualTo(1));
             Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId], Is.EqualTo(aggregateRootId));
+        }
+
+        DefaultAggregateRootRepository CreateAggregateRootRepository()
+        {
+            return new DefaultAggregateRootRepository(new InMemoryEventStore(), _domainEventSerializer);
         }
 
 

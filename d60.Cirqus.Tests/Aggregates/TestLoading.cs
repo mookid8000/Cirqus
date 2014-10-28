@@ -14,7 +14,7 @@ namespace d60.Cirqus.Tests.Aggregates
         {
             var someRoot = new BeetRoot
             {
-                UnitOfWork = new InMemoryUnitOfWork(new DefaultAggregateRootRepository(new InMemoryEventStore(), new DomainEventSerializer()))
+                UnitOfWork = GetUnitOfWork()
             };
 
             Assert.Throws<ArgumentException>(someRoot.LoadOtherBeetRootWithDefaultBehavior);
@@ -25,10 +25,15 @@ namespace d60.Cirqus.Tests.Aggregates
         {
             var someRoot = new BeetRoot
             {
-                UnitOfWork = new InMemoryUnitOfWork(new DefaultAggregateRootRepository(new InMemoryEventStore()))
+                UnitOfWork = GetUnitOfWork()
             };
 
             Assert.DoesNotThrow(someRoot.LoadOtherBeetRootButOverrideBehavior);
+        }
+
+        static InMemoryUnitOfWork GetUnitOfWork()
+        {
+            return new InMemoryUnitOfWork(new DefaultAggregateRootRepository(new InMemoryEventStore(), new DomainEventSerializer()));
         }
 
 

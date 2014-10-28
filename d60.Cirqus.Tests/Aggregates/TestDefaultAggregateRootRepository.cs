@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using NUnit.Framework;
 
@@ -12,11 +14,12 @@ namespace d60.Cirqus.Tests.Aggregates
     {
         InMemoryEventStore _eventStore;
         DefaultAggregateRootRepository _repository;
+        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
 
         protected override void DoSetUp()
         {
             _eventStore = new InMemoryEventStore();
-            _repository = new DefaultAggregateRootRepository(_eventStore);
+            _repository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
         }
 
         [TestCase(0, true, false)]
@@ -52,7 +55,8 @@ namespace d60.Cirqus.Tests.Aggregates
                         {DomainEvent.MetadataKeys.SequenceNumber, seqNo.ToString(Metadata.NumberCulture)},
                     }
                 }
-            });
+            }
+            .Select(e => _domainEventSerializer.DoSerialize(e)));
         }
 
         public class Root : AggregateRoot, IEmit<Event>
