@@ -250,6 +250,11 @@ SELECT ""data"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY ""globSeqNo
             return Enumerable.Empty<Event>();
         }
 
+        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
+        {
+            return Enumerable.Empty<Event>();
+        }
+
         public void DropEvents()
         {
             using (var connection = GetConnection())

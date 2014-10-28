@@ -167,6 +167,13 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 return _innerEventStore.LoadNew(aggregateRootId, firstSeq);
             }
 
+            public IEnumerable<Cirqus.Events.Event> StreamNew(long globalSequenceNumber = 0)
+            {
+                PossiblyThrowError();
+
+                return _innerEventStore.StreamNew(globalSequenceNumber);
+            }
+
             void PossiblyThrowError()
             {
                 if (_random.NextDouble() > _errorProbability) return;

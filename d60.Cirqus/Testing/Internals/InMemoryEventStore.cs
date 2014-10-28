@@ -83,6 +83,11 @@ namespace d60.Cirqus.Testing.Internals
             return Enumerable.Empty<Event>();
         }
 
+        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
+        {
+            return Enumerable.Empty<Event>();
+        }
+
         DomainEvent CloneEvent(DomainEvent ev)
         {
             return _domainEventSerializer.Deserialize(_domainEventSerializer.Serialize(ev));

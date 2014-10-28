@@ -35,6 +35,8 @@ namespace d60.Cirqus.Events
         void Save(Guid batchId, IEnumerable<Event> events);
         
         IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0);
+        
+        IEnumerable<Event> StreamNew(long globalSequenceNumber = 0);
     }
 
     public class Event
