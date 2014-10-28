@@ -5,14 +5,12 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
-using d60.Cirqus.Serialization;
 using Npgsql;
 
 namespace d60.Cirqus.PostgreSql
 {
     public class PostgreSqlEventStore : IEventStore
     {
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
         readonly string _connectionString;
         readonly string _tableName;
 
@@ -47,7 +45,8 @@ CREATE TABLE IF NOT EXISTS ""{0}"" (
 	""aggId"" UUID NOT NULL,
 	""seqNo"" BIGINT NOT NULL,
 	""globSeqNo"" BIGINT NOT NULL,
-	""data"" TEXT NOT NULL,
+	""meta"" TEXT NOT NULL,
+	""data"" BYTEA NOT NULL,
 	PRIMARY KEY (""id"")
 );
 
@@ -79,7 +78,7 @@ END$$;
             }
         }
 
-        public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
+        public void Save(Guid batchId, IEnumerable<Event> batch)
         {
             var eventList = batch.ToList();
 
@@ -88,7 +87,6 @@ END$$;
                 using (var connection = GetConnection())
                 using (var tx = connection.BeginTransaction())
                 {
-
                     var nextSequenceNumber = GetNextGlobalSequenceNumber(connection, tx);
 
                     foreach (var e in eventList)
@@ -111,13 +109,15 @@ INSERT INTO ""{0}"" (
     ""aggId"",
     ""seqNo"",
     ""globSeqNo"",
-    ""data""
+    ""data"",
+    ""meta""
 ) VALUES (
     @batchId,
     @aggId,
     @seqNo,
     @globSeqNo,
-    @data
+    @data,
+    @meta
 )
 
 ", _tableName);
@@ -127,7 +127,8 @@ INSERT INTO ""{0}"" (
                             cmd.Parameters.AddWithValue("aggId", e.GetAggregateRootId());
                             cmd.Parameters.AddWithValue("seqNo", e.Meta[DomainEvent.MetadataKeys.SequenceNumber]);
                             cmd.Parameters.AddWithValue("globSeqNo", e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber]);
-                            cmd.Parameters.AddWithValue("data", _domainEventSerializer.Serialize(e));
+                            cmd.Parameters.AddWithValue("data", e.Data);
+                            cmd.Parameters.AddWithValue("meta", "hej med dig");
 
                             cmd.ExecuteNonQuery();
                         }
@@ -172,7 +173,7 @@ INSERT INTO ""{0}"" (
             return connection;
         }
 
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             using (var connection = GetConnection())
             {
@@ -190,9 +191,13 @@ INSERT INTO ""{0}"" (
                         {
                             while (reader.Read())
                             {
-                                var data = (string)reader["data"];
+                                var data = (byte[]) reader["data"];
 
-                                yield return _domainEventSerializer.Deserialize(data);
+                                yield return new Event
+                                {
+                                    Data = data,
+                                    Meta = new Metadata()
+                                };
                             }
                         }
                     }
@@ -202,7 +207,7 @@ INSERT INTO ""{0}"" (
             }
         }
 
-        public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
         {
             using (var connection = GetConnection())
             {
@@ -221,9 +226,13 @@ SELECT ""data"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY ""globSeqNo
                         {
                             while (reader.Read())
                             {
-                                var data = (string)reader["data"];
+                                var data = (byte[])reader["data"];
 
-                                yield return _domainEventSerializer.Deserialize(data);
+                                yield return new Event
+                                {
+                                    Data = data,
+                                    Meta = new Metadata()
+                                };
                             }
                         }
                     }
@@ -242,20 +251,6 @@ SELECT ""data"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY ""globSeqNo
             }
         }
 
-        public void Save(Guid batchId, IEnumerable<Event> events)
-        {
-        }
-
-        public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
-        {
-            return Enumerable.Empty<Event>();
-        }
-
-        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
-        {
-            return Enumerable.Empty<Event>();
-        }
-
         public void DropEvents()
         {
             using (var connection = GetConnection())
@@ -270,7 +265,6 @@ SELECT ""data"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY ""globSeqNo
                     }
 
                     tx.Commit();
-
                 }
             }
         }
