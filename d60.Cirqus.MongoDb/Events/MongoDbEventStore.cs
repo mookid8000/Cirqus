@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
@@ -208,12 +209,19 @@ namespace d60.Cirqus.MongoDb.Events
         BsonValue Serialize(Metadata meta)
         {
             var doc = new BsonDocument();
-            
+
             foreach (var kvp in meta)
             {
-                doc[kvp.Key] = BsonValue.Create(kvp.Value);
+                if (kvp.Value is Guid)
+                {
+                    doc[kvp.Key] = kvp.Value.ToString();
+                }
+                else
+                {
+                    doc[kvp.Key] = BsonValue.Create(kvp.Value);
+                }
             }
-            
+
             return doc;
         }
 
@@ -241,16 +249,33 @@ namespace d60.Cirqus.MongoDb.Events
                 .Select(e =>
                 {
                     var bsonValue = e.Event;
+                    var meta = DeserializeMeta(e.Meta);
 
                     if (bsonValue["Body"] != null)
                     {
-                        return new Event();
+                        return new Event
+                        {
+                            Meta = meta,
+                            Data = Encoding.UTF8.GetBytes(bsonValue["Body"].AsString),
+                        };
                     }
-                    else
+
+                    return new Event
                     {
-                        return new Event();
-                    }
+                        Meta = meta,
+                        Data = bsonValue["Bin"].AsByteArray
+                    };
                 });
+        }
+
+        static Metadata DeserializeMeta(BsonValue bsonValue)
+        {
+            var meta = new Metadata();
+            foreach (var property in bsonValue.AsBsonDocument)
+            {
+                meta[property.Name] = property.Value;
+            }
+            return meta;
         }
 
         long GetLong(BsonValue bsonValue)
