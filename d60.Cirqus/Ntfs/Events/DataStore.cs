@@ -80,7 +80,8 @@ namespace d60.Cirqus.Ntfs.Events
                    let seq = long.Parse(Path.GetFileName(path))
                    where seq >= offset
                    let @event = TryRead(path)
-                   where @event != null && @event.GetGlobalSequenceNumber(true) <= lastCommittedGlobalSequenceNumber
+                   where @event != null && @event.Meta.ContainsKey(DomainEvent.MetadataKeys.GlobalSequenceNumber) &&
+                         @event.GetGlobalSequenceNumber(throwIfNotFound: true) <= lastCommittedGlobalSequenceNumber
                    select @event;
 
         }
@@ -130,14 +131,11 @@ namespace d60.Cirqus.Ntfs.Events
 
         static JsonSerializer CreateSerializer()
         {
-            var binder = new TypeAliasBinder("<events>");
-            var serializer = new JsonSerializer
+            return new JsonSerializer
             {
-                Binder = binder.AddType(typeof(Metadata)),
-                TypeNameHandling = TypeNameHandling.Objects,
+                TypeNameHandling = TypeNameHandling.None,
                 Formatting = Formatting.Indented
             };
-            return serializer;
         }
 
         static string GetFilename(long sequenceNumber)
