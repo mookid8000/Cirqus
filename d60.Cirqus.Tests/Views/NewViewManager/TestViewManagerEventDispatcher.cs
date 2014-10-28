@@ -9,6 +9,7 @@ using d60.Cirqus.Logging.Console;
 using d60.Cirqus.MongoDb.Config;
 using d60.Cirqus.MongoDb.Views;
 using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Views.NewViewManager.Commands;
 using d60.Cirqus.Tests.Views.NewViewManager.Views;
@@ -40,8 +41,9 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
                 {
                     var repository = r.Get<IAggregateRootRepository>();
                     var eventStore = r.Get<IEventStore>();
+                    var serializer = r.Get<IDomainEventSerializer>();
 
-                    _dispatcher = new ViewManagerEventDispatcher(repository, eventStore);
+                    _dispatcher = new ViewManagerEventDispatcher(repository, eventStore, serializer);
 
                     return _dispatcher;
                 }))

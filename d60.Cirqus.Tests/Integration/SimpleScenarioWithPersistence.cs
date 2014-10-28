@@ -30,17 +30,18 @@ this time by using actual MongoDB underneath
     {
         DefaultAggregateRootRepository _aggregateRootRepository;
         CommandProcessor _cirqus;
+        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
 
         protected override void DoSetUp()
         {
             var mongoDatabase = MongoHelper.InitializeTestDatabase();
             var eventStore = new MongoDbEventStore(mongoDatabase, "events", automaticallyCreateIndexes: true);
 
-            _aggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
+            _aggregateRootRepository = new DefaultAggregateRootRepository(eventStore, _domainEventSerializer);
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager, new DomainEventSerializer());
+            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager, _domainEventSerializer);
 
             RegisterForDisposal(_cirqus);
         }
