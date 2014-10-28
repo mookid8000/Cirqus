@@ -24,14 +24,7 @@ namespace d60.Cirqus.MongoDb.Events
         static readonly string GlobalSeqNoDocPath = string.Format("{0}.GlobalSequenceNumber", EventsDocPath);
         static readonly string AggregateRootIdDocPath = string.Format("{0}.AggregateRootId", EventsDocPath);
 
-        /*
-        public long GlobalSequenceNumber { get; set; }
-        public long SequenceNumber { get; set; }
-        public Guid AggregateRootId { get; set; }
-         */
-
         readonly MongoDbSerializer _serializer = new MongoDbSerializer();
-
         readonly MongoCollection<MongoEventBatch> _eventBatches;
 
         public MongoDbEventStore(MongoDatabase database, string eventCollectionName, bool automaticallyCreateIndexes = true)
@@ -165,12 +158,6 @@ namespace d60.Cirqus.MongoDb.Events
 
             EventValidation.ValidateBatchIntegrity(batchId, batch);
 
-            var doc = new BsonDocument
-            {
-                {"_id", batchId.ToString()},
-                {EventsDocPath, GetEventsNew(batch)}
-            };
-
             try
             {
                 //_eventBatches.Save(doc);
@@ -216,54 +203,6 @@ namespace d60.Cirqus.MongoDb.Events
             return metadata;
         }
 
-        BsonValue GetEventsNew(IEnumerable<Event> batch)
-        {
-            var array = new BsonArray();
-
-            foreach (var e in batch)
-            {
-                var doc = new BsonDocument();
-
-                doc["Meta"] = Serialize(e.Meta);
-
-                if (e.IsJson())
-                {
-                    var text = Encoding.UTF8.GetString(e.Data);
-
-                    //var bson = BsonDocument.Parse(text);
-
-                    doc["Body"] = text;
-                }
-                else
-                {
-                    doc["Bin"] = BsonValue.Create(e.Data);
-                }
-
-                array.Add(doc);
-            }
-
-            return array;
-        }
-
-        BsonValue Serialize(Metadata meta)
-        {
-            var doc = new BsonDocument();
-
-            foreach (var kvp in meta)
-            {
-                if (kvp.Value is Guid)
-                {
-                    doc[kvp.Key] = kvp.Value.ToString();
-                }
-                else
-                {
-                    doc[kvp.Key] = BsonValue.Create(kvp.Value);
-                }
-            }
-
-            return doc;
-        }
-
         public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
         {
             var criteria = Query.And(
@@ -292,16 +231,6 @@ namespace d60.Cirqus.MongoDb.Events
                 Meta = meta,
                 Data = data
             };
-        }
-
-        static Metadata DeserializeMeta(BsonValue bsonValue)
-        {
-            var meta = new Metadata();
-            foreach (var property in bsonValue.AsBsonDocument)
-            {
-                meta[property.Name] = property.Value.ToString();
-            }
-            return meta;
         }
 
         long GetLong(BsonValue bsonValue)
