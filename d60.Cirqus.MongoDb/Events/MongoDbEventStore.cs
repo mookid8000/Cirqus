@@ -212,7 +212,7 @@ namespace d60.Cirqus.MongoDb.Events
             return _eventBatches.Find(criteria)
                 .SelectMany(b => b.Events)
                 .OrderBy(e => e.GlobalSequenceNumber)
-                .Where(e => e.GlobalSequenceNumber >= firstSeq)
+                .Where(e => e.GlobalSequenceNumber >= firstSeq && e.AggregateRootId == aggregateRootId)
                 .Select(MongoEventToEvent);
         }
 
