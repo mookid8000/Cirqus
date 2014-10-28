@@ -170,12 +170,43 @@ namespace d60.Cirqus.MongoDb.Events
             try
             {
                 //_eventBatches.Save(doc);
+                _eventBatches2.Save(new MongoEventBatch
+                {
+                    BatchId = batchId.ToString(),
+                    Events = batch
+                        .Select(b =>
+                        {
+                            var isJson = b.IsJson();
 
+                            return new MongoEvent
+                                         {
+                                             Meta = GetMetadataAsDictionary(b.Meta),
+                                             Bin = isJson ? null : b.Data,
+                                             Body = isJson ? Encoding.UTF8.GetString(b.Data) : null
+                                         };
+                        })
+                        .ToList()
+                });
             }
             catch (MongoDuplicateKeyException exception)
             {
                 throw new ConcurrencyException(batchId, batch, exception);
             }
+        }
+
+        Dictionary<string, string> GetMetadataAsDictionary(Metadata meta)
+        {
+            return meta.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        }
+
+        Metadata GetDictionaryAsMetadata(Dictionary<string, string> dictionary)
+        {
+            var metadata = new Metadata();
+            foreach (var kvp in dictionary)
+            {
+                metadata[kvp.Key] = kvp.Value;
+            }
+            return metadata;
         }
 
         BsonValue GetEventsNew(IEnumerable<Event> batch)
@@ -321,13 +352,12 @@ namespace d60.Cirqus.MongoDb.Events
         [BsonId]
         public string BatchId { get; set; }
 
-        public Dictionary<string,string> Meta { get; set; }
-
         public List<MongoEvent> Events { get; set; }
     }
 
     class MongoEvent
     {
+        public Dictionary<string, string> Meta { get; set; }
         public byte[] Bin { get; set; }
         public string Body { get; set; }
     }
