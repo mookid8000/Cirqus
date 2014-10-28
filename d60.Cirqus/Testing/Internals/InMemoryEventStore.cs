@@ -7,17 +7,24 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using Newtonsoft.Json;
 
 namespace d60.Cirqus.Testing.Internals
 {
-    class InMemoryEventStore : IEventStore, IEnumerable<Event>
+    class InMemoryEventStore : IEventStore, IEnumerable<DomainEvent>
     {
+        readonly IDomainEventSerializer _domainEventSerializer;
         readonly Dictionary<string, object> _idAndSeqNoTuples = new Dictionary<string, object>();
         readonly List<EventBatch> _savedEventBatches = new List<EventBatch>();
         readonly object _lock = new object();
 
         long _globalSequenceNumber;
+
+        public InMemoryEventStore(IDomainEventSerializer domainEventSerializer)
+        {
+            _domainEventSerializer = domainEventSerializer;
+        }
 
         public void Save(Guid batchId, IEnumerable<Event> events)
         {
@@ -71,12 +78,13 @@ namespace d60.Cirqus.Testing.Internals
         {
             lock (_lock)
             {
-                return this
-                    .Select(@event => new
+                return _savedEventBatches
+                    .SelectMany(b => b.Events)
+                    .Select(e => new
                     {
-                        Event = @event,
-                        AggregateRootId = @event.GetAggregateRootId(),
-                        SequenceNumber = @event.GetSequenceNumber()
+                        Event = e,
+                        AggregateRootId = e.GetAggregateRootId(),
+                        SequenceNumber = e.GetSequenceNumber()
                     })
                     .Where(e => e.AggregateRootId == aggregateRootId)
                     .Where(e => e.SequenceNumber >= firstSeq)
@@ -111,14 +119,17 @@ namespace d60.Cirqus.Testing.Internals
 
         Event CloneEvent(Event ev)
         {
-            return JsonConvert.DeserializeObject<Event>(JsonConvert.SerializeObject(ev));
+            return JsonConvert.DeserializeObject<Event>(JsonConvert.SerializeObject(ev), new JsonSerializerSettings{TypeNameHandling=TypeNameHandling.All});
         }
 
-        public IEnumerator<Event> GetEnumerator()
+        public IEnumerator<DomainEvent> GetEnumerator()
         {
             lock (_lock)
             {
-                var clone = _savedEventBatches.SelectMany(b => b.Events).ToList();
+                var clone = _savedEventBatches
+                    .SelectMany(b => b.Events)
+                    .Select(e => _domainEventSerializer.DoDeserialize(e))
+                    .ToList();
 
                 return clone.GetEnumerator();
             }

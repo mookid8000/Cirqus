@@ -7,7 +7,6 @@ using d60.Cirqus.Exceptions;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Stubs;
-using d60.Cirqus.Views;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Commands
@@ -18,16 +17,17 @@ namespace d60.Cirqus.Tests.Commands
         CommandProcessor _cirqus;
         DefaultAggregateRootRepository _aggregateRootRepository;
         InMemoryEventStore _eventStore;
+        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
 
         protected override void DoSetUp()
         {
             _eventStore = new InMemoryEventStore();
             var eventDispatcher = new ConsoleOutEventDispatcher();
 
-            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
+            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
 
             _cirqus = RegisterForDisposal(new CommandProcessor(_eventStore, _aggregateRootRepository, eventDispatcher,
-                new DomainEventSerializer()));
+                _domainEventSerializer));
         }
 
         [Test]

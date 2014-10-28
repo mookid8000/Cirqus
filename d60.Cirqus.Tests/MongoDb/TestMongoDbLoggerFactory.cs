@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Linq;
 using d60.Cirqus.Aggregates;
-using d60.Cirqus.Config;
-using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.MongoDb.Logging;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.Stubs;
-using d60.Cirqus.Views;
 using MongoDB.Driver;
 using NUnit.Framework;
 
@@ -17,6 +14,7 @@ namespace d60.Cirqus.Tests.MongoDb
     public class TestMongoDbLoggerFactory : FixtureBase
     {
         MongoDatabase _database;
+        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
 
         protected override void DoSetUp()
         {
@@ -29,9 +27,9 @@ namespace d60.Cirqus.Tests.MongoDb
             CirqusLoggerFactory.Current = new MongoDbLoggerFactory(_database, "logs");
 
             var eventStore = new MongoDbEventStore(_database, "events");
-            var aggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
+            var aggregateRootRepository = new DefaultAggregateRootRepository(eventStore, _domainEventSerializer);
             var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, new ConsoleOutEventDispatcher(),
-                new DomainEventSerializer());
+                _domainEventSerializer);
             
             RegisterForDisposal(commandProcessor);
             

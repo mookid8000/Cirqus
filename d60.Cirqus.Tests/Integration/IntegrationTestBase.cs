@@ -18,6 +18,7 @@ namespace d60.Cirqus.Tests.Integration
     public abstract class IntegrationTestBase : FixtureBase
     {
         MongoDatabase _mongoDatabase;
+        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
 
         protected override void DoSetUp()
         {
@@ -28,8 +29,8 @@ namespace d60.Cirqus.Tests.Integration
         {
             var eventStore = GetEventStore(eventStoreOption);
 
-            var commandProcessor = new CommandProcessor(eventStore, new DefaultAggregateRootRepository(eventStore), new ConsoleOutEventDispatcher(),
-                new DomainEventSerializer());
+            var commandProcessor = new CommandProcessor(eventStore, new DefaultAggregateRootRepository(eventStore, _domainEventSerializer), new ConsoleOutEventDispatcher(),
+                _domainEventSerializer);
 
             RegisterForDisposal(commandProcessor);
 

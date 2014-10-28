@@ -20,18 +20,19 @@ namespace d60.Cirqus.Testing
     public class TestContext : IDisposable
     {
         readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
-        readonly InMemoryEventStore _eventStore = new InMemoryEventStore();
         readonly DefaultAggregateRootRepository _aggregateRootRepository;
         readonly ViewManagerEventDispatcher _viewManagerEventDispatcher;
         readonly CompositeEventDispatcher _eventDispatcher;
         readonly ViewManagerWaitHandle _waitHandle = new ViewManagerWaitHandle();
         readonly List<IViewManager> _addedViews = new List<IViewManager>();
+        readonly InMemoryEventStore _eventStore;
 
         DateTime _currentTime = DateTime.MinValue;
         bool _initialized;
 
         public TestContext()
         {
+            _eventStore = new InMemoryEventStore(_domainEventSerializer);
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
             _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore, _domainEventSerializer);
             _waitHandle.Register(_viewManagerEventDispatcher);

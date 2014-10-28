@@ -4,6 +4,7 @@ using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using NUnit.Framework;
 
@@ -32,7 +33,7 @@ namespace d60.Cirqus.Tests.Events
                     {DomainEvent.MetadataKeys.GlobalSequenceNumber, 0.ToString(Metadata.NumberCulture)},
                 }
             };
-            _eventStore.Save(Guid.NewGuid(), new[] {someEvent});
+            _eventStore.Save(Guid.NewGuid(), new[] {someEvent}.Select(e => new DomainEventSerializer().DoSerialize(e)));
 
             someEvent.ListOfStuff.Add("WHOA?!!? WHERE DID YOU COME FROM??");
 
