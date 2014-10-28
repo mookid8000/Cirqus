@@ -349,14 +349,14 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                 {
                     Event(1, agg1),
                     Event(1, agg2),
-                    //new ThrowingEvent
-                    //{
-                    //    Meta =
-                    //    {
-                    //        {DomainEvent.MetadataKeys.SequenceNumber, 2.ToString(Metadata.NumberCulture)},
-                    //        {DomainEvent.MetadataKeys.AggregateRootId, agg2.ToString()}
-                    //    }
-                    //}
+                    new ThrowingEvent
+                    {
+                        Meta =
+                        {
+                            {DomainEvent.MetadataKeys.SequenceNumber, 2.ToString(Metadata.NumberCulture)},
+                            {DomainEvent.MetadataKeys.AggregateRootId, agg2.ToString()}
+                        }
+                    }
                 });
             }
             catch {
@@ -442,15 +442,17 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             var someUtcTime = someLocalTime.ToUniversalTime();
             TimeMachine.FixCurrentTimeTo(someUtcTime);
 
+            var serializer = new DomainEventSerializer();
+
             var processor = new CommandProcessor(
-                _eventStore, new DefaultAggregateRootRepository(_eventStore, new DomainEventSerializer()),
-                new ConsoleOutEventDispatcher(), new DomainEventSerializer());
+                _eventStore, new DefaultAggregateRootRepository(_eventStore, serializer),
+                new ConsoleOutEventDispatcher(), serializer);
 
             RegisterForDisposal(processor);
 
             processor.ProcessCommand(new MakeSomeRootEmitTheEvent(Guid.NewGuid()));
 
-            var domainEvents = _eventStore.Stream().Cast<SomeRootEvent>().Single();
+            var domainEvents = _eventStore.Stream().Select(serializer.DoDeserialize).Single();
             Assert.That(domainEvents.GetUtcTime(), Is.EqualTo(someUtcTime));
         }
 
@@ -466,7 +468,6 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                 }
             };
         }
-
 
         public class MakeSomeRootEmitTheEvent : Command<SomeRoot>
         {
@@ -495,12 +496,12 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
         public class SomeRootEvent : DomainEvent<SomeRoot> { }
 
-        class ThrowingEvent : DomainEvent
+        class ThrowingEvent : Event
         {
-            [OnSerializing()]
-            internal void OnSerializingMethod(StreamingContext context)
+            public override byte[] Data
             {
-                throw new SerializationException("I ruin your batch!");
+                get { throw new SerializationException("I ruin your batch!"); }
+                set { }
             }
         }
     }

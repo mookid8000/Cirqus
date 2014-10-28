@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using d60.Cirqus.Numbers;
 
 namespace d60.Cirqus.Events
 {
@@ -28,17 +27,5 @@ namespace d60.Cirqus.Events
         /// Gets the next available global sequence number. This will be the number used on the first event in the next saved event batch.
         /// </summary>
         long GetNextGlobalSequenceNumber();
-    }
-
-    public class Event
-    {
-        public Event()
-        {
-            Meta = new Metadata();
-            Data = new byte[0];
-        }
-
-        public Metadata Meta { get; set; }
-        public byte[] Data { get; set; }
     }
 }
