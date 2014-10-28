@@ -373,27 +373,27 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             var agg2 = Guid.NewGuid();
             _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event(1, agg1),
-                Event(2, agg1),
-                Event(3, agg2)
+                NewEvent(0, agg1),
+                NewEvent(1, agg1),
+                NewEvent(2, agg2)
             });
             _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event(4, agg1),
-                Event(5, agg1),
-                Event(6, agg2)
+                NewEvent(3, agg1),
+                NewEvent(4, agg1),
+                NewEvent(5, agg2)
             });
 
             // act
-            var allEventsForAgg1 = _eventStore.Load(agg1).ToList();
-            var allEventsForAgg2 = _eventStore.Load(agg2).ToList();
+            var allEventsForAgg1 = _eventStore.LoadNew(agg1).ToList();
+            var allEventsForAgg2 = _eventStore.LoadNew(agg2).ToList();
 
             // assert
             Assert.That(allEventsForAgg1.Count, Is.EqualTo(4));
-            Assert.That(allEventsForAgg1.GetSeq(), Is.EqualTo(new[] { 1, 2, 4, 5 }));
+            Assert.That(allEventsForAgg1.Select(Deserialized).GetSeq(), Is.EqualTo(new[] { 0, 1, 3, 4 }));
 
             Assert.That(allEventsForAgg2.Count, Is.EqualTo(2));
-            Assert.That(allEventsForAgg2.GetSeq(), Is.EqualTo(new[] { 3, 6 }));
+            Assert.That(allEventsForAgg2.Select(Deserialized).GetSeq(), Is.EqualTo(new[] { 2, 5 }));
         }
 
         [Test]
