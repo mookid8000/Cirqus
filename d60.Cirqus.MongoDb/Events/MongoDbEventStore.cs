@@ -139,7 +139,6 @@ namespace d60.Cirqus.MongoDb.Events
 
         public void Save(Guid batchId, IEnumerable<Event> events)
         {
-            throw new NotImplementedException();
         }
 
         long GetLong(BsonValue bsonValue)

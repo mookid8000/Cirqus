@@ -80,7 +80,6 @@ namespace d60.Cirqus.Ntfs.Events
 
         public void Save(Guid batchId, IEnumerable<Event> events)
         {
-            throw new NotImplementedException();
         }
 
         public void Dispose()

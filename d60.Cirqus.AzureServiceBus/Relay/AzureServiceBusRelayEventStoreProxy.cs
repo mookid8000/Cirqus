@@ -62,7 +62,6 @@ namespace d60.Cirqus.AzureServiceBus.Relay
 
         public void Save(Guid batchId, IEnumerable<Event> events)
         {
-            throw new NotImplementedException();
         }
 
         public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)

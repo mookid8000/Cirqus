@@ -76,7 +76,6 @@ namespace d60.Cirqus.Testing.Internals
 
         public void Save(Guid batchId, IEnumerable<Event> events)
         {
-            throw new NotImplementedException();
         }
 
         DomainEvent CloneEvent(DomainEvent ev)

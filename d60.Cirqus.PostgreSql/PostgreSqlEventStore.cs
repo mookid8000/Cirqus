@@ -243,7 +243,6 @@ SELECT ""data"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY ""globSeqNo
 
         public void Save(Guid batchId, IEnumerable<Event> events)
         {
-            throw new NotImplementedException();
         }
 
         public void DropEvents()

@@ -123,7 +123,6 @@ INSERT INTO [{0}] (
 
         public void Save(Guid batchId, IEnumerable<Event> events)
         {
-            throw new NotImplementedException();
         }
 
         long GetNextGlobalSequenceNumber(SqlConnection conn, SqlTransaction tx)

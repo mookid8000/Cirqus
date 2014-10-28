@@ -150,7 +150,6 @@ namespace d60.Cirqus.SQLite
 
         public void Save(Guid batchId, IEnumerable<Events.Event> events)
         {
-            throw new NotImplementedException();
         }
 
         public void Dispose()
