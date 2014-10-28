@@ -6,6 +6,7 @@ using System.Threading;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Numbers;
 using d60.Cirqus.Serialization;
 
 namespace d60.Cirqus.Testing.Internals
@@ -59,8 +60,8 @@ namespace d60.Cirqus.Testing.Internals
 
                 foreach (var e in eventList)
                 {
-                    e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = result++;
-                    e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
+                    e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (result++).ToString(Metadata.NumberCulture);
+                    e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
                 }
 
                 EventValidation.ValidateBatchIntegrity(batchId, eventList);

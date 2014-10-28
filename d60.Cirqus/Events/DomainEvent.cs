@@ -21,7 +21,7 @@ namespace d60.Cirqus.Events
 
         internal void AssignSequenceNumber(int seq)
         {
-            Meta[MetadataKeys.SequenceNumber] = seq;
+            Meta[MetadataKeys.SequenceNumber] = seq.ToString(Metadata.NumberCulture);
         }
 
         public override string ToString()

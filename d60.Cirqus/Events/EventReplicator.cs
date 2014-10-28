@@ -75,7 +75,7 @@ namespace d60.Cirqus.Events
             {
                 var newEventBatchId = Guid.NewGuid();
 
-                newEvent.Meta[SourceEventBatchId] = newEvent.GetBatchId();
+                newEvent.Meta[SourceEventBatchId] = newEvent.GetBatchId().ToString();
 
                 _logger.Debug("Replicating event {0}", newEvent.GetGlobalSequenceNumber());
 

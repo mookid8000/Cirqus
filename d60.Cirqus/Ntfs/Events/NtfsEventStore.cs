@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using d60.Cirqus.Events;
+using d60.Cirqus.Numbers;
 
 namespace d60.Cirqus.Ntfs.Events
 {
@@ -46,8 +47,8 @@ namespace d60.Cirqus.Ntfs.Events
 
                 foreach (var domainEvent in events)
                 {
-                    domainEvent.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = ++globalSequenceNumber;
-                    domainEvent.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
+                    domainEvent.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (++globalSequenceNumber).ToString(Metadata.NumberCulture);
+                    domainEvent.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
                 }
 
                 EventValidation.ValidateBatchIntegrity(batchId, events);

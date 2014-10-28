@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
+using d60.Cirqus.Numbers;
 using d60.Cirqus.Tests.MongoDb;
 using NUnit.Framework;
 
@@ -87,7 +88,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 Meta =
                 {
                     {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString()},
-                    {DomainEvent.MetadataKeys.SequenceNumber, GetNextSeqNoFor(aggregateRootId)},
+                    {DomainEvent.MetadataKeys.SequenceNumber, GetNextSeqNoFor(aggregateRootId).ToString(Metadata.NumberCulture)},
                 }
             };
         }

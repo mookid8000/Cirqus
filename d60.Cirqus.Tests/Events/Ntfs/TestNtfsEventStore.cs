@@ -3,6 +3,7 @@ using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Ntfs.Events;
+using d60.Cirqus.Numbers;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Events.Ntfs
@@ -29,8 +30,8 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 {
                     Meta =
                     {
-                        {DomainEvent.MetadataKeys.SequenceNumber, 0},
-                        {DomainEvent.MetadataKeys.AggregateRootId, rootId}
+                        {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
+                        {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
                     }
                 }
             });
@@ -41,9 +42,9 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 {
                     Meta =
                     {
-                        {DomainEvent.MetadataKeys.SequenceNumber, 1},
-                        {DomainEvent.MetadataKeys.AggregateRootId, rootId},
-                        {DomainEvent.MetadataKeys.GlobalSequenceNumber, 1}
+                        {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
+                        {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()},
+                        {DomainEvent.MetadataKeys.GlobalSequenceNumber, 1.ToString(Metadata.NumberCulture)}
                     }
                 });
 
@@ -64,8 +65,8 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 {
                     Meta =
                     {
-                        {DomainEvent.MetadataKeys.SequenceNumber, 0},
-                        {DomainEvent.MetadataKeys.AggregateRootId, rootId}
+                        {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
+                        {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
                     }
                 }
             });
@@ -97,8 +98,8 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 {
                     Meta =
                     {
-                        {DomainEvent.MetadataKeys.SequenceNumber, 0},
-                        {DomainEvent.MetadataKeys.AggregateRootId, rootId}
+                        {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
+                        {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
                     }
                 }
             });
@@ -121,8 +122,8 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 {
                     Meta =
                     {
-                        {DomainEvent.MetadataKeys.SequenceNumber, 1},
-                        {DomainEvent.MetadataKeys.AggregateRootId, rootId}
+                        {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
+                        {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
                     }
                 }
             });
@@ -147,8 +148,8 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 {
                     Meta =
                     {
-                        {DomainEvent.MetadataKeys.SequenceNumber, 0},
-                        {DomainEvent.MetadataKeys.AggregateRootId, rootId}
+                        {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
+                        {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
                     }
                 }
             });
@@ -159,9 +160,9 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 Title = "The bad one",
                 Meta =
                 {
-                    {DomainEvent.MetadataKeys.SequenceNumber, 1},
-                    {DomainEvent.MetadataKeys.AggregateRootId, rootId},
-                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, 1}
+                    {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
+                    {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()},
+                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, 1.ToString(Metadata.NumberCulture)}
                 }
             };
 
@@ -176,8 +177,8 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                     Title = "The good one",
                     Meta =
                     {
-                        {DomainEvent.MetadataKeys.SequenceNumber, 1},
-                        {DomainEvent.MetadataKeys.AggregateRootId, rootId}
+                        {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
+                        {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
                     }
                 }
             });

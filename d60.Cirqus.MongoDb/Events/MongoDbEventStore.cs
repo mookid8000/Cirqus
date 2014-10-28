@@ -27,10 +27,12 @@ namespace d60.Cirqus.MongoDb.Events
         readonly MongoDbSerializer _serializer = new MongoDbSerializer();
 
         readonly MongoCollection _eventBatches;
+        readonly MongoCollection<MongoEventBatch> _eventBatches2;
 
         public MongoDbEventStore(MongoDatabase database, string eventCollectionName, bool automaticallyCreateIndexes = true)
         {
             _eventBatches = database.GetCollection(eventCollectionName);
+            _eventBatches2 = database.GetCollection<MongoEventBatch>(eventCollectionName);
 
             if (automaticallyCreateIndexes)
             {
@@ -103,8 +105,8 @@ namespace d60.Cirqus.MongoDb.Events
 
             foreach (var e in events)
             {
-                e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = nextGlobalSeqNo++;
-                e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
+                e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (nextGlobalSeqNo++).ToString(Metadata.NumberCulture);
+                e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
             }
 
             EventValidation.ValidateBatchIntegrity(batchId, events);
@@ -153,8 +155,8 @@ namespace d60.Cirqus.MongoDb.Events
 
             foreach (var e in batch)
             {
-                e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = nextGlobalSeqNo++;
-                e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
+                e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (nextGlobalSeqNo++).ToString(Metadata.NumberCulture);
+                e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
             }
 
             EventValidation.ValidateBatchIntegrity(batchId, batch);
@@ -167,7 +169,8 @@ namespace d60.Cirqus.MongoDb.Events
 
             try
             {
-                _eventBatches.Save(doc);
+                //_eventBatches.Save(doc);
+
             }
             catch (MongoDuplicateKeyException exception)
             {
@@ -276,7 +279,7 @@ namespace d60.Cirqus.MongoDb.Events
             var meta = new Metadata();
             foreach (var property in bsonValue.AsBsonDocument)
             {
-                meta[property.Name] = property.Value;
+                meta[property.Name] = property.Value.ToString();
             }
             return meta;
         }
@@ -313,11 +316,19 @@ namespace d60.Cirqus.MongoDb.Events
         }
     }
 
-    class EventBatch
+    class MongoEventBatch
     {
         [BsonId]
         public string BatchId { get; set; }
 
-        public List<DomainEvent> Events { get; set; }
+        public Dictionary<string,string> Meta { get; set; }
+
+        public List<MongoEvent> Events { get; set; }
+    }
+
+    class MongoEvent
+    {
+        public byte[] Bin { get; set; }
+        public string Body { get; set; }
     }
 }

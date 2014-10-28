@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
+using d60.Cirqus.Numbers;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.MongoDb
@@ -64,8 +65,8 @@ namespace d60.Cirqus.Tests.MongoDb
                 SomeValue = "hej",
                 Meta =
                 {
-                    { DomainEvent.MetadataKeys.SequenceNumber, nextSeqNo },
-                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId }
+                    { DomainEvent.MetadataKeys.SequenceNumber, nextSeqNo.ToString(Metadata.NumberCulture) },
+                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString() }
                 }
             };
         }

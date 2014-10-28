@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
+using d60.Cirqus.Numbers;
 using d60.Cirqus.Serialization;
 
 namespace d60.Cirqus.MsSql.Events
@@ -53,8 +54,8 @@ namespace d60.Cirqus.MsSql.Events
 
                         foreach (var e in eventList)
                         {
-                            e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = globalSequenceNumber++;
-                            e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
+                            e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (globalSequenceNumber++).ToString(Metadata.NumberCulture);
+                            e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
                         }
 
                         EventValidation.ValidateBatchIntegrity(batchId, eventList);

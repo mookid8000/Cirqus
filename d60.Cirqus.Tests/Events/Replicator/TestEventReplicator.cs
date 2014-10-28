@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using d60.Cirqus.Events;
+using d60.Cirqus.Numbers;
 using d60.Cirqus.Testing.Internals;
 using NUnit.Framework;
 
@@ -33,9 +34,9 @@ namespace d60.Cirqus.Tests.Events.Replicator
             {
                 Meta =
                 {
-                    {DomainEvent.MetadataKeys.AggregateRootId, new Guid("268DD0C0-529F-4242-9D53-601A88BB1813")},
-                    {DomainEvent.MetadataKeys.SequenceNumber, seqNo},
-                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, seqNo++},
+                    {DomainEvent.MetadataKeys.AggregateRootId, "268DD0C0-529F-4242-9D53-601A88BB1813"},
+                    {DomainEvent.MetadataKeys.SequenceNumber, (seqNo).ToString(Metadata.NumberCulture)},
+                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, (seqNo++).ToString(Metadata.NumberCulture)},
                 }
             };
 

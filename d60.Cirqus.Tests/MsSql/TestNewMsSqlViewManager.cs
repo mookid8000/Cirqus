@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.MsSql.Views;
+using d60.Cirqus.Numbers;
 using d60.Cirqus.Tests.Stubs;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
@@ -72,9 +73,9 @@ namespace d60.Cirqus.Tests.MsSql
             {
                 Meta =
                 {
-                    {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId},
-                    {DomainEvent.MetadataKeys.SequenceNumber, 0},
-                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, 0},
+                    {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString()},
+                    {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
+                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, 0.ToString(Metadata.NumberCulture)},
                 }
             };
         }

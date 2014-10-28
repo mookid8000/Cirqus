@@ -159,8 +159,8 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                 SomeValue = "hej",
                 Meta =
                 {
-                    {DomainEvent.MetadataKeys.SequenceNumber, 1},
-                    {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId}
+                    {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
+                    {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString()}
                 }
             }};
 
@@ -186,7 +186,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                 {
                     SomeValue = "hej",
                     Meta = {
-                        {DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid()},
+                        {DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid().ToString()},
                         //{DomainEvent.MetadataKeys.SequenceNumber, 1}, //< this one is missing!
                     } 
                 }
@@ -212,7 +212,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                     SomeValue = "hej",
                     Meta = {
                         //{DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid()}, //< this one is missing!
-                        {DomainEvent.MetadataKeys.SequenceNumber, 1},
+                        {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
                     } 
                 }
             };
@@ -235,17 +235,17 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                 new SomeEvent
                 {
                     SomeValue = "hej",
-                    Meta = {{DomainEvent.MetadataKeys.SequenceNumber, 1}}
+                    Meta = {{DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)}}
                 },
                 new SomeEvent
                 {
                     SomeValue = "hej",
-                    Meta = {{DomainEvent.MetadataKeys.SequenceNumber, 2}}
+                    Meta = {{DomainEvent.MetadataKeys.SequenceNumber, 2.ToString(Metadata.NumberCulture)}}
                 },
                 new SomeEvent
                 {
                     SomeValue = "hej",
-                    Meta = {{DomainEvent.MetadataKeys.SequenceNumber, 4}}
+                    Meta = {{DomainEvent.MetadataKeys.SequenceNumber, 4.ToString(Metadata.NumberCulture)}}
                 }
             };
 
@@ -412,8 +412,8 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                     {
                         Meta =
                         {
-                            {DomainEvent.MetadataKeys.SequenceNumber, 2},
-                            {DomainEvent.MetadataKeys.AggregateRootId, agg2}
+                            {DomainEvent.MetadataKeys.SequenceNumber, 2.ToString(Metadata.NumberCulture)},
+                            {DomainEvent.MetadataKeys.AggregateRootId, agg2.ToString()}
                         }
                     }
                 });
@@ -448,8 +448,8 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         [Test]
         public void LoadingFromEmptyStreamDoesNotFail()
         {
-            Assert.AreEqual(0, _eventStore.Stream().Count());
-            Assert.AreEqual(0, _eventStore.Load(Guid.NewGuid()).Count());
+            Assert.AreEqual(0, _eventStore.StreamNew().Count());
+            Assert.AreEqual(0, _eventStore.LoadNew(Guid.NewGuid()).Count());
         }
 
         [TestCase(100, 3)]
@@ -501,8 +501,8 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                 SomeValue = "hej",
                 Meta =
                 {
-                    { DomainEvent.MetadataKeys.SequenceNumber, seq },
-                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId }
+                    { DomainEvent.MetadataKeys.SequenceNumber, seq.ToString(Metadata.NumberCulture) },
+                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString() }
                 }
             };
         }
@@ -514,8 +514,8 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                 SomeValue = "hej",
                 Meta =
                 {
-                    { DomainEvent.MetadataKeys.SequenceNumber, seq },
-                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId }
+                    { DomainEvent.MetadataKeys.SequenceNumber, seq.ToString(Metadata.NumberCulture) },
+                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString() }
                 }
             };
 

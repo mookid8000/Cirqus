@@ -4,6 +4,7 @@ using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Numbers;
 using d60.Cirqus.Serialization;
 using Npgsql;
 
@@ -92,8 +93,8 @@ END$$;
 
                     foreach (var e in eventList)
                     {
-                        e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = nextSequenceNumber++;
-                        e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
+                        e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (nextSequenceNumber++).ToString(Metadata.NumberCulture);
+                        e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
                     }
 
                     EventValidation.ValidateBatchIntegrity(batchId, eventList);

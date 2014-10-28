@@ -5,6 +5,7 @@ using System.Threading;
 using d60.Cirqus.AzureServiceBus.Dispatcher;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Numbers;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Views;
 using NUnit.Framework;
@@ -69,7 +70,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Dispatcher
             {
                 Meta =
                 {
-                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, globalSeqNo}
+                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, globalSeqNo.ToString(Metadata.NumberCulture)}
                 }
             };
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
+using d60.Cirqus.Numbers;
 using d60.Cirqus.Testing.Internals;
 using NUnit.Framework;
 
@@ -46,9 +47,9 @@ namespace d60.Cirqus.Tests.Aggregates
                 {
                     Meta =
                     {
-                        {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId},
-                        {DomainEvent.MetadataKeys.GlobalSequenceNumber, globalSeqNo},
-                        {DomainEvent.MetadataKeys.SequenceNumber, seqNo},
+                        {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString()},
+                        {DomainEvent.MetadataKeys.GlobalSequenceNumber, globalSeqNo.ToString(Metadata.NumberCulture)},
+                        {DomainEvent.MetadataKeys.SequenceNumber, seqNo.ToString(Metadata.NumberCulture)},
                     }
                 }
             });

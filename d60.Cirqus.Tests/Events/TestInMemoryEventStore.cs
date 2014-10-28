@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
+using d60.Cirqus.Numbers;
 using d60.Cirqus.Testing.Internals;
 using NUnit.Framework;
 
@@ -26,9 +27,9 @@ namespace d60.Cirqus.Tests.Events
                 ListOfStuff = { "hej", "med", "dig" },
                 Meta =
                 {
-                    {DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid()},
-                    {DomainEvent.MetadataKeys.SequenceNumber, 0},
-                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, 0},
+                    {DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid().ToString()},
+                    {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
+                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, 0.ToString(Metadata.NumberCulture)},
                 }
             };
             _eventStore.Save(Guid.NewGuid(), new[] {someEvent});

@@ -4,6 +4,7 @@ using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Numbers;
 using d60.Cirqus.Serialization;
 
 namespace d60.Cirqus.SQLite
@@ -69,8 +70,8 @@ namespace d60.Cirqus.SQLite
 
             foreach (var domainEvent in domainEventsList)
             {
-                domainEvent.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = nextGlobalSequenceNumber++;
-                domainEvent.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
+                domainEvent.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (nextGlobalSequenceNumber++).ToString(Metadata.NumberCulture);
+                domainEvent.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
             }
 
             EventValidation.ValidateBatchIntegrity(batchId, domainEventsList);
