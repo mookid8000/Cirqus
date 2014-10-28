@@ -41,6 +41,7 @@ namespace d60.Cirqus.MsSql.Events
 
         public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
         {
+            throw new NotImplementedException();
         }
 
         public long GetNextGlobalSequenceNumber()
@@ -97,7 +98,7 @@ INSERT INTO [{0}] (
     @aggId,
     @seqNo,
     @globSeqNo,
-    @meta
+    @meta,
     @data
 )
 
@@ -130,11 +131,6 @@ INSERT INTO [{0}] (
 
         public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
         {
-        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
-        {
-            return Enumerable.Empty<Event>();
-        }
-
             SqlConnection conn = null;
 
             try
@@ -148,7 +144,7 @@ INSERT INTO [{0}] (
                         cmd.Transaction = tx;
                         cmd.CommandText = string.Format(@"
 
-SELECT [data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo
+SELECT [meta],[data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo
 
 ", _tableName);
                         cmd.Parameters.Add("aggId", SqlDbType.UniqueIdentifier).Value = aggregateRootId;
@@ -158,14 +154,7 @@ SELECT [data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo
                         {
                             while (reader.Read())
                             {
-                                var meta = (string)reader["meta"];
-                                var data = (byte[])reader["data"];
-
-                                yield return new Event
-                                {
-                                    Meta = JsonConvert.DeserializeObject<Metadata>(meta),
-                                    Data = data
-                                };
+                                yield return ReadEvent(reader);
                             }
                         }
                     }
@@ -180,6 +169,58 @@ SELECT [data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo
                     _cleanupAction(conn);
                 }
             }
+        }
+
+        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
+        {
+            SqlConnection connection = null;
+
+            try
+            {
+                connection = _connectionProvider();
+
+                using (var tx = connection.BeginTransaction())
+                {
+                    using (var cmd = connection.CreateCommand())
+                    {
+                        cmd.Transaction = tx;
+                        cmd.CommandText = string.Format(@"
+
+SELECT [meta],[data] FROM [{0}] WHERE [globSeqNo] >= @cutoff ORDER BY [globSeqNo]
+
+", _tableName);
+
+                        cmd.Parameters.Add("cutoff", SqlDbType.BigInt).Value = globalSequenceNumber;
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                yield return ReadEvent(reader);
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                if (connection != null)
+                {
+                    _cleanupAction(connection);
+                }
+            }
+        }
+
+        static Event ReadEvent(IDataRecord reader)
+        {
+            var meta = (string) reader["meta"];
+            var data = (byte[]) reader["data"];
+
+            return new Event
+            {
+                Meta = JsonConvert.DeserializeObject<Metadata>(meta),
+                Data = data
+            };
         }
 
         long GetNextGlobalSequenceNumber(SqlConnection conn, SqlTransaction tx)
@@ -199,49 +240,12 @@ SELECT [data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo
 
         public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
         {
-            return Enumerable.Empty<DomainEvent>();
+            throw new NotImplementedException();
         }
 
         public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
         {
-            SqlConnection connection = null;
-
-            try
-            {
-                connection = _connectionProvider();
-
-                using (var tx = connection.BeginTransaction())
-                {
-                    using (var cmd = connection.CreateCommand())
-                    {
-                        cmd.Transaction = tx;
-                        cmd.CommandText = string.Format(@"
-
-SELECT [data] FROM [{0}] WHERE [globSeqNo] >= @cutoff ORDER BY [globSeqNo]
-
-", _tableName);
-
-                        cmd.Parameters.Add("cutoff", SqlDbType.BigInt).Value = globalSequenceNumber;
-
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                var data = (string)reader["data"];
-
-                                yield return _domainEventSerializer.Deserialize(data);
-                            }
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                if (connection != null)
-                {
-                    _cleanupAction(connection);
-                }
-            }
+            throw new NotImplementedException();
         }
 
         /// <summary>
