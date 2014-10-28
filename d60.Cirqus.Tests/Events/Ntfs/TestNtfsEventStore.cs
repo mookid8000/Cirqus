@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Ntfs.Events;
@@ -26,7 +27,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(rootId, new[]
             {
-                new SomeEvent
+                new Event
                 {
                     Meta =
                     {
@@ -38,7 +39,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
 
             // save an event to a file, without committing
             _eventStore.DataStore.Write(
-                new SomeEvent
+                new Event
                 {
                     Meta =
                     {
@@ -49,7 +50,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 });
 
 
-            var events = _eventStore.Load(rootId);
+            var events = _eventStore.LoadNew(rootId);
             Assert.AreEqual(1, events.Count());
         }
 
@@ -61,7 +62,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(rootId, new[]
             {
-                new SomeEvent
+                new Event
                 {
                     Meta =
                     {
@@ -82,7 +83,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 }
             });
 
-            var events = _eventStore.Stream();
+            var events = _eventStore.StreamNew();
             Assert.AreEqual(1, events.Count());
         }
 
@@ -94,7 +95,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(rootId, new[]
             {
-                new SomeEvent
+                new Event
                 {
                     Meta =
                     {
@@ -118,7 +119,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(rootId, new[]
             {
-                new SomeEvent
+                new Event
                 {
                     Meta =
                     {
@@ -128,11 +129,11 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 }
             });
 
-            var stream = _eventStore.Stream().ToList();
+            var stream = _eventStore.StreamNew().ToList();
             Assert.AreEqual(1, stream.Last().GetGlobalSequenceNumber());
             Assert.AreEqual(2, stream.Count());
 
-            var load = _eventStore.Load(rootId);
+            var load = _eventStore.LoadNew(rootId);
             Assert.AreEqual(2, load.Count());
         }
 
@@ -144,7 +145,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(rootId, new[]
             {
-                new SomeEvent
+                new Event
                 {
                     Meta =
                     {
@@ -155,9 +156,9 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             });
 
             // make one that fails right after index write
-            var domainEvent = new SomeEvent
+            var domainEvent = new Event
             {
-                Title = "The bad one",
+                Data = Encoding.UTF8.GetBytes("The bad one"),
                 Meta =
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
@@ -172,9 +173,9 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(rootId, new[]
             {
-                new SomeEvent
+                new Event
                 {
-                    Title = "The good one",
+                    Data = Encoding.UTF8.GetBytes("The good one"),
                     Meta =
                     {
                         {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
@@ -183,19 +184,13 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 }
             });
 
-            var stream = _eventStore.Stream().ToList();
+            var stream = _eventStore.StreamNew().ToList();
             Assert.AreEqual(2, stream.Count());
             Assert.AreEqual(1, stream.Last().GetGlobalSequenceNumber());
 
-            var load = _eventStore.Load(rootId).ToList();
+            var load = _eventStore.LoadNew(rootId).ToList();
             Assert.AreEqual(2, load.Count());
-            Assert.AreEqual("The good one", ((SomeEvent)load.Last()).Title);
-        }
-
-
-        class SomeEvent : DomainEvent
-        {
-            public string Title { get; set; }
+            Assert.AreEqual("The good one", Encoding.UTF8.GetString(load.Last().Data));
         }
     }
 }

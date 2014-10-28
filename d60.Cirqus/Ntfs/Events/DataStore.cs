@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
@@ -34,7 +35,7 @@ namespace d60.Cirqus.Ntfs.Events
             Directory.CreateDirectory(_dataDirectory);
         }
 
-        public void Write(Guid batchId, IReadOnlyCollection<DomainEvent> events)
+        public void Write(Guid batchId, IReadOnlyCollection<Event> events)
         {
             foreach (var domainEvent in events)
             {
@@ -49,7 +50,7 @@ namespace d60.Cirqus.Ntfs.Events
             }
         }
 
-        public void Write(DomainEvent domainEvent)
+        public void Write(Event domainEvent)
         {
             var aggregateRootId = domainEvent.GetAggregateRootId();
             var sequenceNumber = domainEvent.GetSequenceNumber();
@@ -66,13 +67,13 @@ namespace d60.Cirqus.Ntfs.Events
             }
         }
 
-        public IEnumerable<DomainEvent> Read(long lastCommittedGlobalSequenceNumber, Guid aggregateRootId, long offset)
+        public IEnumerable<Event> Read(long lastCommittedGlobalSequenceNumber, Guid aggregateRootId, long offset)
         {
             var aggregateDirectory = Path.Combine(_dataDirectory, aggregateRootId.ToString());
 
             if (!Directory.Exists(aggregateDirectory))
             {
-                return Enumerable.Empty<DomainEvent>();
+                return Enumerable.Empty<Event>();
             }
 
             return from path in Directory.EnumerateFiles(aggregateDirectory)
@@ -84,7 +85,7 @@ namespace d60.Cirqus.Ntfs.Events
 
         }
 
-        public DomainEvent Read(Guid aggregateRootId, long sequenceNumber)
+        public Event Read(Guid aggregateRootId, long sequenceNumber)
         {
             var filename = Path.Combine(_dataDirectory, aggregateRootId.ToString(), GetFilename(sequenceNumber));
             
@@ -105,7 +106,7 @@ namespace d60.Cirqus.Ntfs.Events
                 File.Delete(filename);
         }
 
-        DomainEvent TryRead(string filename)
+        Event TryRead(string filename)
         {
             if (!File.Exists(filename))
                 return null;
@@ -118,7 +119,7 @@ namespace d60.Cirqus.Ntfs.Events
 
                 try
                 {
-                    return _serializer.Deserialize<DomainEvent>(bsonReader);
+                    return _serializer.Deserialize<Event>(bsonReader);
                 }
                 catch (Exception)
                 {
