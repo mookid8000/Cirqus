@@ -50,7 +50,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 });
 
 
-            var events = _eventStore.LoadNew(rootId);
+            var events = _eventStore.Load(rootId);
             Assert.AreEqual(1, events.Count());
         }
 
@@ -83,7 +83,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 }
             });
 
-            var events = _eventStore.StreamNew();
+            var events = _eventStore.Stream();
             Assert.AreEqual(1, events.Count());
         }
 
@@ -129,11 +129,11 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 }
             });
 
-            var stream = _eventStore.StreamNew().ToList();
+            var stream = _eventStore.Stream().ToList();
             Assert.AreEqual(1, stream.Last().GetGlobalSequenceNumber());
             Assert.AreEqual(2, stream.Count());
 
-            var load = _eventStore.LoadNew(rootId);
+            var load = _eventStore.Load(rootId);
             Assert.AreEqual(2, load.Count());
         }
 
@@ -184,11 +184,11 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 }
             });
 
-            var stream = _eventStore.StreamNew().ToList();
+            var stream = _eventStore.Stream().ToList();
             Assert.AreEqual(2, stream.Count());
             Assert.AreEqual(1, stream.Last().GetGlobalSequenceNumber());
 
-            var load = _eventStore.LoadNew(rootId).ToList();
+            var load = _eventStore.Load(rootId).ToList();
             Assert.AreEqual(2, load.Count());
             Assert.AreEqual("The good one", Encoding.UTF8.GetString(load.Last().Data));
         }

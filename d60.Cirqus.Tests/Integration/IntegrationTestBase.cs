@@ -42,7 +42,7 @@ namespace d60.Cirqus.Tests.Integration
             switch (eventStoreOption)
             {
                 case EventStoreOption.InMemory:
-                    return new InMemoryEventStore();
+                    return new InMemoryEventStore(_domainEventSerializer);
 
                 case EventStoreOption.MongoDb:
                     return new MongoDbEventStore(GetMongoDb(), "Events");

@@ -31,16 +31,17 @@ namespace d60.Cirqus.Tests.Integration
         CommandProcessor _cirqus;
         DefaultAggregateRootRepository _aggregateRootRepository;
         InMemoryEventStore _eventStore;
+        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
 
         protected override void DoSetUp()
         {
-            _eventStore = new InMemoryEventStore();
+            _eventStore = new InMemoryEventStore(_domainEventSerializer);
 
-            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
+            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _cirqus = new CommandProcessor(_eventStore, _aggregateRootRepository, viewManager, new DomainEventSerializer());
+            _cirqus = new CommandProcessor(_eventStore, _aggregateRootRepository, viewManager, _domainEventSerializer);
 
             RegisterForDisposal(_cirqus);
         }

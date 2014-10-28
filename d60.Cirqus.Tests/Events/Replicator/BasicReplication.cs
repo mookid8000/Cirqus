@@ -5,6 +5,7 @@ using System.Threading;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.MongoDb;
 using NUnit.Framework;
 
@@ -14,6 +15,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
     public class BasicReplication : FixtureBase
     {
         readonly Dictionary<Guid, int> _seqNos = new Dictionary<Guid, int>();
+        readonly DomainEventSerializer _serializer = new DomainEventSerializer();
 
         EventReplicator _replicator;
         MongoDbEventStore _source;
@@ -41,7 +43,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
             _source.Save(Guid.NewGuid(), new[]
             {
                 CreateNewEvent(Guid.NewGuid(), "hej")
-            });
+            }.Select(e => _serializer.DoSerialize(e)));
 
             Thread.Sleep(1000);
 
@@ -61,8 +63,8 @@ namespace d60.Cirqus.Tests.Events.Replicator
             var batchId1 = Guid.NewGuid();
             var batchId2 = Guid.NewGuid();
 
-            _source.Save(batchId1, new[] { CreateNewEvent(Guid.NewGuid(), "hej") });
-            _source.Save(batchId2, new[] { CreateNewEvent(Guid.NewGuid(), "hej"), CreateNewEvent(Guid.NewGuid(), "hej") });
+            _source.Save(batchId1, new[] { CreateNewEvent(Guid.NewGuid(), "hej") }.Select(e => _serializer.DoSerialize(e)));
+            _source.Save(batchId2, new[] { CreateNewEvent(Guid.NewGuid(), "hej"), CreateNewEvent(Guid.NewGuid(), "hej") }.Select(e => _serializer.DoSerialize(e)));
 
             Thread.Sleep(1000);
 

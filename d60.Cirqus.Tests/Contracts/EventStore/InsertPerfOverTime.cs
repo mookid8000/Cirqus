@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.Contracts.EventStore.Factories;
 using NUnit.Framework;
 
@@ -149,7 +150,8 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         void Insert(int numberOfEvents)
         {
             _eventStore.Save(Guid.NewGuid(), Enumerable.Range(0, numberOfEvents)
-                .Select(n => CreateEventWithRealisticPayload()));
+                .Select(n => CreateEventWithRealisticPayload())
+                .Select(e => new DomainEventSerializer().DoSerialize(e)));
         }
 
         long GetNextFor(Guid aggregateRootId)

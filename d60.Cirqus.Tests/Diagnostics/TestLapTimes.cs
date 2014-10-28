@@ -10,6 +10,7 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.MongoDb.Config;
 using d60.Cirqus.MongoDb.Events;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
@@ -59,7 +60,7 @@ namespace d60.Cirqus.Tests.Diagnostics
                     Interlocked.Increment(ref commandCounter);
                 });
 
-                var repo = new DefaultAggregateRootRepository(new MongoDbEventStore(database, "Events"));
+                var repo = new DefaultAggregateRootRepository(new MongoDbEventStore(database, "Events"), new DomainEventSerializer());
                 var currentState = repo.Get<Root>(id, new ConsoleOutUnitOfWork(repo));
 
                 Assert.That(currentState.AggregateRoot.HowManyThingsHaveHappened, Is.EqualTo(numberOfCommandsToProcess));

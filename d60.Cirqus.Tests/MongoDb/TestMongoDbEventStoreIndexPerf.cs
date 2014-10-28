@@ -4,6 +4,7 @@ using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.MongoDb
@@ -20,6 +21,7 @@ namespace d60.Cirqus.Tests.MongoDb
         public void IndexSpeedTest(bool useIndexes, int numberOfQueries, int numberOfEvents)
         {
             var sequenceNumbers = new Dictionary<Guid, long>();
+            var serializer = new DomainEventSerializer();
 
             try
             {
@@ -41,7 +43,7 @@ namespace d60.Cirqus.Tests.MongoDb
                 {
                     foreach (var e in events)
                     {
-                        eventStore.Save(Guid.NewGuid(), new[] { e });
+                        eventStore.Save(Guid.NewGuid(), new[] { serializer.DoSerialize(e) });
                     }
                 });
 
