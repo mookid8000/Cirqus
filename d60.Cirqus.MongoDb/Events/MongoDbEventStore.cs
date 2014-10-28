@@ -20,19 +20,23 @@ namespace d60.Cirqus.MongoDb.Events
         const string EventsDocPath = "Events";
         const string MetaDocPath = "Meta";
 
-        static readonly string SeqNoDocPath = string.Format("{0}.{1}.{2}", EventsDocPath, MetaDocPath, DomainEvent.MetadataKeys.SequenceNumber);
-        static readonly string GlobalSeqNoDocPath = string.Format("{0}.{1}.{2}", EventsDocPath, MetaDocPath, DomainEvent.MetadataKeys.GlobalSequenceNumber);
-        static readonly string AggregateRootIdDocPath = string.Format("{0}.{1}.{2}", EventsDocPath, MetaDocPath, DomainEvent.MetadataKeys.AggregateRootId);
+        static readonly string SeqNoDocPath = string.Format("{0}.SequenceNumber", EventsDocPath);
+        static readonly string GlobalSeqNoDocPath = string.Format("{0}.GlobalSequenceNumber", EventsDocPath);
+        static readonly string AggregateRootIdDocPath = string.Format("{0}.AggregateRootId", EventsDocPath);
+
+        /*
+        public long GlobalSequenceNumber { get; set; }
+        public long SequenceNumber { get; set; }
+        public Guid AggregateRootId { get; set; }
+         */
 
         readonly MongoDbSerializer _serializer = new MongoDbSerializer();
 
-        readonly MongoCollection _eventBatches;
-        readonly MongoCollection<MongoEventBatch> _eventBatches2;
+        readonly MongoCollection<MongoEventBatch> _eventBatches;
 
         public MongoDbEventStore(MongoDatabase database, string eventCollectionName, bool automaticallyCreateIndexes = true)
         {
-            _eventBatches = database.GetCollection(eventCollectionName);
-            _eventBatches2 = database.GetCollection<MongoEventBatch>(eventCollectionName);
+            _eventBatches = database.GetCollection<MongoEventBatch>(eventCollectionName);
 
             if (automaticallyCreateIndexes)
             {
@@ -170,7 +174,7 @@ namespace d60.Cirqus.MongoDb.Events
             try
             {
                 //_eventBatches.Save(doc);
-                _eventBatches2.Save(new MongoEventBatch
+                _eventBatches.Save(new MongoEventBatch
                 {
                     BatchId = batchId.ToString(),
                     Events = batch
@@ -179,11 +183,14 @@ namespace d60.Cirqus.MongoDb.Events
                             var isJson = b.IsJson();
 
                             return new MongoEvent
-                                         {
-                                             Meta = GetMetadataAsDictionary(b.Meta),
-                                             Bin = isJson ? null : b.Data,
-                                             Body = isJson ? Encoding.UTF8.GetString(b.Data) : null
-                                         };
+                            {
+                                Meta = GetMetadataAsDictionary(b.Meta),
+                                Bin = isJson ? null : b.Data,
+                                Body = isJson ? Encoding.UTF8.GetString(b.Data) : null,
+                                SequenceNumber = b.GetSequenceNumber(),
+                                GlobalSequenceNumber = b.GetGlobalSequenceNumber(),
+                                AggregateRootId = b.GetAggregateRootId()
+                            };
                         })
                         .ToList()
                 });
@@ -260,49 +267,31 @@ namespace d60.Cirqus.MongoDb.Events
         public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
         {
             var criteria = Query.And(
-                Query.EQ(AggregateRootIdDocPath, aggregateRootId.ToString()),
+                Query.EQ(AggregateRootIdDocPath, aggregateRootId),
                 Query.GTE(SeqNoDocPath, firstSeq));
 
-            var docs = _eventBatches.FindAs<BsonDocument>(criteria);
-
-            var eventsSatisfyingCriteria = docs
-                .SelectMany(doc => doc[EventsDocPath].AsBsonArray)
-                .Select(e => new
-                {
-                    Event = e,
-                    Meta = e["Meta"],
-                    SequenceNumber = GetLong(e[MetaDocPath][DomainEvent.MetadataKeys.SequenceNumber]),
-                    AggregateRootId = GetAggregateRootIdOrDefault(e)
-                })
-                .Where(e => e.AggregateRootId == aggregateRootId && e.SequenceNumber >= firstSeq);
-
-            return eventsSatisfyingCriteria
-                .OrderBy(e => e.SequenceNumber)
-                .Select(e =>
-                {
-                    var bsonValue = e.Event;
-                    var meta = DeserializeMeta(e.Meta);
-
-                    if (bsonValue["Body"] != null)
-                    {
-                        return new Event
-                        {
-                            Meta = meta,
-                            Data = Encoding.UTF8.GetBytes(bsonValue["Body"].AsString),
-                        };
-                    }
-
-                    return new Event
-                    {
-                        Meta = meta,
-                        Data = bsonValue["Bin"].AsByteArray
-                    };
-                });
+            return _eventBatches.Find(criteria)
+                .SelectMany(b => b.Events)
+                .OrderBy(e => e.GlobalSequenceNumber)
+                .Where(e => e.GlobalSequenceNumber >= firstSeq)
+                .Select(MongoEventToEvent);
         }
 
         public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
         {
             return Enumerable.Empty<Event>();
+        }
+
+        Event MongoEventToEvent(MongoEvent e)
+        {
+            var meta = GetDictionaryAsMetadata(e.Meta);
+            var data = e.Bin ?? Encoding.UTF8.GetBytes(e.Body);
+
+            return new Event
+            {
+                Meta = meta,
+                Data = data
+            };
         }
 
         static Metadata DeserializeMeta(BsonValue bsonValue)
@@ -360,5 +349,9 @@ namespace d60.Cirqus.MongoDb.Events
         public Dictionary<string, string> Meta { get; set; }
         public byte[] Bin { get; set; }
         public string Body { get; set; }
+        
+        public long GlobalSequenceNumber { get; set; }
+        public long SequenceNumber { get; set; }
+        public Guid AggregateRootId { get; set; }
     }
 }

@@ -322,45 +322,45 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             var aggregateRootId = Guid.NewGuid();
             _eventStore.Save(Guid.NewGuid(), new[]
             {
+                NewEvent(0, aggregateRootId),
                 NewEvent(1, aggregateRootId),
                 NewEvent(2, aggregateRootId),
                 NewEvent(3, aggregateRootId),
                 NewEvent(4, aggregateRootId),
                 NewEvent(5, aggregateRootId),
-                NewEvent(6, aggregateRootId)
             });
             _eventStore.Save(Guid.NewGuid(), new[]
             {
+                NewEvent(6, aggregateRootId),
                 NewEvent(7, aggregateRootId),
                 NewEvent(8, aggregateRootId),
                 NewEvent(9, aggregateRootId),
                 NewEvent(10, aggregateRootId),
                 NewEvent(11, aggregateRootId),
-                NewEvent(12, aggregateRootId)
             });
             _eventStore.Save(Guid.NewGuid(), new[]
             {
+                NewEvent(12, aggregateRootId),
                 NewEvent(13, aggregateRootId),
                 NewEvent(14, aggregateRootId),
-                NewEvent(15, aggregateRootId)
             });
 
             // act
             // assert
             Assert.That(_eventStore.LoadNew(aggregateRootId, 1).Take(1).Count(), Is.EqualTo(1));
-            Assert.That(_eventStore.LoadNew(aggregateRootId, 1).Take(1).Select(Deserialied).GetSeq(), Is.EqualTo(Enumerable.Range(1, 1)));
+            Assert.That(_eventStore.LoadNew(aggregateRootId, 1).Take(1).Select(Deserialized).GetSeq().ToArray(), Is.EqualTo(Enumerable.Range(1, 1).ToArray()));
 
             Assert.That(_eventStore.LoadNew(aggregateRootId, 1).Take(2).Count(), Is.EqualTo(2));
-            Assert.That(_eventStore.LoadNew(aggregateRootId, 1).Take(2).Select(Deserialied).GetSeq(), Is.EqualTo(Enumerable.Range(1, 2)));
+            Assert.That(_eventStore.LoadNew(aggregateRootId, 1).Take(2).Select(Deserialized).GetSeq(), Is.EqualTo(Enumerable.Range(1, 2)));
 
             Assert.That(_eventStore.LoadNew(aggregateRootId, 1).Take(10).Count(), Is.EqualTo(10));
-            Assert.That(_eventStore.LoadNew(aggregateRootId, 1).Take(10).Select(Deserialied).GetSeq(), Is.EqualTo(Enumerable.Range(1, 10)));
+            Assert.That(_eventStore.LoadNew(aggregateRootId, 1).Take(10).Select(Deserialized).GetSeq(), Is.EqualTo(Enumerable.Range(1, 10)));
 
             Assert.That(_eventStore.LoadNew(aggregateRootId, 4).Take(10).Count(), Is.EqualTo(10));
-            Assert.That(_eventStore.LoadNew(aggregateRootId, 4).Take(10).Select(Deserialied).GetSeq(), Is.EqualTo(Enumerable.Range(4, 10)));
+            Assert.That(_eventStore.LoadNew(aggregateRootId, 4).Take(10).Select(Deserialized).GetSeq().ToArray(), Is.EqualTo(Enumerable.Range(4, 10).ToArray()));
         }
 
-        DomainEvent Deserialied(Event arg)
+        DomainEvent Deserialized(Event arg)
         {
             return _serializzle.DoDeserialize(arg);
         }
