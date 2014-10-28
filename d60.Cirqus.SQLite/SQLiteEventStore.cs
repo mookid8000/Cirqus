@@ -59,10 +59,11 @@ namespace d60.Cirqus.SQLite
             [Indexed(Name = "aggregateRootIndex", Order = 2, Unique = true)]
             public long SequenceNumber { get; set; }
 
-            public string EventData { get; set; }
+            public byte[] Data { get; set; }
+            public byte[] Meta { get; set; }
         }
 
-        public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
+        public void Save(Guid batchId, IEnumerable<Events.Event> batch)
         {
             var nextGlobalSequenceNumber = GetNextGlobalSequenceNumber();
 
@@ -83,7 +84,8 @@ namespace d60.Cirqus.SQLite
                     AggregateRootId = e.GetAggregateRootId(),
                     BatchId = batchId,
                     SequenceNumber = e.GetSequenceNumber(),
-                    EventData = _domainEventSerializer.Serialize(e)
+                    Data = e.Data,
+                    Meta = null
                 })
                 .ToList();
 
@@ -112,29 +114,32 @@ namespace d60.Cirqus.SQLite
                 _connection.Rollback();
                 throw;
             }
-            finally
-            {
-            }
         }
 
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<Events.Event> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             // must be foreach here - SQLite's LINQ thingie does not play well with _domainEventSerializer.Deserialize(e.EventData)
             foreach (var e in _connection.Table<Event>()
                 .Where(e => e.AggregateRootId == aggregateRootId)
                 .Where(e => e.SequenceNumber >= firstSeq))
             {
-                yield return _domainEventSerializer.Deserialize(e.EventData);
+                yield return new Events.Event
+                {
+                    Data = e.Data,
+                };
             }
         }
 
-        public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<Events.Event> Stream(long globalSequenceNumber = 0)
         {
             // must be foreach here - SQLite's LINQ thingie does not play well with _domainEventSerializer.Deserialize(e.EventData)
             foreach (var e in _connection.Table<Event>()
                 .Where(e => e.GlobalSequenceNumber >= globalSequenceNumber))
             {
-                yield return _domainEventSerializer.Deserialize(e.EventData);
+                yield return new Events.Event
+                {
+                    Data = e.Data
+                };
             }
         }
 
@@ -147,20 +152,6 @@ namespace d60.Cirqus.SQLite
                 : 0;
 
             return nextGlobalSequenceNumber;
-        }
-
-        public void Save(Guid batchId, IEnumerable<Events.Event> events)
-        {
-        }
-
-        public IEnumerable<Events.Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
-        {
-            return Enumerable.Empty<Events.Event>();
-        }
-
-        public IEnumerable<Events.Event> StreamNew(long globalSequenceNumber = 0)
-        {
-            return Enumerable.Empty<Events.Event>();
         }
 
         public void Dispose()
