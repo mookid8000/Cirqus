@@ -25,9 +25,10 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
     [TestFixture(typeof(SQLiteEventStoreFactory))]
     public class EventStoreTest<TEventStoreFactory> : FixtureBase where TEventStoreFactory : IEventStoreFactory, new()
     {
+        readonly DomainEventSerializer _serializzle = new DomainEventSerializer();
+
         TEventStoreFactory _eventStoreFactory;
         IEventStore _eventStore;
-        static readonly DomainEventSerializer _serializzle = new DomainEventSerializer();
 
         protected override void DoSetUp()
         {
@@ -551,7 +552,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             };
         }
 
-        static Event NewEvent(int seq, Guid aggregateRootId)
+        Event NewEvent(int seq, Guid aggregateRootId)
         {
             var domainEvent = new SomeEvent
             {
