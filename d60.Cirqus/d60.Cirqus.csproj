@@ -117,6 +117,7 @@
     <Compile Include="Numbers\TimeMachine.cs" />
     <Compile Include="Numbers\MetaAttribute.cs" />
     <Compile Include="Serialization\IDomainEventSerializer.cs" />
+    <Compile Include="Serialization\MetadataSerializer.cs" />
     <Compile Include="Testing\CommandProcessingResultWithEvents.cs" />
     <Compile Include="Testing\EventCollection.cs" />
     <Compile Include="Testing\Internals\InMemoryEventStore.cs" />
