@@ -39,26 +39,6 @@ namespace d60.Cirqus.MsSql.Events
             }
         }
 
-        public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long GetNextGlobalSequenceNumber()
-        {
-            var globalSequenceNumber = 0L;
-
-            WithConnection(conn =>
-            {
-                using (var tx = conn.BeginTransaction())
-                {
-                    globalSequenceNumber = GetNextGlobalSequenceNumber(conn, tx);
-                }
-            });
-
-            return globalSequenceNumber;
-        }
-
         public void Save(Guid batchId, IEnumerable<Event> events)
         {
             var eventList = events.ToList();
@@ -129,7 +109,7 @@ INSERT INTO [{0}] (
             }
         }
 
-        public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             SqlConnection conn = null;
 
@@ -171,7 +151,7 @@ SELECT [meta],[data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqN
             }
         }
 
-        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
+        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
         {
             SqlConnection connection = null;
 
@@ -211,6 +191,21 @@ SELECT [meta],[data] FROM [{0}] WHERE [globSeqNo] >= @cutoff ORDER BY [globSeqNo
             }
         }
 
+        public long GetNextGlobalSequenceNumber()
+        {
+            var globalSequenceNumber = 0L;
+
+            WithConnection(conn =>
+            {
+                using (var tx = conn.BeginTransaction())
+                {
+                    globalSequenceNumber = GetNextGlobalSequenceNumber(conn, tx);
+                }
+            });
+
+            return globalSequenceNumber;
+        }
+
         static Event ReadEvent(IDataRecord reader)
         {
             var meta = (string) reader["meta"];
@@ -236,16 +231,6 @@ SELECT [meta],[data] FROM [{0}] WHERE [globSeqNo] >= @cutoff ORDER BY [globSeqNo
                     ? (long)result + 1
                     : 0;
             }
-        }
-
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>

@@ -171,22 +171,12 @@ namespace d60.Cirqus.Diagnostics
                 }
             }
 
-            public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
+            public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
             {
                 return _innerEventStore.Load(aggregateRootId, firstSeq);
             }
 
-            public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
-            {
-                return _innerEventStore.LoadNew(aggregateRootId, firstSeq);
-            }
-
-            public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
-            {
-                return _innerEventStore.StreamNew(globalSequenceNumber);
-            }
-
-            public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+            public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
             {
                 return _innerEventStore.Stream(globalSequenceNumber);
             }

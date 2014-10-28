@@ -7,26 +7,23 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
-using d60.Cirqus.Serialization;
+using Newtonsoft.Json;
 
 namespace d60.Cirqus.Testing.Internals
 {
-    class InMemoryEventStore : IEventStore, IEnumerable<DomainEvent>
+    class InMemoryEventStore : IEventStore, IEnumerable<Event>
     {
         readonly Dictionary<string, object> _idAndSeqNoTuples = new Dictionary<string, object>();
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
         readonly List<EventBatch> _savedEventBatches = new List<EventBatch>();
         readonly object _lock = new object();
 
         long _globalSequenceNumber;
 
-        public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
+        public void Save(Guid batchId, IEnumerable<Event> events)
         {
-            var eventList = batch.ToList();
+            var batch = events.ToList();
 
-            eventList.ForEach(e => _domainEventSerializer.EnsureSerializability(e));
-
-            var tuplesInBatch = eventList
+            var tuplesInBatch = batch
                 .Select(e => string.Format("{0}:{1}", e.GetAggregateRootId(), e.GetSequenceNumber()))
                 .ToList();
 
@@ -49,61 +46,37 @@ namespace d60.Cirqus.Testing.Internals
                 }
                 catch (Exception exception)
                 {
-                    throw new ConcurrencyException(batchId, eventList, exception);
+                    throw new ConcurrencyException(batchId, batch, exception);
                 }
 
-                var sequenceNumbersToAllocate = eventList.Count;
+                var sequenceNumbersToAllocate = batch.Count;
 
                 var result = Interlocked.Add(ref _globalSequenceNumber, sequenceNumbersToAllocate);
 
                 result -= sequenceNumbersToAllocate;
 
-                foreach (var e in eventList)
+                foreach (var e in batch)
                 {
                     e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (result++).ToString(Metadata.NumberCulture);
                     e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
                 }
 
-                EventValidation.ValidateBatchIntegrity(batchId, eventList);
+                EventValidation.ValidateBatchIntegrity(batchId, batch);
 
-                _savedEventBatches.Add(new EventBatch(batchId, eventList.Select(CloneEvent)));
+                _savedEventBatches.Add(new EventBatch(batchId, batch.Select(CloneEvent)));
             }
         }
 
-        public long GetNextGlobalSequenceNumber()
-        {
-            return _globalSequenceNumber;
-        }
-
-        public void Save(Guid batchId, IEnumerable<Event> events)
-        {
-        }
-
-        public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
-        {
-            return Enumerable.Empty<Event>();
-        }
-
-        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
-        {
-            return Enumerable.Empty<Event>();
-        }
-
-        DomainEvent CloneEvent(DomainEvent ev)
-        {
-            return _domainEventSerializer.Deserialize(_domainEventSerializer.Serialize(ev));
-        }
-
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             lock (_lock)
             {
                 return this
-                    .Select(e => new
+                    .Select(@event => new
                     {
-                        Event = e,
-                        AggregateRootId = e.GetAggregateRootId(),
-                        SequenceNumber = e.GetSequenceNumber()
+                        Event = @event,
+                        AggregateRootId = @event.GetAggregateRootId(),
+                        SequenceNumber = @event.GetSequenceNumber()
                     })
                     .Where(e => e.AggregateRootId == aggregateRootId)
                     .Where(e => e.SequenceNumber >= firstSeq)
@@ -113,7 +86,35 @@ namespace d60.Cirqus.Testing.Internals
             }
         }
 
-        public IEnumerator<DomainEvent> GetEnumerator()
+        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
+        {
+            lock (_lock)
+            {
+                return _savedEventBatches
+                    .SelectMany(e => e.Events)
+                    .Select(e => new
+                    {
+                        Event = e,
+                        GlobalSequenceNumner = e.GetGlobalSequenceNumber()
+                    })
+                    .Where(a => a.GlobalSequenceNumner >= globalSequenceNumber)
+                    .OrderBy(a => a.GlobalSequenceNumner)
+                    .Select(a => CloneEvent(a.Event))
+                    .ToList();
+            }
+        }
+
+        public long GetNextGlobalSequenceNumber()
+        {
+            return _globalSequenceNumber;
+        }
+
+        Event CloneEvent(Event ev)
+        {
+            return JsonConvert.DeserializeObject<Event>(JsonConvert.SerializeObject(ev));
+        }
+
+        public IEnumerator<Event> GetEnumerator()
         {
             lock (_lock)
             {
@@ -138,24 +139,6 @@ namespace d60.Cirqus.Testing.Internals
             }
         }
 
-        public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
-        {
-            lock (_lock)
-            {
-                return _savedEventBatches
-                    .SelectMany(e => e.Events)
-                    .Select(e => new
-                    {
-                        Event = e,
-                        GlobalSequenceNumner = e.GetGlobalSequenceNumber()
-                    })
-                    .Where(a => a.GlobalSequenceNumner >= globalSequenceNumber)
-                    .OrderBy(a => a.GlobalSequenceNumner)
-                    .Select(a => CloneEvent(a.Event))
-                    .ToList();
-            }
-        }
-
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
@@ -163,14 +146,14 @@ namespace d60.Cirqus.Testing.Internals
 
         class EventBatch
         {
-            public EventBatch(Guid batchId, IEnumerable<DomainEvent> events)
+            public EventBatch(Guid batchId, IEnumerable<Event> events)
             {
                 BatchId = batchId;
                 Events = events.ToList();
             }
 
-            public readonly Guid BatchId;
-            public List<DomainEvent> Events;
+            public Guid BatchId { get; private set; }
+            public List<Event> Events { get; private set; }
         }
     }
 }
