@@ -50,7 +50,7 @@ namespace d60.Cirqus.MongoDb.Events
 
         public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
         {
-            var criteria = Query.EQ(GlobalSeqNoDocPath, globalSequenceNumber);
+            var criteria = Query.GTE(GlobalSeqNoDocPath, globalSequenceNumber);
 
             return _eventBatches.Find(criteria)
                 .SelectMany(b => b.Events)

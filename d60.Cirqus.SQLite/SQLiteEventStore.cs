@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
@@ -15,7 +16,7 @@ namespace d60.Cirqus.SQLite
     /// </summary>
     public class SQLiteEventStore : IEventStore, IDisposable
     {
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
+        readonly MetadataSerializer _metadataSerializer = new MetadataSerializer();
         readonly SQLiteConnection _connection;
 
         public SQLiteEventStore(string databasePath)
@@ -85,7 +86,7 @@ namespace d60.Cirqus.SQLite
                     BatchId = batchId,
                     SequenceNumber = e.GetSequenceNumber(),
                     Data = e.Data,
-                    Meta = null
+                    Meta = Encoding.UTF8.GetBytes(_metadataSerializer.Serialize(e.Meta))
                 })
                 .ToList();
 
@@ -126,6 +127,7 @@ namespace d60.Cirqus.SQLite
                 yield return new Events.Event
                 {
                     Data = e.Data,
+                    Meta = _metadataSerializer.Deserialize(Encoding.UTF8.GetString(e.Meta))
                 };
             }
         }
@@ -138,7 +140,8 @@ namespace d60.Cirqus.SQLite
             {
                 yield return new Events.Event
                 {
-                    Data = e.Data
+                    Data = e.Data,
+                    Meta = _metadataSerializer.Deserialize(Encoding.UTF8.GetString(e.Meta))
                 };
             }
         }

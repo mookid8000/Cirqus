@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Threading;
 using d60.Cirqus.Aggregates;
@@ -32,6 +31,7 @@ namespace d60.Cirqus.Tests.Config
             var commandProcessor = CommandProcessor.With()
                 .Logging(l => l.UseConsole(minLevel: Logger.Level.Warn))
                 .EventStore(e => e.UseMongoDb(database, "Events"))
+                
                 .EventDispatcher(d =>
                 {
                     d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view1"));

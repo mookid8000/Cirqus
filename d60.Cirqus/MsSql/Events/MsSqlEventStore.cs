@@ -6,7 +6,6 @@ using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Numbers;
-using d60.Cirqus.Serialization;
 using Newtonsoft.Json;
 
 namespace d60.Cirqus.MsSql.Events
@@ -16,7 +15,6 @@ namespace d60.Cirqus.MsSql.Events
         readonly string _tableName;
         readonly Func<SqlConnection> _connectionProvider;
         readonly Action<SqlConnection> _cleanupAction;
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
 
         public MsSqlEventStore(string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true)
         {
