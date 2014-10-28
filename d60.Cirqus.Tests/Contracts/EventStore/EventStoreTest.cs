@@ -349,14 +349,14 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                 {
                     Event(1, agg1),
                     Event(1, agg2),
-                    //new ThrowingEvent
-                    //{
-                    //    Meta =
-                    //    {
-                    //        {DomainEvent.MetadataKeys.SequenceNumber, 2.ToString(Metadata.NumberCulture)},
-                    //        {DomainEvent.MetadataKeys.AggregateRootId, agg2.ToString()}
-                    //    }
-                    //}
+                    new ThrowingEvent
+                    {
+                        Meta =
+                        {
+                            {DomainEvent.MetadataKeys.SequenceNumber, 2.ToString(Metadata.NumberCulture)},
+                            {DomainEvent.MetadataKeys.AggregateRootId, agg2.ToString()}
+                        }
+                    }
                 });
             }
             catch {
@@ -467,7 +467,6 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             };
         }
 
-
         public class MakeSomeRootEmitTheEvent : Command<SomeRoot>
         {
             public MakeSomeRootEmitTheEvent(Guid aggregateRootId)
@@ -495,12 +494,12 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
         public class SomeRootEvent : DomainEvent<SomeRoot> { }
 
-        class ThrowingEvent : DomainEvent
+        class ThrowingEvent : Event
         {
-            [OnSerializing()]
-            internal void OnSerializingMethod(StreamingContext context)
+            public override byte[] Data
             {
-                throw new SerializationException("I ruin your batch!");
+                get { throw new SerializationException("I ruin your batch!"); }
+                set { }
             }
         }
     }
