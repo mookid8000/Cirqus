@@ -6,6 +6,7 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
@@ -17,7 +18,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
     {
         readonly Dictionary<Guid, int> _seqNos = new Dictionary<Guid, int>();
 
-        Cirqus.Events.EventReplicator _replicator;
+        EventReplicator _replicator;
         MongoDbEventStore _source;
         MongoDbEventStore _destination;
         ListLoggerFactory _listLoggerFactory;
@@ -60,7 +61,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 Enumerable.Range(0, numberOfEvents)
                     .Select(i => CreateNewEvent(Guid.NewGuid(), "event no " + i))
                     .ToList()
-                    .ForEach(e => _source.Save(Guid.NewGuid(), new[] {e}));
+                    .ForEach(e => _source.Save(Guid.NewGuid(), new[] {e}.Select(e2 => new DomainEventSerializer().DoSerialize(e2))));
 
                 while (_destination.GetNextGlobalSequenceNumber() < numberOfEvents)
                 {
@@ -126,21 +127,14 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 _errorProbability = errorProbability;
             }
 
-            public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
-            {
-                PossiblyThrowError();
-
-                _innerEventStore.Save(batchId, batch);
-            }
-
-            public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
+            public IEnumerable<Cirqus.Events.Event> Load(Guid aggregateRootId, long firstSeq = 0)
             {
                 PossiblyThrowError();
 
                 return _innerEventStore.Load(aggregateRootId, firstSeq);
             }
 
-            public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+            public IEnumerable<Cirqus.Events.Event> Stream(long globalSequenceNumber = 0)
             {
                 PossiblyThrowError();
 
@@ -159,20 +153,6 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 PossiblyThrowError();
 
                 _innerEventStore.Save(batchId, events);
-            }
-
-            public IEnumerable<Cirqus.Events.Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
-            {
-                PossiblyThrowError();
-
-                return _innerEventStore.LoadNew(aggregateRootId, firstSeq);
-            }
-
-            public IEnumerable<Cirqus.Events.Event> StreamNew(long globalSequenceNumber = 0)
-            {
-                PossiblyThrowError();
-
-                return _innerEventStore.StreamNew(globalSequenceNumber);
             }
 
             void PossiblyThrowError()

@@ -90,16 +90,18 @@ caching in use: {3}",
                 InnerEventStore = eventStore,
             };
 
-            IAggregateRootRepository aggregateRootRepository = new DefaultAggregateRootRepository(_timeTaker);
+            var serializer = new DomainEventSerializer();
+
+            IAggregateRootRepository aggregateRootRepository = new DefaultAggregateRootRepository(_timeTaker, serializer);
 
             if (useCaching)
             {
-                aggregateRootRepository = new CachingAggregateRootRepositoryDecorator(aggregateRootRepository, new InMemorySnapshotCache{ApproximateMaxNumberOfCacheEntries = 100}, eventStore);
+                aggregateRootRepository = new CachingAggregateRootRepositoryDecorator(aggregateRootRepository, new InMemorySnapshotCache{ApproximateMaxNumberOfCacheEntries = 100}, eventStore, serializer);
             }
 
             _timeTaker.InnerAggregateRootRepository = aggregateRootRepository;
 
-            var commandProcessor = new CommandProcessor(_timeTaker, _timeTaker, new ViewManagerEventDispatcher(_timeTaker, eventStore), new DomainEventSerializer());
+            var commandProcessor = new CommandProcessor(_timeTaker, _timeTaker, new ViewManagerEventDispatcher(_timeTaker, eventStore, serializer), serializer);
 
             RegisterForDisposal(commandProcessor);
 
@@ -148,16 +150,7 @@ caching in use: {3}",
                 return InnerAggregateRootRepository.Exists<TAggregate>(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
             }
 
-            public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
-            {
-                var stopwatch = Stopwatch.StartNew();
-
-                InnerEventStore.Save(batchId, batch);
-
-                _timeSpentSavingEvents += stopwatch.Elapsed;
-            }
-
-            public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
+            public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
             {
                 var stopwatch = Stopwatch.StartNew();
 
@@ -168,23 +161,7 @@ caching in use: {3}",
                 return domainEvents;
             }
 
-            public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
-            {
-                var stopwatch = Stopwatch.StartNew();
-
-                var domainEvents = InnerEventStore.LoadNew(aggregateRootId, firstSeq).ToList();
-
-                _timeSpentLoadingEvents += stopwatch.Elapsed;
-
-                return domainEvents;
-            }
-
-            public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
-            {
-                return InnerEventStore.StreamNew(globalSequenceNumber);
-            }
-
-            public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+            public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
             {
                 return InnerEventStore.Stream(globalSequenceNumber);
             }

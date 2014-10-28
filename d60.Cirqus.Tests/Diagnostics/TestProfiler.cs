@@ -164,12 +164,7 @@ namespace d60.Cirqus.Tests.Diagnostics
             _innerEventStore = innerEventStore;
         }
 
-        public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
-        {
-            _innerEventStore.Save(batchId, batch);
-        }
-
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             foreach (var e in _innerEventStore.Load(aggregateRootId, firstSeq))
             {
@@ -179,7 +174,7 @@ namespace d60.Cirqus.Tests.Diagnostics
             }
         }
 
-        public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
         {
             return _innerEventStore.Stream(globalSequenceNumber);
         }
@@ -192,21 +187,6 @@ namespace d60.Cirqus.Tests.Diagnostics
         public void Save(Guid batchId, IEnumerable<Event> events)
         {
             _innerEventStore.Save(batchId, events);
-        }
-
-        public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
-        {
-            foreach (var e in _innerEventStore.LoadNew(aggregateRootId, firstSeq))
-            {
-                Thread.Sleep(1000);
-
-                yield return e;
-            }
-        }
-
-        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
-        {
-            return _innerEventStore.StreamNew(globalSequenceNumber);
         }
     }
 }

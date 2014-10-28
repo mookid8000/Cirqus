@@ -7,6 +7,7 @@ using d60.Cirqus.Commands;
 using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
@@ -39,8 +40,10 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
             RegisterForDisposal(_eventStoreProxy);
 
             _viewManager = new InMemoryViewManager<View>();
-            
-            var eventDispatcher = new ViewManagerEventDispatcher(new DefaultAggregateRootRepository(_eventStoreProxy), _eventStoreProxy, _viewManager);
+
+            var serializer = new DomainEventSerializer();
+
+            var eventDispatcher = new ViewManagerEventDispatcher(new DefaultAggregateRootRepository(_eventStoreProxy, serializer), _eventStoreProxy, serializer);
 
             RegisterForDisposal(eventDispatcher);
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using d60.Cirqus.Aggregates;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using NUnit.Framework;
 
@@ -13,7 +14,7 @@ namespace d60.Cirqus.Tests.Aggregates
         {
             var someRoot = new BeetRoot
             {
-                UnitOfWork = new InMemoryUnitOfWork(new DefaultAggregateRootRepository(new InMemoryEventStore()))
+                UnitOfWork = new InMemoryUnitOfWork(new DefaultAggregateRootRepository(new InMemoryEventStore(), new DomainEventSerializer()))
             };
 
             Assert.Throws<ArgumentException>(someRoot.LoadOtherBeetRootWithDefaultBehavior);
