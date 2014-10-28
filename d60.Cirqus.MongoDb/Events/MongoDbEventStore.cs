@@ -7,7 +7,6 @@ using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
@@ -208,12 +207,19 @@ namespace d60.Cirqus.MongoDb.Events
         BsonValue Serialize(Metadata meta)
         {
             var doc = new BsonDocument();
-            
+
             foreach (var kvp in meta)
             {
-                doc[kvp.Key] = BsonValue.Create(kvp.Value);
+                if (kvp.Value is Guid)
+                {
+                    doc[kvp.Key] = kvp.Value.ToString();
+                }
+                else
+                {
+                    doc[kvp.Key] = BsonValue.Create(kvp.Value);
+                }
             }
-            
+
             return doc;
         }
 
@@ -241,16 +247,38 @@ namespace d60.Cirqus.MongoDb.Events
                 .Select(e =>
                 {
                     var bsonValue = e.Event;
+                    var meta = DeserializeMeta(e.Meta);
 
                     if (bsonValue["Body"] != null)
                     {
-                        return new Event();
+                        return new Event
+                        {
+                            Meta = meta,
+                            Data = Encoding.UTF8.GetBytes(bsonValue["Body"].AsString),
+                        };
                     }
-                    else
+
+                    return new Event
                     {
-                        return new Event();
-                    }
+                        Meta = meta,
+                        Data = bsonValue["Bin"].AsByteArray
+                    };
                 });
+        }
+
+        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
+        {
+            return Enumerable.Empty<Event>();
+        }
+
+        static Metadata DeserializeMeta(BsonValue bsonValue)
+        {
+            var meta = new Metadata();
+            foreach (var property in bsonValue.AsBsonDocument)
+            {
+                meta[property.Name] = property.Value;
+            }
+            return meta;
         }
 
         long GetLong(BsonValue bsonValue)

@@ -157,6 +157,11 @@ namespace d60.Cirqus.SQLite
             return Enumerable.Empty<Events.Event>();
         }
 
+        public IEnumerable<Events.Event> StreamNew(long globalSequenceNumber = 0)
+        {
+            return Enumerable.Empty<Events.Event>();
+        }
+
         public void Dispose()
         {
             _connection.Dispose();

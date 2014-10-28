@@ -203,5 +203,10 @@ namespace d60.Cirqus.Tests.Diagnostics
                 yield return e;
             }
         }
+
+        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
+        {
+            return _innerEventStore.StreamNew(globalSequenceNumber);
+        }
     }
 }

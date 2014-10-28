@@ -25,9 +25,10 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
     [TestFixture(typeof(SQLiteEventStoreFactory))]
     public class EventStoreTest<TEventStoreFactory> : FixtureBase where TEventStoreFactory : IEventStoreFactory, new()
     {
+        readonly DomainEventSerializer _serializzle = new DomainEventSerializer();
+
         TEventStoreFactory _eventStoreFactory;
         IEventStore _eventStore;
-        static readonly DomainEventSerializer _serializzle = new DomainEventSerializer();
 
         protected override void DoSetUp()
         {
@@ -321,51 +322,6 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             var aggregateRootId = Guid.NewGuid();
             _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event(1, aggregateRootId),
-                Event(2, aggregateRootId),
-                Event(3, aggregateRootId),
-                Event(4, aggregateRootId),
-                Event(5, aggregateRootId),
-                Event(6, aggregateRootId)
-            });
-            _eventStore.Save(Guid.NewGuid(), new[]
-            {
-                Event(7, aggregateRootId),
-                Event(8, aggregateRootId),
-                Event(9, aggregateRootId),
-                Event(10, aggregateRootId),
-                Event(11, aggregateRootId),
-                Event(12, aggregateRootId)
-            });
-            _eventStore.Save(Guid.NewGuid(), new[]
-            {
-                Event(13, aggregateRootId),
-                Event(14, aggregateRootId),
-                Event(15, aggregateRootId)
-            });
-
-            // act
-            // assert
-            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(1).Count(), Is.EqualTo(1));
-            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(1).GetSeq(), Is.EqualTo(Enumerable.Range(1, 1)));
-
-            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(2).Count(), Is.EqualTo(2));
-            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(2).GetSeq(), Is.EqualTo(Enumerable.Range(1, 2)));
-
-            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(10).Count(), Is.EqualTo(10));
-            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(10).GetSeq(), Is.EqualTo(Enumerable.Range(1, 10)));
-
-            Assert.That(_eventStore.Load(aggregateRootId, 4).Take(10).Count(), Is.EqualTo(10));
-            Assert.That(_eventStore.Load(aggregateRootId, 4).Take(10).GetSeq(), Is.EqualTo(Enumerable.Range(4, 10)));
-        }
-
-        [Test]
-        public void CanLoadEvents_New()
-        {
-            // arrange
-            var aggregateRootId = Guid.NewGuid();
-            _eventStore.Save(Guid.NewGuid(), new[]
-            {
                 NewEvent(1, aggregateRootId),
                 NewEvent(2, aggregateRootId),
                 NewEvent(3, aggregateRootId),
@@ -480,7 +436,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             {
                 _eventStore.Save(Guid.NewGuid(), new[]
                 {
-                    Event(1, Guid.NewGuid()),
+                    NewEvent(1, Guid.NewGuid()),
                 });
             }
 
@@ -551,7 +507,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             };
         }
 
-        static Event NewEvent(int seq, Guid aggregateRootId)
+        Event NewEvent(int seq, Guid aggregateRootId)
         {
             var domainEvent = new SomeEvent
             {

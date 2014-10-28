@@ -87,6 +87,11 @@ namespace d60.Cirqus.Ntfs.Events
             return Enumerable.Empty<Event>();
         }
 
+        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
+        {
+            return Enumerable.Empty<Event>();
+        }
+
         public void Dispose()
         {
             GlobalSequenceIndex.Dispose();

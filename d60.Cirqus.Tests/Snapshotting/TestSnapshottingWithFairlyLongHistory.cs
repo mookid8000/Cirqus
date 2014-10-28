@@ -179,6 +179,11 @@ caching in use: {3}",
                 return domainEvents;
             }
 
+            public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
+            {
+                return InnerEventStore.StreamNew(globalSequenceNumber);
+            }
+
             public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
             {
                 return InnerEventStore.Stream(globalSequenceNumber);

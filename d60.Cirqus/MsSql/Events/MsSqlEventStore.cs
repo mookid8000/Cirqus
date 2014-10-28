@@ -130,6 +130,11 @@ INSERT INTO [{0}] (
 
         public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
         {
+        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
+        {
+            return Enumerable.Empty<Event>();
+        }
+
             SqlConnection conn = null;
 
             try

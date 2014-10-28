@@ -69,6 +69,11 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             return Enumerable.Empty<Event>();
         }
 
+        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
+        {
+            return Enumerable.Empty<Event>();
+        }
+
         public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             var client = GetClient();
