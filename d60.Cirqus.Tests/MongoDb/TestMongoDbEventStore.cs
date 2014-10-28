@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Timers;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
+using d60.Cirqus.Numbers;
+using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using NUnit.Framework;
 
@@ -55,41 +58,95 @@ namespace d60.Cirqus.Tests.MongoDb
 
         void QuicklyGenerateLoadsOfEvents(int eventCount)
         {
+            //var events = Enumerable.Range(0, eventCount)
+            //    .Select(number => new
+            //    {
+            //        _id = Guid.NewGuid().ToString(),
+
+            //        Events = new[]
+            //        {
+            //            new
+            //            {
+            //                _t = "SomeDomainEvent, whataver bla bla",
+            //                    //string.Format("{0}, {1}", typeof (SomeDomainEvent).FullName, typeof (SomeDomainEvent).Assembly.GetName().Name),
+
+            //                Meta = new
+            //                {
+            //                    _t = "Metadata, <events>",
+            //                    gl_seq = number.ToString(),
+            //                    seq = number.ToString(),
+            //                    root_id = "C13CA180-4490-4397-9689-1E7D923EFD21",
+            //                    time_utc = DateTime.UtcNow.ToString("u"),
+            //                    batch_id = Guid.NewGuid().ToString()
+            //                },
+            //                Text = string.Format("event number {0}", number),
+            //                GlobalSequenceNumber = (long)number,
+            //                SequenceNumber = (long)number,
+            //                AggregateRootId = new Guid("C13CA180-4490-4397-9689-1E7D923EFD21")
+            //            }
+            //        }
+            //    });
+
             var events = Enumerable.Range(0, eventCount)
-                .Select(number => new
+                .Select(number =>
                 {
-                    _id = Guid.NewGuid().ToString(),
+                    var batchId = Guid.NewGuid().ToString();
 
-                    Events = new[]
-                    {
-                        new
-                        {
-                            _t =
-                                string.Format("{0}, {1}", typeof (SomeDomainEvent).FullName,
-                                    typeof (SomeDomainEvent).Assembly.GetName().Name),
+                    return new MongoEventBatch
+                                      {
+                                          BatchId = batchId,
+                                          Events = new List<MongoEvent>
+                                          {
+                                              new MongoEvent
+                                              {
+                                                  AggregateRootId = new Guid("95C97F6B-8480-468C-9CC9-502C9ADA1B71"),
+                                                  GlobalSequenceNumber = number,
+                                                  SequenceNumber = number,
+                                                  Meta = new Dictionary<string, string>
+                                                  {
+                                                      {DomainEvent.MetadataKeys.GlobalSequenceNumber, number.ToString(Metadata.NumberCulture)},
+                                                      {DomainEvent.MetadataKeys.SequenceNumber, number.ToString(Metadata.NumberCulture)},
+                                                      {DomainEvent.MetadataKeys.AggregateRootId, "95C97F6B-8480-468C-9CC9-502C9ADA1B71"},
+                                                      {DomainEvent.MetadataKeys.TimeUtc, DateTime.UtcNow.ToString("u")},
+                                                      {DomainEvent.MetadataKeys.BatchId, batchId},
 
-                            Meta = new
-                            {
-                                _t = "Metadata, <events>",
-                                gl_seq = number,
-                                seq = number,
-                                root_id = "C13CA180-4490-4397-9689-1E7D923EFD21",
-                                time_utc = DateTime.UtcNow.ToString("o"),
-                                batch_id = Guid.NewGuid().ToString()
-                            },
-                            Text = string.Format("event number {0}", number)
-                        }
-                    }
+                                                  },
+                                                  Body = "jieojbieow jiboe wbijeo wjbio jbieow jbioe wjbioe wjibej wio bjeiwob"
+                                              }
+                                          }
+                                      };
                 });
 
-            var collection = _mongoDatabase.GetCollection<SomeDomainEvent>("Events");
+            var collection = _mongoDatabase.GetCollection<MongoEventBatch>("Events");
 
             collection.InsertBatch(events);
+        }
+
+        class MongoEventBatch
+        {
+            [BsonId]
+            public string BatchId { get; set; }
+
+            public List<MongoEvent> Events { get; set; }
+        }
+
+        class MongoEvent
+        {
+            public Dictionary<string, string> Meta { get; set; }
+            public byte[] Bin { get; set; }
+            public string Body { get; set; }
+
+            public long GlobalSequenceNumber { get; set; }
+            public long SequenceNumber { get; set; }
+            public Guid AggregateRootId { get; set; }
         }
 
         public class SomeDomainEvent : DomainEvent
         {
             public string Text { get; set; }
+            public long GlobalSequenceNumber { get; set; }
+            public long SequenceNumber { get; set; }
+            public Guid AggregateRootId { get; set; }
         }
     }
 }
