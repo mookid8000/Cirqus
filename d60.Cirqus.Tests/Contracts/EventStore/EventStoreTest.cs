@@ -442,15 +442,17 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             var someUtcTime = someLocalTime.ToUniversalTime();
             TimeMachine.FixCurrentTimeTo(someUtcTime);
 
+            var serializer = new DomainEventSerializer();
+
             var processor = new CommandProcessor(
-                _eventStore, new DefaultAggregateRootRepository(_eventStore, new DomainEventSerializer()),
-                new ConsoleOutEventDispatcher(), new DomainEventSerializer());
+                _eventStore, new DefaultAggregateRootRepository(_eventStore, serializer),
+                new ConsoleOutEventDispatcher(), serializer);
 
             RegisterForDisposal(processor);
 
             processor.ProcessCommand(new MakeSomeRootEmitTheEvent(Guid.NewGuid()));
 
-            var domainEvents = _eventStore.Stream().Cast<SomeRootEvent>().Single();
+            var domainEvents = _eventStore.Stream().Select(serializer.DoDeserialize).Single();
             Assert.That(domainEvents.GetUtcTime(), Is.EqualTo(someUtcTime));
         }
 
