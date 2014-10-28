@@ -137,6 +137,11 @@ namespace d60.Cirqus.MongoDb.Events
                     .Max() + 1;
         }
 
+        public void Save(Guid batchId, IEnumerable<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
         long GetLong(BsonValue bsonValue)
         {
             if (bsonValue.IsInt32)

@@ -176,6 +176,15 @@ caching in use: {3}",
             {
                 return InnerEventStore.GetNextGlobalSequenceNumber();
             }
+
+            public void Save(Guid batchId, IEnumerable<Event> events)
+            {
+                var stopwatch = Stopwatch.StartNew();
+
+                InnerEventStore.Save(batchId, events);
+
+                _timeSpentSavingEvents += stopwatch.Elapsed;
+            }
         }
 
         public class Beetroot : AggregateRoot, IEmit<BeetrootSquashed>, IEmit<BeetrootCrushed>

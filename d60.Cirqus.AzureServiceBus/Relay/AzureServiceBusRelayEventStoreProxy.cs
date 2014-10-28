@@ -60,6 +60,11 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             throw new InvalidOperationException();
         }
 
+        public void Save(Guid batchId, IEnumerable<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
         public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             var client = GetClient();

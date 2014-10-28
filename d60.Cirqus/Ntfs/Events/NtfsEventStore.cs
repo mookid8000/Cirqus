@@ -78,6 +78,11 @@ namespace d60.Cirqus.Ntfs.Events
             return CommitLog.Read() + 1;
         }
 
+        public void Save(Guid batchId, IEnumerable<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
         public void Dispose()
         {
             GlobalSequenceIndex.Dispose();

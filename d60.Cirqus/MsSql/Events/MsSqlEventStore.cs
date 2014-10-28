@@ -121,6 +121,11 @@ INSERT INTO [{0}] (
             return globalSequenceNumber;
         }
 
+        public void Save(Guid batchId, IEnumerable<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
         long GetNextGlobalSequenceNumber(SqlConnection conn, SqlTransaction tx)
         {
             using (var cmd = conn.CreateCommand())

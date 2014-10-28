@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.Text;
 using d60.Cirqus.Events;
 using d60.Cirqus.Numbers;
 using Newtonsoft.Json;
@@ -8,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace d60.Cirqus.Serialization
 {
-    public class DomainEventSerializer
+    public class DomainEventSerializer : IDomainEventSerializer
     {
         readonly TypeAliasBinder _binder;
 
@@ -110,6 +111,28 @@ Result after first serialization:
 Result after roundtripping:
 
 {2}", domainEvent, firstSerialization, secondSerialization));
+        }
+
+        public Event DoSerialize(DomainEvent e)
+        {
+            var text = Serialize(e);
+            var data = Encoding.UTF8.GetBytes(text);
+
+            return new Event
+            {
+                Meta = e.Meta,
+                Data = data
+            };
+        }
+
+        public DomainEvent DoDeserialize(Event e)
+        {
+            var meta = e.Meta;
+            var text = Encoding.UTF8.GetString(e.Data);
+
+            var domainEvent = Deserialize(text);
+            
+            return domainEvent;
         }
     }
 }

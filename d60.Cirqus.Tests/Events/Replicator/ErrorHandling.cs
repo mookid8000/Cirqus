@@ -153,6 +153,13 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 return _innerEventStore.GetNextGlobalSequenceNumber();
             }
 
+            public void Save(Guid batchId, IEnumerable<Cirqus.Events.Event> events)
+            {
+                PossiblyThrowError();
+
+                _innerEventStore.Save(batchId, events);
+            }
+
             void PossiblyThrowError()
             {
                 if (_random.NextDouble() > _errorProbability) return;

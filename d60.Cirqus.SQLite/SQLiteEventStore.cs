@@ -148,6 +148,11 @@ namespace d60.Cirqus.SQLite
             return nextGlobalSequenceNumber;
         }
 
+        public void Save(Guid batchId, IEnumerable<Events.Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
         public void Dispose()
         {
             _connection.Dispose();

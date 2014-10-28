@@ -188,5 +188,10 @@ namespace d60.Cirqus.Tests.Diagnostics
         {
             return _innerEventStore.GetNextGlobalSequenceNumber();
         }
+
+        public void Save(Guid batchId, IEnumerable<Event> events)
+        {
+            _innerEventStore.Save(batchId, events);
+        }
     }
 }

@@ -74,6 +74,11 @@ namespace d60.Cirqus.Testing.Internals
             return _globalSequenceNumber;
         }
 
+        public void Save(Guid batchId, IEnumerable<Event> events)
+        {
+            throw new NotImplementedException();
+        }
+
         DomainEvent CloneEvent(DomainEvent ev)
         {
             return _domainEventSerializer.Deserialize(_domainEventSerializer.Serialize(ev));

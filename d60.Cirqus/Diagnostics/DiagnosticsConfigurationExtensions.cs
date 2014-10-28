@@ -193,6 +193,19 @@ namespace d60.Cirqus.Diagnostics
                     _operationProfiler.RecordGlobalSequenceNumberGetNext(stopwatch.Elapsed);
                 }
             }
+
+            public void Save(Guid batchId, IEnumerable<Event> events)
+            {
+                var stopwatch = Stopwatch.StartNew();
+                try
+                {
+                    _innerEventStore.Save(batchId, events);
+                }
+                finally
+                {
+                    _operationProfiler.RecordEventBatchSave(stopwatch.Elapsed, batchId);
+                }
+            }
         }
     }
 }
