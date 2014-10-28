@@ -6,6 +6,7 @@ using d60.Cirqus.AzureServiceBus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
+using d60.Cirqus.Numbers;
 using Microsoft.ServiceBus;
 
 namespace d60.Cirqus.AzureServiceBus.Relay
@@ -74,17 +75,22 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             return Enumerable.Empty<Event>();
         }
 
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             var client = GetClient();
 
             var transportMessage = client.Load(aggregateRootId, firstSeq);
-            var domainEvents = _serializer.Deserialize(transportMessage.Events);
+            var domainEvents = transportMessage.Events
+                .Select(e => new Event
+                {
+                    Data = e.Data,
+                    Meta = new Metadata()
+                });
 
             return domainEvents;
         }
 
-        public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
         {
             var client = GetClient();
             var currentPosition = globalSequenceNumber;
@@ -92,7 +98,14 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             while (true)
             {
                 var transportMessage = client.Stream(currentPosition);
-                var domainEvents = _serializer.Deserialize(transportMessage.Events);
+                var domainEvents = transportMessage
+                    .Events
+                    .Select(e => new Event
+                    {
+                        Data = e.Data,
+                        Meta = new Metadata()
+                    })
+                    .ToList();
 
                 if (!domainEvents.Any())
                 {

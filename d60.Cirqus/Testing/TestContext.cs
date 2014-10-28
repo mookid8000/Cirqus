@@ -32,8 +32,8 @@ namespace d60.Cirqus.Testing
 
         public TestContext()
         {
-            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
-            _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore);
+            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
+            _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore, _domainEventSerializer);
             _waitHandle.Register(_viewManagerEventDispatcher);
             _eventDispatcher = new CompositeEventDispatcher(_viewManagerEventDispatcher);
         }
@@ -86,7 +86,7 @@ namespace d60.Cirqus.Testing
         {
             EnsureInitialized();
 
-            var unitOfWork = new TestUnitOfWork(_aggregateRootRepository, _eventStore, _eventDispatcher);
+            var unitOfWork = new TestUnitOfWork(_aggregateRootRepository, _eventStore, _eventDispatcher, _domainEventSerializer);
 
             unitOfWork.Committed += () =>
             {
@@ -113,7 +113,7 @@ namespace d60.Cirqus.Testing
         /// </summary>
         public EventCollection History
         {
-            get { return new EventCollection(_eventStore.Stream()); }
+            get { return new EventCollection(_eventStore.Stream().Select(e => _domainEventSerializer.DoDeserialize(e))); }
         }
 
         /// <summary>
@@ -198,7 +198,7 @@ namespace d60.Cirqus.Testing
                 SetMetadata(aggregateRootId, domainEvent);
             }
 
-            _eventStore.Save(Guid.NewGuid(), domainEvents);
+            _eventStore.Save(Guid.NewGuid(), domainEvents.Select(e => _domainEventSerializer.DoSerialize(e)));
 
             _eventDispatcher.Dispatch(_eventStore, domainEvents);
 

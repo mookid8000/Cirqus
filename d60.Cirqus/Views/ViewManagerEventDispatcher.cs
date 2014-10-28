@@ -8,6 +8,7 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Views.ViewManagers;
 using Timer = System.Timers.Timer;
 
@@ -31,6 +32,7 @@ namespace d60.Cirqus.Views
 
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventStore _eventStore;
+        readonly IDomainEventSerializer _domainEventSerializer;
 
         readonly Timer _automaticCatchUpTimer = new Timer();
         readonly Thread _worker;
@@ -40,10 +42,11 @@ namespace d60.Cirqus.Views
         TimeSpan _automaticCatchUpInterval = TimeSpan.FromSeconds(1);
         long _sequenceNumberToCatchUpTo = -1;
 
-        public ViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, params IViewManager[] viewManagers)
+        public ViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IDomainEventSerializer domainEventSerializer, params IViewManager[] viewManagers)
         {
             _aggregateRootRepository = aggregateRootRepository;
             _eventStore = eventStore;
+            _domainEventSerializer = domainEventSerializer;
 
             viewManagers.ToList().ForEach(view => _viewManagers.Enqueue(view));
 
@@ -192,7 +195,7 @@ namespace d60.Cirqus.Views
 
                     _logger.Debug("Dispatching batch of {0} events to {1}", list.Count, viewManager);
 
-                    viewManager.Dispatch(context, list);
+                    viewManager.Dispatch(context, list.Select(e => _domainEventSerializer.DoDeserialize(e)));
                 }
             }
         }

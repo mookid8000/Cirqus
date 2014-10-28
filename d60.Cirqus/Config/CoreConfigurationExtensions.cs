@@ -6,6 +6,7 @@ using d60.Cirqus.Exceptions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Logging.Null;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Snapshotting;
 using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
@@ -29,7 +30,8 @@ namespace d60.Cirqus.Config
                         {
                             ApproximateMaxNumberOfCacheEntries = approximateMaxNumberOfCacheEntries
                         },
-                        context.Get<IEventStore>()),
+                        context.Get<IEventStore>(),
+                        context.Get<IDomainEventSerializer>()),
                     decorator: true
                 );
         }
@@ -41,7 +43,7 @@ namespace d60.Cirqus.Config
         public static void UseDefault(this AggregateRootRepositoryConfigurationBuilder builder)
         {
             builder.Registrar
-                .Register<IAggregateRootRepository>(context => new DefaultAggregateRootRepository(context.Get<IEventStore>()));
+                .Register<IAggregateRootRepository>(context => new DefaultAggregateRootRepository(context.Get<IEventStore>(), context.Get<IDomainEventSerializer>()));
         }
 
         /// <summary>
@@ -52,7 +54,9 @@ namespace d60.Cirqus.Config
         {
             AddEventDispatcherRegistration(builder, context => new ViewManagerEventDispatcher(
                 context.Get<IAggregateRootRepository>(),
-                context.Get<IEventStore>(), viewManagers));
+                context.Get<IEventStore>(), 
+                context.Get<IDomainEventSerializer>(), 
+                viewManagers));
         }
 
         /// <summary>
@@ -66,7 +70,9 @@ namespace d60.Cirqus.Config
             {
                 var eventDispatcher = new ViewManagerEventDispatcher(
                     context.Get<IAggregateRootRepository>(),
-                    context.Get<IEventStore>(), viewManagers);
+                    context.Get<IEventStore>(), 
+                    context.Get<IDomainEventSerializer>(), 
+                    viewManagers);
 
                 waitHandle.Register(eventDispatcher);
 

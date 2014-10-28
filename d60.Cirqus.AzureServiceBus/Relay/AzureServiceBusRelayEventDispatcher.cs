@@ -113,7 +113,12 @@ namespace d60.Cirqus.AzureServiceBus.Relay
 
             return new TransportMessage
             {
-                Events = _serializer.Serialize(domainEvents)
+                Events = domainEvents
+                    .Select(e => new TransportEvent
+                    {
+                        Data = e.Data,
+                    })
+                    .ToList()
             };
         }
 
@@ -126,7 +131,12 @@ namespace d60.Cirqus.AzureServiceBus.Relay
 
             return new TransportMessage
             {
-                Events = _serializer.Serialize(domainEvents)
+                Events = domainEvents
+                    .Select(e => new TransportEvent
+                    {
+                        Data = e.Data
+                    })
+                    .ToList()
             };
         }
     }

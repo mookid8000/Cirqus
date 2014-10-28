@@ -91,7 +91,7 @@ namespace d60.Cirqus.Config.Configurers
         {
             if (!_container.HasService<IAggregateRootRepository>(checkForPrimary: true))
             {
-                _container.Register<IAggregateRootRepository>(context => new DefaultAggregateRootRepository(context.Get<IEventStore>()));
+                _container.Register<IAggregateRootRepository>(context => new DefaultAggregateRootRepository(context.Get<IEventStore>(), context.Get<IDomainEventSerializer>()));
             }
 
             if (!_container.HasService<IDomainEventSerializer>(checkForPrimary: true))

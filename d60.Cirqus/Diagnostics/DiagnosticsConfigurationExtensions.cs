@@ -158,19 +158,6 @@ namespace d60.Cirqus.Diagnostics
                 _operationProfiler = operationProfiler;
             }
 
-            public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
-            {
-                var stopwatch = Stopwatch.StartNew();
-                try
-                {
-                    _innerEventStore.Save(batchId, batch);
-                }
-                finally
-                {
-                    _operationProfiler.RecordEventBatchSave(stopwatch.Elapsed, batchId);
-                }
-            }
-
             public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
             {
                 return _innerEventStore.Load(aggregateRootId, firstSeq);
