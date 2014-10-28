@@ -78,6 +78,11 @@ namespace d60.Cirqus.Testing.Internals
         {
         }
 
+        public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
+        {
+            return Enumerable.Empty<Event>();
+        }
+
         DomainEvent CloneEvent(DomainEvent ev)
         {
             return _domainEventSerializer.Deserialize(_domainEventSerializer.Serialize(ev));

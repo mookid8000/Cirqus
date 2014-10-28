@@ -160,6 +160,13 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 _innerEventStore.Save(batchId, events);
             }
 
+            public IEnumerable<Cirqus.Events.Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
+            {
+                PossiblyThrowError();
+
+                return _innerEventStore.LoadNew(aggregateRootId, firstSeq);
+            }
+
             void PossiblyThrowError()
             {
                 if (_random.NextDouble() > _errorProbability) return;

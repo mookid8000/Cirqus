@@ -152,6 +152,11 @@ namespace d60.Cirqus.SQLite
         {
         }
 
+        public IEnumerable<Events.Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
+        {
+            return Enumerable.Empty<Events.Event>();
+        }
+
         public void Dispose()
         {
             _connection.Dispose();

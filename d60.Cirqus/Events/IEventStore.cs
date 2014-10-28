@@ -33,6 +33,8 @@ namespace d60.Cirqus.Events
         /// Saves the specified batch of events as an idempotent and atomic operation
         /// </summary>
         void Save(Guid batchId, IEnumerable<Event> events);
+        
+        IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0);
     }
 
     public class Event

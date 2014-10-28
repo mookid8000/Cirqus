@@ -176,6 +176,11 @@ namespace d60.Cirqus.Diagnostics
                 return _innerEventStore.Load(aggregateRootId, firstSeq);
             }
 
+            public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
+            {
+                return _innerEventStore.LoadNew(aggregateRootId, firstSeq);
+            }
+
             public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
             {
                 return _innerEventStore.Stream(globalSequenceNumber);

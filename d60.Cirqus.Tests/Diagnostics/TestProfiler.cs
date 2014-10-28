@@ -193,5 +193,15 @@ namespace d60.Cirqus.Tests.Diagnostics
         {
             _innerEventStore.Save(batchId, events);
         }
+
+        public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
+        {
+            foreach (var e in _innerEventStore.LoadNew(aggregateRootId, firstSeq))
+            {
+                Thread.Sleep(1000);
+
+                yield return e;
+            }
+        }
     }
 }

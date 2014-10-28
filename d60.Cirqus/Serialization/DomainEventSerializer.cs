@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text;
 using d60.Cirqus.Events;
+using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -123,11 +124,15 @@ Result after roundtripping:
             var text = Serialize(e);
             var data = Encoding.UTF8.GetBytes(text);
 
-            return new Event
+            var result = new Event
             {
                 Meta = e.Meta,
                 Data = data
             };
+
+            result.MarkAsJson();
+
+            return result;
         }
 
         public DomainEvent DoDeserialize(Event e)

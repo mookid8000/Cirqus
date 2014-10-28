@@ -245,6 +245,11 @@ SELECT ""data"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY ""globSeqNo
         {
         }
 
+        public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
+        {
+            return Enumerable.Empty<Event>();
+        }
+
         public void DropEvents()
         {
             using (var connection = GetConnection())

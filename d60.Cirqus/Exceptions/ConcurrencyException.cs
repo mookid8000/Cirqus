@@ -22,6 +22,24 @@ namespace d60.Cirqus.Exceptions
         {
         }
 
+        public ConcurrencyException(Guid batchId, IEnumerable<Event> involvedDomainEvents, Exception innerException)
+            : base(FormatErrorMessage(batchId, involvedDomainEvents), innerException)
+        {
+            
+        }
+
+        static string FormatErrorMessage(Guid batchId, IEnumerable<Event> involvedDomainEvents)
+        {
+            var sequenceNumbersText = string.Join(Environment.NewLine, involvedDomainEvents
+                .Select(e => "    " + e));
+
+            return string.Format(@"Could not save batch {0} containing
+
+{1}
+
+to the event store because someone else beat us to it", batchId, sequenceNumbersText);
+        }
+
         static string FormatErrorMessage(Guid batchId, IEnumerable<DomainEvent> involvedDomainEvents)
         {
             var sequenceNumbersText = string.Join(Environment.NewLine, involvedDomainEvents

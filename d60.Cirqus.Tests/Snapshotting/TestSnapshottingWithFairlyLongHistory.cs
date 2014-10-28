@@ -168,6 +168,17 @@ caching in use: {3}",
                 return domainEvents;
             }
 
+            public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
+            {
+                var stopwatch = Stopwatch.StartNew();
+
+                var domainEvents = InnerEventStore.LoadNew(aggregateRootId, firstSeq).ToList();
+
+                _timeSpentLoadingEvents += stopwatch.Elapsed;
+
+                return domainEvents;
+            }
+
             public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
             {
                 return InnerEventStore.Stream(globalSequenceNumber);

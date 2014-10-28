@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
+using d60.Cirqus.Extensions;
+using d60.Cirqus.Numbers;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
@@ -139,6 +143,114 @@ namespace d60.Cirqus.MongoDb.Events
 
         public void Save(Guid batchId, IEnumerable<Event> events)
         {
+            var batch = events.ToList();
+
+            if (!batch.Any())
+            {
+                throw new InvalidOperationException(string.Format("Attempted to save batch {0}, but the batch of events was empty!", batchId));
+            }
+
+            var nextGlobalSeqNo = GetNextGlobalSequenceNumber();
+
+            foreach (var e in batch)
+            {
+                e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = nextGlobalSeqNo++;
+                e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
+            }
+
+            EventValidation.ValidateBatchIntegrity(batchId, batch);
+
+            var doc = new BsonDocument
+            {
+                {"_id", batchId.ToString()},
+                {EventsDocPath, GetEventsNew(batch)}
+            };
+
+            try
+            {
+                _eventBatches.Save(doc);
+            }
+            catch (MongoDuplicateKeyException exception)
+            {
+                throw new ConcurrencyException(batchId, batch, exception);
+            }
+        }
+
+        BsonValue GetEventsNew(IEnumerable<Event> batch)
+        {
+            var array = new BsonArray();
+
+            foreach (var e in batch)
+            {
+                var doc = new BsonDocument();
+
+                doc["Meta"] = Serialize(e.Meta);
+
+                if (e.IsJson())
+                {
+                    var text = Encoding.UTF8.GetString(e.Data);
+
+                    //var bson = BsonDocument.Parse(text);
+
+                    doc["Body"] = text;
+                }
+                else
+                {
+                    doc["Bin"] = BsonValue.Create(e.Data);
+                }
+
+                array.Add(doc);
+            }
+
+            return array;
+        }
+
+        BsonValue Serialize(Metadata meta)
+        {
+            var doc = new BsonDocument();
+            
+            foreach (var kvp in meta)
+            {
+                doc[kvp.Key] = BsonValue.Create(kvp.Value);
+            }
+            
+            return doc;
+        }
+
+        public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
+        {
+            var criteria = Query.And(
+                Query.EQ(AggregateRootIdDocPath, aggregateRootId.ToString()),
+                Query.GTE(SeqNoDocPath, firstSeq));
+
+            var docs = _eventBatches.FindAs<BsonDocument>(criteria);
+
+            var eventsSatisfyingCriteria = docs
+                .SelectMany(doc => doc[EventsDocPath].AsBsonArray)
+                .Select(e => new
+                {
+                    Event = e,
+                    Meta = e["Meta"],
+                    SequenceNumber = GetLong(e[MetaDocPath][DomainEvent.MetadataKeys.SequenceNumber]),
+                    AggregateRootId = GetAggregateRootIdOrDefault(e)
+                })
+                .Where(e => e.AggregateRootId == aggregateRootId && e.SequenceNumber >= firstSeq);
+
+            return eventsSatisfyingCriteria
+                .OrderBy(e => e.SequenceNumber)
+                .Select(e =>
+                {
+                    var bsonValue = e.Event;
+
+                    if (bsonValue["Body"] != null)
+                    {
+                        return new Event();
+                    }
+                    else
+                    {
+                        return new Event();
+                    }
+                });
         }
 
         long GetLong(BsonValue bsonValue)

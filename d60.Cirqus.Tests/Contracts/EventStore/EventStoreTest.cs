@@ -27,6 +27,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
     {
         TEventStoreFactory _eventStoreFactory;
         IEventStore _eventStore;
+        static readonly DomainEventSerializer _serializzle = new DomainEventSerializer();
 
         protected override void DoSetUp()
         {
@@ -35,7 +36,9 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             _eventStore = _eventStoreFactory.GetEventStore();
 
             if (_eventStore is IDisposable)
+            {
                 RegisterForDisposal((IDisposable)_eventStore);
+            }
         }
 
         [Test]
@@ -357,6 +360,56 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         }
 
         [Test]
+        public void CanLoadEvents_New()
+        {
+            // arrange
+            var aggregateRootId = Guid.NewGuid();
+            _eventStore.Save(Guid.NewGuid(), new[]
+            {
+                NewEvent(1, aggregateRootId),
+                NewEvent(2, aggregateRootId),
+                NewEvent(3, aggregateRootId),
+                NewEvent(4, aggregateRootId),
+                NewEvent(5, aggregateRootId),
+                NewEvent(6, aggregateRootId)
+            });
+            _eventStore.Save(Guid.NewGuid(), new[]
+            {
+                NewEvent(7, aggregateRootId),
+                NewEvent(8, aggregateRootId),
+                NewEvent(9, aggregateRootId),
+                NewEvent(10, aggregateRootId),
+                NewEvent(11, aggregateRootId),
+                NewEvent(12, aggregateRootId)
+            });
+            _eventStore.Save(Guid.NewGuid(), new[]
+            {
+                NewEvent(13, aggregateRootId),
+                NewEvent(14, aggregateRootId),
+                NewEvent(15, aggregateRootId)
+            });
+
+            // act
+            // assert
+            Assert.That(_eventStore.LoadNew(aggregateRootId, 1).Take(1).Count(), Is.EqualTo(1));
+            Assert.That(_eventStore.LoadNew(aggregateRootId, 1).Take(1).Select(Deserialied).GetSeq(), Is.EqualTo(Enumerable.Range(1, 1)));
+
+            Assert.That(_eventStore.LoadNew(aggregateRootId, 1).Take(2).Count(), Is.EqualTo(2));
+            Assert.That(_eventStore.LoadNew(aggregateRootId, 1).Take(2).Select(Deserialied).GetSeq(), Is.EqualTo(Enumerable.Range(1, 2)));
+
+            Assert.That(_eventStore.LoadNew(aggregateRootId, 1).Take(10).Count(), Is.EqualTo(10));
+            Assert.That(_eventStore.LoadNew(aggregateRootId, 1).Take(10).Select(Deserialied).GetSeq(), Is.EqualTo(Enumerable.Range(1, 10)));
+
+            Assert.That(_eventStore.LoadNew(aggregateRootId, 4).Take(10).Count(), Is.EqualTo(10));
+            Assert.That(_eventStore.LoadNew(aggregateRootId, 4).Take(10).Select(Deserialied).GetSeq(), Is.EqualTo(Enumerable.Range(4, 10)));
+        }
+
+        DomainEvent Deserialied(Event arg)
+        {
+            return _serializzle.DoDeserialize(arg);
+        }
+
+        [Test]
         public void CanLoadEventsByAggregateRootId()
         {
             // arrange
@@ -496,6 +549,21 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                     { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId }
                 }
             };
+        }
+
+        static Event NewEvent(int seq, Guid aggregateRootId)
+        {
+            var domainEvent = new SomeEvent
+            {
+                SomeValue = "hej",
+                Meta =
+                {
+                    { DomainEvent.MetadataKeys.SequenceNumber, seq },
+                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId }
+                }
+            };
+
+            return _serializzle.DoSerialize(domainEvent);
         }
 
         class SomeEvent : DomainEvent

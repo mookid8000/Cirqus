@@ -82,6 +82,11 @@ namespace d60.Cirqus.Ntfs.Events
         {
         }
 
+        public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
+        {
+            return Enumerable.Empty<Event>();
+        }
+
         public void Dispose()
         {
             GlobalSequenceIndex.Dispose();

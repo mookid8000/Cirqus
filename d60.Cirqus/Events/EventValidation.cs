@@ -76,5 +76,9 @@ namespace d60.Cirqus.Events
                 expectedNextGlobalSeq++;
             }
         }
+
+        public static void ValidateBatchIntegrity(Guid batchId, List<Event> events)
+        {
+        }
     }
 }

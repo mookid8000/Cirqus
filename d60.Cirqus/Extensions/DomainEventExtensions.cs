@@ -58,6 +58,16 @@ namespace d60.Cirqus.Extensions
             return new DateTime(dateTime.Ticks, DateTimeKind.Utc);
         }
 
+        public static bool IsJson(this Event e)
+        {
+            return e.Meta.ContainsKey("json-utf8") && ((bool)e.Meta["json-utf8"]);
+        }
+
+        public static void MarkAsJson(this Event e)
+        {
+            e.Meta["json-utf8"] = true;
+        }
+
         static TValue GetMetadataField<TValue>(DomainEvent domainEvent, string key, Func<object, TValue> converter, bool throwIfNotFound)
         {
             var metadata = domainEvent.Meta;

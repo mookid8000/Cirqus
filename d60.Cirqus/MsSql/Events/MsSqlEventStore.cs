@@ -125,6 +125,11 @@ INSERT INTO [{0}] (
         {
         }
 
+        public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
+        {
+            return Enumerable.Empty<Event>();
+        }
+
         long GetNextGlobalSequenceNumber(SqlConnection conn, SqlTransaction tx)
         {
             using (var cmd = conn.CreateCommand())
