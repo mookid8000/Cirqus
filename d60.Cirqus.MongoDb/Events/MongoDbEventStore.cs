@@ -48,80 +48,15 @@ namespace d60.Cirqus.MongoDb.Events
             _serializer.EventDeserializationMutators.Add(mutator);
         }
 
-        public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
         {
-            var globalSequenceNumberToQueryFor = globalSequenceNumber;
+            var criteria = Query.EQ(GlobalSeqNoDocPath, globalSequenceNumber);
 
-            return _eventBatches
-                .FindAs<BsonDocument>(Query.GTE(GlobalSeqNoDocPath, globalSequenceNumberToQueryFor))
-                .SelectMany(doc => doc[EventsDocPath].AsBsonArray)
-                .Select(eventDoc => new
-                {
-                    GlobalSequenceNumber = GetLong(eventDoc[MetaDocPath][DomainEvent.MetadataKeys.GlobalSequenceNumber]),
-                    EventDoc = eventDoc
-                })
-                .Where(a => a.GlobalSequenceNumber >= globalSequenceNumber)
-                .Select(a => _serializer.Deserialize(a.EventDoc));
-        }
-
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
-        {
-            var criteria = Query.And(
-                Query.EQ(AggregateRootIdDocPath, aggregateRootId.ToString()),
-                Query.GTE(SeqNoDocPath, firstSeq));
-
-            var docs = _eventBatches.FindAs<BsonDocument>(criteria);
-
-            var eventsSatisfyingCriteria = docs
-                .SelectMany(doc => doc[EventsDocPath].AsBsonArray)
-                .Select(e => new
-                {
-                    Event = e,
-                    SequenceNumber = GetLong(e[MetaDocPath][DomainEvent.MetadataKeys.SequenceNumber]),
-                    AggregateRootId = GetAggregateRootIdOrDefault(e)
-                })
-                .Where(e => e.AggregateRootId == aggregateRootId && e.SequenceNumber >= firstSeq);
-
-            return eventsSatisfyingCriteria
-                .OrderBy(e => e.SequenceNumber)
-                .Select(e => _serializer.Deserialize(e.Event));
-        }
-
-        public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
-        {
-            var events = batch.ToList();
-
-            if (!events.Any())
-            {
-                throw new InvalidOperationException(string.Format("Attempted to save batch {0}, but the batch of events was empty!", batchId));
-            }
-
-            events.ForEach(e => _serializer.EnsureSerializability(e));
-
-            var nextGlobalSeqNo = GetNextGlobalSequenceNumber();
-
-            foreach (var e in events)
-            {
-                e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (nextGlobalSeqNo++).ToString(Metadata.NumberCulture);
-                e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
-            }
-
-            EventValidation.ValidateBatchIntegrity(batchId, events);
-
-            var doc = new BsonDocument
-            {
-                {"_id", batchId.ToString()},
-                {EventsDocPath, GetEvents(events)}
-            };
-
-            try
-            {
-                _eventBatches.Save(doc);
-            }
-            catch (MongoDuplicateKeyException exception)
-            {
-                throw new ConcurrencyException(batchId, events, exception);
-            }
+            return _eventBatches.Find(criteria)
+                .SelectMany(b => b.Events)
+                .OrderBy(e => e.GlobalSequenceNumber)
+                .Where(e => e.GlobalSequenceNumber >= globalSequenceNumber)
+                .Select(MongoEventToEvent);
         }
 
         public long GetNextGlobalSequenceNumber()
@@ -160,7 +95,6 @@ namespace d60.Cirqus.MongoDb.Events
 
             try
             {
-                //_eventBatches.Save(doc);
                 _eventBatches.Save(new MongoEventBatch
                 {
                     BatchId = batchId.ToString(),
@@ -203,7 +137,7 @@ namespace d60.Cirqus.MongoDb.Events
             return metadata;
         }
 
-        public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             var criteria = Query.And(
                 Query.EQ(AggregateRootIdDocPath, aggregateRootId),
@@ -214,11 +148,6 @@ namespace d60.Cirqus.MongoDb.Events
                 .OrderBy(e => e.GlobalSequenceNumber)
                 .Where(e => e.GlobalSequenceNumber >= firstSeq && e.AggregateRootId == aggregateRootId)
                 .Select(MongoEventToEvent);
-        }
-
-        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
-        {
-            return Enumerable.Empty<Event>();
         }
 
         Event MongoEventToEvent(MongoEvent e)
