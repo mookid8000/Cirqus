@@ -75,6 +75,7 @@
     <Compile Include="Diagnostics\DiagnosticsConfigurationExtensions.cs" />
     <Compile Include="Diagnostics\IProfiler.cs" />
     <Compile Include="Events\EventReplicator.cs" />
+    <Compile Include="Extensions\EventExtensions.cs" />
     <Compile Include="ICommandProcessor.cs" />
     <Compile Include="Config\Options.cs" />
     <Compile Include="Config\Retryer.cs" />
