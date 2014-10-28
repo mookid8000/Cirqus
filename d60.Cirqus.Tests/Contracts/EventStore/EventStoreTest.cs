@@ -294,21 +294,16 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             // act
             // assert
             Assert.That(_eventStore.Load(aggregateRootId, 1).Take(1).Count(), Is.EqualTo(1));
-            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(1).Select(Deserialized).GetSeq().ToArray(), Is.EqualTo(Enumerable.Range(1, 1).ToArray()));
+            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(1).GetSeq().ToArray(), Is.EqualTo(Enumerable.Range(1, 1).ToArray()));
 
             Assert.That(_eventStore.Load(aggregateRootId, 1).Take(2).Count(), Is.EqualTo(2));
-            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(2).Select(Deserialized).GetSeq(), Is.EqualTo(Enumerable.Range(1, 2)));
+            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(2).GetSeq(), Is.EqualTo(Enumerable.Range(1, 2)));
 
             Assert.That(_eventStore.Load(aggregateRootId, 1).Take(10).Count(), Is.EqualTo(10));
-            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(10).Select(Deserialized).GetSeq(), Is.EqualTo(Enumerable.Range(1, 10)));
+            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(10).GetSeq(), Is.EqualTo(Enumerable.Range(1, 10)));
 
             Assert.That(_eventStore.Load(aggregateRootId, 4).Take(10).Count(), Is.EqualTo(10));
-            Assert.That(_eventStore.Load(aggregateRootId, 4).Take(10).Select(Deserialized).GetSeq().ToArray(), Is.EqualTo(Enumerable.Range(4, 10).ToArray()));
-        }
-
-        DomainEvent Deserialized(Event arg)
-        {
-            return _serializzle.DoDeserialize(arg);
+            Assert.That(_eventStore.Load(aggregateRootId, 4).Take(10).GetSeq().ToArray(), Is.EqualTo(Enumerable.Range(4, 10).ToArray()));
         }
 
         [Test]
@@ -336,10 +331,10 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
             // assert
             Assert.That(allEventsForAgg1.Count, Is.EqualTo(4));
-            Assert.That(allEventsForAgg1.Select(Deserialized).GetSeq(), Is.EqualTo(new[] { 0, 1, 3, 4 }));
+            Assert.That(allEventsForAgg1.GetSeq(), Is.EqualTo(new[] { 0, 1, 3, 4 }));
 
             Assert.That(allEventsForAgg2.Count, Is.EqualTo(2));
-            Assert.That(allEventsForAgg2.Select(Deserialized).GetSeq(), Is.EqualTo(new[] { 2, 5 }));
+            Assert.That(allEventsForAgg2.GetSeq(), Is.EqualTo(new[] { 2, 5 }));
         }
 
         [Test]
