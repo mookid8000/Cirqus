@@ -33,31 +33,11 @@ namespace d60.Cirqus.Ntfs.Events
         internal DataStore DataStore { get; private set; }
         internal CommitLog CommitLog { get; private set; }
 
-        public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
-        {
-           throw new NotImplementedException();
-        }
-
-        public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
-        {
-            throw new NotImplementedException();
-        }
-
-        public long GetNextGlobalSequenceNumber()
-        {
-            return CommitLog.Read() + 1;
-        }
-
         public void Save(Guid batchId, IEnumerable<Event> events)
         {
             lock (_lock)
             {
-                var list = events.ToList();
+                var batch = events.ToList();
 
                 bool isCorrupted;
                 var globalSequenceNumber = CommitLog.Read(out isCorrupted);
@@ -65,28 +45,28 @@ namespace d60.Cirqus.Ntfs.Events
 
                 GlobalSequenceIndex.DetectCorruptionAndRecover(DataStore, globalSequenceNumber);
 
-                foreach (var domainEvent in list)
+                foreach (var domainEvent in batch)
                 {
                     domainEvent.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (++globalSequenceNumber).ToString(Metadata.NumberCulture);
                     domainEvent.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
                 }
 
-                EventValidation.ValidateBatchIntegrity(batchId, list);
+                EventValidation.ValidateBatchIntegrity(batchId, batch);
 
-                GlobalSequenceIndex.Write(list);
-                DataStore.Write(batchId, list);
+                GlobalSequenceIndex.Write(batch);
+                DataStore.Write(batchId, batch);
                 CommitLog.Write(globalSequenceNumber);
             }
         }
 
-        public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             var lastCommittedGlobalSequenceNumber = CommitLog.Read();
 
             return DataStore.Read(lastCommittedGlobalSequenceNumber, aggregateRootId, firstSeq);
         }
 
-        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
+        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
         {
             var lastCommittedGlobalSequenceNumber = CommitLog.Read();
 
@@ -94,6 +74,11 @@ namespace d60.Cirqus.Ntfs.Events
                    select DataStore.Read(record.AggregateRootId, record.LocalSequenceNumber);
         }
 
+        public long GetNextGlobalSequenceNumber()
+        {
+            return CommitLog.Read() + 1;
+        }
+        
         public void Dispose()
         {
             GlobalSequenceIndex.Dispose();
