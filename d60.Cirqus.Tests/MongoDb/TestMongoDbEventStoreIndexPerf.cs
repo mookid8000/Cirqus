@@ -43,7 +43,7 @@ namespace d60.Cirqus.Tests.MongoDb
                 {
                     foreach (var e in events)
                     {
-                        eventStore.Save(Guid.NewGuid(), new[] { serializer.DoSerialize(e) });
+                        eventStore.Save(Guid.NewGuid(), new[] { serializer.Serialize(e) });
                     }
                 });
 

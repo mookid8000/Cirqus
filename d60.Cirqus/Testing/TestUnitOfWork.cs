@@ -72,7 +72,7 @@ namespace d60.Cirqus.Testing
 
             if (!domainEvents.Any()) return;
 
-            _eventStore.Save(Guid.NewGuid(), domainEvents.Select(e => _domainEventSerializer.DoSerialize(e)));
+            _eventStore.Save(Guid.NewGuid(), domainEvents.Select(e => _domainEventSerializer.Serialize(e)));
 
             _wasCommitted = true;
 

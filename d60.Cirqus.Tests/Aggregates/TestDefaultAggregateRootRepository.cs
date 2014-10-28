@@ -56,7 +56,7 @@ namespace d60.Cirqus.Tests.Aggregates
                     }
                 }
             }
-            .Select(e => _domainEventSerializer.DoSerialize(e)));
+            .Select(e => _domainEventSerializer.Serialize(e)));
         }
 
         public class Root : AggregateRoot, IEmit<Event>

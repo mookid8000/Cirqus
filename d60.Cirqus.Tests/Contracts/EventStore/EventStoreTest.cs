@@ -449,7 +449,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
             processor.ProcessCommand(new MakeSomeRootEmitTheEvent(Guid.NewGuid()));
 
-            var domainEvents = _eventStore.Stream().Select(serializer.DoDeserialize).Single();
+            var domainEvents = _eventStore.Stream().Select(serializer.Deserialize).Single();
             Assert.That(domainEvents.GetUtcTime(), Is.EqualTo(someUtcTime));
         }
 

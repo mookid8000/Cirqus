@@ -100,10 +100,10 @@ namespace d60.Cirqus.Testing.Internals
             {
                 return _savedEventBatches
                     .SelectMany(e => e.Events)
-                    .Select(e => new
+                    .Select(@event => new
                     {
-                        Event = e,
-                        GlobalSequenceNumner = e.GetGlobalSequenceNumber()
+                        Event = @event,
+                        GlobalSequenceNumner = @event.GetGlobalSequenceNumber()
                     })
                     .Where(a => a.GlobalSequenceNumner >= globalSequenceNumber)
                     .OrderBy(a => a.GlobalSequenceNumner)
@@ -131,7 +131,7 @@ namespace d60.Cirqus.Testing.Internals
             {
                 var clone = _savedEventBatches
                     .SelectMany(b => b.Events)
-                    .Select(e => _domainEventSerializer.DoDeserialize(e))
+                    .Select(e => _domainEventSerializer.Deserialize(e))
                     .ToList();
 
                 return clone.GetEnumerator();

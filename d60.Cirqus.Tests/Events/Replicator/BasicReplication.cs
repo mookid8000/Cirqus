@@ -43,7 +43,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
             _source.Save(Guid.NewGuid(), new[]
             {
                 CreateNewEvent(Guid.NewGuid(), "hej")
-            }.Select(e => _serializer.DoSerialize(e)));
+            }.Select(e => _serializer.Serialize(e)));
 
             Thread.Sleep(1000);
 
@@ -63,8 +63,8 @@ namespace d60.Cirqus.Tests.Events.Replicator
             var batchId1 = Guid.NewGuid();
             var batchId2 = Guid.NewGuid();
 
-            _source.Save(batchId1, new[] { CreateNewEvent(Guid.NewGuid(), "hej") }.Select(e => _serializer.DoSerialize(e)));
-            _source.Save(batchId2, new[] { CreateNewEvent(Guid.NewGuid(), "hej"), CreateNewEvent(Guid.NewGuid(), "hej") }.Select(e => _serializer.DoSerialize(e)));
+            _source.Save(batchId1, new[] { CreateNewEvent(Guid.NewGuid(), "hej") }.Select(e => _serializer.Serialize(e)));
+            _source.Save(batchId2, new[] { CreateNewEvent(Guid.NewGuid(), "hej"), CreateNewEvent(Guid.NewGuid(), "hej") }.Select(e => _serializer.Serialize(e)));
 
             Thread.Sleep(1000);
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Aggregates;
@@ -114,7 +114,7 @@ namespace d60.Cirqus.Testing
         /// </summary>
         public EventCollection History
         {
-            get { return new EventCollection(_eventStore.Stream().Select(e => _domainEventSerializer.DoDeserialize(e))); }
+            get { return new EventCollection(_eventStore.Stream().Select(e => _domainEventSerializer.Deserialize(e))); }
         }
 
         /// <summary>
@@ -199,19 +199,11 @@ namespace d60.Cirqus.Testing
                 SetMetadata(aggregateRootId, domainEvent);
             }
 
-            var persistentEvents = domainEvents
-                .Select(e => _domainEventSerializer.DoSerialize(e))
-                .ToList();
+            _eventStore.Save(Guid.NewGuid(), domainEvents.Select(e => _domainEventSerializer.Serialize(e)));
 
-            _eventStore.Save(Guid.NewGuid(), persistentEvents);
+            _eventDispatcher.Dispatch(_eventStore, domainEvents);
 
-            var eventsToDispatch = persistentEvents
-                .Select(e => _domainEventSerializer.DoDeserialize(e))
-                .ToList();
-
-            _eventDispatcher.Dispatch(_eventStore, eventsToDispatch);
-
-            var result = new CommandProcessingResultWithEvents(eventsToDispatch);
+            var result = new CommandProcessingResultWithEvents(domainEvents);
 
             if (!Asynchronous)
             {
