@@ -10,8 +10,6 @@ namespace d60.Cirqus.Aggregates
 
         internal IUnitOfWork UnitOfWork { get; set; }
 
-        //internal IAggregateRootRepository AggregateRootRepository { get; set; }
-
         internal void Initialize(Guid id)
         {
             Id = id;

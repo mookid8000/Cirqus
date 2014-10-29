@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
@@ -39,6 +40,24 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             {
                 RegisterForDisposal((IDisposable)_eventStore);
             }
+        }
+
+        [Test]
+        public void AssignsGlobalSequenceNumberToEvents()
+        {
+            var events = new List<Event>
+            {
+                Event(0, Guid.NewGuid()), 
+                Event(0, Guid.NewGuid())
+            };
+
+            _eventStore.Save(Guid.NewGuid(), events);
+
+            // assert
+            var loadedEvents = _eventStore.Stream().ToList();
+
+            Assert.That(events.Select(e => e.GetGlobalSequenceNumber()), Is.EqualTo(new[] {0, 1}));
+            Assert.That(loadedEvents.Select(e => e.GetGlobalSequenceNumber()), Is.EqualTo(new[] {0, 1}));
         }
 
         [Test]

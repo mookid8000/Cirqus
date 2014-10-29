@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
 namespace d60.Cirqus.Serialization
@@ -16,6 +14,7 @@ namespace d60.Cirqus.Serialization
     public class DomainEventSerializer : IDomainEventSerializer
     {
         readonly TypeAliasBinder _binder;
+        static readonly Encoding DefaultEncoding = Encoding.UTF8;
 
         public DomainEventSerializer()
             : this("<events>")
@@ -25,6 +24,7 @@ namespace d60.Cirqus.Serialization
         public DomainEventSerializer(string virtualNamespaceName)
         {
             _binder = new TypeAliasBinder(virtualNamespaceName);
+
             Settings = new JsonSerializerSettings
             {
                 ContractResolver = new ContractResolver(),
@@ -70,11 +70,11 @@ namespace d60.Cirqus.Serialization
         {
             try
             {
-                var data = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(e, Settings));
+                var data = DefaultEncoding.GetBytes(JsonConvert.SerializeObject(e, Settings));
 
                 var result = new Event
                 {
-                    Meta = e.Meta,
+                    Meta = e.Meta.Clone(),
                     Data = data
                 };
 
@@ -90,8 +90,8 @@ namespace d60.Cirqus.Serialization
 
         public DomainEvent Deserialize(Event e)
         {
-            var meta = e.Meta;
-            var text = Encoding.UTF8.GetString(e.Data);
+            var meta = e.Meta.Clone();
+            var text = DefaultEncoding.GetString(e.Data);
 
             try
             {

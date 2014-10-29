@@ -17,8 +17,8 @@ namespace d60.Cirqus.Numbers
     {
         public static readonly CultureInfo NumberCulture = CultureInfo.InvariantCulture;
 
-        Metadata(SerializationInfo info, StreamingContext contest)
-            : base(info, contest)
+        Metadata(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
         }
 
@@ -44,6 +44,16 @@ namespace d60.Cirqus.Numbers
 
                 this[meta.Key] = meta.Value;
             }
+        }
+
+        internal Metadata Clone()
+        {
+            var clone = new Metadata();
+            foreach (var kvp in this)
+            {
+                clone.Add(kvp.Key, kvp.Value);
+            }
+            return clone;
         }
 
         public override string ToString()
