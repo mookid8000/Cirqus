@@ -70,7 +70,7 @@ This is how you can set up a fully functioning command processor, including a vi
 
     // let's create & initialize the command processor
     var processor = CommandProcessor.With()
-        .EventStore(e => e.UseSqlServer("sqltestdb", "Events")
+        .EventStore(e => e.UseSqlServer("sqltestdb", "Events"))
         .EventDispatcher(e => e.UseViewManagerEventDispatcher(viewManager))
         .Create();
 
