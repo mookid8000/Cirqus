@@ -72,11 +72,15 @@ namespace d60.Cirqus.Testing
 
             if (!domainEvents.Any()) return;
 
-            _eventStore.Save(Guid.NewGuid(), domainEvents.Select(e => _domainEventSerializer.Serialize(e)));
+            var eventData = domainEvents.Select(e => _domainEventSerializer.Serialize(e)).ToList();
+
+            _eventStore.Save(Guid.NewGuid(), eventData);
 
             _wasCommitted = true;
 
-            _eventDispatcher.Dispatch(_eventStore, domainEvents);
+            var domainEventsToDispatch = eventData.Select(e => _domainEventSerializer.Deserialize(e));
+
+            _eventDispatcher.Dispatch(_eventStore, domainEventsToDispatch);
 
             Committed();
         }

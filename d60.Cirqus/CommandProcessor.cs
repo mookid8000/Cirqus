@@ -94,9 +94,12 @@ namespace d60.Cirqus
 
                     // first: save the events
                     _logger.Debug("Saving batch {0} with {1} events", batchId, eventsFromThisUnitOfWork.Count);
-                    _eventStore.Save(batchId, eventsFromThisUnitOfWork.Select(e => _domainEventSerializer.Serialize(e)));
+                    
+                    var eventData = eventsFromThisUnitOfWork.Select(e => _domainEventSerializer.Serialize(e)).ToList();
 
-                    emittedDomainEvents.AddRange(eventsFromThisUnitOfWork);
+                    _eventStore.Save(batchId, eventData);
+
+                    emittedDomainEvents.AddRange(eventData.Select(e => _domainEventSerializer.Deserialize(e)));
                 }, maxRetries: Options.MaxRetries);
             }
             catch (Exception exception)

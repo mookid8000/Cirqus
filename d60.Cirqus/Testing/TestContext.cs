@@ -199,11 +199,15 @@ namespace d60.Cirqus.Testing
                 SetMetadata(aggregateRootId, domainEvent);
             }
 
-            _eventStore.Save(Guid.NewGuid(), domainEvents.Select(e => _domainEventSerializer.Serialize(e)));
+            var eventData = domainEvents.Select(e => _domainEventSerializer.Serialize(e)).ToList();
 
-            _eventDispatcher.Dispatch(_eventStore, domainEvents);
+            _eventStore.Save(Guid.NewGuid(), eventData);
 
-            var result = new CommandProcessingResultWithEvents(domainEvents);
+            var domainEventsToDispatch = eventData.Select(e => _domainEventSerializer.Deserialize(e)).ToList();
+
+            _eventDispatcher.Dispatch(_eventStore, domainEventsToDispatch);
+
+            var result = new CommandProcessingResultWithEvents(domainEventsToDispatch);
 
             if (!Asynchronous)
             {
