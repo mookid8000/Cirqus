@@ -21,7 +21,7 @@ namespace d60.Cirqus.Tests.MongoDb
         public void IndexSpeedTest(bool useIndexes, int numberOfQueries, int numberOfEvents)
         {
             var sequenceNumbers = new Dictionary<Guid, long>();
-            var serializer = new DomainEventSerializer();
+            var serializer = new JsonDomainEventSerializer();
 
             try
             {

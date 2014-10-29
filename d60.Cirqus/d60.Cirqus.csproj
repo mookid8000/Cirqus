@@ -127,7 +127,7 @@
     <Compile Include="Views\InMemoryViewEventDispatcher.cs" />
     <Compile Include="Views\ViewManagers\AbstractViewManager.cs" />
     <Compile Include="Views\ViewManagers\IViewManager.cs" />
-    <Compile Include="Serialization\DomainEventSerializer.cs" />
+    <Compile Include="Serialization\JsonDomainEventSerializer.cs" />
     <Compile Include="Serialization\GenericSerializer.cs" />
     <Compile Include="Serialization\TypeAliasBinder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

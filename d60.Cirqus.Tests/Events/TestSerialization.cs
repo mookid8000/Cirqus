@@ -11,7 +11,7 @@ namespace d60.Cirqus.Tests.Events
         [Test]
         public void RoundtripEventWithReadonlyFields()
         {
-            var serializer = new DomainEventSerializer("<events>")
+            var serializer = new JsonDomainEventSerializer("<events>")
                 .AddAliasesFor(typeof (ComplexDomainEvent), typeof (ComplexValue));
 
             var rootId = Guid.NewGuid();

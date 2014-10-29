@@ -19,7 +19,7 @@ namespace d60.Cirqus.Testing
     /// </summary>
     public class TestContext : IDisposable
     {
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer("<events>");
         readonly DefaultAggregateRootRepository _aggregateRootRepository;
         readonly ViewManagerEventDispatcher _viewManagerEventDispatcher;
         readonly CompositeEventDispatcher _eventDispatcher;

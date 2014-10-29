@@ -11,7 +11,7 @@ namespace d60.Cirqus.Tests.Contracts.AggregateRootRepository.Factories
     {
         readonly MongoDbEventStore _eventStore;
         readonly DefaultAggregateRootRepository _defaultAggregateRootRepository;
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
 
         public DefaultAggregateRootRepositoryFactory()
         {

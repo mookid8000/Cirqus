@@ -458,7 +458,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             var someUtcTime = someLocalTime.ToUniversalTime();
             TimeMachine.FixCurrentTimeTo(someUtcTime);
 
-            var serializer = new DomainEventSerializer();
+            var serializer = new JsonDomainEventSerializer();
 
             var processor = new CommandProcessor(
                 _eventStore, new DefaultAggregateRootRepository(_eventStore, serializer),

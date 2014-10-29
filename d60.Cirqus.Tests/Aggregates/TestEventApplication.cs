@@ -14,7 +14,7 @@ namespace d60.Cirqus.Tests.Aggregates
     [TestFixture]
     public class TestEventApplication
     {
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
 
         [Test]
         public void AppliesEmittedEvents()

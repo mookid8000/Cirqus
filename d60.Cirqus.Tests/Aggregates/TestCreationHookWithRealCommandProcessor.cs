@@ -13,7 +13,7 @@ namespace d60.Cirqus.Tests.Aggregates
     [TestFixture]
     public class TestCreationHookWithRealCommandProcessor : FixtureBase
     {
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
         ICommandProcessor _commandProcessor;
         InMemoryEventStore _eventStore;
 

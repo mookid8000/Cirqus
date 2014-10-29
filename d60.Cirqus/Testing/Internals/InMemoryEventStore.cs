@@ -119,10 +119,11 @@ namespace d60.Cirqus.Testing.Internals
 
         Event CloneEvent(Event ev)
         {
-            var clone = JsonConvert.DeserializeObject<Event>(JsonConvert.SerializeObject(ev),
-                new JsonSerializerSettings {TypeNameHandling = TypeNameHandling.All});
-
-            return clone;
+            return new Event
+            {
+                Data = ev.Data,
+                Meta = ev.Meta.Clone()
+            };
         }
 
         public IEnumerator<DomainEvent> GetEnumerator()

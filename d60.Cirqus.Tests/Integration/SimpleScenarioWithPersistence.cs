@@ -30,7 +30,7 @@ this time by using actual MongoDB underneath
     {
         DefaultAggregateRootRepository _aggregateRootRepository;
         CommandProcessor _cirqus;
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
 
         protected override void DoSetUp()
         {

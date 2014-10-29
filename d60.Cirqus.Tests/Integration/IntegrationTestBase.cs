@@ -18,7 +18,7 @@ namespace d60.Cirqus.Tests.Integration
     public abstract class IntegrationTestBase : FixtureBase
     {
         MongoDatabase _mongoDatabase;
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
 
         protected override void DoSetUp()
         {

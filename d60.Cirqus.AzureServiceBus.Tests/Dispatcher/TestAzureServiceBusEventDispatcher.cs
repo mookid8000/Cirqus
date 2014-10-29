@@ -27,7 +27,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Dispatcher
             _stuffThatHappened = new List<string>();
             _resetEvent = new AutoResetEvent(false);
 
-            _eventStore = new InMemoryEventStore(new DomainEventSerializer());
+            _eventStore = new InMemoryEventStore(new JsonDomainEventSerializer());
 
             var topicName = TestAzureHelper.GetTopicName("cirqus");
             var subscriptionName = TestAzureHelper.GetSubscriptionName("testsubscriber");

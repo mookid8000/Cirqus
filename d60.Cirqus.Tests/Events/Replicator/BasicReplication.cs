@@ -15,7 +15,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
     public class BasicReplication : FixtureBase
     {
         readonly Dictionary<Guid, int> _seqNos = new Dictionary<Guid, int>();
-        readonly DomainEventSerializer _serializer = new DomainEventSerializer();
+        readonly JsonDomainEventSerializer _serializer = new JsonDomainEventSerializer();
 
         EventReplicator _replicator;
         MongoDbEventStore _source;

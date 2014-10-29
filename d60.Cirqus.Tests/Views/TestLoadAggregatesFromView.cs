@@ -26,7 +26,7 @@ namespace d60.Cirqus.Tests.Views
         InMemoryViewManager<MyViewInstanceEmitting> _viewManager3;
         ViewManagerEventDispatcher _eventDispatcher;
         InMemoryViewManager<MyViewInstanceLoadingNonexistentRoot> _viewManager4;
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
 
         protected override void DoSetUp()
         {

@@ -17,7 +17,7 @@ namespace d60.Cirqus.Tests.Commands
         CommandProcessor _cirqus;
         DefaultAggregateRootRepository _aggregateRootRepository;
         InMemoryEventStore _eventStore;
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
 
         protected override void DoSetUp()
         {

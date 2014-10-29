@@ -41,7 +41,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
 
             _viewManager = new InMemoryViewManager<View>();
 
-            var serializer = new DomainEventSerializer();
+            var serializer = new JsonDomainEventSerializer();
 
             var eventDispatcher = new ViewManagerEventDispatcher(new DefaultAggregateRootRepository(_eventStoreProxy, serializer), _eventStoreProxy, serializer);
 

@@ -90,7 +90,7 @@ caching in use: {3}",
                 InnerEventStore = eventStore,
             };
 
-            var serializer = new DomainEventSerializer();
+            var serializer = new JsonDomainEventSerializer();
 
             IAggregateRootRepository aggregateRootRepository = new DefaultAggregateRootRepository(_timeTaker, serializer);
 

@@ -14,7 +14,7 @@ namespace d60.Cirqus.Tests.MongoDb
     public class TestMongoDbLoggerFactory : FixtureBase
     {
         MongoDatabase _database;
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
 
         protected override void DoSetUp()
         {

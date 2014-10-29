@@ -14,7 +14,7 @@ namespace d60.Cirqus.Tests.Events
     public class TestInMemoryEventStore : FixtureBase
     {
         InMemoryEventStore _eventStore;
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
 
         protected override void DoSetUp()
         {
@@ -34,14 +34,22 @@ namespace d60.Cirqus.Tests.Events
                     {DomainEvent.MetadataKeys.GlobalSequenceNumber, 0.ToString(Metadata.NumberCulture)},
                 }
             };
-            _eventStore.Save(Guid.NewGuid(), new[] {someEvent}.Select(e => _domainEventSerializer.Serialize(e)));
+            var eventData = new[] {someEvent}
+                .Select(e => _domainEventSerializer.Serialize(e))
+                .ToList();
+
+            _eventStore.Save(Guid.NewGuid(), eventData);
 
             someEvent.ListOfStuff.Add("WHOA?!!? WHERE DID YOU COME FROM??");
 
-            var allEvents = _eventStore.Stream().OfType<SomeEvent>().ToList();
+            var allEvents = _eventStore.Stream()
+                .Select(e => _domainEventSerializer.Deserialize(e))
+                .OfType<SomeEvent>().ToList();
+
             Assert.That(allEvents.Count, Is.EqualTo(1));
 
             var relevantEvent = allEvents[0];
+
             Assert.That(relevantEvent.ListOfStuff.Count, Is.EqualTo(3), "Oh noes! It appears that the event was changed: {0}", string.Join(" ", relevantEvent.ListOfStuff));
         }
 

@@ -16,7 +16,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
         public void DoesNotThrowWhenDisposingUnstartedReplicator()
         {
             // arrange
-            var serializer = new DomainEventSerializer();
+            var serializer = new JsonDomainEventSerializer();
             var eventReplicator = new EventReplicator(new InMemoryEventStore(serializer), new InMemoryEventStore(serializer));
 
             // act
@@ -28,7 +28,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
         [Test]
         public void TryReplicating()
         {
-            var serializer = new DomainEventSerializer();
+            var serializer = new JsonDomainEventSerializer();
             var source = new InMemoryEventStore(serializer);
             var destination = new InMemoryEventStore(serializer);
             var seqNo = 0;

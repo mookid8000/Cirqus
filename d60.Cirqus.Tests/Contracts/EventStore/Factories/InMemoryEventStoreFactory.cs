@@ -10,7 +10,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore.Factories
 
         public InMemoryEventStoreFactory()
         {
-            _eventStore = new InMemoryEventStore(new DomainEventSerializer());
+            _eventStore = new InMemoryEventStore(new JsonDomainEventSerializer());
         }
 
         public IEventStore GetEventStore()

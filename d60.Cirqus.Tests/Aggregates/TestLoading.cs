@@ -9,7 +9,7 @@ namespace d60.Cirqus.Tests.Aggregates
     [TestFixture]
     public class TestLoading : FixtureBase
     {
-        static readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
+        static readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
 
         [Test]
         public void DefaultsToThrowingIfLoadedAggregateRootCannotBeFound()

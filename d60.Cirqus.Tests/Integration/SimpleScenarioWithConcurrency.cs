@@ -33,7 +33,7 @@ many time in parallel, and after some time the consistency of everything is veri
         DefaultAggregateRootRepository _aggregateRootRepository;
         CommandProcessor _cirqus;
         MongoDatabase _mongoDatabase;
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer();
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
 
         protected override void DoSetUp()
         {

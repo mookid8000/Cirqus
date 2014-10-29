@@ -60,7 +60,7 @@ namespace d60.Cirqus.Tests.Diagnostics
                     Interlocked.Increment(ref commandCounter);
                 });
 
-                var repo = new DefaultAggregateRootRepository(new MongoDbEventStore(database, "Events"), new DomainEventSerializer());
+                var repo = new DefaultAggregateRootRepository(new MongoDbEventStore(database, "Events"), new JsonDomainEventSerializer());
                 var currentState = repo.Get<Root>(id, new ConsoleOutUnitOfWork(repo));
 
                 Assert.That(currentState.AggregateRoot.HowManyThingsHaveHappened, Is.EqualTo(numberOfCommandsToProcess));
