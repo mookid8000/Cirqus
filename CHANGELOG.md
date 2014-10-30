@@ -389,7 +389,9 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Made `NetTcpRelayBinding` configurable from the outside on ASB relay event store proxy thingie
 
+## 0.40.0
 
+* Huge BREAKING change: Event store abstraction does not care about serialization now. It may, however, provide special support for various serialization formats if that makes sense (JSON comes to mind, in MongoDB or Postgres).
 
 [asgerhallas]: https://github.com/asgerhallas
 
