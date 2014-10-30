@@ -145,7 +145,19 @@ namespace d60.Cirqus.MongoDb.Events
 
                 if (property.Value.IsBsonDocument)
                 {
-                    ReplacePropertyPrefixes(property.Value.AsBsonDocument, "$", "¤");
+                    ReplacePropertyPrefixes(property.Value.AsBsonDocument, prefixToReplace, replacement);
+                    continue;
+                }
+
+                if (property.Value.IsBsonArray)
+                {
+                    foreach (var bsonValue in property.Value.AsBsonArray)
+                    {
+                        if (bsonValue.IsBsonDocument)
+                        {
+                            ReplacePropertyPrefixes(bsonValue.AsBsonDocument, prefixToReplace, replacement);
+                        }
+                    }
                 }
             }
         }
