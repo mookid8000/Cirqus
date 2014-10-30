@@ -6,6 +6,9 @@ namespace d60.Cirqus.Extensions
 {
     public static class EventExtensions
     {
+        public const string ContentTypeMetadataKey = "content-type";
+        public const string Utf8JsonMetadataValue = "application/json;charset=utf8";
+
         /// <summary>
         /// Gets the aggregate root ID from the domain event
         /// </summary>
@@ -40,12 +43,13 @@ namespace d60.Cirqus.Extensions
 
         public static bool IsJson(this Event e)
         {
-            return e.Meta.ContainsKey("json-utf8") && (bool.Parse(e.Meta["json-utf8"]));
+            return e.Meta.ContainsKey(ContentTypeMetadataKey)
+                   && e.Meta[ContentTypeMetadataKey] == Utf8JsonMetadataValue;
         }
 
         public static void MarkAsJson(this Event e)
         {
-            e.Meta["json-utf8"] = bool.TrueString;
+            e.Meta[ContentTypeMetadataKey] = Utf8JsonMetadataValue;
         }
 
         static TValue GetMetadataField<TValue>(Event domainEvent, string key, Func<object, TValue> converter, bool throwIfNotFound)
