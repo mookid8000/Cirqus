@@ -114,7 +114,7 @@ namespace d60.Cirqus.Serialization
 
             var secondSerialization = Serialize(Deserialize(firstSerialization));
 
-            if (firstSerialization.Equals(secondSerialization)) return;
+            if (firstSerialization.IsSameAs(secondSerialization)) return;
 
             throw new ArgumentException(string.Format(@"Could not properly roundtrip the following domain event: {0}
 
