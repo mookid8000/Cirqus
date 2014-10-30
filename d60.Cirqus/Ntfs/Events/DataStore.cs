@@ -63,8 +63,25 @@ namespace d60.Cirqus.Ntfs.Events
             using (var fileStream = new FileStream(filename, FileMode.CreateNew, FileAccess.Write, FileShare.None, 1024, FileOptions.None))
             using (var bsonWriter = new BsonWriter(fileStream))
             {
-                _serializer.Serialize(bsonWriter, domainEvent);
+                _serializer.Serialize(bsonWriter, EventData.Create(domainEvent));
             }
+        }
+
+        class EventData
+        {
+            public EventData(Metadata meta, byte[] data)
+            {
+                Meta = meta;
+                Data = data;
+            }
+
+            public static EventData Create(Event domainEvent)
+            {
+                return new EventData(domainEvent.Meta, domainEvent.Data);
+            }
+
+            public Metadata Meta { get; private set; }
+            public byte[] Data { get; private set; }
         }
 
         public IEnumerable<Event> Read(long lastCommittedGlobalSequenceNumber, Guid aggregateRootId, long offset)
@@ -120,7 +137,9 @@ namespace d60.Cirqus.Ntfs.Events
 
                 try
                 {
-                    return _serializer.Deserialize<Event>(bsonReader);
+                    var eventData = _serializer.Deserialize<EventData>(bsonReader);
+                    
+                    return Event.FromMetadata(eventData.Meta, eventData.Data);
                 }
                 catch (Exception)
                 {
