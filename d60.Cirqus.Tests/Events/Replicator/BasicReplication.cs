@@ -47,7 +47,10 @@ namespace d60.Cirqus.Tests.Events.Replicator
 
             Thread.Sleep(1000);
 
-            var allEventsInDestinationStore = _destination.Stream().ToList();
+            var allEventsInDestinationStore = _destination
+                .Stream()
+                .Select(e => _serializer.Deserialize(e))
+                .ToList();
 
             Assert.That(allEventsInDestinationStore.Count, Is.EqualTo(1));
 
@@ -68,7 +71,10 @@ namespace d60.Cirqus.Tests.Events.Replicator
 
             Thread.Sleep(1000);
 
-            var myKindOfEvents = _destination.Stream().ToList().OfType<Event>().ToList();
+            var myKindOfEvents = _destination.Stream()
+                .Select(e => _serializer.Deserialize(e))
+                .OfType<Event>()
+                .ToList();
 
             Assert.That(myKindOfEvents.Count, Is.EqualTo(3));
             var expectedSourceBatchIds = new[]
