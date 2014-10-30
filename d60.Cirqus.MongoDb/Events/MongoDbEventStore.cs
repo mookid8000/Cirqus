@@ -107,7 +107,7 @@ namespace d60.Cirqus.MongoDb.Events
                             {
                                 Meta = GetMetadataAsDictionary(b.Meta),
                                 Bin = isJson ? null : b.Data,
-                                Body = isJson ? Encoding.UTF8.GetString(b.Data) : null,
+                                Body = isJson ? GetBsonValue(b.Data) : null,
                                 SequenceNumber = b.GetSequenceNumber(),
                                 GlobalSequenceNumber = b.GetGlobalSequenceNumber(),
                                 AggregateRootId = b.GetAggregateRootId()
@@ -119,6 +119,34 @@ namespace d60.Cirqus.MongoDb.Events
             catch (MongoDuplicateKeyException exception)
             {
                 throw new ConcurrencyException(batchId, batch, exception);
+            }
+        }
+
+        BsonValue GetBsonValue(byte[] data)
+        {
+            var json = Encoding.UTF8.GetString(data);
+            var doc = BsonDocument.Parse(json);
+
+            ReplacePropertyPrefixes(doc, "$", "¤");
+
+            return doc;
+        }
+
+        void ReplacePropertyPrefixes(BsonDocument doc, string prefixToReplace, string replacement)
+        {
+            foreach (var property in doc.ToList())
+            {
+                if (property.Name.StartsWith(prefixToReplace))
+                {
+                    doc.Remove(property.Name);
+
+                    doc.Add(new BsonElement(replacement + property.Name.Substring(1), property.Value));
+                }
+
+                if (property.Value.IsBsonDocument)
+                {
+                    ReplacePropertyPrefixes(property.Value.AsBsonDocument, "$", "¤");
+                }
             }
         }
 
@@ -153,9 +181,18 @@ namespace d60.Cirqus.MongoDb.Events
         Event MongoEventToEvent(MongoEvent e)
         {
             var meta = GetDictionaryAsMetadata(e.Meta);
-            var data = e.Bin ?? Encoding.UTF8.GetBytes(e.Body);
+            var data = e.Bin ?? GetBytesFromBsonValue(e.Body);
 
             return Event.FromMetadata(meta, data);
+        }
+
+        byte[] GetBytesFromBsonValue(BsonValue body)
+        {
+            var doc = body.AsBsonDocument;
+
+            ReplacePropertyPrefixes(doc, "¤", "$");
+
+            return Encoding.UTF8.GetBytes(doc.ToString());
         }
     }
 
@@ -171,7 +208,7 @@ namespace d60.Cirqus.MongoDb.Events
     {
         public Dictionary<string, string> Meta { get; set; }
         public byte[] Bin { get; set; }
-        public string Body { get; set; }
+        public BsonValue Body { get; set; }
         
         public long GlobalSequenceNumber { get; set; }
         public long SequenceNumber { get; set; }

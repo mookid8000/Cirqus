@@ -16,7 +16,7 @@ namespace d60.Cirqus.Tests.Integration.Scenarios
         {
             var commandProcessor = GetCommandProcessor(eventStoreOption);
 
-            commandProcessor.ProcessCommand(new SomeCommand{SomeId=Guid.NewGuid()});
+            commandProcessor.ProcessCommand(new SomeCommand { SomeId = Guid.NewGuid() });
         }
 
 

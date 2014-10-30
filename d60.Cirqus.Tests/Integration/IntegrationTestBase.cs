@@ -10,15 +10,14 @@ using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.MsSql;
 using d60.Cirqus.Tests.PostgreSql;
 using d60.Cirqus.Tests.Stubs;
-using d60.Cirqus.Views;
 using MongoDB.Driver;
 
 namespace d60.Cirqus.Tests.Integration
 {
     public abstract class IntegrationTestBase : FixtureBase
     {
-        MongoDatabase _mongoDatabase;
         readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
+        MongoDatabase _mongoDatabase;
 
         protected override void DoSetUp()
         {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Timers;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
@@ -58,35 +59,6 @@ namespace d60.Cirqus.Tests.MongoDb
 
         void QuicklyGenerateLoadsOfEvents(int eventCount)
         {
-            //var events = Enumerable.Range(0, eventCount)
-            //    .Select(number => new
-            //    {
-            //        _id = Guid.NewGuid().ToString(),
-
-            //        Events = new[]
-            //        {
-            //            new
-            //            {
-            //                _t = "SomeDomainEvent, whataver bla bla",
-            //                    //string.Format("{0}, {1}", typeof (SomeDomainEvent).FullName, typeof (SomeDomainEvent).Assembly.GetName().Name),
-
-            //                Meta = new
-            //                {
-            //                    _t = "Metadata, <events>",
-            //                    gl_seq = number.ToString(),
-            //                    seq = number.ToString(),
-            //                    root_id = "C13CA180-4490-4397-9689-1E7D923EFD21",
-            //                    time_utc = DateTime.UtcNow.ToString("u"),
-            //                    batch_id = Guid.NewGuid().ToString()
-            //                },
-            //                Text = string.Format("event number {0}", number),
-            //                GlobalSequenceNumber = (long)number,
-            //                SequenceNumber = (long)number,
-            //                AggregateRootId = new Guid("C13CA180-4490-4397-9689-1E7D923EFD21")
-            //            }
-            //        }
-            //    });
-
             var events = Enumerable.Range(0, eventCount)
                 .Select(number =>
                 {
@@ -111,7 +83,7 @@ namespace d60.Cirqus.Tests.MongoDb
                                                       {DomainEvent.MetadataKeys.BatchId, batchId},
 
                                                   },
-                                                  Body = "jieojbieow jiboe wbijeo wjbio jbieow jbioe wjbioe wjibej wio bjeiwob"
+                                                  Bin = Encoding.UTF8.GetBytes("jieojbieow jiboe wbijeo wjbio jbieow jbioe wjbioe wjibej wio bjeiwob")
                                               }
                                           }
                                       };
