@@ -1,19 +1,47 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using d60.Cirqus.Numbers;
 
 namespace d60.Cirqus.Events
 {
     public class Event
     {
-        public Event()
+        readonly DomainEvent _innerDomainEvent;
+        readonly Metadata _innerMetadata;
+        readonly byte[] _data;
+
+        protected Event(DomainEvent domainEvent, byte[] data, Metadata meta)
         {
-            Meta = new Metadata();
-            Data = new byte[0];
+            _data = data;
+            _innerDomainEvent = domainEvent;
+            _innerMetadata = meta;
         }
 
-        public Metadata Meta { get; set; }
-        
-        public virtual byte[] Data { get; set; }
+        public static Event FromDomainEvent(DomainEvent domainEvent, byte[] data)
+        {
+            return new Event(domainEvent, data, null);
+        }
+
+        public DomainEvent DomainEvent
+        {
+            get
+            {
+                if (_innerDomainEvent == null)
+                {
+                    throw new InvalidOperationException("Can't get inner domain event from this event because it contains only binary event data");
+                }
+                return _innerDomainEvent;
+            }
+        }
+
+        public static Event FromMetadata(Metadata meta, byte[] data)
+        {
+            return new Event(null, data, meta);
+        }
+
+        public Metadata Meta { get { return _innerMetadata ?? _innerDomainEvent.Meta; } }
+
+        public virtual byte[] Data { get { return _data; } }
 
         public override string ToString()
         {
@@ -25,10 +53,14 @@ namespace d60.Cirqus.Events
             var otherMeta = otherEvent.Meta;
             var otherData = otherEvent.Data;
 
-            if (otherMeta.Count != Meta.Count) return false;
-            if (Data.Length != otherData.Length) return false;
+            var meta = Meta;
+            var data = Data;
 
-            foreach (var kvp in Meta)
+            if (otherMeta.Count != meta.Count) return false;
+
+            if (data.Length != otherData.Length) return false;
+
+            foreach (var kvp in meta)
             {
                 if (!otherMeta.ContainsKey(kvp.Key))
                     return false;
@@ -37,13 +69,18 @@ namespace d60.Cirqus.Events
                     return false;
             }
 
-            for (var index = 0; index < Data.Length; index++)
+            for (var index = 0; index < data.Length; index++)
             {
-                if (Data[index] != otherData[index])
+                if (data[index] != otherData[index])
                     return false;
             }
 
             return true;
+        }
+
+        public static Event Clone(Event other)
+        {
+            return new Event(other._innerDomainEvent, other.Data, other._innerMetadata);
         }
     }
 }

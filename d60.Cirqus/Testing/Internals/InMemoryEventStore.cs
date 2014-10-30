@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
@@ -70,7 +71,7 @@ namespace d60.Cirqus.Testing.Internals
 
                 EventValidation.ValidateBatchIntegrity(batchId, batch);
 
-                _savedEventBatches.Add(new EventBatch(batchId, batch.Select(CloneEvent)));
+                _savedEventBatches.Add(new EventBatch(batchId, batch.Select(Event.Clone)));
             }
         }
 
@@ -89,7 +90,7 @@ namespace d60.Cirqus.Testing.Internals
                     .Where(e => e.AggregateRootId == aggregateRootId)
                     .Where(e => e.SequenceNumber >= firstSeq)
                     .OrderBy(e => e.SequenceNumber)
-                    .Select(e => CloneEvent(e.Event))
+                    .Select(e => Event.Clone(e.Event))
                     .ToList();
             }
         }
@@ -107,7 +108,7 @@ namespace d60.Cirqus.Testing.Internals
                     })
                     .Where(a => a.GlobalSequenceNumner >= globalSequenceNumber)
                     .OrderBy(a => a.GlobalSequenceNumner)
-                    .Select(a => CloneEvent(a.Event))
+                    .Select(a => Event.Clone(a.Event))
                     .ToList();
             }
         }
@@ -115,15 +116,6 @@ namespace d60.Cirqus.Testing.Internals
         public long GetNextGlobalSequenceNumber()
         {
             return _globalSequenceNumber;
-        }
-
-        Event CloneEvent(Event ev)
-        {
-            return new Event
-            {
-                Data = ev.Data,
-                Meta = ev.Meta.Clone()
-            };
         }
 
         public IEnumerator<DomainEvent> GetEnumerator()

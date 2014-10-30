@@ -228,12 +228,7 @@ SELECT ""data"", ""meta"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY "
             var data = (byte[]) reader["data"];
             var meta = (byte[]) reader["meta"];
 
-            var toReturn = new Event
-            {
-                Data = data,
-                Meta = _metadataSerializer.Deserialize(Encoding.UTF8.GetString(meta))
-            };
-            return toReturn;
+            return Event.FromMetadata(_metadataSerializer.Deserialize(Encoding.UTF8.GetString(meta)), data);
         }
 
         public long GetNextGlobalSequenceNumber()

@@ -124,11 +124,7 @@ namespace d60.Cirqus.SQLite
                 .Where(e => e.AggregateRootId == aggregateRootId)
                 .Where(e => e.SequenceNumber >= firstSeq))
             {
-                yield return new Events.Event
-                {
-                    Data = e.Data,
-                    Meta = _metadataSerializer.Deserialize(Encoding.UTF8.GetString(e.Meta))
-                };
+                yield return Events.Event.FromMetadata(_metadataSerializer.Deserialize(Encoding.UTF8.GetString(e.Meta)), e.Data);
             }
         }
 
@@ -138,11 +134,7 @@ namespace d60.Cirqus.SQLite
             foreach (var e in _connection.Table<Event>()
                 .Where(e => e.GlobalSequenceNumber >= globalSequenceNumber))
             {
-                yield return new Events.Event
-                {
-                    Data = e.Data,
-                    Meta = _metadataSerializer.Deserialize(Encoding.UTF8.GetString(e.Meta))
-                };
+                yield return Events.Event.FromMetadata(_metadataSerializer.Deserialize(Encoding.UTF8.GetString(e.Meta)), e.Data);
             }
         }
 

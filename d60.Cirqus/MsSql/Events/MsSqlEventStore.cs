@@ -209,11 +209,7 @@ SELECT [meta],[data] FROM [{0}] WHERE [globSeqNo] >= @cutoff ORDER BY [globSeqNo
             var meta = (string) reader["meta"];
             var data = (byte[]) reader["data"];
 
-            return new Event
-            {
-                Meta = JsonConvert.DeserializeObject<Metadata>(meta),
-                Data = data
-            };
+            return Event.FromMetadata(JsonConvert.DeserializeObject<Metadata>(meta), data);
         }
 
         long GetNextGlobalSequenceNumber(SqlConnection conn, SqlTransaction tx)

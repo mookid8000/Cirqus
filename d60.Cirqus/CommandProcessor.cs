@@ -99,7 +99,7 @@ namespace d60.Cirqus
 
                     _eventStore.Save(batchId, eventData);
 
-                    emittedDomainEvents.AddRange(eventData.Select(e => _domainEventSerializer.Deserialize(e)));
+                    emittedDomainEvents.AddRange(eventData.Select(d => d.DomainEvent));
                 }, maxRetries: Options.MaxRetries);
             }
             catch (Exception exception)

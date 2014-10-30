@@ -155,42 +155,7 @@ namespace d60.Cirqus.MongoDb.Events
             var meta = GetDictionaryAsMetadata(e.Meta);
             var data = e.Bin ?? Encoding.UTF8.GetBytes(e.Body);
 
-            return new Event
-            {
-                Meta = meta,
-                Data = data
-            };
-        }
-
-        long GetLong(BsonValue bsonValue)
-        {
-            if (bsonValue.IsInt32)
-                return bsonValue.ToInt32();
-
-            if (bsonValue.IsInt64)
-                return bsonValue.ToInt64();
-
-            throw new FormatException(string.Format("Could not intepret BSON value '{0}' as int or long - its type is '{1}'",
-                bsonValue, bsonValue.BsonType));
-        }
-
-        Guid GetAggregateRootIdOrDefault(BsonValue e)
-        {
-            var metaDoc = e[MetaDocPath].AsBsonDocument;
-
-            return new Guid(metaDoc.GetValue(DomainEvent.MetadataKeys.AggregateRootId, Guid.Empty.ToString()).ToString());
-        }
-
-        BsonValue GetEvents(IEnumerable<DomainEvent> events)
-        {
-            var array = new BsonArray();
-
-            foreach (var e in events)
-            {
-                array.Add(_serializer.Serialize(e));
-            }
-
-            return array;
+            return Event.FromMetadata(meta, data);
         }
     }
 

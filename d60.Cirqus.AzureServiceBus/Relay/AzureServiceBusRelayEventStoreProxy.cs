@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
+using System.Text;
 using d60.Cirqus.AzureServiceBus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using Microsoft.ServiceBus;
 
 namespace d60.Cirqus.AzureServiceBus.Relay
@@ -26,7 +28,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
         }
 
-        readonly Serializer _serializer = new Serializer();
+        readonly MetadataSerializer _metadataSerializer = new MetadataSerializer();
         readonly ChannelFactory<IHostService> _channelFactory;
 
         IHostService _currentClientChannel;
@@ -81,11 +83,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
 
             var transportMessage = client.Load(aggregateRootId, firstSeq);
             var domainEvents = transportMessage.Events
-                .Select(e => new Event
-                {
-                    Data = e.Data,
-                    Meta = new Metadata()
-                });
+                .Select(e => Event.FromMetadata(_metadataSerializer.Deserialize(Encoding.UTF8.GetString(e.Meta)), e.Data));
 
             return domainEvents;
         }
@@ -100,11 +98,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
                 var transportMessage = client.Stream(currentPosition);
                 var domainEvents = transportMessage
                     .Events
-                    .Select(e => new Event
-                    {
-                        Data = e.Data,
-                        Meta = new Metadata()
-                    })
+                    .Select(e => Event.FromMetadata(_metadataSerializer.Deserialize(Encoding.UTF8.GetString(e.Meta)), e.Data))
                     .ToList();
 
                 if (!domainEvents.Any())

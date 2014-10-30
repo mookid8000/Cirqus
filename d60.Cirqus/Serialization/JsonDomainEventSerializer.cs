@@ -75,11 +75,7 @@ namespace d60.Cirqus.Serialization
                 var jsonText = JsonConvert.SerializeObject(e, Settings);
                 var data = DefaultEncoding.GetBytes(jsonText);
 
-                var result = new Event
-                {
-                    Meta = e.Meta.Clone(),
-                    Data = data
-                };
+                var result = Event.FromDomainEvent(e, data);
 
                 result.MarkAsJson();
 

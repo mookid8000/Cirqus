@@ -203,7 +203,7 @@ namespace d60.Cirqus.Testing
 
             _eventStore.Save(Guid.NewGuid(), eventData);
 
-            var domainEventsToDispatch = eventData.Select(e => _domainEventSerializer.Deserialize(e)).ToList();
+            var domainEventsToDispatch = eventData.Select(e => e.DomainEvent).ToList();
 
             _eventDispatcher.Dispatch(_eventStore, domainEventsToDispatch);
 
