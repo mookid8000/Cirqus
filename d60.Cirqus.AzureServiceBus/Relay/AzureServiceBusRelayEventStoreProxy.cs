@@ -21,6 +21,8 @@ namespace d60.Cirqus.AzureServiceBus.Relay
     /// </summary>
     public class AzureServiceBusRelayEventStoreProxy : IEventStore, IDisposable
     {
+        static readonly Encoding DefaultEncoding = Encoding.UTF8;
+
         static Logger _logger;
 
         static AzureServiceBusRelayEventStoreProxy()
@@ -79,26 +81,24 @@ namespace d60.Cirqus.AzureServiceBus.Relay
 
         public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
         {
-            var client = GetClient();
-
-            var transportMessage = client.Load(aggregateRootId, firstSeq);
+            var transportMessage = InnerLoad(aggregateRootId, firstSeq);
+            
             var domainEvents = transportMessage.Events
-                .Select(e => Event.FromMetadata(_metadataSerializer.Deserialize(Encoding.UTF8.GetString(e.Meta)), e.Data));
+                .Select(e => Event.FromMetadata(DeserializeMetadata(e), e.Data));
 
             return domainEvents;
         }
 
         public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
         {
-            var client = GetClient();
             var currentPosition = globalSequenceNumber;
 
             while (true)
             {
-                var transportMessage = client.Stream(currentPosition);
-                var domainEvents = transportMessage
-                    .Events
-                    .Select(e => Event.FromMetadata(_metadataSerializer.Deserialize(Encoding.UTF8.GetString(e.Meta)), e.Data))
+                var transportMessage = InnerStream(currentPosition);
+
+                var domainEvents = transportMessage.Events
+                    .Select(e => Event.FromMetadata(DeserializeMetadata(e), e.Data))
                     .ToList();
 
                 if (!domainEvents.Any())
@@ -113,6 +113,45 @@ namespace d60.Cirqus.AzureServiceBus.Relay
                     currentPosition = e.GetGlobalSequenceNumber() + 1;
                 }
             }
+        }
+
+        TransportMessage InnerStream(long currentPosition)
+        {
+            try
+            {
+                return GetClient().Stream(currentPosition);
+
+            }
+            catch
+            {
+                DisposeCurrentClient();
+                throw;
+            }
+        }
+
+        TransportMessage InnerLoad(Guid aggregateRootId, long firstSeq)
+        {
+            try
+            {
+                return GetClient().Load(aggregateRootId, firstSeq);
+            }
+            catch
+            {
+                DisposeCurrentClient();
+                throw;
+            }
+        }
+
+        void DisposeCurrentClient()
+        {
+            if (_currentClientChannel == null) return;
+
+            _currentClientChannel = null;
+        }
+
+        Metadata DeserializeMetadata(TransportEvent e)
+        {
+            return _metadataSerializer.Deserialize(DefaultEncoding.GetString(e.Meta));
         }
 
         IHostService GetClient()

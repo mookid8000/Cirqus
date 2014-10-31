@@ -99,9 +99,9 @@ namespace d60.Cirqus.AzureServiceBus.Relay
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class HostService : IHostService
     {
-        readonly Serializer _serializer = new Serializer();
-        readonly IEventStore _eventStore;
+        static readonly Encoding DefaultEncoding = Encoding.UTF8;
         readonly MetadataSerializer _metadataSerializer = new MetadataSerializer();
+        readonly IEventStore _eventStore;
 
         public HostService(IEventStore eventStore)
         {
@@ -120,7 +120,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
                     .Select(e => new TransportEvent
                     {
                         Data = e.Data,
-                        Meta = Encoding.UTF8.GetBytes(_metadataSerializer.Serialize(e.Meta))
+                        Meta = SerializeMetadata(e)
                     })
                     .ToList()
             };
@@ -139,10 +139,15 @@ namespace d60.Cirqus.AzureServiceBus.Relay
                     .Select(e => new TransportEvent
                     {
                         Data = e.Data,
-                        Meta = Encoding.UTF8.GetBytes(_metadataSerializer.Serialize(e.Meta))
+                        Meta = SerializeMetadata(e)
                     })
                     .ToList()
             };
+        }
+
+        byte[] SerializeMetadata(Event e)
+        {
+            return DefaultEncoding.GetBytes(_metadataSerializer.Serialize(e.Meta));
         }
     }
 }

@@ -7,6 +7,7 @@ using d60.Cirqus.Commands;
 using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Logging;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Views;
@@ -28,7 +29,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
             var servicePath = TestAzureHelper.GetPath("test");
 
             _commandProcessor = CommandProcessor.With()
-                .Logging(l => l.None())
+                .Logging(l => l.UseConsole(minLevel: Logger.Level.Debug))
                 .EventStore(e => e.Registrar.Register<IEventStore>(c => new InMemoryEventStore(c.Get<IDomainEventSerializer>())))
                 .EventDispatcher(e => e.UseAzureServiceBusRelayEventDispatcher("cirqus", servicePath, TestAzureHelper.KeyName, TestAzureHelper.SharedAccessKey))
                 .Create();
@@ -47,6 +48,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
 
             RegisterForDisposal(eventDispatcher);
 
+            eventDispatcher.AddViewManager(_viewManager);
             eventDispatcher.Initialize(_eventStoreProxy);
         }
 
@@ -59,15 +61,15 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
         public void CanDoIt()
         {
             var id = new Guid("EB68A8A9-7660-46C1-A44A-48D3DD4A1308");
-            
+
             Process(new Command(id));
             Process(new Command(id));
             var lastResult = Process(new Command(id));
 
             Console.WriteLine("Waiting until {0} has reached {1}... ", lastResult, _viewManager);
-            
+
             _viewManager.WaitUntilProcessed(lastResult, TimeSpan.FromSeconds(10)).Wait();
-            
+
             Console.WriteLine("Done! - waiting 2 more seconds..");
 
             Thread.Sleep(2000);
@@ -86,7 +88,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
 
         public class Root : AggregateRoot, IEmit<Event>
         {
-            int _appliedEvents; 
+            int _appliedEvents;
 
             public void DoStuff()
             {
@@ -110,7 +112,8 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
 
         public class Command : Command<Root>
         {
-            public Command(Guid aggregateRootId) : base(aggregateRootId)
+            public Command(Guid aggregateRootId)
+                : base(aggregateRootId)
             {
             }
 
