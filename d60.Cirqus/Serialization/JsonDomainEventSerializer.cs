@@ -7,6 +7,7 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
 namespace d60.Cirqus.Serialization
@@ -94,7 +95,13 @@ namespace d60.Cirqus.Serialization
 
             try
             {
-                var deserializedObject = (DomainEvent)JsonConvert.DeserializeObject(text, Settings);
+                var possiblyJObject = JsonConvert.DeserializeObject(text, Settings);
+
+                if (possiblyJObject is JObject)
+                {
+                }
+
+                var deserializedObject = (DomainEvent)possiblyJObject;
                 deserializedObject.Meta = meta;
                 return deserializedObject;
             }

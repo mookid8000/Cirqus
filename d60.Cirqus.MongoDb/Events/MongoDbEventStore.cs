@@ -140,7 +140,7 @@ namespace d60.Cirqus.MongoDb.Events
                 {
                     doc.Remove(property.Name);
 
-                    doc.Add(new BsonElement(replacement + property.Name.Substring(1), property.Value));
+                    doc.InsertAt(0, new BsonElement(replacement + property.Name.Substring(1), property.Value));
                 }
 
                 if (property.Value.IsBsonDocument)
