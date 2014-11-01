@@ -30,7 +30,7 @@ namespace d60.Cirqus.Tests.Aggregates
             root.DoStuff();
 
             // assert
-            var emittedEvent = uow.EmittedEvents.Cast<Event>().Single();
+            var emittedEvent = uow.EmittedEvents.OfType<Event>().Single();
             Console.WriteLine(emittedEvent.Meta);
 
             Assert.That(emittedEvent.Meta[DomainEvent.MetadataKeys.RootVersion], Is.EqualTo(EmittedVersion));
@@ -39,16 +39,39 @@ namespace d60.Cirqus.Tests.Aggregates
             Assert.That(emittedEvent.Meta["whatever on the event"], Is.EqualTo("yo again!"));
         }
 
+        [Test]
+        public void CustomAttributeIsAppliedAsWell()
+        {
+            // arrange
+            var uow = _context.BeginUnitOfWork();
+            var root = uow.Get<Root>(Guid.NewGuid());
+
+            // act
+            root.DoStuff();
+
+            // assert
+            var emittedEvent = uow.EmittedEvents.OfType<AnotherEvent>().Single();
+            Console.WriteLine(emittedEvent.Meta);
+
+            Assert.That(emittedEvent.Meta[DomainEvent.MetadataKeys.EventVersion], Is.EqualTo("4"));
+        }
+
         [Meta(DomainEvent.MetadataKeys.RootVersion, EmittedVersion)]
         [Meta("whatever on the root", "yo!")]
-        public class Root : AggregateRoot, IEmit<Event>
+        public class Root : AggregateRoot, IEmit<Event>, IEmit<AnotherEvent>
         {
             public void DoStuff()
             {
                 Emit(new Event());
+                Emit(new AnotherEvent());
             }
 
             public void Apply(Event e)
+            {
+
+            }
+
+            public void Apply(AnotherEvent e)
             {
                 
             }
@@ -58,6 +81,20 @@ namespace d60.Cirqus.Tests.Aggregates
         [Meta("whatever on the event", "yo again!")]
         public class Event : DomainEvent<Root>
         {
+        }
+
+        [EventVersion(4)]
+        public class AnotherEvent : DomainEvent<Root>
+        {
+        }
+
+        public class EventVersionAttribute : MetaAttribute
+        {
+            public EventVersionAttribute(int version)
+                : base(DomainEvent.MetadataKeys.EventVersion, version.ToString())
+            {
+
+            }
         }
     }
 }
