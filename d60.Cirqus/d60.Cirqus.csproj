@@ -74,7 +74,9 @@
     <Compile Include="Config\Configurers\OptionsConfigurationBuilder.cs" />
     <Compile Include="Diagnostics\DiagnosticsConfigurationExtensions.cs" />
     <Compile Include="Diagnostics\IProfiler.cs" />
+    <Compile Include="Events\Event.cs" />
     <Compile Include="Events\EventReplicator.cs" />
+    <Compile Include="Extensions\EventExtensions.cs" />
     <Compile Include="ICommandProcessor.cs" />
     <Compile Include="Config\Options.cs" />
     <Compile Include="Config\Retryer.cs" />
@@ -114,6 +116,8 @@
     <Compile Include="Numbers\Time.cs" />
     <Compile Include="Numbers\TimeMachine.cs" />
     <Compile Include="Numbers\MetaAttribute.cs" />
+    <Compile Include="Serialization\IDomainEventSerializer.cs" />
+    <Compile Include="Serialization\MetadataSerializer.cs" />
     <Compile Include="Testing\CommandProcessingResultWithEvents.cs" />
     <Compile Include="Testing\EventCollection.cs" />
     <Compile Include="Testing\Internals\InMemoryEventStore.cs" />
@@ -123,7 +127,7 @@
     <Compile Include="Views\InMemoryViewEventDispatcher.cs" />
     <Compile Include="Views\ViewManagers\AbstractViewManager.cs" />
     <Compile Include="Views\ViewManagers\IViewManager.cs" />
-    <Compile Include="Serialization\DomainEventSerializer.cs" />
+    <Compile Include="Serialization\JsonDomainEventSerializer.cs" />
     <Compile Include="Serialization\GenericSerializer.cs" />
     <Compile Include="Serialization\TypeAliasBinder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

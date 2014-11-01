@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
+using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.MongoDb;
 using NUnit.Framework;
 
@@ -13,6 +15,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
     public class BasicReplication : FixtureBase
     {
         readonly Dictionary<Guid, int> _seqNos = new Dictionary<Guid, int>();
+        readonly JsonDomainEventSerializer _serializer = new JsonDomainEventSerializer();
 
         EventReplicator _replicator;
         MongoDbEventStore _source;
@@ -40,11 +43,14 @@ namespace d60.Cirqus.Tests.Events.Replicator
             _source.Save(Guid.NewGuid(), new[]
             {
                 CreateNewEvent(Guid.NewGuid(), "hej")
-            });
+            }.Select(e => _serializer.Serialize(e)));
 
             Thread.Sleep(1000);
 
-            var allEventsInDestinationStore = _destination.Stream().ToList();
+            var allEventsInDestinationStore = _destination
+                .Stream()
+                .Select(e => _serializer.Deserialize(e))
+                .ToList();
 
             Assert.That(allEventsInDestinationStore.Count, Is.EqualTo(1));
 
@@ -60,12 +66,15 @@ namespace d60.Cirqus.Tests.Events.Replicator
             var batchId1 = Guid.NewGuid();
             var batchId2 = Guid.NewGuid();
 
-            _source.Save(batchId1, new[] { CreateNewEvent(Guid.NewGuid(), "hej") });
-            _source.Save(batchId2, new[] { CreateNewEvent(Guid.NewGuid(), "hej"), CreateNewEvent(Guid.NewGuid(), "hej") });
+            _source.Save(batchId1, new[] { CreateNewEvent(Guid.NewGuid(), "hej") }.Select(e => _serializer.Serialize(e)));
+            _source.Save(batchId2, new[] { CreateNewEvent(Guid.NewGuid(), "hej"), CreateNewEvent(Guid.NewGuid(), "hej") }.Select(e => _serializer.Serialize(e)));
 
             Thread.Sleep(1000);
 
-            var myKindOfEvents = _destination.Stream().ToList().OfType<Event>().ToList();
+            var myKindOfEvents = _destination.Stream()
+                .Select(e => _serializer.Deserialize(e))
+                .OfType<Event>()
+                .ToList();
 
             Assert.That(myKindOfEvents.Count, Is.EqualTo(3));
             var expectedSourceBatchIds = new[]
@@ -87,7 +96,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 Meta =
                 {
                     {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString()},
-                    {DomainEvent.MetadataKeys.SequenceNumber, GetNextSeqNoFor(aggregateRootId)},
+                    {DomainEvent.MetadataKeys.SequenceNumber, GetNextSeqNoFor(aggregateRootId).ToString(Metadata.NumberCulture)},
                 }
             };
         }

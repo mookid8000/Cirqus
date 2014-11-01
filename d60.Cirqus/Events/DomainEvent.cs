@@ -17,11 +17,16 @@ namespace d60.Cirqus.Events
             public const string EventVersion = "evt_ver";
         }
 
-        public readonly Metadata Meta = new Metadata();
+        protected DomainEvent()
+        {
+            Meta = new Metadata();
+        }
+
+        public Metadata Meta { get; internal set; }
 
         internal void AssignSequenceNumber(int seq)
         {
-            Meta[MetadataKeys.SequenceNumber] = seq;
+            Meta[MetadataKeys.SequenceNumber] = seq.ToString(Metadata.NumberCulture);
         }
 
         public override string ToString()

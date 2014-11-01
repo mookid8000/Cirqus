@@ -158,25 +158,12 @@ namespace d60.Cirqus.Diagnostics
                 _operationProfiler = operationProfiler;
             }
 
-            public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
-            {
-                var stopwatch = Stopwatch.StartNew();
-                try
-                {
-                    _innerEventStore.Save(batchId, batch);
-                }
-                finally
-                {
-                    _operationProfiler.RecordEventBatchSave(stopwatch.Elapsed, batchId);
-                }
-            }
-
-            public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
+            public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
             {
                 return _innerEventStore.Load(aggregateRootId, firstSeq);
             }
 
-            public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+            public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
             {
                 return _innerEventStore.Stream(globalSequenceNumber);
             }
@@ -191,6 +178,19 @@ namespace d60.Cirqus.Diagnostics
                 finally
                 {
                     _operationProfiler.RecordGlobalSequenceNumberGetNext(stopwatch.Elapsed);
+                }
+            }
+
+            public void Save(Guid batchId, IEnumerable<Event> events)
+            {
+                var stopwatch = Stopwatch.StartNew();
+                try
+                {
+                    _innerEventStore.Save(batchId, events);
+                }
+                finally
+                {
+                    _operationProfiler.RecordEventBatchSave(stopwatch.Elapsed, batchId);
                 }
             }
         }

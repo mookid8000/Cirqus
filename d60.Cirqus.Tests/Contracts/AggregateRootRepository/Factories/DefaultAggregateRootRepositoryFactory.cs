@@ -2,6 +2,7 @@ using System;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.MongoDb;
 
 namespace d60.Cirqus.Tests.Contracts.AggregateRootRepository.Factories
@@ -10,11 +11,12 @@ namespace d60.Cirqus.Tests.Contracts.AggregateRootRepository.Factories
     {
         readonly MongoDbEventStore _eventStore;
         readonly DefaultAggregateRootRepository _defaultAggregateRootRepository;
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
 
         public DefaultAggregateRootRepositoryFactory()
         {
             _eventStore = new MongoDbEventStore(MongoHelper.InitializeTestDatabase(), "events");
-            _defaultAggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
+            _defaultAggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
         }
 
         public IAggregateRootRepository GetRepo()
@@ -26,7 +28,7 @@ namespace d60.Cirqus.Tests.Contracts.AggregateRootRepository.Factories
             where TAggregateRoot : AggregateRoot, new()
             where TDomainEvent : DomainEvent<TAggregateRoot>
         {
-            _eventStore.Save(Guid.NewGuid(), new[] { e });
+            _eventStore.Save(Guid.NewGuid(), new[] { _domainEventSerializer.Serialize(e) });
         }
     }
 }

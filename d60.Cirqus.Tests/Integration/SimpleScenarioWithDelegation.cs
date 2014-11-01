@@ -5,6 +5,7 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Extensions;
 using d60.Cirqus.Tests.Stubs;
@@ -30,16 +31,17 @@ namespace d60.Cirqus.Tests.Integration
         CommandProcessor _cirqus;
         DefaultAggregateRootRepository _aggregateRootRepository;
         InMemoryEventStore _eventStore;
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
 
         protected override void DoSetUp()
         {
-            _eventStore = new InMemoryEventStore();
+            _eventStore = new InMemoryEventStore(_domainEventSerializer);
 
-            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
+            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _cirqus = new CommandProcessor(_eventStore, _aggregateRootRepository, viewManager);
+            _cirqus = new CommandProcessor(_eventStore, _aggregateRootRepository, viewManager, _domainEventSerializer);
 
             RegisterForDisposal(_cirqus);
         }

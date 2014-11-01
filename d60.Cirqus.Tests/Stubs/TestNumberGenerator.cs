@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Numbers;
 
 namespace d60.Cirqus.Tests.Stubs
 {
@@ -19,8 +20,8 @@ namespace d60.Cirqus.Tests.Stubs
                 _aggregateRootSequenceNumbers[aggregateRootId] = 0;
             }
 
-            domainEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber] = _aggregateRootSequenceNumbers[aggregateRootId]++;
-            domainEvent.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = _globalSequenceNumber++;
+            domainEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber] = (_aggregateRootSequenceNumbers[aggregateRootId]++).ToString(Metadata.NumberCulture);
+            domainEvent.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (_globalSequenceNumber++).ToString(Metadata.NumberCulture);
         }
     }
 

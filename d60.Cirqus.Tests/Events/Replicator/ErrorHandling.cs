@@ -5,6 +5,8 @@ using System.Threading;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.MongoDb.Events;
+using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
@@ -16,10 +18,11 @@ namespace d60.Cirqus.Tests.Events.Replicator
     {
         readonly Dictionary<Guid, int> _seqNos = new Dictionary<Guid, int>();
 
-        Cirqus.Events.EventReplicator _replicator;
+        EventReplicator _replicator;
         MongoDbEventStore _source;
         MongoDbEventStore _destination;
         ListLoggerFactory _listLoggerFactory;
+        readonly JsonDomainEventSerializer _serializer = new JsonDomainEventSerializer();
 
         protected override void DoSetUp()
         {
@@ -59,7 +62,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 Enumerable.Range(0, numberOfEvents)
                     .Select(i => CreateNewEvent(Guid.NewGuid(), "event no " + i))
                     .ToList()
-                    .ForEach(e => _source.Save(Guid.NewGuid(), new[] {e}));
+                    .ForEach(e => _source.Save(Guid.NewGuid(), new[] {e}.Select(e2 => _serializer.Serialize(e2))));
 
                 while (_destination.GetNextGlobalSequenceNumber() < numberOfEvents)
                 {
@@ -70,7 +73,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
 
                 var myKindOfEvents = _destination
                     .Stream()
-                    .ToList()
+                    .Select(e => _serializer.Deserialize(e))
                     .OfType<Event>()
                     .ToList();
 
@@ -94,7 +97,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 Meta =
                 {
                     {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString()},
-                    {DomainEvent.MetadataKeys.SequenceNumber, GetNextSeqNoFor(aggregateRootId)},
+                    {DomainEvent.MetadataKeys.SequenceNumber, GetNextSeqNoFor(aggregateRootId).ToString(Metadata.NumberCulture)},
                 }
             };
         }
@@ -125,21 +128,14 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 _errorProbability = errorProbability;
             }
 
-            public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
-            {
-                PossiblyThrowError();
-
-                _innerEventStore.Save(batchId, batch);
-            }
-
-            public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
+            public IEnumerable<Cirqus.Events.Event> Load(Guid aggregateRootId, long firstSeq = 0)
             {
                 PossiblyThrowError();
 
                 return _innerEventStore.Load(aggregateRootId, firstSeq);
             }
 
-            public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+            public IEnumerable<Cirqus.Events.Event> Stream(long globalSequenceNumber = 0)
             {
                 PossiblyThrowError();
 
@@ -151,6 +147,13 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 PossiblyThrowError();
 
                 return _innerEventStore.GetNextGlobalSequenceNumber();
+            }
+
+            public void Save(Guid batchId, IEnumerable<Cirqus.Events.Event> events)
+            {
+                PossiblyThrowError();
+
+                _innerEventStore.Save(batchId, events);
             }
 
             void PossiblyThrowError()

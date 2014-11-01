@@ -8,6 +8,7 @@ using d60.Cirqus.Config;
 using d60.Cirqus.Diagnostics;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Views.ViewManagers;
 using NUnit.Framework;
@@ -25,7 +26,7 @@ namespace d60.Cirqus.Tests.Diagnostics
 
             var commandProcessor = CommandProcessor.With()
                 .Logging(l => l.UseConsole(minLevel:Logger.Level.Warn))
-                .EventStore(e => e.Registrar.Register<IEventStore>(c => new SlowWrapper(new InMemoryEventStore())))
+                .EventStore(e => e.Registrar.Register<IEventStore>(c => new SlowWrapper(new InMemoryEventStore(c.Get<IDomainEventSerializer>()))))
                 .EventDispatcher(e => e.UseViewManagerEventDispatcher(waitHandle))
                 .Options(o => o.AddProfiler(profilero))
                 .Create();
@@ -164,12 +165,7 @@ namespace d60.Cirqus.Tests.Diagnostics
             _innerEventStore = innerEventStore;
         }
 
-        public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
-        {
-            _innerEventStore.Save(batchId, batch);
-        }
-
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             foreach (var e in _innerEventStore.Load(aggregateRootId, firstSeq))
             {
@@ -179,7 +175,7 @@ namespace d60.Cirqus.Tests.Diagnostics
             }
         }
 
-        public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
         {
             return _innerEventStore.Stream(globalSequenceNumber);
         }
@@ -187,6 +183,11 @@ namespace d60.Cirqus.Tests.Diagnostics
         public long GetNextGlobalSequenceNumber()
         {
             return _innerEventStore.GetNextGlobalSequenceNumber();
+        }
+
+        public void Save(Guid batchId, IEnumerable<Event> events)
+        {
+            _innerEventStore.Save(batchId, events);
         }
     }
 }

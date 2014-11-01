@@ -11,17 +11,17 @@ namespace d60.Cirqus.Events
         /// <summary>
         /// Saves the specified batch of events as an idempotent and atomic operation
         /// </summary>
-        void Save(Guid batchId, IEnumerable<DomainEvent> batch);
+        void Save(Guid batchId, IEnumerable<Event> batch);
 
         /// <summary>
         /// Loads events for the specified aggregate root
         /// </summary>
-        IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0);
+        IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0);
 
         /// <summary>
         /// Streams all events with a global sequence number that is greater than or equal to the one given
         /// </summary>
-        IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0);
+        IEnumerable<Event> Stream(long globalSequenceNumber = 0);
 
         /// <summary>
         /// Gets the next available global sequence number. This will be the number used on the first event in the next saved event batch.

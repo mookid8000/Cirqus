@@ -3,6 +3,7 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.Extensions;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Stubs;
@@ -29,17 +30,18 @@ this time by using actual MongoDB underneath
     {
         DefaultAggregateRootRepository _aggregateRootRepository;
         CommandProcessor _cirqus;
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
 
         protected override void DoSetUp()
         {
             var mongoDatabase = MongoHelper.InitializeTestDatabase();
             var eventStore = new MongoDbEventStore(mongoDatabase, "events", automaticallyCreateIndexes: true);
 
-            _aggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
+            _aggregateRootRepository = new DefaultAggregateRootRepository(eventStore, _domainEventSerializer);
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager);
+            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager, _domainEventSerializer);
 
             RegisterForDisposal(_cirqus);
         }

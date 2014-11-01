@@ -3,6 +3,7 @@ using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Views;
 
 namespace d60.Cirqus.Testing
@@ -12,15 +13,17 @@ namespace d60.Cirqus.Testing
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventStore _eventStore;
         readonly IEventDispatcher _eventDispatcher;
+        readonly JsonDomainEventSerializer _domainEventSerializer;
         readonly RealUnitOfWork _realUnitOfWork;
 
         bool _wasCommitted;
 
-        internal TestUnitOfWork(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IEventDispatcher eventDispatcher)
+        internal TestUnitOfWork(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IEventDispatcher eventDispatcher, JsonDomainEventSerializer domainEventSerializer)
         {
             _aggregateRootRepository = aggregateRootRepository;
             _eventStore = eventStore;
             _eventDispatcher = eventDispatcher;
+            _domainEventSerializer = domainEventSerializer;
             _realUnitOfWork = new RealUnitOfWork(aggregateRootRepository);
         }
 
@@ -69,11 +72,15 @@ namespace d60.Cirqus.Testing
 
             if (!domainEvents.Any()) return;
 
-            _eventStore.Save(Guid.NewGuid(), domainEvents);
+            var eventData = domainEvents.Select(e => _domainEventSerializer.Serialize(e)).ToList();
+
+            _eventStore.Save(Guid.NewGuid(), eventData);
 
             _wasCommitted = true;
 
-            _eventDispatcher.Dispatch(_eventStore, domainEvents);
+            var domainEventsToDispatch = eventData.Select(e => e.DomainEvent);
+
+            _eventDispatcher.Dispatch(_eventStore, domainEventsToDispatch);
 
             Committed();
         }

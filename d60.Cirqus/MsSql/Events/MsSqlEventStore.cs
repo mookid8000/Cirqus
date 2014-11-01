@@ -5,7 +5,8 @@ using System.Data.SqlClient;
 using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
-using d60.Cirqus.Serialization;
+using d60.Cirqus.Numbers;
+using Newtonsoft.Json;
 
 namespace d60.Cirqus.MsSql.Events
 {
@@ -14,7 +15,6 @@ namespace d60.Cirqus.MsSql.Events
         readonly string _tableName;
         readonly Func<SqlConnection> _connectionProvider;
         readonly Action<SqlConnection> _cleanupAction;
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
 
         public MsSqlEventStore(string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true)
         {
@@ -37,11 +37,9 @@ namespace d60.Cirqus.MsSql.Events
             }
         }
 
-        public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
+        public void Save(Guid batchId, IEnumerable<Event> events)
         {
-            var eventList = batch.ToList();
-
-            eventList.ForEach(e => _domainEventSerializer.EnsureSerializability(e));
+            var eventList = events.ToList();
 
             try
             {
@@ -53,13 +51,13 @@ namespace d60.Cirqus.MsSql.Events
 
                         foreach (var e in eventList)
                         {
-                            e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = globalSequenceNumber++;
-                            e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
+                            e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (globalSequenceNumber++).ToString(Metadata.NumberCulture);
+                            e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
                         }
 
                         EventValidation.ValidateBatchIntegrity(batchId, eventList);
 
-                        foreach (var e in eventList)
+                        foreach (var @event in eventList)
                         {
                             using (var cmd = conn.CreateCommand())
                             {
@@ -71,21 +69,24 @@ INSERT INTO [{0}] (
     [aggId],
     [seqNo],
     [globSeqNo],
+    [meta],
     [data]
 ) VALUES (
     @batchId,
     @aggId,
     @seqNo,
     @globSeqNo,
+    @meta,
     @data
 )
 
 ", _tableName);
                                 cmd.Parameters.Add("batchId", SqlDbType.UniqueIdentifier).Value = batchId;
-                                cmd.Parameters.Add("aggId", SqlDbType.UniqueIdentifier).Value = new Guid(e.Meta[DomainEvent.MetadataKeys.AggregateRootId].ToString());
-                                cmd.Parameters.Add("seqNo", SqlDbType.BigInt).Value = e.Meta[DomainEvent.MetadataKeys.SequenceNumber];
-                                cmd.Parameters.Add("globSeqNo", SqlDbType.BigInt).Value = e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber];
-                                cmd.Parameters.Add("data", SqlDbType.NVarChar).Value = _domainEventSerializer.Serialize(e);
+                                cmd.Parameters.Add("aggId", SqlDbType.UniqueIdentifier).Value = new Guid(@event.Meta[DomainEvent.MetadataKeys.AggregateRootId].ToString());
+                                cmd.Parameters.Add("seqNo", SqlDbType.BigInt).Value = @event.Meta[DomainEvent.MetadataKeys.SequenceNumber];
+                                cmd.Parameters.Add("globSeqNo", SqlDbType.BigInt).Value = @event.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber];
+                                cmd.Parameters.Add("meta", SqlDbType.NVarChar).Value = JsonConvert.SerializeObject(@event.Meta);
+                                cmd.Parameters.Add("data", SqlDbType.VarBinary).Value = @event.Data;
 
                                 cmd.ExecuteNonQuery();
                             }
@@ -106,37 +107,7 @@ INSERT INTO [{0}] (
             }
         }
 
-        public long GetNextGlobalSequenceNumber()
-        {
-            var globalSequenceNumber = 0L;
-
-            WithConnection(conn =>
-            {
-                using (var tx = conn.BeginTransaction())
-                {
-                    globalSequenceNumber = GetNextGlobalSequenceNumber(conn, tx);
-                }
-            });
-
-            return globalSequenceNumber;
-        }
-
-        long GetNextGlobalSequenceNumber(SqlConnection conn, SqlTransaction tx)
-        {
-            using (var cmd = conn.CreateCommand())
-            {
-                cmd.Transaction = tx;
-                cmd.CommandText = string.Format("SELECT MAX(globSeqNo) FROM [{0}]", _tableName);
-
-                var result = cmd.ExecuteScalar();
-
-                return result != DBNull.Value
-                    ? (long)result + 1
-                    : 0;
-            }
-        }
-
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             SqlConnection conn = null;
 
@@ -151,7 +122,7 @@ INSERT INTO [{0}] (
                         cmd.Transaction = tx;
                         cmd.CommandText = string.Format(@"
 
-SELECT [data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo
+SELECT [meta],[data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo
 
 ", _tableName);
                         cmd.Parameters.Add("aggId", SqlDbType.UniqueIdentifier).Value = aggregateRootId;
@@ -161,9 +132,7 @@ SELECT [data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo
                         {
                             while (reader.Read())
                             {
-                                var data = (string) reader["data"];
-
-                                yield return _domainEventSerializer.Deserialize(data);
+                                yield return ReadEvent(reader);
                             }
                         }
                     }
@@ -180,7 +149,7 @@ SELECT [data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo
             }
         }
 
-        public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
         {
             SqlConnection connection = null;
 
@@ -195,7 +164,7 @@ SELECT [data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo
                         cmd.Transaction = tx;
                         cmd.CommandText = string.Format(@"
 
-SELECT [data] FROM [{0}] WHERE [globSeqNo] >= @cutoff ORDER BY [globSeqNo]
+SELECT [meta],[data] FROM [{0}] WHERE [globSeqNo] >= @cutoff ORDER BY [globSeqNo]
 
 ", _tableName);
 
@@ -205,9 +174,7 @@ SELECT [data] FROM [{0}] WHERE [globSeqNo] >= @cutoff ORDER BY [globSeqNo]
                         {
                             while (reader.Read())
                             {
-                                var data = (string)reader["data"];
-
-                                yield return _domainEventSerializer.Deserialize(data);
+                                yield return ReadEvent(reader);
                             }
                         }
                     }
@@ -219,6 +186,44 @@ SELECT [data] FROM [{0}] WHERE [globSeqNo] >= @cutoff ORDER BY [globSeqNo]
                 {
                     _cleanupAction(connection);
                 }
+            }
+        }
+
+        public long GetNextGlobalSequenceNumber()
+        {
+            var globalSequenceNumber = 0L;
+
+            WithConnection(conn =>
+            {
+                using (var tx = conn.BeginTransaction())
+                {
+                    globalSequenceNumber = GetNextGlobalSequenceNumber(conn, tx);
+                }
+            });
+
+            return globalSequenceNumber;
+        }
+
+        static Event ReadEvent(IDataRecord reader)
+        {
+            var meta = (string) reader["meta"];
+            var data = (byte[]) reader["data"];
+
+            return Event.FromMetadata(JsonConvert.DeserializeObject<Metadata>(meta), data);
+        }
+
+        long GetNextGlobalSequenceNumber(SqlConnection conn, SqlTransaction tx)
+        {
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.Transaction = tx;
+                cmd.CommandText = string.Format("SELECT MAX(globSeqNo) FROM [{0}]", _tableName);
+
+                var result = cmd.ExecuteScalar();
+
+                return result != DBNull.Value
+                    ? (long)result + 1
+                    : 0;
             }
         }
 
@@ -265,7 +270,8 @@ BEGIN
 	    [aggId] [uniqueidentifier] NOT NULL,
 	    [seqNo] [bigint] NOT NULL,
 	    [globSeqNo] [bigint] NOT NULL,
-	    [data] [nvarchar](max) NOT NULL,
+	    [meta] [nvarchar](max) NOT NULL,
+	    [data] [varbinary](max) NOT NULL,
 
         CONSTRAINT [PK_{0}] PRIMARY KEY CLUSTERED 
         (

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Ntfs.Events;
+using d60.Cirqus.Numbers;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Events.Ntfs
@@ -25,27 +27,22 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(rootId, new[]
             {
-                new SomeEvent
+                Event.FromMetadata(new Metadata
                 {
-                    Meta =
-                    {
-                        {DomainEvent.MetadataKeys.SequenceNumber, 0},
-                        {DomainEvent.MetadataKeys.AggregateRootId, rootId}
-                    }
-                }
+                    {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
+                    {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
+
+                }, new byte[0])
             });
 
             // save an event to a file, without committing
             _eventStore.DataStore.Write(
-                new SomeEvent
+                Event.FromMetadata(new Metadata
                 {
-                    Meta =
-                    {
-                        {DomainEvent.MetadataKeys.SequenceNumber, 1},
-                        {DomainEvent.MetadataKeys.AggregateRootId, rootId},
-                        {DomainEvent.MetadataKeys.GlobalSequenceNumber, 1}
-                    }
-                });
+                    {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
+                    {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()},
+                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, 1.ToString(Metadata.NumberCulture)}
+                }, new byte[0]));
 
 
             var events = _eventStore.Load(rootId);
@@ -60,14 +57,11 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(rootId, new[]
             {
-                new SomeEvent
+                Event.FromMetadata(new Metadata
                 {
-                    Meta =
-                    {
-                        {DomainEvent.MetadataKeys.SequenceNumber, 0},
-                        {DomainEvent.MetadataKeys.AggregateRootId, rootId}
-                    }
-                }
+                    {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
+                    {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
+                }, new byte[0])
             });
 
             // save an event to sequence-index, without committing
@@ -93,14 +87,11 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(rootId, new[]
             {
-                new SomeEvent
+                Event.FromMetadata(new Metadata
                 {
-                    Meta =
-                    {
-                        {DomainEvent.MetadataKeys.SequenceNumber, 0},
-                        {DomainEvent.MetadataKeys.AggregateRootId, rootId}
-                    }
-                }
+                    {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
+                    {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
+                }, new byte[0])
             });
 
             // make one that fails right after index write
@@ -117,14 +108,11 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(rootId, new[]
             {
-                new SomeEvent
+                Event.FromMetadata(new Metadata
                 {
-                    Meta =
-                    {
-                        {DomainEvent.MetadataKeys.SequenceNumber, 1},
-                        {DomainEvent.MetadataKeys.AggregateRootId, rootId}
-                    }
-                }
+                    {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
+                    {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
+                }, new byte[0])
             });
 
             var stream = _eventStore.Stream().ToList();
@@ -143,27 +131,20 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(rootId, new[]
             {
-                new SomeEvent
+                Event.FromMetadata(new Metadata
                 {
-                    Meta =
-                    {
-                        {DomainEvent.MetadataKeys.SequenceNumber, 0},
-                        {DomainEvent.MetadataKeys.AggregateRootId, rootId}
-                    }
-                }
+                    {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
+                    {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
+                }, new byte[0])
             });
 
             // make one that fails right after index write
-            var domainEvent = new SomeEvent
+            var domainEvent = Event.FromMetadata(new Metadata
             {
-                Title = "The bad one",
-                Meta =
-                {
-                    {DomainEvent.MetadataKeys.SequenceNumber, 1},
-                    {DomainEvent.MetadataKeys.AggregateRootId, rootId},
-                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, 1}
-                }
-            };
+                {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
+                {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()},
+                {DomainEvent.MetadataKeys.GlobalSequenceNumber, 1.ToString(Metadata.NumberCulture)}
+            }, Encoding.UTF8.GetBytes("The bad one"));
 
             _eventStore.GlobalSequenceIndex.Write(new[] { domainEvent });
             _eventStore.DataStore.Write(domainEvent);
@@ -171,15 +152,11 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(rootId, new[]
             {
-                new SomeEvent
+                Event.FromMetadata(new Metadata
                 {
-                    Title = "The good one",
-                    Meta =
-                    {
-                        {DomainEvent.MetadataKeys.SequenceNumber, 1},
-                        {DomainEvent.MetadataKeys.AggregateRootId, rootId}
-                    }
-                }
+                    {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
+                    {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
+                }, Encoding.UTF8.GetBytes("The good one"))
             });
 
             var stream = _eventStore.Stream().ToList();
@@ -188,13 +165,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
 
             var load = _eventStore.Load(rootId).ToList();
             Assert.AreEqual(2, load.Count());
-            Assert.AreEqual("The good one", ((SomeEvent)load.Last()).Title);
-        }
-
-
-        class SomeEvent : DomainEvent
-        {
-            public string Title { get; set; }
+            Assert.AreEqual("The good one", Encoding.UTF8.GetString(load.Last().Data));
         }
     }
 }

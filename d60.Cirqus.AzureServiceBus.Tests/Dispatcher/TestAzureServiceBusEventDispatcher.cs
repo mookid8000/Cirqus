@@ -5,6 +5,8 @@ using System.Threading;
 using d60.Cirqus.AzureServiceBus.Dispatcher;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Views;
 using NUnit.Framework;
@@ -25,7 +27,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Dispatcher
             _stuffThatHappened = new List<string>();
             _resetEvent = new AutoResetEvent(false);
 
-            _eventStore = new InMemoryEventStore();
+            _eventStore = new InMemoryEventStore(new JsonDomainEventSerializer());
 
             var topicName = TestAzureHelper.GetTopicName("cirqus");
             var subscriptionName = TestAzureHelper.GetSubscriptionName("testsubscriber");
@@ -69,7 +71,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Dispatcher
             {
                 Meta =
                 {
-                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, globalSeqNo}
+                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, globalSeqNo.ToString(Metadata.NumberCulture)}
                 }
             };
         }

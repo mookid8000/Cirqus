@@ -4,6 +4,7 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
@@ -14,12 +15,15 @@ namespace d60.Cirqus.Tests.Bugs
     [TestFixture, Description("Verify bug in being able to correctly load active aggregate roots from the current unit of work")]
     public class VerifyThatDuplicateSequenceNumbersAreNotAssigned : FixtureBase
     {
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
+
         [Test, Category(TestCategories.MongoDb)]
         public void NoProblemoWithRealSetup()
         {
             // arrange
             var eventStore = new MongoDbEventStore(MongoHelper.InitializeTestDatabase(), "events");
-            var commandProcessor = new CommandProcessor(eventStore, new DefaultAggregateRootRepository(eventStore), new ConsoleOutEventDispatcher());
+            var commandProcessor = new CommandProcessor(eventStore, new DefaultAggregateRootRepository(eventStore, _domainEventSerializer), new ConsoleOutEventDispatcher(),
+                _domainEventSerializer);
 
             RegisterForDisposal(commandProcessor);
 

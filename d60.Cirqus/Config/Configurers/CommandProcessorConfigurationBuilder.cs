@@ -3,6 +3,7 @@ using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Views;
 
 namespace d60.Cirqus.Config.Configurers
@@ -61,8 +62,9 @@ namespace d60.Cirqus.Config.Configurers
             var eventStore = resolutionContext.Get<IEventStore>();
             var aggregateRootRepository = resolutionContext.Get<IAggregateRootRepository>();
             var eventDispatcher = resolutionContext.Get<IEventDispatcher>();
+            var serializer = resolutionContext.Get<IDomainEventSerializer>();
 
-            var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher);
+            var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher, serializer);
 
             commandProcessor.Disposed += () =>
             {
@@ -89,7 +91,12 @@ namespace d60.Cirqus.Config.Configurers
         {
             if (!_container.HasService<IAggregateRootRepository>(checkForPrimary: true))
             {
-                _container.Register<IAggregateRootRepository>(context => new DefaultAggregateRootRepository(context.Get<IEventStore>()));
+                _container.Register<IAggregateRootRepository>(context => new DefaultAggregateRootRepository(context.Get<IEventStore>(), context.Get<IDomainEventSerializer>()));
+            }
+
+            if (!_container.HasService<IDomainEventSerializer>(checkForPrimary: true))
+            {
+                _container.Register<IDomainEventSerializer>(context => new JsonDomainEventSerializer());
             }
         }
     }

@@ -4,6 +4,7 @@ using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Serialization;
 
 namespace d60.Cirqus.Snapshotting
 {
@@ -17,12 +18,14 @@ namespace d60.Cirqus.Snapshotting
         readonly IAggregateRootRepository _innerAggregateRootRepository;
         readonly ISnapshotCache _snapshotCache;
         readonly IEventStore _eventStore;
+        readonly IDomainEventSerializer _domainEventSerializer;
 
-        public CachingAggregateRootRepositoryDecorator(IAggregateRootRepository innerAggregateRootRepository, ISnapshotCache snapshotCache, IEventStore eventStore)
+        public CachingAggregateRootRepositoryDecorator(IAggregateRootRepository innerAggregateRootRepository, ISnapshotCache snapshotCache, IEventStore eventStore, IDomainEventSerializer domainEventSerializer)
         {
             _innerAggregateRootRepository = innerAggregateRootRepository;
             _snapshotCache = snapshotCache;
             _eventStore = eventStore;
+            _domainEventSerializer = domainEventSerializer;
         }
 
         public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
@@ -57,7 +60,8 @@ namespace d60.Cirqus.Snapshotting
 
             var eventsToApply = _eventStore
                 .Load(cloneInfo.AggregateRootId, cloneInfo.LastSeqNo + 1)
-                .Where(e => e.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber);
+                .Where(e => e.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber)
+                .Select(e => _domainEventSerializer.Deserialize(e));
 
             cloneInfo.Apply(eventsToApply, unitOfWork);
 

@@ -9,6 +9,7 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Views;
 
 namespace d60.Cirqus
@@ -38,8 +39,9 @@ namespace d60.Cirqus
         readonly IEventStore _eventStore;
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventDispatcher _eventDispatcher;
+        readonly IDomainEventSerializer _domainEventSerializer;
 
-        public CommandProcessor(IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, IEventDispatcher eventDispatcher)
+        public CommandProcessor(IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, IEventDispatcher eventDispatcher, IDomainEventSerializer domainEventSerializer)
         {
             if (eventStore == null) throw new ArgumentNullException("eventStore");
             if (aggregateRootRepository == null) throw new ArgumentNullException("aggregateRootRepository");
@@ -48,6 +50,7 @@ namespace d60.Cirqus
             _eventStore = eventStore;
             _aggregateRootRepository = aggregateRootRepository;
             _eventDispatcher = eventDispatcher;
+            _domainEventSerializer = domainEventSerializer;
         }
 
         /// <summary>
@@ -91,9 +94,12 @@ namespace d60.Cirqus
 
                     // first: save the events
                     _logger.Debug("Saving batch {0} with {1} events", batchId, eventsFromThisUnitOfWork.Count);
-                    _eventStore.Save(batchId, eventsFromThisUnitOfWork);
+                    
+                    var eventData = eventsFromThisUnitOfWork.Select(e => _domainEventSerializer.Serialize(e)).ToList();
 
-                    emittedDomainEvents.AddRange(eventsFromThisUnitOfWork);
+                    _eventStore.Save(batchId, eventData);
+
+                    emittedDomainEvents.AddRange(eventData.Select(d => d.DomainEvent));
                 }, maxRetries: Options.MaxRetries);
             }
             catch (Exception exception)
@@ -126,8 +132,8 @@ namespace d60.Cirqus
                 throw new ApplicationException(message, exception);
             }
 
-            return emittedDomainEvents.Any() 
-                ? CommandProcessingResult.WithNewPosition(emittedDomainEvents.Max(e => e.GetGlobalSequenceNumber())) 
+            return emittedDomainEvents.Any()
+                ? CommandProcessingResult.WithNewPosition(emittedDomainEvents.Max(e => e.GetGlobalSequenceNumber()))
                 : CommandProcessingResult.NoEvents();
         }
 

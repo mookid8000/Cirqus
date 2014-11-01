@@ -9,6 +9,7 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.MongoDb.Events;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Snapshotting;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Views;
@@ -89,16 +90,18 @@ caching in use: {3}",
                 InnerEventStore = eventStore,
             };
 
-            IAggregateRootRepository aggregateRootRepository = new DefaultAggregateRootRepository(_timeTaker);
+            var serializer = new JsonDomainEventSerializer();
+
+            IAggregateRootRepository aggregateRootRepository = new DefaultAggregateRootRepository(_timeTaker, serializer);
 
             if (useCaching)
             {
-                aggregateRootRepository = new CachingAggregateRootRepositoryDecorator(aggregateRootRepository, new InMemorySnapshotCache{ApproximateMaxNumberOfCacheEntries = 100}, eventStore);
+                aggregateRootRepository = new CachingAggregateRootRepositoryDecorator(aggregateRootRepository, new InMemorySnapshotCache{ApproximateMaxNumberOfCacheEntries = 100}, eventStore, serializer);
             }
 
             _timeTaker.InnerAggregateRootRepository = aggregateRootRepository;
 
-            var commandProcessor = new CommandProcessor(_timeTaker, _timeTaker, new ViewManagerEventDispatcher(_timeTaker, eventStore));
+            var commandProcessor = new CommandProcessor(_timeTaker, _timeTaker, new ViewManagerEventDispatcher(_timeTaker, eventStore, serializer), serializer);
 
             RegisterForDisposal(commandProcessor);
 
@@ -147,16 +150,7 @@ caching in use: {3}",
                 return InnerAggregateRootRepository.Exists<TAggregate>(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
             }
 
-            public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
-            {
-                var stopwatch = Stopwatch.StartNew();
-
-                InnerEventStore.Save(batchId, batch);
-
-                _timeSpentSavingEvents += stopwatch.Elapsed;
-            }
-
-            public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
+            public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
             {
                 var stopwatch = Stopwatch.StartNew();
 
@@ -167,7 +161,7 @@ caching in use: {3}",
                 return domainEvents;
             }
 
-            public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+            public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
             {
                 return InnerEventStore.Stream(globalSequenceNumber);
             }
@@ -175,6 +169,15 @@ caching in use: {3}",
             public long GetNextGlobalSequenceNumber()
             {
                 return InnerEventStore.GetNextGlobalSequenceNumber();
+            }
+
+            public void Save(Guid batchId, IEnumerable<Event> events)
+            {
+                var stopwatch = Stopwatch.StartNew();
+
+                InnerEventStore.Save(batchId, events);
+
+                _timeSpentSavingEvents += stopwatch.Elapsed;
             }
         }
 

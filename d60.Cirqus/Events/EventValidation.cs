@@ -7,7 +7,7 @@ namespace d60.Cirqus.Events
 {
     public class EventValidation
     {
-        public static void ValidateBatchIntegrity(Guid batchId, List<DomainEvent> events)
+        public static void ValidateBatchIntegrity(Guid batchId, List<Event> events)
         {
             EnsureAllEventsHaveSequenceNumbers(events);
 
@@ -16,7 +16,7 @@ namespace d60.Cirqus.Events
             EnsureSeq(batchId, events);
         }
 
-        static void EnsureAllEventsHaveAggregateRootId(List<DomainEvent> events)
+        static void EnsureAllEventsHaveAggregateRootId(List<Event> events)
         {
             if (events.Any(e => !e.Meta.ContainsKey(DomainEvent.MetadataKeys.AggregateRootId)))
             {
@@ -24,7 +24,7 @@ namespace d60.Cirqus.Events
             }
         }
 
-        static void EnsureAllEventsHaveSequenceNumbers(List<DomainEvent> events)
+        static void EnsureAllEventsHaveSequenceNumbers(List<Event> events)
         {
             if (events.Any(e => !e.Meta.ContainsKey(DomainEvent.MetadataKeys.SequenceNumber)))
             {
@@ -37,7 +37,7 @@ namespace d60.Cirqus.Events
             }
         }
 
-        static void EnsureSeq(Guid batchId, List<DomainEvent> events)
+        static void EnsureSeq(Guid batchId, List<Event> events)
         {
             var aggregateRootSeqs = events
                 .GroupBy(e => e.GetAggregateRootId())

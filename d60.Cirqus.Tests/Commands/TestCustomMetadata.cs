@@ -2,8 +2,8 @@
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
-using d60.Cirqus.Config;
 using d60.Cirqus.Events;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
@@ -16,16 +16,18 @@ namespace d60.Cirqus.Tests.Commands
         CommandProcessor _cirqus;
         DefaultAggregateRootRepository _aggregateRootRepository;
         InMemoryEventStore _eventStore;
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
 
         protected override void DoSetUp()
         {
-            _eventStore = new InMemoryEventStore();
+            _eventStore = new InMemoryEventStore(_domainEventSerializer);
 
-            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
+            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _cirqus = RegisterForDisposal(new CommandProcessor(_eventStore, _aggregateRootRepository, viewManager));
+            _cirqus = RegisterForDisposal(new CommandProcessor(_eventStore, _aggregateRootRepository, viewManager,
+                _domainEventSerializer));
         }
 
         [Test]
@@ -52,7 +54,7 @@ namespace d60.Cirqus.Tests.Commands
                 Meta = {{tenantId, "2"}}
             });
 
-            var allEvents = Enumerable.ToList<DomainEvent>(_eventStore);
+            var allEvents = _eventStore.ToList();
 
             Assert.That(allEvents.Count, Is.EqualTo(3));
             Assert.That(allEvents.Count(e => int.Parse(e.Meta[tenantId].ToString()) == 1), Is.EqualTo(1));

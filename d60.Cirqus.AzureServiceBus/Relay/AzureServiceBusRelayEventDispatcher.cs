@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
+using System.Text;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Views;
 using Microsoft.ServiceBus;
 
@@ -97,7 +99,8 @@ namespace d60.Cirqus.AzureServiceBus.Relay
     [ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
     public class HostService : IHostService
     {
-        readonly Serializer _serializer = new Serializer();
+        static readonly Encoding DefaultEncoding = Encoding.UTF8;
+        readonly MetadataSerializer _metadataSerializer = new MetadataSerializer();
         readonly IEventStore _eventStore;
 
         public HostService(IEventStore eventStore)
@@ -113,7 +116,13 @@ namespace d60.Cirqus.AzureServiceBus.Relay
 
             return new TransportMessage
             {
-                Events = _serializer.Serialize(domainEvents)
+                Events = domainEvents
+                    .Select(e => new TransportEvent
+                    {
+                        Data = e.Data,
+                        Meta = SerializeMetadata(e)
+                    })
+                    .ToList()
             };
         }
 
@@ -126,8 +135,19 @@ namespace d60.Cirqus.AzureServiceBus.Relay
 
             return new TransportMessage
             {
-                Events = _serializer.Serialize(domainEvents)
+                Events = domainEvents
+                    .Select(e => new TransportEvent
+                    {
+                        Data = e.Data,
+                        Meta = SerializeMetadata(e)
+                    })
+                    .ToList()
             };
+        }
+
+        byte[] SerializeMetadata(Event e)
+        {
+            return DefaultEncoding.GetBytes(_metadataSerializer.Serialize(e.Meta));
         }
     }
 }

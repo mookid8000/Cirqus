@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
+using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using NUnit.Framework;
 
@@ -11,11 +14,12 @@ namespace d60.Cirqus.Tests.Aggregates
     {
         InMemoryEventStore _eventStore;
         DefaultAggregateRootRepository _repository;
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
 
         protected override void DoSetUp()
         {
-            _eventStore = new InMemoryEventStore();
-            _repository = new DefaultAggregateRootRepository(_eventStore);
+            _eventStore = new InMemoryEventStore(_domainEventSerializer);
+            _repository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
         }
 
         [TestCase(0, true, false)]
@@ -46,12 +50,13 @@ namespace d60.Cirqus.Tests.Aggregates
                 {
                     Meta =
                     {
-                        {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId},
-                        {DomainEvent.MetadataKeys.GlobalSequenceNumber, globalSeqNo},
-                        {DomainEvent.MetadataKeys.SequenceNumber, seqNo},
+                        {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString()},
+                        {DomainEvent.MetadataKeys.GlobalSequenceNumber, globalSeqNo.ToString(Metadata.NumberCulture)},
+                        {DomainEvent.MetadataKeys.SequenceNumber, seqNo.ToString(Metadata.NumberCulture)},
                     }
                 }
-            });
+            }
+            .Select(e => _domainEventSerializer.Serialize(e)));
         }
 
         public class Root : AggregateRoot, IEmit<Event>

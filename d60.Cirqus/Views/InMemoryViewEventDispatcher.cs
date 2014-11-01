@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 
@@ -16,6 +18,7 @@ namespace d60.Cirqus.Views
     public class InMemoryViewEventDispatcher<TViewInstance> : IEventDispatcher where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
         readonly IAggregateRootRepository _aggregateRootRepository;
+        readonly IDomainEventSerializer _domainEventSerializer;
         readonly ConcurrentDictionary<string, TViewInstance> _views = new ConcurrentDictionary<string, TViewInstance>();
         readonly ViewDispatcherHelper<TViewInstance> _dispatcher = new ViewDispatcherHelper<TViewInstance>();
         readonly ViewLocator _viewLocator = ViewLocator.GetLocatorFor<TViewInstance>();
@@ -23,10 +26,11 @@ namespace d60.Cirqus.Views
         Logger _logger;
         bool _stopped;
 
-        public InMemoryViewEventDispatcher(IAggregateRootRepository aggregateRootRepository)
+        public InMemoryViewEventDispatcher(IAggregateRootRepository aggregateRootRepository, IDomainEventSerializer domainEventSerializer)
         {
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
             _aggregateRootRepository = aggregateRootRepository;
+            _domainEventSerializer = domainEventSerializer;
         }
 
         /// <summary>
@@ -55,6 +59,11 @@ namespace d60.Cirqus.Views
 
                 Dispatch(eventStore, batch);
             }
+        }
+
+        void Dispatch(IEventStore eventStore, IEnumerable<Event> events)
+        {
+            Dispatch(eventStore, events.Select(e => _domainEventSerializer.Deserialize(e)));
         }
 
         public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)

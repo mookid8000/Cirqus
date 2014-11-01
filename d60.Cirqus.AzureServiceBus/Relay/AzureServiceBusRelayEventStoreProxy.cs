@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
+using System.Text;
 using d60.Cirqus.AzureServiceBus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
+using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using Microsoft.ServiceBus;
 
 namespace d60.Cirqus.AzureServiceBus.Relay
@@ -18,6 +21,8 @@ namespace d60.Cirqus.AzureServiceBus.Relay
     /// </summary>
     public class AzureServiceBusRelayEventStoreProxy : IEventStore, IDisposable
     {
+        static readonly Encoding DefaultEncoding = Encoding.UTF8;
+
         static Logger _logger;
 
         static AzureServiceBusRelayEventStoreProxy()
@@ -25,7 +30,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
         }
 
-        readonly Serializer _serializer = new Serializer();
+        readonly MetadataSerializer _metadataSerializer = new MetadataSerializer();
         readonly ChannelFactory<IHostService> _channelFactory;
 
         IHostService _currentClientChannel;
@@ -60,25 +65,41 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             throw new InvalidOperationException();
         }
 
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
+        public void Save(Guid batchId, IEnumerable<Event> events)
         {
-            var client = GetClient();
+        }
 
-            var transportMessage = client.Load(aggregateRootId, firstSeq);
-            var domainEvents = _serializer.Deserialize(transportMessage.Events);
+        public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
+        {
+            return Enumerable.Empty<Event>();
+        }
+
+        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
+        {
+            return Enumerable.Empty<Event>();
+        }
+
+        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
+        {
+            var transportMessage = InnerLoad(aggregateRootId, firstSeq);
+            
+            var domainEvents = transportMessage.Events
+                .Select(e => Event.FromMetadata(DeserializeMetadata(e), e.Data));
 
             return domainEvents;
         }
 
-        public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
         {
-            var client = GetClient();
             var currentPosition = globalSequenceNumber;
 
             while (true)
             {
-                var transportMessage = client.Stream(currentPosition);
-                var domainEvents = _serializer.Deserialize(transportMessage.Events);
+                var transportMessage = InnerStream(currentPosition);
+
+                var domainEvents = transportMessage.Events
+                    .Select(e => Event.FromMetadata(DeserializeMetadata(e), e.Data))
+                    .ToList();
 
                 if (!domainEvents.Any())
                 {
@@ -92,6 +113,45 @@ namespace d60.Cirqus.AzureServiceBus.Relay
                     currentPosition = e.GetGlobalSequenceNumber() + 1;
                 }
             }
+        }
+
+        TransportMessage InnerStream(long currentPosition)
+        {
+            try
+            {
+                return GetClient().Stream(currentPosition);
+
+            }
+            catch
+            {
+                DisposeCurrentClient();
+                throw;
+            }
+        }
+
+        TransportMessage InnerLoad(Guid aggregateRootId, long firstSeq)
+        {
+            try
+            {
+                return GetClient().Load(aggregateRootId, firstSeq);
+            }
+            catch
+            {
+                DisposeCurrentClient();
+                throw;
+            }
+        }
+
+        void DisposeCurrentClient()
+        {
+            if (_currentClientChannel == null) return;
+
+            _currentClientChannel = null;
+        }
+
+        Metadata DeserializeMetadata(TransportEvent e)
+        {
+            return _metadataSerializer.Deserialize(DefaultEncoding.GetString(e.Meta));
         }
 
         IHostService GetClient()

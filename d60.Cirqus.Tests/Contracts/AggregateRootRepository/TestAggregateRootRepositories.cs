@@ -1,6 +1,7 @@
 ﻿using System;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
+using d60.Cirqus.Numbers;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Contracts.AggregateRootRepository.Factories;
 using NUnit.Framework;
@@ -41,8 +42,8 @@ namespace d60.Cirqus.Tests.Contracts.AggregateRootRepository
             {
                 Meta =
                 {
-                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId},
-                    { DomainEvent.MetadataKeys.SequenceNumber, sequenceNumber},
+                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString()},
+                    { DomainEvent.MetadataKeys.SequenceNumber, sequenceNumber.ToString(Metadata.NumberCulture)},
                 }
             };
         }

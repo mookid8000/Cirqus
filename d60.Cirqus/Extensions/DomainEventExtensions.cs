@@ -58,6 +58,7 @@ namespace d60.Cirqus.Extensions
             return new DateTime(dateTime.Ticks, DateTimeKind.Utc);
         }
 
+
         static TValue GetMetadataField<TValue>(DomainEvent domainEvent, string key, Func<object, TValue> converter, bool throwIfNotFound)
         {
             var metadata = domainEvent.Meta;

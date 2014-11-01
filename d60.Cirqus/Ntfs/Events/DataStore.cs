@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
@@ -34,7 +35,7 @@ namespace d60.Cirqus.Ntfs.Events
             Directory.CreateDirectory(_dataDirectory);
         }
 
-        public void Write(Guid batchId, IReadOnlyCollection<DomainEvent> events)
+        public void Write(Guid batchId, IReadOnlyCollection<Event> events)
         {
             foreach (var domainEvent in events)
             {
@@ -49,7 +50,7 @@ namespace d60.Cirqus.Ntfs.Events
             }
         }
 
-        public void Write(DomainEvent domainEvent)
+        public void Write(Event domainEvent)
         {
             var aggregateRootId = domainEvent.GetAggregateRootId();
             var sequenceNumber = domainEvent.GetSequenceNumber();
@@ -62,29 +63,47 @@ namespace d60.Cirqus.Ntfs.Events
             using (var fileStream = new FileStream(filename, FileMode.CreateNew, FileAccess.Write, FileShare.None, 1024, FileOptions.None))
             using (var bsonWriter = new BsonWriter(fileStream))
             {
-                _serializer.Serialize(bsonWriter, domainEvent);
+                _serializer.Serialize(bsonWriter, EventData.Create(domainEvent));
             }
         }
 
-        public IEnumerable<DomainEvent> Read(long lastCommittedGlobalSequenceNumber, Guid aggregateRootId, long offset)
+        class EventData
+        {
+            public EventData(Metadata meta, byte[] data)
+            {
+                Meta = meta;
+                Data = data;
+            }
+
+            public static EventData Create(Event domainEvent)
+            {
+                return new EventData(domainEvent.Meta, domainEvent.Data);
+            }
+
+            public Metadata Meta { get; private set; }
+            public byte[] Data { get; private set; }
+        }
+
+        public IEnumerable<Event> Read(long lastCommittedGlobalSequenceNumber, Guid aggregateRootId, long offset)
         {
             var aggregateDirectory = Path.Combine(_dataDirectory, aggregateRootId.ToString());
 
             if (!Directory.Exists(aggregateDirectory))
             {
-                return Enumerable.Empty<DomainEvent>();
+                return Enumerable.Empty<Event>();
             }
 
             return from path in Directory.EnumerateFiles(aggregateDirectory)
                    let seq = long.Parse(Path.GetFileName(path))
                    where seq >= offset
                    let @event = TryRead(path)
-                   where @event != null && @event.GetGlobalSequenceNumber(true) <= lastCommittedGlobalSequenceNumber
+                   where @event != null && @event.Meta.ContainsKey(DomainEvent.MetadataKeys.GlobalSequenceNumber) &&
+                         @event.GetGlobalSequenceNumber(throwIfNotFound: true) <= lastCommittedGlobalSequenceNumber
                    select @event;
 
         }
 
-        public DomainEvent Read(Guid aggregateRootId, long sequenceNumber)
+        public Event Read(Guid aggregateRootId, long sequenceNumber)
         {
             var filename = Path.Combine(_dataDirectory, aggregateRootId.ToString(), GetFilename(sequenceNumber));
             
@@ -105,7 +124,7 @@ namespace d60.Cirqus.Ntfs.Events
                 File.Delete(filename);
         }
 
-        DomainEvent TryRead(string filename)
+        Event TryRead(string filename)
         {
             if (!File.Exists(filename))
                 return null;
@@ -118,7 +137,9 @@ namespace d60.Cirqus.Ntfs.Events
 
                 try
                 {
-                    return _serializer.Deserialize<DomainEvent>(bsonReader);
+                    var eventData = _serializer.Deserialize<EventData>(bsonReader);
+                    
+                    return Event.FromMetadata(eventData.Meta, eventData.Data);
                 }
                 catch (Exception)
                 {
@@ -129,14 +150,11 @@ namespace d60.Cirqus.Ntfs.Events
 
         static JsonSerializer CreateSerializer()
         {
-            var binder = new TypeAliasBinder("<events>");
-            var serializer = new JsonSerializer
+            return new JsonSerializer
             {
-                Binder = binder.AddType(typeof(Metadata)),
-                TypeNameHandling = TypeNameHandling.Objects,
+                TypeNameHandling = TypeNameHandling.None,
                 Formatting = Formatting.Indented
             };
-            return serializer;
         }
 
         static string GetFilename(long sequenceNumber)

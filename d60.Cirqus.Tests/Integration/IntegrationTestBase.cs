@@ -4,6 +4,7 @@ using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.MsSql.Events;
 using d60.Cirqus.PostgreSql;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.MsSql;
@@ -15,6 +16,7 @@ namespace d60.Cirqus.Tests.Integration
 {
     public abstract class IntegrationTestBase : FixtureBase
     {
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
         MongoDatabase _mongoDatabase;
 
         protected override void DoSetUp()
@@ -26,7 +28,8 @@ namespace d60.Cirqus.Tests.Integration
         {
             var eventStore = GetEventStore(eventStoreOption);
 
-            var commandProcessor = new CommandProcessor(eventStore, new DefaultAggregateRootRepository(eventStore), new ConsoleOutEventDispatcher());
+            var commandProcessor = new CommandProcessor(eventStore, new DefaultAggregateRootRepository(eventStore, _domainEventSerializer), new ConsoleOutEventDispatcher(),
+                _domainEventSerializer);
 
             RegisterForDisposal(commandProcessor);
 
@@ -38,7 +41,7 @@ namespace d60.Cirqus.Tests.Integration
             switch (eventStoreOption)
             {
                 case EventStoreOption.InMemory:
-                    return new InMemoryEventStore();
+                    return new InMemoryEventStore(_domainEventSerializer);
 
                 case EventStoreOption.MongoDb:
                     return new MongoDbEventStore(GetMongoDb(), "Events");

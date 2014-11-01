@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Numbers;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Views;
@@ -18,21 +19,22 @@ namespace d60.Cirqus.Testing
     /// </summary>
     public class TestContext : IDisposable
     {
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
-        readonly InMemoryEventStore _eventStore = new InMemoryEventStore();
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer("<events>");
         readonly DefaultAggregateRootRepository _aggregateRootRepository;
         readonly ViewManagerEventDispatcher _viewManagerEventDispatcher;
         readonly CompositeEventDispatcher _eventDispatcher;
         readonly ViewManagerWaitHandle _waitHandle = new ViewManagerWaitHandle();
         readonly List<IViewManager> _addedViews = new List<IViewManager>();
+        readonly InMemoryEventStore _eventStore;
 
         DateTime _currentTime = DateTime.MinValue;
         bool _initialized;
 
         public TestContext()
         {
-            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore);
-            _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore);
+            _eventStore = new InMemoryEventStore(_domainEventSerializer);
+            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
+            _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore, _domainEventSerializer);
             _waitHandle.Register(_viewManagerEventDispatcher);
             _eventDispatcher = new CompositeEventDispatcher(_viewManagerEventDispatcher);
         }
@@ -85,7 +87,7 @@ namespace d60.Cirqus.Testing
         {
             EnsureInitialized();
 
-            var unitOfWork = new TestUnitOfWork(_aggregateRootRepository, _eventStore, _eventDispatcher);
+            var unitOfWork = new TestUnitOfWork(_aggregateRootRepository, _eventStore, _eventDispatcher, _domainEventSerializer);
 
             unitOfWork.Committed += () =>
             {
@@ -112,7 +114,7 @@ namespace d60.Cirqus.Testing
         /// </summary>
         public EventCollection History
         {
-            get { return new EventCollection(_eventStore.Stream()); }
+            get { return new EventCollection(_eventStore.Stream().Select(e => _domainEventSerializer.Deserialize(e))); }
         }
 
         /// <summary>
@@ -197,11 +199,15 @@ namespace d60.Cirqus.Testing
                 SetMetadata(aggregateRootId, domainEvent);
             }
 
-            _eventStore.Save(Guid.NewGuid(), domainEvents);
+            var eventData = domainEvents.Select(e => _domainEventSerializer.Serialize(e)).ToList();
 
-            _eventDispatcher.Dispatch(_eventStore, domainEvents);
+            _eventStore.Save(Guid.NewGuid(), eventData);
 
-            var result = new CommandProcessingResultWithEvents(domainEvents);
+            var domainEventsToDispatch = eventData.Select(e => e.DomainEvent).ToList();
+
+            _eventDispatcher.Dispatch(_eventStore, domainEventsToDispatch);
+
+            var result = new CommandProcessingResultWithEvents(domainEventsToDispatch);
 
             if (!Asynchronous)
             {
@@ -262,8 +268,8 @@ Current view positions:
         {
             var now = GetNow();
 
-            domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId] = aggregateRootId;
-            domainEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber] = _eventStore.GetNextSeqNo(aggregateRootId);
+            domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId] = aggregateRootId.ToString();
+            domainEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber] = _eventStore.GetNextSeqNo(aggregateRootId).ToString(Metadata.NumberCulture);
             domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = AggregateRoot.GetOwnerFromType(typeof(TAggregateRoot));
             domainEvent.Meta[DomainEvent.MetadataKeys.TimeUtc] = now.ToString("u");
 

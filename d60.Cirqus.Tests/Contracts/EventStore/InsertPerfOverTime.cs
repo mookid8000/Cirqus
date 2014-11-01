@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using d60.Cirqus.Events;
+using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.Contracts.EventStore.Factories;
 using NUnit.Framework;
 
@@ -148,7 +150,8 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         void Insert(int numberOfEvents)
         {
             _eventStore.Save(Guid.NewGuid(), Enumerable.Range(0, numberOfEvents)
-                .Select(n => CreateEventWithRealisticPayload()));
+                .Select(n => CreateEventWithRealisticPayload())
+                .Select(e => new JsonDomainEventSerializer().Serialize(e)));
         }
 
         long GetNextFor(Guid aggregateRootId)
@@ -171,9 +174,9 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             {
                 Meta =
                 {
-                    {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId},
-                    {DomainEvent.MetadataKeys.SequenceNumber, seqNo},
-                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, globalSequenceNumber},
+                    {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString()},
+                    {DomainEvent.MetadataKeys.SequenceNumber, seqNo.ToString(Metadata.NumberCulture)},
+                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, globalSequenceNumber.ToString(Metadata.NumberCulture)},
                 },
                 AnInt = _random.Next(1000),
                 SomeStringValue = string.Format("This is a random number: {0}", _random.Next(10)),

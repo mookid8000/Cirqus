@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Threading;
 using d60.Cirqus.Events;
+using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using NUnit.Framework;
 
@@ -14,7 +16,8 @@ namespace d60.Cirqus.Tests.Events.Replicator
         public void DoesNotThrowWhenDisposingUnstartedReplicator()
         {
             // arrange
-            var eventReplicator = new EventReplicator(new InMemoryEventStore(), new InMemoryEventStore());
+            var serializer = new JsonDomainEventSerializer();
+            var eventReplicator = new EventReplicator(new InMemoryEventStore(serializer), new InMemoryEventStore(serializer));
 
             // act
             eventReplicator.Dispose();
@@ -25,19 +28,20 @@ namespace d60.Cirqus.Tests.Events.Replicator
         [Test]
         public void TryReplicating()
         {
-            var source = new InMemoryEventStore();
-            var destination = new InMemoryEventStore();
+            var serializer = new JsonDomainEventSerializer();
+            var source = new InMemoryEventStore(serializer);
+            var destination = new InMemoryEventStore(serializer);
             var seqNo = 0;
 
-            Func<string, DomainEvent> getRecognizableEvent = text => new RecognizableEvent(text)
+            Func<string, Event> getRecognizableEvent = text => serializer.Serialize(new RecognizableEvent(text)
             {
                 Meta =
                 {
-                    {DomainEvent.MetadataKeys.AggregateRootId, new Guid("268DD0C0-529F-4242-9D53-601A88BB1813")},
-                    {DomainEvent.MetadataKeys.SequenceNumber, seqNo},
-                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, seqNo++},
+                    {DomainEvent.MetadataKeys.AggregateRootId, "268DD0C0-529F-4242-9D53-601A88BB1813"},
+                    {DomainEvent.MetadataKeys.SequenceNumber, (seqNo).ToString(Metadata.NumberCulture)},
+                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, (seqNo++).ToString(Metadata.NumberCulture)},
                 }
-            };
+            });
 
             // arrange
             using (var eventReplicator = new EventReplicator(source, destination))

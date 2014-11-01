@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>d60.Cirqus</id>
+    <version>VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT</version>
+    <title>d60.Cirqus</title>
+    <authors>Mogens Heller Grabe</authors>
+    <owners>mookid8000</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Event sourcing + cqrs kit</description>
+  </metadata>
+  <files>
+    <file src="..\d60.Cirqus\bin\Release\merged\d60.Cirqus.dll" target="lib\NET45" />
+  </files>
+</package>

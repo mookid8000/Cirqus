@@ -5,6 +5,7 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Stubs;
 using MongoDB.Driver;
@@ -32,17 +33,18 @@ many time in parallel, and after some time the consistency of everything is veri
         DefaultAggregateRootRepository _aggregateRootRepository;
         CommandProcessor _cirqus;
         MongoDatabase _mongoDatabase;
+        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
 
         protected override void DoSetUp()
         {
             _mongoDatabase = MongoHelper.InitializeTestDatabase();
             var eventStore = new MongoDbEventStore(_mongoDatabase, "events", automaticallyCreateIndexes: true);
 
-            _aggregateRootRepository = new DefaultAggregateRootRepository(eventStore);
+            _aggregateRootRepository = new DefaultAggregateRootRepository(eventStore, _domainEventSerializer);
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager);
+            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager, _domainEventSerializer);
 
             RegisterForDisposal(_cirqus);
         }

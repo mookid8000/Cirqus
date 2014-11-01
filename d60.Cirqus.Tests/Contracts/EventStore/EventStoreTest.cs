@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
-using System.Runtime.Serialization;
+using System.Text;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
@@ -9,6 +11,7 @@ using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Null;
 using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.Contracts.EventStore.Factories;
 using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
@@ -34,52 +37,28 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             _eventStore = _eventStoreFactory.GetEventStore();
 
             if (_eventStore is IDisposable)
+            {
                 RegisterForDisposal((IDisposable)_eventStore);
+            }
         }
 
         [Test]
-        public void TimeStampsCanRoundtripAsTheyShould()
+        public void AssignsGlobalSequenceNumberToEvents()
         {
-            var someLocalTime = new DateTime(2015, 10, 31, 12, 10, 15, DateTimeKind.Local);
-            var someUtcTime = someLocalTime.ToUniversalTime();
-            TimeMachine.FixCurrentTimeTo(someUtcTime);
-            
-            var processor = new CommandProcessor(_eventStore, new DefaultAggregateRootRepository(_eventStore), new ConsoleOutEventDispatcher());
-            
-            RegisterForDisposal(processor);
-            
-            processor.ProcessCommand(new MakeSomeRootEmitTheEvent(Guid.NewGuid()));
+            var events = new List<Event>
+            {
+                Event(0, Guid.NewGuid()), 
+                Event(0, Guid.NewGuid())
+            };
 
-            var domainEvents = _eventStore.Stream().Cast<SomeRootEvent>().Single();
-            Assert.That(domainEvents.GetUtcTime(), Is.EqualTo(someUtcTime));
+            _eventStore.Save(Guid.NewGuid(), events);
+
+            // assert
+            var loadedEvents = _eventStore.Stream().ToList();
+
+            Assert.That(events.Select(e => e.GetGlobalSequenceNumber()), Is.EqualTo(new[] { 0, 1 }));
+            Assert.That(loadedEvents.Select(e => e.GetGlobalSequenceNumber()), Is.EqualTo(new[] { 0, 1 }));
         }
-
-        public class MakeSomeRootEmitTheEvent : Command<SomeRoot>
-        {
-            public MakeSomeRootEmitTheEvent(Guid aggregateRootId) : base(aggregateRootId)
-            {
-            }
-
-            public override void Execute(SomeRoot aggregateRoot)
-            {
-                aggregateRoot.EmitTheEvent();
-            }
-        }
-
-        public class SomeRoot : AggregateRoot, IEmit<SomeRootEvent>
-        {
-            public void EmitTheEvent()
-            {
-                Emit(new SomeRootEvent());
-            }
-
-            public void Apply(SomeRootEvent e)
-            {
-            }
-        }
-
-        public class SomeRootEvent : DomainEvent<SomeRoot> { }
-
 
         [Test]
         public void BatchIdIsAppliedAsMetadataToEvents()
@@ -94,10 +73,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             _eventStore.Save(batch2, new[] { Event(0, Guid.NewGuid()), Event(0, Guid.NewGuid()), Event(0, Guid.NewGuid()) });
 
             // assert
-            var allEvents = _eventStore
-                .Stream()
-                .OrderBy(a => a.GetGlobalSequenceNumber())
-                .ToList();
+            var allEvents = _eventStore.Stream().ToList();
 
             Assert.That(allEvents.Count, Is.EqualTo(5));
 
@@ -149,24 +125,20 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             var batchId = Guid.NewGuid();
             var aggregateRootId = Guid.NewGuid();
 
-            var events = new DomainEvent[] {new SomeEvent
+            var events = new Event[]
             {
-                SomeValue = "hej",
-                Meta =
-                {
-                    {DomainEvent.MetadataKeys.SequenceNumber, 1},
-                    {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId}
-                }
-            }};
+                Event(1, aggregateRootId)
+            };
 
             // act
             _eventStore.Save(batchId, events);
 
             // assert
             var persistedEvents = _eventStore.Load(aggregateRootId);
-            var someEvent = (SomeEvent)persistedEvents.Single();
+            var someEvent = persistedEvents.Single();
+            var data = Encoding.UTF8.GetString(someEvent.Data);
 
-            Assert.That(someEvent.SomeValue, Is.EqualTo("hej"));
+            Assert.That(data, Is.EqualTo("hej"));
         }
 
         [Test]
@@ -175,16 +147,13 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             // arrange
             var batchId = Guid.NewGuid();
 
-            var events = new DomainEvent[]
+            var events = new Event[]
             {
-                new SomeEvent
+                Cirqus.Events.Event.FromMetadata(new Metadata
                 {
-                    SomeValue = "hej",
-                    Meta = {
-                        {DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid()},
-                        //{DomainEvent.MetadataKeys.SequenceNumber, 1}, //< this one is missing!
-                    } 
-                }
+                    {DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid().ToString()},
+                    //{DomainEvent.MetadataKeys.SequenceNumber, 1}, //< this one is missing!
+                }, new byte[0])
             };
 
             // act
@@ -200,16 +169,13 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             // arrange
             var batchId = Guid.NewGuid();
 
-            var events = new DomainEvent[]
+            var events = new Event[]
             {
-                new SomeEvent
+                Cirqus.Events.Event.FromMetadata(new Metadata
                 {
-                    SomeValue = "hej",
-                    Meta = {
-                        //{DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid()}, //< this one is missing!
-                        {DomainEvent.MetadataKeys.SequenceNumber, 1},
-                    } 
-                }
+                    //{DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid()}, //< this one is missing!
+                    {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
+                }, new byte[0])
             };
 
             // act
@@ -225,23 +191,20 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             // arrange
             var batchId = Guid.NewGuid();
 
-            var events = new DomainEvent[]
+            var events = new[]
             {
-                new SomeEvent
+                Cirqus.Events.Event.FromMetadata(new Metadata
                 {
-                    SomeValue = "hej",
-                    Meta = {{DomainEvent.MetadataKeys.SequenceNumber, 1}}
-                },
-                new SomeEvent
+                    {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)}
+                }, new byte[0]),
+                Cirqus.Events.Event.FromMetadata(new Metadata
                 {
-                    SomeValue = "hej",
-                    Meta = {{DomainEvent.MetadataKeys.SequenceNumber, 2}}
-                },
-                new SomeEvent
+                    {DomainEvent.MetadataKeys.SequenceNumber, 2.ToString(Metadata.NumberCulture)}
+                }, new byte[0]),
+                Cirqus.Events.Event.FromMetadata(new Metadata
                 {
-                    SomeValue = "hej",
-                    Meta = {{DomainEvent.MetadataKeys.SequenceNumber, 4}}
-                }
+                    {DomainEvent.MetadataKeys.SequenceNumber, 4.ToString(Metadata.NumberCulture)}
+                }, new byte[0]),
             };
 
             // act
@@ -317,33 +280,33 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             var aggregateRootId = Guid.NewGuid();
             _eventStore.Save(Guid.NewGuid(), new[]
             {
+                Event(0, aggregateRootId),
                 Event(1, aggregateRootId),
                 Event(2, aggregateRootId),
                 Event(3, aggregateRootId),
                 Event(4, aggregateRootId),
                 Event(5, aggregateRootId),
-                Event(6, aggregateRootId)
             });
             _eventStore.Save(Guid.NewGuid(), new[]
             {
+                Event(6, aggregateRootId),
                 Event(7, aggregateRootId),
                 Event(8, aggregateRootId),
                 Event(9, aggregateRootId),
                 Event(10, aggregateRootId),
                 Event(11, aggregateRootId),
-                Event(12, aggregateRootId)
             });
             _eventStore.Save(Guid.NewGuid(), new[]
             {
+                Event(12, aggregateRootId),
                 Event(13, aggregateRootId),
                 Event(14, aggregateRootId),
-                Event(15, aggregateRootId)
             });
 
             // act
             // assert
             Assert.That(_eventStore.Load(aggregateRootId, 1).Take(1).Count(), Is.EqualTo(1));
-            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(1).GetSeq(), Is.EqualTo(Enumerable.Range(1, 1)));
+            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(1).GetSeq().ToArray(), Is.EqualTo(Enumerable.Range(1, 1).ToArray()));
 
             Assert.That(_eventStore.Load(aggregateRootId, 1).Take(2).Count(), Is.EqualTo(2));
             Assert.That(_eventStore.Load(aggregateRootId, 1).Take(2).GetSeq(), Is.EqualTo(Enumerable.Range(1, 2)));
@@ -352,7 +315,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             Assert.That(_eventStore.Load(aggregateRootId, 1).Take(10).GetSeq(), Is.EqualTo(Enumerable.Range(1, 10)));
 
             Assert.That(_eventStore.Load(aggregateRootId, 4).Take(10).Count(), Is.EqualTo(10));
-            Assert.That(_eventStore.Load(aggregateRootId, 4).Take(10).GetSeq(), Is.EqualTo(Enumerable.Range(4, 10)));
+            Assert.That(_eventStore.Load(aggregateRootId, 4).Take(10).GetSeq().ToArray(), Is.EqualTo(Enumerable.Range(4, 10).ToArray()));
         }
 
         [Test]
@@ -363,15 +326,15 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             var agg2 = Guid.NewGuid();
             _eventStore.Save(Guid.NewGuid(), new[]
             {
+                Event(0, agg1),
                 Event(1, agg1),
-                Event(2, agg1),
-                Event(3, agg2)
+                Event(2, agg2)
             });
             _eventStore.Save(Guid.NewGuid(), new[]
             {
+                Event(3, agg1),
                 Event(4, agg1),
-                Event(5, agg1),
-                Event(6, agg2)
+                Event(5, agg2)
             });
 
             // act
@@ -380,10 +343,10 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
             // assert
             Assert.That(allEventsForAgg1.Count, Is.EqualTo(4));
-            Assert.That(allEventsForAgg1.GetSeq(), Is.EqualTo(new[] { 1, 2, 4, 5 }));
+            Assert.That(allEventsForAgg1.GetSeq(), Is.EqualTo(new[] { 0, 1, 3, 4 }));
 
             Assert.That(allEventsForAgg2.Count, Is.EqualTo(2));
-            Assert.That(allEventsForAgg2.GetSeq(), Is.EqualTo(new[] { 3, 6 }));
+            Assert.That(allEventsForAgg2.GetSeq(), Is.EqualTo(new[] { 2, 5 }));
         }
 
         [Test]
@@ -402,13 +365,14 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                     {
                         Meta =
                         {
-                            {DomainEvent.MetadataKeys.SequenceNumber, 2},
-                            {DomainEvent.MetadataKeys.AggregateRootId, agg2}
+                            {DomainEvent.MetadataKeys.SequenceNumber, 2.ToString(Metadata.NumberCulture)},
+                            {DomainEvent.MetadataKeys.AggregateRootId, agg2.ToString()}
                         }
                     }
                 });
             }
-            catch {
+            catch
+            {
                 // ignore it!
             }
 
@@ -484,30 +448,73 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                 () => _eventStore.Stream().ToList());
         }
 
-        static DomainEvent Event(int seq, Guid aggregateRootId)
+        [Test]
+        public void TimeStampsCanRoundtripAsTheyShould()
         {
-            return new SomeEvent
-            {
-                SomeValue = "hej",
-                Meta =
-                {
-                    { DomainEvent.MetadataKeys.SequenceNumber, seq },
-                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId }
-                }
-            };
+            var someLocalTime = new DateTime(2015, 10, 31, 12, 10, 15, DateTimeKind.Local);
+            var someUtcTime = someLocalTime.ToUniversalTime();
+            TimeMachine.FixCurrentTimeTo(someUtcTime);
+
+            var serializer = new JsonDomainEventSerializer();
+
+            var processor = new CommandProcessor(
+                _eventStore, new DefaultAggregateRootRepository(_eventStore, serializer),
+                new ConsoleOutEventDispatcher(), serializer);
+
+            RegisterForDisposal(processor);
+
+            processor.ProcessCommand(new MakeSomeRootEmitTheEvent(Guid.NewGuid()));
+
+            var domainEvents = _eventStore.Stream().Select(serializer.Deserialize).Single();
+            Assert.That(domainEvents.GetUtcTime(), Is.EqualTo(someUtcTime));
         }
 
-        class SomeEvent : DomainEvent
+        static Event Event(int seq, Guid aggregateRootId)
         {
-            public string SomeValue { get; set; }
+            return Cirqus.Events.Event.FromMetadata(new Metadata
+            {
+                {DomainEvent.MetadataKeys.SequenceNumber, seq.ToString(Metadata.NumberCulture)},
+                {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString()}
+            }, Encoding.UTF8.GetBytes("hej"));
         }
 
-        class ThrowingEvent : DomainEvent
+        public class MakeSomeRootEmitTheEvent : Command<SomeRoot>
         {
-            [OnSerializing()]
-            internal void OnSerializingMethod(StreamingContext context)
+            public MakeSomeRootEmitTheEvent(Guid aggregateRootId)
+                : base(aggregateRootId)
             {
-                throw new SerializationException("I ruin your batch!");
+            }
+
+            public override void Execute(SomeRoot aggregateRoot)
+            {
+                aggregateRoot.EmitTheEvent();
+            }
+        }
+
+        public class SomeRoot : AggregateRoot, IEmit<SomeRootEvent>
+        {
+            public void EmitTheEvent()
+            {
+                Emit(new SomeRootEvent());
+            }
+
+            public void Apply(SomeRootEvent e)
+            {
+            }
+        }
+
+        public class SomeRootEvent : DomainEvent<SomeRoot> { }
+
+        class ThrowingEvent : Event
+        {
+            public ThrowingEvent()
+                : base(null, null, null)
+            {
+            }
+
+            public override byte[] Data
+            {
+                get { throw new Exception("I ruin your batch!"); }
             }
         }
     }

@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Text;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Numbers;
 using d60.Cirqus.Serialization;
 using Npgsql;
 
@@ -11,9 +14,9 @@ namespace d60.Cirqus.PostgreSql
 {
     public class PostgreSqlEventStore : IEventStore
     {
-        readonly DomainEventSerializer _domainEventSerializer = new DomainEventSerializer("<events>");
         readonly string _connectionString;
         readonly string _tableName;
+        readonly MetadataSerializer _metadataSerializer = new MetadataSerializer();
 
         public PostgreSqlEventStore(string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true)
         {
@@ -46,7 +49,8 @@ CREATE TABLE IF NOT EXISTS ""{0}"" (
 	""aggId"" UUID NOT NULL,
 	""seqNo"" BIGINT NOT NULL,
 	""globSeqNo"" BIGINT NOT NULL,
-	""data"" TEXT NOT NULL,
+	""meta"" BYTEA NOT NULL,
+	""data"" BYTEA NOT NULL,
 	PRIMARY KEY (""id"")
 );
 
@@ -61,15 +65,6 @@ END$$;
 
 ", _tableName);
 
-            /*
-             * 	    [id] [bigint] IDENTITY(1,1) NOT NULL,
-	    [batchId] [uniqueidentifier] NOT NULL,
-	    [aggId] [uniqueidentifier] NOT NULL,
-	    [seqNo] [bigint] NOT NULL,
-	    [globSeqNo] [bigint] NOT NULL,
-	    [data] [nvarchar](max) NOT NULL,
-*/
-
             using (var connection = GetConnection())
             using (var command = connection.CreateCommand())
             {
@@ -78,7 +73,7 @@ END$$;
             }
         }
 
-        public void Save(Guid batchId, IEnumerable<DomainEvent> batch)
+        public void Save(Guid batchId, IEnumerable<Event> batch)
         {
             var eventList = batch.ToList();
 
@@ -87,13 +82,12 @@ END$$;
                 using (var connection = GetConnection())
                 using (var tx = connection.BeginTransaction())
                 {
-
                     var nextSequenceNumber = GetNextGlobalSequenceNumber(connection, tx);
 
                     foreach (var e in eventList)
                     {
-                        e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = nextSequenceNumber++;
-                        e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId;
+                        e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (nextSequenceNumber++).ToString(Metadata.NumberCulture);
+                        e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
                     }
 
                     EventValidation.ValidateBatchIntegrity(batchId, eventList);
@@ -110,13 +104,15 @@ INSERT INTO ""{0}"" (
     ""aggId"",
     ""seqNo"",
     ""globSeqNo"",
-    ""data""
+    ""data"",
+    ""meta""
 ) VALUES (
     @batchId,
     @aggId,
     @seqNo,
     @globSeqNo,
-    @data
+    @data,
+    @meta
 )
 
 ", _tableName);
@@ -126,7 +122,8 @@ INSERT INTO ""{0}"" (
                             cmd.Parameters.AddWithValue("aggId", e.GetAggregateRootId());
                             cmd.Parameters.AddWithValue("seqNo", e.Meta[DomainEvent.MetadataKeys.SequenceNumber]);
                             cmd.Parameters.AddWithValue("globSeqNo", e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber]);
-                            cmd.Parameters.AddWithValue("data", _domainEventSerializer.Serialize(e));
+                            cmd.Parameters.AddWithValue("data", e.Data);
+                            cmd.Parameters.AddWithValue("meta", Encoding.UTF8.GetBytes(_metadataSerializer.Serialize(e.Meta)));
 
                             cmd.ExecuteNonQuery();
                         }
@@ -171,7 +168,7 @@ INSERT INTO ""{0}"" (
             return connection;
         }
 
-        public IEnumerable<DomainEvent> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             using (var connection = GetConnection())
             {
@@ -181,7 +178,7 @@ INSERT INTO ""{0}"" (
                     {
                         cmd.Transaction = tx;
 
-                        cmd.CommandText = string.Format(@"SELECT ""data"" FROM ""{0}"" WHERE ""aggId"" = @aggId AND ""seqNo"" >= @firstSeqNo", _tableName);
+                        cmd.CommandText = string.Format(@"SELECT ""data"", ""meta"" FROM ""{0}"" WHERE ""aggId"" = @aggId AND ""seqNo"" >= @firstSeqNo", _tableName);
                         cmd.Parameters.AddWithValue("aggId", aggregateRootId);
                         cmd.Parameters.AddWithValue("firstSeqNo", firstSeq);
 
@@ -189,9 +186,7 @@ INSERT INTO ""{0}"" (
                         {
                             while (reader.Read())
                             {
-                                var data = (string)reader["data"];
-
-                                yield return _domainEventSerializer.Deserialize(data);
+                                yield return ReadEvent(reader);
                             }
                         }
                     }
@@ -201,7 +196,7 @@ INSERT INTO ""{0}"" (
             }
         }
 
-        public IEnumerable<DomainEvent> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
         {
             using (var connection = GetConnection())
             {
@@ -212,7 +207,7 @@ INSERT INTO ""{0}"" (
                         cmd.Transaction = tx;
                         cmd.CommandText = string.Format(@"
 
-SELECT ""data"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY ""globSeqNo""", _tableName);
+SELECT ""data"", ""meta"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY ""globSeqNo""", _tableName);
 
                         cmd.Parameters.AddWithValue("cutoff", globalSequenceNumber);
 
@@ -220,14 +215,20 @@ SELECT ""data"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY ""globSeqNo
                         {
                             while (reader.Read())
                             {
-                                var data = (string)reader["data"];
-
-                                yield return _domainEventSerializer.Deserialize(data);
+                                yield return ReadEvent(reader);
                             }
                         }
                     }
                 }
             }
+        }
+
+        Event ReadEvent(IDataRecord reader)
+        {
+            var data = (byte[]) reader["data"];
+            var meta = (byte[]) reader["meta"];
+
+            return Event.FromMetadata(_metadataSerializer.Deserialize(Encoding.UTF8.GetString(meta)), data);
         }
 
         public long GetNextGlobalSequenceNumber()
@@ -255,7 +256,6 @@ SELECT ""data"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY ""globSeqNo
                     }
 
                     tx.Commit();
-
                 }
             }
         }

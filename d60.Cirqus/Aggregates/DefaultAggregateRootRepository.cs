@@ -2,6 +2,7 @@
 using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Serialization;
 
 namespace d60.Cirqus.Aggregates
 {
@@ -11,10 +12,12 @@ namespace d60.Cirqus.Aggregates
     public class DefaultAggregateRootRepository : IAggregateRootRepository
     {
         readonly IEventStore _eventStore;
+        readonly IDomainEventSerializer _domainEventSerializer;
 
-        public DefaultAggregateRootRepository(IEventStore eventStore)
+        public DefaultAggregateRootRepository(IEventStore eventStore, IDomainEventSerializer domainEventSerializer)
         {
             _eventStore = eventStore;
+            _domainEventSerializer = domainEventSerializer;
         }
 
         /// <summary>
@@ -41,7 +44,8 @@ namespace d60.Cirqus.Aggregates
             var domainEventsForThisAggregate = _eventStore.Load(aggregateRootId);
 
             var eventsToApply = domainEventsForThisAggregate
-                .Where(e => e.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber);
+                .Where(e => e.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber)
+                .Select(e => _domainEventSerializer.Deserialize(e));
 
             aggregateRootInfo.Apply(eventsToApply, unitOfWork);
 
