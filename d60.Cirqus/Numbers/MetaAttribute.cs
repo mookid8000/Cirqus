@@ -11,9 +11,9 @@ namespace d60.Cirqus.Numbers
     public class MetaAttribute : Attribute
     {
         readonly string _key;
-        readonly object _value;
+        readonly string _value;
 
-        public MetaAttribute(string key, object value)
+        public MetaAttribute(string key, string value)
         {
             _key = key;
             _value = value;
@@ -24,7 +24,7 @@ namespace d60.Cirqus.Numbers
             get { return _key; }
         }
 
-        public object Value
+        public string Value
         {
             get { return _value; }
         }

@@ -11,7 +11,7 @@ namespace d60.Cirqus.Tests.Aggregates
     [TestFixture]
     public class TestVersionAttributeApplication : FixtureBase
     {
-        const int EmittedVersion = 4;
+        const string EmittedVersion = "4";
         TestContext _context;
 
         protected override void DoSetUp()
