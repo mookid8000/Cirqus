@@ -214,6 +214,7 @@
     <Compile Include="Views\NewViewManager\Events\WasEaten.cs" />
     <Compile Include="Views\NewViewManager\Views\SlowView.cs" />
     <Compile Include="Contracts\Views\ObjectGraph.cs" />
+    <Compile Include="Views\TestDefaultEventDispatcherConfiguration.cs" />
     <Compile Include="Views\TestLoadAggregatesFromView.cs" />
     <Compile Include="Views\TestViewLocator.cs" />
   </ItemGroup>

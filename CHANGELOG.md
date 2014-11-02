@@ -392,6 +392,7 @@ This is a big update that completes the transition to the new, vastly improved v
 ## 0.40.0
 
 * Huge BREAKING change: Event store abstraction does not care about serialization now. It may, however, provide special support for various serialization formats if that makes sense (JSON comes to mind, in MongoDB or Postgres).
+* Allow for defaulting to `NullEventDispatcher` if no event dispatcher is configured.
 
 [asgerhallas]: https://github.com/asgerhallas
 

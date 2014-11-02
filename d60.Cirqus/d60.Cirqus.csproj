@@ -125,6 +125,7 @@
     <Compile Include="Testing\TestContext.cs" />
     <Compile Include="Testing\TestUnitOfWork.cs" />
     <Compile Include="Views\InMemoryViewEventDispatcher.cs" />
+    <Compile Include="Views\NullEventDispatcher.cs" />
     <Compile Include="Views\ViewManagers\AbstractViewManager.cs" />
     <Compile Include="Views\ViewManagers\IViewManager.cs" />
     <Compile Include="Serialization\JsonDomainEventSerializer.cs" />

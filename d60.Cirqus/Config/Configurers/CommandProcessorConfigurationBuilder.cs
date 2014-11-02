@@ -98,6 +98,11 @@ namespace d60.Cirqus.Config.Configurers
             {
                 _container.Register<IDomainEventSerializer>(context => new JsonDomainEventSerializer());
             }
+
+            if (!_container.HasService<IEventDispatcher>(checkForPrimary: true))
+            {
+                _container.Register<IEventDispatcher>(context => new NullEventDispatcher());
+            }
         }
     }
 }
