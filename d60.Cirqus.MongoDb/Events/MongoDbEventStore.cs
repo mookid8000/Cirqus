@@ -37,7 +37,7 @@ namespace d60.Cirqus.MongoDb.Events
             }
         }
 
-        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
         {
             var criteria = Query.GTE(GlobalSeqNoDocPath, globalSequenceNumber);
 
@@ -63,7 +63,7 @@ namespace d60.Cirqus.MongoDb.Events
                     .Max() + 1;
         }
 
-        public void Save(Guid batchId, IEnumerable<Event> events)
+        public void Save(Guid batchId, IEnumerable<EventData> events)
         {
             var batch = events.ToList();
 
@@ -166,7 +166,7 @@ namespace d60.Cirqus.MongoDb.Events
             return metadata;
         }
 
-        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<EventData> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             var criteria = Query.And(
                 Query.EQ(AggregateRootIdDocPath, aggregateRootId),
@@ -179,12 +179,12 @@ namespace d60.Cirqus.MongoDb.Events
                 .Select(MongoEventToEvent);
         }
 
-        Event MongoEventToEvent(MongoEvent e)
+        EventData MongoEventToEvent(MongoEvent e)
         {
             var meta = GetDictionaryAsMetadata(e.Meta);
             var data = e.Bin ?? GetBytesFromBsonValue(e.Body);
 
-            return Event.FromMetadata(meta, data);
+            return EventData.FromMetadata(meta, data);
         }
 
         byte[] GetBytesFromBsonValue(BsonValue body)

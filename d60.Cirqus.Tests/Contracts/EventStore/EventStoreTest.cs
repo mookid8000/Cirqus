@@ -44,7 +44,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         [Test]
         public void AssignsGlobalSequenceNumberToEvents()
         {
-            var events = new List<Event>
+            var events = new List<EventData>
             {
                 Event(0, Guid.NewGuid()), 
                 Event(0, Guid.NewGuid())
@@ -124,7 +124,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             var batchId = Guid.NewGuid();
             var aggregateRootId = Guid.NewGuid();
 
-            var events = new Event[]
+            var events = new EventData[]
             {
                 Event(1, aggregateRootId)
             };
@@ -146,9 +146,9 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             // arrange
             var batchId = Guid.NewGuid();
 
-            var events = new Event[]
+            var events = new EventData[]
             {
-                Cirqus.Events.Event.FromMetadata(new Metadata
+                Cirqus.Events.EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid().ToString()},
                     //{DomainEvent.MetadataKeys.SequenceNumber, 1}, //< this one is missing!
@@ -168,9 +168,9 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             // arrange
             var batchId = Guid.NewGuid();
 
-            var events = new Event[]
+            var events = new EventData[]
             {
-                Cirqus.Events.Event.FromMetadata(new Metadata
+                Cirqus.Events.EventData.FromMetadata(new Metadata
                 {
                     //{DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid()}, //< this one is missing!
                     {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
@@ -192,15 +192,15 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
             var events = new[]
             {
-                Cirqus.Events.Event.FromMetadata(new Metadata
+                Cirqus.Events.EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)}
                 }, new byte[0]),
-                Cirqus.Events.Event.FromMetadata(new Metadata
+                Cirqus.Events.EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 2.ToString(Metadata.NumberCulture)}
                 }, new byte[0]),
-                Cirqus.Events.Event.FromMetadata(new Metadata
+                Cirqus.Events.EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 4.ToString(Metadata.NumberCulture)}
                 }, new byte[0]),
@@ -468,9 +468,9 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             Assert.That(domainEvents.GetUtcTime(), Is.EqualTo(someUtcTime));
         }
 
-        static Event Event(int seq, Guid aggregateRootId)
+        static EventData Event(int seq, Guid aggregateRootId)
         {
-            return Cirqus.Events.Event.FromMetadata(new Metadata
+            return Cirqus.Events.EventData.FromMetadata(new Metadata
             {
                 {DomainEvent.MetadataKeys.SequenceNumber, seq.ToString(Metadata.NumberCulture)},
                 {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString()}
@@ -504,7 +504,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
         public class SomeRootEvent : DomainEvent<SomeRoot> { }
 
-        class ThrowingEvent : Event
+        class ThrowingEvent : EventData
         {
             public ThrowingEvent()
                 : base(null, null, null)

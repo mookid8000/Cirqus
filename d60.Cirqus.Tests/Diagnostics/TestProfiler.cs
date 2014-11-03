@@ -165,7 +165,7 @@ namespace d60.Cirqus.Tests.Diagnostics
             _innerEventStore = innerEventStore;
         }
 
-        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<EventData> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             foreach (var e in _innerEventStore.Load(aggregateRootId, firstSeq))
             {
@@ -175,7 +175,7 @@ namespace d60.Cirqus.Tests.Diagnostics
             }
         }
 
-        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
         {
             return _innerEventStore.Stream(globalSequenceNumber);
         }
@@ -185,7 +185,7 @@ namespace d60.Cirqus.Tests.Diagnostics
             return _innerEventStore.GetNextGlobalSequenceNumber();
         }
 
-        public void Save(Guid batchId, IEnumerable<Event> events)
+        public void Save(Guid batchId, IEnumerable<EventData> events)
         {
             _innerEventStore.Save(batchId, events);
         }

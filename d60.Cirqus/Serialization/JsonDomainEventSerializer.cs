@@ -69,14 +69,14 @@ namespace d60.Cirqus.Serialization
             return this;
         }
 
-        public Event Serialize(DomainEvent e)
+        public EventData Serialize(DomainEvent e)
         {
             try
             {
                 var jsonText = JsonConvert.SerializeObject(e, Settings);
                 var data = DefaultEncoding.GetBytes(jsonText);
 
-                var result = Event.FromDomainEvent(e, data);
+                var result = EventData.FromDomainEvent(e, data);
 
                 result.MarkAsJson();
 
@@ -88,7 +88,7 @@ namespace d60.Cirqus.Serialization
             }
         }
 
-        public DomainEvent Deserialize(Event e)
+        public DomainEvent Deserialize(EventData e)
         {
             var meta = e.Meta.Clone();
             var text = DefaultEncoding.GetString(e.Data);

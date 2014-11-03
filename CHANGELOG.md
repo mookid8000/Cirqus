@@ -402,6 +402,7 @@ This is a big update that completes the transition to the new, vastly improved v
 ## 0.41.1
 
 * Better error messages when JSON serialization/deserialization fails
+* Fixed some things around the new `Event` class
 
 [asgerhallas]: https://github.com/asgerhallas
 

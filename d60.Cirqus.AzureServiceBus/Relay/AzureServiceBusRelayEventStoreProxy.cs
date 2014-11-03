@@ -65,31 +65,31 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             throw new InvalidOperationException();
         }
 
-        public void Save(Guid batchId, IEnumerable<Event> events)
+        public void Save(Guid batchId, IEnumerable<EventData> events)
         {
         }
 
-        public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<EventData> LoadNew(Guid aggregateRootId, long firstSeq = 0)
         {
-            return Enumerable.Empty<Event>();
+            return Enumerable.Empty<EventData>();
         }
 
-        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
+        public IEnumerable<EventData> StreamNew(long globalSequenceNumber = 0)
         {
-            return Enumerable.Empty<Event>();
+            return Enumerable.Empty<EventData>();
         }
 
-        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<EventData> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             var transportMessage = InnerLoad(aggregateRootId, firstSeq);
             
             var domainEvents = transportMessage.Events
-                .Select(e => Event.FromMetadata(DeserializeMetadata(e), e.Data));
+                .Select(e => EventData.FromMetadata(DeserializeMetadata(e), e.Data));
 
             return domainEvents;
         }
 
-        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
         {
             var currentPosition = globalSequenceNumber;
 
@@ -98,7 +98,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
                 var transportMessage = InnerStream(currentPosition);
 
                 var domainEvents = transportMessage.Events
-                    .Select(e => Event.FromMetadata(DeserializeMetadata(e), e.Data))
+                    .Select(e => EventData.FromMetadata(DeserializeMetadata(e), e.Data))
                     .ToList();
 
                 if (!domainEvents.Any())

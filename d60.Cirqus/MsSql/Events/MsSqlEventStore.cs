@@ -37,7 +37,7 @@ namespace d60.Cirqus.MsSql.Events
             }
         }
 
-        public void Save(Guid batchId, IEnumerable<Event> events)
+        public void Save(Guid batchId, IEnumerable<EventData> events)
         {
             var eventList = events.ToList();
 
@@ -107,7 +107,7 @@ INSERT INTO [{0}] (
             }
         }
 
-        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<EventData> Load(Guid aggregateRootId, long firstSeq = 0)
         {
             SqlConnection conn = null;
 
@@ -149,7 +149,7 @@ SELECT [meta],[data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqN
             }
         }
 
-        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
         {
             SqlConnection connection = null;
 
@@ -204,12 +204,12 @@ SELECT [meta],[data] FROM [{0}] WHERE [globSeqNo] >= @cutoff ORDER BY [globSeqNo
             return globalSequenceNumber;
         }
 
-        static Event ReadEvent(IDataRecord reader)
+        static EventData ReadEvent(IDataRecord reader)
         {
             var meta = (string) reader["meta"];
             var data = (byte[]) reader["data"];
 
-            return Event.FromMetadata(JsonConvert.DeserializeObject<Metadata>(meta), data);
+            return EventData.FromMetadata(JsonConvert.DeserializeObject<Metadata>(meta), data);
         }
 
         long GetNextGlobalSequenceNumber(SqlConnection conn, SqlTransaction tx)

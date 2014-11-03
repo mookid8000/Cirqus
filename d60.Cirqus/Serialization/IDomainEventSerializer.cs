@@ -4,7 +4,7 @@ namespace d60.Cirqus.Serialization
 {
     public interface IDomainEventSerializer
     {
-        Event Serialize(DomainEvent e);
-        DomainEvent Deserialize(Event e);
+        EventData Serialize(DomainEvent e);
+        DomainEvent Deserialize(EventData e);
     }
 }
