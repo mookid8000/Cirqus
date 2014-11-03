@@ -20,7 +20,7 @@ namespace d60.Cirqus.Extensions
         /// <summary>
         /// Gets the batch ID from the domain event
         /// </summary>
-        public static Guid GetBatchId(this Event domainEvent, bool throwIfNotFound = true)
+        public static Guid GetBatchId(this EventData domainEvent, bool throwIfNotFound = true)
         {
             return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.BatchId, value => new Guid(Convert.ToString(value)), throwIfNotFound);
         }
@@ -28,7 +28,7 @@ namespace d60.Cirqus.Extensions
         /// <summary>
         /// Gets the (root-local) sequence number from the domain event
         /// </summary>
-        public static long GetSequenceNumber(this Event domainEvent, bool throwIfNotFound = true)
+        public static long GetSequenceNumber(this EventData domainEvent, bool throwIfNotFound = true)
         {
             return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.SequenceNumber, Convert.ToInt64, throwIfNotFound);
         }
@@ -36,18 +36,18 @@ namespace d60.Cirqus.Extensions
         /// <summary>
         /// Gets the global sequence number from the domain event
         /// </summary>
-        public static long GetGlobalSequenceNumber(this Event domainEvent, bool throwIfNotFound = true)
+        public static long GetGlobalSequenceNumber(this EventData domainEvent, bool throwIfNotFound = true)
         {
             return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.GlobalSequenceNumber, Convert.ToInt64, throwIfNotFound);
         }
 
-        public static bool IsJson(this Event e)
+        public static bool IsJson(this EventData e)
         {
             return e.Meta.ContainsKey(ContentTypeMetadataKey)
                    && e.Meta[ContentTypeMetadataKey] == Utf8JsonMetadataValue;
         }
 
-        public static void MarkAsJson(this Event e)
+        public static void MarkAsJson(this EventData e)
         {
             e.Meta[ContentTypeMetadataKey] = Utf8JsonMetadataValue;
         }

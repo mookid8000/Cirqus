@@ -8,7 +8,7 @@ namespace d60.Cirqus.Tests
 {
     static class TestExtensions
     {
-        public static IEnumerable<long> GetSeq(this IEnumerable<Event> events)
+        public static IEnumerable<long> GetSeq(this IEnumerable<EventData> events)
         {
             return events.Select(e => e.GetSequenceNumber());
         }

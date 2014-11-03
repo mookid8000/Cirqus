@@ -58,8 +58,7 @@ namespace d60.Cirqus.Numbers
 
         public override string ToString()
         {
-            return string.Format("meta: ({0})",
-                string.Join(", ", this.Select(kvp => string.Format(@"""{0}"": ""{1}""", kvp.Key, kvp.Value))));
+            return string.Join(", ", this.Select(kvp => string.Format(@"""{0}"": ""{1}""", kvp.Key, kvp.Value)));
         }
     }
 }

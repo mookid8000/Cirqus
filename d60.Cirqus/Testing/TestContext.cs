@@ -39,6 +39,12 @@ namespace d60.Cirqus.Testing
             _eventDispatcher = new CompositeEventDispatcher(_viewManagerEventDispatcher);
         }
 
+        public int MaxDomainEventsPerBatch
+        {
+            get { return _viewManagerEventDispatcher.MaxDomainEventsPerBatch; }
+            set { _viewManagerEventDispatcher.MaxDomainEventsPerBatch = value; }
+        }
+
         /// <summary>
         /// Can be used to specify whether this test context will block & wait for views to catch up after each and every processed command
         /// </summary>
@@ -271,6 +277,7 @@ Current view positions:
             domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId] = aggregateRootId;
             domainEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber] = _eventStore.GetNextSeqNo(aggregateRootId).ToString(Metadata.NumberCulture);
             domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = AggregateRoot.GetOwnerFromType(typeof(TAggregateRoot));
+            domainEvent.Meta[DomainEvent.MetadataKeys.Type] = AggregateRoot.GetEventTypeFromType(domainEvent.GetType());
             domainEvent.Meta[DomainEvent.MetadataKeys.TimeUtc] = now.ToString("u");
 
             domainEvent.Meta.TakeFromAttributes(domainEvent.GetType());

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using d60.Cirqus.Aggregates;
@@ -163,7 +163,7 @@ namespace d60.Cirqus.Diagnostics
                 return _innerEventStore.Load(aggregateRootId, firstSeq);
             }
 
-            public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
+            public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
             {
                 return _innerEventStore.Stream(globalSequenceNumber);
             }
@@ -181,7 +181,7 @@ namespace d60.Cirqus.Diagnostics
                 }
             }
 
-            public void Save(Guid batchId, IEnumerable<Event> events)
+            public void Save(Guid batchId, IEnumerable<EventData> events)
             {
                 var stopwatch = Stopwatch.StartNew();
                 try

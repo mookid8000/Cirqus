@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -173,7 +173,7 @@ namespace d60.Cirqus.Tests.Diagnostics
             }
         }
 
-        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
         {
             return _innerEventStore.Stream(globalSequenceNumber);
         }
@@ -183,7 +183,7 @@ namespace d60.Cirqus.Tests.Diagnostics
             return _innerEventStore.GetNextGlobalSequenceNumber();
         }
 
-        public void Save(Guid batchId, IEnumerable<Event> events)
+        public void Save(Guid batchId, IEnumerable<EventData> events)
         {
             _innerEventStore.Save(batchId, events);
         }

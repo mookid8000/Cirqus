@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -160,7 +160,7 @@ caching in use: {3}",
                 return domainEvents;
             }
 
-            public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
+            public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
             {
                 return InnerEventStore.Stream(globalSequenceNumber);
             }
@@ -170,7 +170,7 @@ caching in use: {3}",
                 return InnerEventStore.GetNextGlobalSequenceNumber();
             }
 
-            public void Save(Guid batchId, IEnumerable<Event> events)
+            public void Save(Guid batchId, IEnumerable<EventData> events)
             {
                 var stopwatch = Stopwatch.StartNew();
 

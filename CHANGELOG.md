@@ -399,7 +399,16 @@ This is a big update that completes the transition to the new, vastly improved v
 * Added ability to configure a custom serializer
 * Added standard binary formatter-based binary .NET serializer
 
-## vnext
+## 0.41.1
+
+* Better error messages when JSON serialization/deserialization fails
+* Fixed some things around the new `Event` class
+
+## 0.42.0
+
+* Add event type to metadata of events. I sincerely hope that this will be the last change to the persistence format of the events.
+
+## 0.43.0
 
 * Changed aggregate root ID to be a `string` instead of a `Guid`
 

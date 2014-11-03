@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -135,7 +135,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 return _innerEventStore.Load(aggregateRootId, firstSeq);
             }
 
-            public IEnumerable<Cirqus.Events.Event> Stream(long globalSequenceNumber = 0)
+            public IEnumerable<Cirqus.Events.EventData> Stream(long globalSequenceNumber = 0)
             {
                 PossiblyThrowError();
 
@@ -149,7 +149,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 return _innerEventStore.GetNextGlobalSequenceNumber();
             }
 
-            public void Save(Guid batchId, IEnumerable<Cirqus.Events.Event> events)
+            public void Save(Guid batchId, IEnumerable<Cirqus.Events.EventData> events)
             {
                 PossiblyThrowError();
 

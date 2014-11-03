@@ -35,7 +35,7 @@ namespace d60.Cirqus.Ntfs.Events
             Directory.CreateDirectory(_dataDirectory);
         }
 
-        public void Write(Guid batchId, IReadOnlyCollection<Event> events)
+        public void Write(Guid batchId, IReadOnlyCollection<Cirqus.Events.EventData> events)
         {
             foreach (var domainEvent in events)
             {
@@ -50,7 +50,7 @@ namespace d60.Cirqus.Ntfs.Events
             }
         }
 
-        public void Write(Event domainEvent)
+        public void Write(Cirqus.Events.EventData domainEvent)
         {
             var aggregateRootId = domainEvent.GetAggregateRootId();
             var sequenceNumber = domainEvent.GetSequenceNumber();
@@ -75,7 +75,7 @@ namespace d60.Cirqus.Ntfs.Events
                 Data = data;
             }
 
-            public static EventData Create(Event domainEvent)
+            public static EventData Create(Cirqus.Events.EventData domainEvent)
             {
                 return new EventData(domainEvent.Meta, domainEvent.Data);
             }
@@ -90,7 +90,7 @@ namespace d60.Cirqus.Ntfs.Events
 
             if (!Directory.Exists(aggregateDirectory))
             {
-                return Enumerable.Empty<Event>();
+                return Enumerable.Empty<Cirqus.Events.EventData>();
             }
 
             return from path in Directory.EnumerateFiles(aggregateDirectory)
@@ -124,7 +124,7 @@ namespace d60.Cirqus.Ntfs.Events
                 File.Delete(filename);
         }
 
-        Event TryRead(string filename)
+        Cirqus.Events.EventData TryRead(string filename)
         {
             if (!File.Exists(filename))
                 return null;
@@ -139,7 +139,7 @@ namespace d60.Cirqus.Ntfs.Events
                 {
                     var eventData = _serializer.Deserialize<EventData>(bsonReader);
                     
-                    return Event.FromMetadata(eventData.Meta, eventData.Data);
+                    return Cirqus.Events.EventData.FromMetadata(eventData.Meta, eventData.Data);
                 }
                 catch (Exception)
                 {

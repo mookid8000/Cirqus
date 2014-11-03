@@ -145,7 +145,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             };
         }
 
-        byte[] SerializeMetadata(Event e)
+        byte[] SerializeMetadata(EventData e)
         {
             return DefaultEncoding.GetBytes(_metadataSerializer.Serialize(e.Meta));
         }

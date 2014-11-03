@@ -25,7 +25,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
                     {DomainEvent.MetadataKeys.AggregateRootId, "id"}
@@ -35,7 +35,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
 
             // save an event to a file, without committing
             _eventStore.DataStore.Write(
-                Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
                     {DomainEvent.MetadataKeys.AggregateRootId, "id"},
@@ -53,7 +53,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
                     {DomainEvent.MetadataKeys.AggregateRootId, "id".ToString()}
@@ -81,7 +81,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
                     {DomainEvent.MetadataKeys.AggregateRootId, "rootid"}
@@ -102,7 +102,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
                     {DomainEvent.MetadataKeys.AggregateRootId, "rootid"}
@@ -123,7 +123,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
                     {DomainEvent.MetadataKeys.AggregateRootId, "rootid"}
@@ -131,7 +131,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             });
 
             // make one that fails right after index write
-            var domainEvent = Event.FromMetadata(new Metadata
+            var domainEvent = EventData.FromMetadata(new Metadata
             {
                 {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
                 {DomainEvent.MetadataKeys.AggregateRootId, "rootid"},
@@ -144,7 +144,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             // make one full commit
             _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
                     {DomainEvent.MetadataKeys.AggregateRootId, "rootid"}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -64,7 +64,7 @@ namespace d60.Cirqus.SQLite
             public byte[] Meta { get; set; }
         }
 
-        public void Save(Guid batchId, IEnumerable<Events.Event> batch)
+        public void Save(Guid batchId, IEnumerable<Events.EventData> batch)
         {
             var nextGlobalSequenceNumber = GetNextGlobalSequenceNumber();
 
@@ -124,17 +124,17 @@ namespace d60.Cirqus.SQLite
                 .Where(e => e.AggregateRootId == aggregateRootId)
                 .Where(e => e.SequenceNumber >= firstSeq))
             {
-                yield return Events.Event.FromMetadata(_metadataSerializer.Deserialize(Encoding.UTF8.GetString(e.Meta)), e.Data);
+                yield return Events.EventData.FromMetadata(_metadataSerializer.Deserialize(Encoding.UTF8.GetString(e.Meta)), e.Data);
             }
         }
 
-        public IEnumerable<Events.Event> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<Events.EventData> Stream(long globalSequenceNumber = 0)
         {
             // must be foreach here - SQLite's LINQ thingie does not play well with _domainEventSerializer.Deserialize(e.EventData)
             foreach (var e in _connection.Table<Event>()
                 .Where(e => e.GlobalSequenceNumber >= globalSequenceNumber))
             {
-                yield return Events.Event.FromMetadata(_metadataSerializer.Deserialize(Encoding.UTF8.GetString(e.Meta)), e.Data);
+                yield return Events.EventData.FromMetadata(_metadataSerializer.Deserialize(Encoding.UTF8.GetString(e.Meta)), e.Data);
             }
         }
 

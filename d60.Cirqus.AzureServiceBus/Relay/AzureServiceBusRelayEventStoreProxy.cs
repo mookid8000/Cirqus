@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
@@ -65,7 +65,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             throw new InvalidOperationException();
         }
 
-        public void Save(Guid batchId, IEnumerable<Event> events)
+        public void Save(Guid batchId, IEnumerable<EventData> events)
         {
         }
 
@@ -74,12 +74,12 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             var transportMessage = InnerLoad(aggregateRootId, firstSeq);
             
             var domainEvents = transportMessage.Events
-                .Select(e => Event.FromMetadata(DeserializeMetadata(e), e.Data));
+                .Select(e => EventData.FromMetadata(DeserializeMetadata(e), e.Data));
 
             return domainEvents;
         }
 
-        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
         {
             var currentPosition = globalSequenceNumber;
 
@@ -88,7 +88,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
                 var transportMessage = InnerStream(currentPosition);
 
                 var domainEvents = transportMessage.Events
-                    .Select(e => Event.FromMetadata(DeserializeMetadata(e), e.Data))
+                    .Select(e => EventData.FromMetadata(DeserializeMetadata(e), e.Data))
                     .ToList();
 
                 if (!domainEvents.Any())
