@@ -11,6 +11,8 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
         readonly List<IViewManager> _viewManagers = new List<IViewManager>();
         readonly List<IDisposable> _stuffToDispose = new List<IDisposable>();
 
+        public int MaxDomainEventsPerBatch { get; set; }
+
         public virtual TViewInstance Load<TViewInstance>(string viewId) where TViewInstance : class, IViewInstance, ISubscribeTo, new()
         {
             var viewManager = GetViewManager<TViewInstance>();

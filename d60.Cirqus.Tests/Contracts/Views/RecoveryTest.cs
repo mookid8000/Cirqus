@@ -29,7 +29,11 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             _factory = RegisterForDisposal(new TFactory());
 
-            _context = RegisterForDisposal(new TestContext { Asynchronous = true });
+            _context = RegisterForDisposal(new TestContext
+            {
+                Asynchronous = true,
+                MaxDomainEventsPerBatch = 10
+            });
 
             _viewManager = _factory.GetViewManager<View>();
         }
