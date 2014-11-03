@@ -26,6 +26,11 @@ namespace d60.Cirqus.Commands
     /// <typeparam name="TAggregateRoot">Specifies the type of aggregate root that this command targets</typeparam>
     public abstract class Command<TAggregateRoot> : Command where TAggregateRoot : AggregateRoot, new()
     {
+        protected Command(Guid aggregateRootId)
+            : this(aggregateRootId.ToString())
+        {
+        }
+
         protected Command(string aggregateRootId)
         {
             if (aggregateRootId == null) throw new ArgumentNullException("aggregateRootId", "You need to specify an aggregate root ID");
