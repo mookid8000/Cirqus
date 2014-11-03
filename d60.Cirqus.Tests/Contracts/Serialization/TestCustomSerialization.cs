@@ -34,9 +34,11 @@ namespace d60.Cirqus.Tests.Contracts.Serialization
 
             _commandProcessor = CommandProcessor.With()
                 .EventStore(e => e.Registrar.Register(c => factory.GetEventStore()))
-                .EventDispatcher(e=> e.UseViewManagerEventDispatcher(_viewManager))
+                .EventDispatcher(e => e.UseViewManagerEventDispatcher(_viewManager))
                 .Options(o => o.UseCustomDomainEventSerializer(new BinaryDomainEventSerializer()))
                 .Create();
+
+            RegisterForDisposal(_commandProcessor);
         }
 
         [Test]
@@ -50,7 +52,7 @@ namespace d60.Cirqus.Tests.Contracts.Serialization
 
             _viewManager.WaitUntilProcessed(lastResult, TimeSpan.FromSeconds(10)).Wait();
             var view = _viewManager.Load(GlobalInstanceLocator.GetViewInstanceId());
-            
+
             Assert.That(view.SecretBizTimes.Length, Is.EqualTo(3));
         }
 
