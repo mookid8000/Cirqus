@@ -145,9 +145,9 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             // arrange
             var batchId = Guid.NewGuid();
 
-            var events = new EventData[]
+            var events = new[]
             {
-                Cirqus.Events.EventData.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid().ToString()},
                     //{DomainEvent.MetadataKeys.SequenceNumber, 1}, //< this one is missing!
@@ -167,9 +167,9 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             // arrange
             var batchId = Guid.NewGuid();
 
-            var events = new EventData[]
+            var events = new[]
             {
-                Cirqus.Events.EventData.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     //{DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid()}, //< this one is missing!
                     {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
@@ -191,18 +191,18 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
             var events = new[]
             {
-                Cirqus.Events.EventData.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)}
                 }, new byte[0]),
-                Cirqus.Events.EventData.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 2.ToString(Metadata.NumberCulture)}
                 }, new byte[0]),
-                Cirqus.Events.EventData.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 4.ToString(Metadata.NumberCulture)}
-                }, new byte[0]),
+                }, new byte[0])
             };
 
             // act
@@ -219,7 +219,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             {
                 Event(1, "id"), 
                 Event(2, "id"), 
-                Event(3, "id"),
+                Event(3, "id")
             };
 
             _eventStore.Save(Guid.NewGuid(), events);
@@ -240,7 +240,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             {
                 Event(1, "id1"), 
                 Event(2, "id1"), 
-                Event(3, "id1"),
+                Event(3, "id1")
             };
 
             _eventStore.Save(Guid.NewGuid(), events);
@@ -452,9 +452,9 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             Assert.That(domainEvents.GetUtcTime(), Is.EqualTo(someUtcTime));
         }
 
-        static Event Event(int seq, string aggregateRootId)
+        static EventData Event(int seq, string aggregateRootId)
         {
-            return Cirqus.Events.EventData.FromMetadata(new Metadata
+            return EventData.FromMetadata(new Metadata
             {
                 {DomainEvent.MetadataKeys.SequenceNumber, seq.ToString(Metadata.NumberCulture)},
                 {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId}

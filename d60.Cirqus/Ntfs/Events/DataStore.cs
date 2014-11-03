@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
-using d60.Cirqus.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 
@@ -84,7 +82,7 @@ namespace d60.Cirqus.Ntfs.Events
             public byte[] Data { get; private set; }
         }
 
-        public IEnumerable<Event> Read(long lastCommittedGlobalSequenceNumber, string aggregateRootId, long offset)
+        public IEnumerable<Cirqus.Events.EventData> Read(long lastCommittedGlobalSequenceNumber, string aggregateRootId, long offset)
         {
             var aggregateDirectory = Path.Combine(_dataDirectory, aggregateRootId);
 
@@ -103,7 +101,7 @@ namespace d60.Cirqus.Ntfs.Events
 
         }
 
-        public Event Read(string aggregateRootId, long sequenceNumber)
+        public Cirqus.Events.EventData Read(string aggregateRootId, long sequenceNumber)
         {
             var filename = Path.Combine(_dataDirectory, aggregateRootId, GetFilename(sequenceNumber));
             

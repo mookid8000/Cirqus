@@ -12,7 +12,7 @@ namespace d60.Cirqus.Extensions
         /// <summary>
         /// Gets the aggregate root ID from the domain event
         /// </summary>
-        public static string GetAggregateRootId(this Event domainEvent, bool throwIfNotFound = true)
+        public static string GetAggregateRootId(this EventData domainEvent, bool throwIfNotFound = true)
         {
             return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.AggregateRootId, x => x, throwIfNotFound);
         }
@@ -52,7 +52,7 @@ namespace d60.Cirqus.Extensions
             e.Meta[ContentTypeMetadataKey] = Utf8JsonMetadataValue;
         }
 
-        static TValue GetMetadataField<TValue>(Event domainEvent, string key, Func<string, TValue> converter, bool throwIfNotFound)
+        static TValue GetMetadataField<TValue>(EventData domainEvent, string key, Func<string, TValue> converter, bool throwIfNotFound)
         {
             var metadata = domainEvent.Meta;
 

@@ -59,7 +59,7 @@ namespace d60.Cirqus.Ntfs.Events
             }
         }
 
-        public IEnumerable<Event> Load(string aggregateRootId, long firstSeq = 0)
+        public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
         {
             var lastCommittedGlobalSequenceNumber = CommitLog.Read();
 

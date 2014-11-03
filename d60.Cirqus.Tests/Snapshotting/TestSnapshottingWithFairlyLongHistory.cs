@@ -149,7 +149,7 @@ caching in use: {3}",
                 return InnerAggregateRootRepository.Exists<TAggregate>(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
             }
 
-            public IEnumerable<Event> Load(string aggregateRootId, long firstSeq = 0)
+            public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
             {
                 var stopwatch = Stopwatch.StartNew();
 

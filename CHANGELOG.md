@@ -410,7 +410,7 @@ This is a big update that completes the transition to the new, vastly improved v
 
 ## 0.43.0
 
-* Changed aggregate root ID to be a `string` instead of a `Guid`
+* Changed aggregate root ID to be `string`s instead of `Guid`s - thanks [asgerhallas]
 
 
 [asgerhallas]: https://github.com/asgerhallas

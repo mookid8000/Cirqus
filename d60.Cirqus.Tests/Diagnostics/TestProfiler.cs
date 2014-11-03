@@ -163,7 +163,7 @@ namespace d60.Cirqus.Tests.Diagnostics
             _innerEventStore = innerEventStore;
         }
 
-        public IEnumerable<Event> Load(string aggregateRootId, long firstSeq = 0)
+        public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
         {
             foreach (var e in _innerEventStore.Load(aggregateRootId, firstSeq))
             {

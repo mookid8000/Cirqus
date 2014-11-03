@@ -128,14 +128,14 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 _errorProbability = errorProbability;
             }
 
-            public IEnumerable<Cirqus.Events.Event> Load(string aggregateRootId, long firstSeq = 0)
+            public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
             {
                 PossiblyThrowError();
 
                 return _innerEventStore.Load(aggregateRootId, firstSeq);
             }
 
-            public IEnumerable<Cirqus.Events.EventData> Stream(long globalSequenceNumber = 0)
+            public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
             {
                 PossiblyThrowError();
 

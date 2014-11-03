@@ -166,7 +166,7 @@ namespace d60.Cirqus.MongoDb.Events
             return metadata;
         }
 
-        public IEnumerable<Event> Load(string aggregateRootId, long firstSeq = 0)
+        public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
         {
             var criteria = Query.And(
                 Query.EQ(AggregateRootIdDocPath, aggregateRootId),

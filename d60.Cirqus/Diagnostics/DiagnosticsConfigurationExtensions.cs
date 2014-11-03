@@ -158,7 +158,7 @@ namespace d60.Cirqus.Diagnostics
                 _operationProfiler = operationProfiler;
             }
 
-            public IEnumerable<Event> Load(string aggregateRootId, long firstSeq = 0)
+            public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
             {
                 return _innerEventStore.Load(aggregateRootId, firstSeq);
             }
