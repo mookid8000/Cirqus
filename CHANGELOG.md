@@ -399,5 +399,9 @@ This is a big update that completes the transition to the new, vastly improved v
 * Added ability to configure a custom serializer
 * Added standard binary formatter-based binary .NET serializer
 
+## 0.41.1
+
+* Better error messages when JSON serialization/deserialization fails
+
 [asgerhallas]: https://github.com/asgerhallas
 

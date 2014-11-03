@@ -84,7 +84,7 @@ namespace d60.Cirqus.Serialization
             }
             catch (Exception exception)
             {
-                throw new SerializationException(string.Format("Could not serialize DomainEvent {0} into JSON!", e), exception);
+                throw new SerializationException(string.Format("Could not serialize DomainEvent {0} into JSON! (headers: {1})", e, e.Meta), exception);
             }
         }
 
@@ -107,7 +107,7 @@ namespace d60.Cirqus.Serialization
             }
             catch (Exception exception)
             {
-                throw new SerializationException(string.Format("Could not deserialize JSON text '{0}' into proper DomainEvent!", text), exception);
+                throw new SerializationException(string.Format("Could not deserialize JSON text '{0}' into proper DomainEvent! (headers: {1})", text, e.Meta), exception);
             }
         }
 
@@ -127,7 +127,9 @@ Result after first serialization:
 
 Result after roundtripping:
 
-{2}", domainEvent, firstSerialization, secondSerialization));
+{2}
+
+Headers: {3}", domainEvent, firstSerialization, secondSerialization, domainEvent.Meta));
         }
 
     }
