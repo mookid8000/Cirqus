@@ -399,7 +399,7 @@ This is a big update that completes the transition to the new, vastly improved v
 * Added ability to configure a custom serializer
 * Added standard binary formatter-based binary .NET serializer
 
-## 0.42.0
+## vnext
 
 * Changed aggregate root ID to be a `string` instead of a `Guid`
 
