@@ -61,6 +61,7 @@ namespace d60.Cirqus.Tests.Aggregates
 
             Assert.That(firstEvent.Meta[DomainEvent.MetadataKeys.TimeUtc], Is.EqualTo(timeForFirstEvent.ToString("u")));
             Assert.That(firstEvent.Meta[DomainEvent.MetadataKeys.Owner], Is.EqualTo("d60.Cirqus.Tests.Aggregates.TestEventApplication+SomeAggregate, d60.Cirqus.Tests"));
+            Assert.That(firstEvent.Meta[DomainEvent.MetadataKeys.Type], Is.EqualTo("d60.Cirqus.Tests.Aggregates.TestEventApplication+SomeEvent, d60.Cirqus.Tests"));
             Assert.That(firstEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber], Is.EqualTo("0"));
             Assert.That(firstEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId], Is.EqualTo(aggregateRootId.ToString()));
 
@@ -68,6 +69,7 @@ namespace d60.Cirqus.Tests.Aggregates
 
             Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.TimeUtc], Is.EqualTo(timeForNextEvent.ToString("u")));
             Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.Owner], Is.EqualTo("d60.Cirqus.Tests.Aggregates.TestEventApplication+SomeAggregate, d60.Cirqus.Tests"));
+            Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.Type], Is.EqualTo("d60.Cirqus.Tests.Aggregates.TestEventApplication+SomeEvent, d60.Cirqus.Tests"));
             Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber], Is.EqualTo("1"));
             Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId], Is.EqualTo(aggregateRootId.ToString()));
         }
@@ -78,7 +80,6 @@ namespace d60.Cirqus.Tests.Aggregates
 
             return new DefaultAggregateRootRepository(inMemoryEventStore, _domainEventSerializer);
         }
-
 
         public class SomeEvent : DomainEvent<SomeAggregate>
         {

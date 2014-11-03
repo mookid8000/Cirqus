@@ -404,5 +404,9 @@ This is a big update that completes the transition to the new, vastly improved v
 * Better error messages when JSON serialization/deserialization fails
 * Fixed some things around the new `Event` class
 
+## 0.42.0
+
+* Add event type to metadata of events. I sincerely hope that this will be the last change to the persistence format of the events.
+
 [asgerhallas]: https://github.com/asgerhallas
 

@@ -271,6 +271,7 @@ Current view positions:
             domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId] = aggregateRootId.ToString();
             domainEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber] = _eventStore.GetNextSeqNo(aggregateRootId).ToString(Metadata.NumberCulture);
             domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = AggregateRoot.GetOwnerFromType(typeof(TAggregateRoot));
+            domainEvent.Meta[DomainEvent.MetadataKeys.Type] = AggregateRoot.GetEventTypeFromType(domainEvent.GetType());
             domainEvent.Meta[DomainEvent.MetadataKeys.TimeUtc] = now.ToString("u");
 
             domainEvent.Meta.TakeFromAttributes(domainEvent.GetType());

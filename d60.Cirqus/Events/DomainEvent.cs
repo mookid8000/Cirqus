@@ -15,6 +15,7 @@ namespace d60.Cirqus.Events
             public const string BatchId = "batch_id";
             public const string TimeUtc = "time_utc";
             public const string Owner = "owner";
+            public const string Type = "type";
             public const string RootVersion = "root_ver";
             public const string EventVersion = "evt_ver";
         }
