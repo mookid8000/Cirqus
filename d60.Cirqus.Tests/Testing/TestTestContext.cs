@@ -282,10 +282,9 @@ namespace d60.Cirqus.Tests.Testing
         public void EventsAreNotAppendedToHistoryBeforeCommit()
         {
             // arrange
-            var rootId = Guid.NewGuid();
             using (var uow = _context.BeginUnitOfWork())
             {
-                var root = uow.Get<AnAggregate>(rootId);
+                var root = uow.Get<AnAggregate>("rootid");
                 root.DoStuff();
 
                 Assert.That(_context.History.Count(), Is.EqualTo(0));
@@ -296,10 +295,9 @@ namespace d60.Cirqus.Tests.Testing
         public void CommittedEventsAreStillAvailableInUnitOfWorkAfterCommit()
         {
             // arrange
-            var rootId = Guid.NewGuid();
             using (var uow = _context.BeginUnitOfWork())
             {
-                var root = uow.Get<AnAggregate>(rootId);
+                var root = uow.Get<AnAggregate>("rootid");
                 root.DoStuff();
 
                 // act

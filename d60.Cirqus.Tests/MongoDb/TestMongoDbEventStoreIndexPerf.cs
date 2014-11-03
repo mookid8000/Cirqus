@@ -68,7 +68,7 @@ namespace d60.Cirqus.Tests.MongoDb
                 Meta =
                 {
                     { DomainEvent.MetadataKeys.SequenceNumber, nextSeqNo.ToString(Metadata.NumberCulture) },
-                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString() }
+                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId }
                 }
             };
         }

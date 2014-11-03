@@ -69,16 +69,6 @@ namespace d60.Cirqus.AzureServiceBus.Relay
         {
         }
 
-        public IEnumerable<Event> LoadNew(Guid aggregateRootId, long firstSeq = 0)
-        {
-            return Enumerable.Empty<Event>();
-        }
-
-        public IEnumerable<Event> StreamNew(long globalSequenceNumber = 0)
-        {
-            return Enumerable.Empty<Event>();
-        }
-
         public IEnumerable<Event> Load(string aggregateRootId, long firstSeq = 0)
         {
             var transportMessage = InnerLoad(aggregateRootId, firstSeq);

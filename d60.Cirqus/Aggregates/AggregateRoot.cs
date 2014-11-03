@@ -75,7 +75,7 @@ namespace d60.Cirqus.Aggregates
             var now = Time.UtcNow();
             var sequenceNumber = ++CurrentSequenceNumber;
 
-            e.Meta[DomainEvent.MetadataKeys.AggregateRootId] = Id.ToString();
+            e.Meta[DomainEvent.MetadataKeys.AggregateRootId] = Id;
             e.Meta[DomainEvent.MetadataKeys.TimeUtc] = now.ToString("u");
             e.Meta[DomainEvent.MetadataKeys.SequenceNumber] = sequenceNumber.ToString(Metadata.NumberCulture);
             e.Meta[DomainEvent.MetadataKeys.Owner] = GetOwnerFromType(GetType());

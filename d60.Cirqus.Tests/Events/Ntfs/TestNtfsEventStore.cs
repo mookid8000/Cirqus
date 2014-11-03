@@ -84,7 +84,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 Event.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
-                    {DomainEvent.MetadataKeys.AggregateRootId, "rootid".ToString()}
+                    {DomainEvent.MetadataKeys.AggregateRootId, "rootid"}
                 }, new byte[0])
             });
 
@@ -105,7 +105,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 Event.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
-                    {DomainEvent.MetadataKeys.AggregateRootId, "rootid".ToString()}
+                    {DomainEvent.MetadataKeys.AggregateRootId, "rootid"}
                 }, new byte[0])
             });
 

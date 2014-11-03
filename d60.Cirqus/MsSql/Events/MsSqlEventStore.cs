@@ -82,7 +82,7 @@ INSERT INTO [{0}] (
 
 ", _tableName);
                                 cmd.Parameters.Add("batchId", SqlDbType.UniqueIdentifier).Value = batchId;
-                                cmd.Parameters.Add("aggId", SqlDbType.VarChar).Value = @event.Meta[DomainEvent.MetadataKeys.AggregateRootId];
+                                cmd.Parameters.Add("aggId", SqlDbType.NVarChar).Value = @event.Meta[DomainEvent.MetadataKeys.AggregateRootId];
                                 cmd.Parameters.Add("seqNo", SqlDbType.BigInt).Value = @event.Meta[DomainEvent.MetadataKeys.SequenceNumber];
                                 cmd.Parameters.Add("globSeqNo", SqlDbType.BigInt).Value = @event.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber];
                                 cmd.Parameters.Add("meta", SqlDbType.NVarChar).Value = JsonConvert.SerializeObject(@event.Meta);
@@ -267,7 +267,7 @@ BEGIN
     CREATE TABLE [dbo].[{0}] (
 	    [id] [bigint] IDENTITY(1,1) NOT NULL,
 	    [batchId] [uniqueidentifier] NOT NULL,
-	    [aggId] [varchar](255) NOT NULL,
+	    [aggId] [nvarchar](255) NOT NULL,
 	    [seqNo] [bigint] NOT NULL,
 	    [globSeqNo] [bigint] NOT NULL,
 	    [meta] [nvarchar](max) NOT NULL,
