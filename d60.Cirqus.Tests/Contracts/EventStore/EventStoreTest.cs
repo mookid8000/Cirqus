@@ -375,7 +375,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             {
                 _eventStore.Save(Guid.NewGuid(), new[]
                 {
-                    Event(1, "id"),
+                    Event(1, string.Format("id{0}", i)),
                 });
             }
 

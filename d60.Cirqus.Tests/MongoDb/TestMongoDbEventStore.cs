@@ -65,28 +65,27 @@ namespace d60.Cirqus.Tests.MongoDb
                     var batchId = Guid.NewGuid().ToString();
 
                     return new MongoEventBatch
-                                      {
-                                          BatchId = batchId,
-                                          Events = new List<MongoEvent>
-                                          {
-                                              new MongoEvent
-                                              {
-                                                  AggregateRootId = new Guid("95C97F6B-8480-468C-9CC9-502C9ADA1B71"),
-                                                  GlobalSequenceNumber = number,
-                                                  SequenceNumber = number,
-                                                  Meta = new Dictionary<string, string>
-                                                  {
-                                                      {DomainEvent.MetadataKeys.GlobalSequenceNumber, number.ToString(Metadata.NumberCulture)},
-                                                      {DomainEvent.MetadataKeys.SequenceNumber, number.ToString(Metadata.NumberCulture)},
-                                                      {DomainEvent.MetadataKeys.AggregateRootId, "95C97F6B-8480-468C-9CC9-502C9ADA1B71"},
-                                                      {DomainEvent.MetadataKeys.TimeUtc, DateTime.UtcNow.ToString("u")},
-                                                      {DomainEvent.MetadataKeys.BatchId, batchId},
-
-                                                  },
-                                                  Bin = Encoding.UTF8.GetBytes("jieojbieow jiboe wbijeo wjbio jbieow jbioe wjbioe wjibej wio bjeiwob")
-                                              }
-                                          }
-                                      };
+                    {
+                        BatchId = batchId,
+                        Events = new List<MongoEvent>
+                        {
+                            new MongoEvent
+                            {
+                                AggregateRootId = "rootid",
+                                GlobalSequenceNumber = number,
+                                SequenceNumber = number,
+                                Meta = new Dictionary<string, string>
+                                {
+                                    {DomainEvent.MetadataKeys.GlobalSequenceNumber, number.ToString(Metadata.NumberCulture)},
+                                    {DomainEvent.MetadataKeys.SequenceNumber, number.ToString(Metadata.NumberCulture)},
+                                    {DomainEvent.MetadataKeys.AggregateRootId, "rootid"},
+                                    {DomainEvent.MetadataKeys.TimeUtc, DateTime.UtcNow.ToString("u")},
+                                    {DomainEvent.MetadataKeys.BatchId, batchId},
+                                },
+                                Bin = Encoding.UTF8.GetBytes("jieojbieow jiboe wbijeo wjbio jbieow jbioe wjbioe wjibej wio bjeiwob")
+                            }
+                        }
+                    };
                 });
 
             var collection = _mongoDatabase.GetCollection<MongoEventBatch>("Events");
@@ -110,7 +109,7 @@ namespace d60.Cirqus.Tests.MongoDb
 
             public long GlobalSequenceNumber { get; set; }
             public long SequenceNumber { get; set; }
-            public Guid AggregateRootId { get; set; }
+            public string AggregateRootId { get; set; }
         }
 
         public class SomeDomainEvent : DomainEvent
@@ -118,7 +117,7 @@ namespace d60.Cirqus.Tests.MongoDb
             public string Text { get; set; }
             public long GlobalSequenceNumber { get; set; }
             public long SequenceNumber { get; set; }
-            public Guid AggregateRootId { get; set; }
+            public string AggregateRootId { get; set; }
         }
     }
 }

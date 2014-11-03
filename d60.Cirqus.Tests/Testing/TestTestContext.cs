@@ -129,9 +129,9 @@ namespace d60.Cirqus.Tests.Testing
 
             Assert.That(linesWithRootIds, Is.EqualTo(new[]
             {
-                @"""root_id"":""rootid1",
-                @"""root_id"":""rootid2",
-                @"""root_id"":""rootid2",
+                @"""root_id"":""rootid1""",
+                @"""root_id"":""rootid2""",
+                @"""root_id"":""rootid2""",
             }));
         }
 
@@ -264,10 +264,9 @@ namespace d60.Cirqus.Tests.Testing
         public void CommittedEventsBecomeTheHistory()
         {
             // arrange
-            var rootId = Guid.NewGuid();
             using (var uow = _context.BeginUnitOfWork())
             {
-                var root = uow.Get<AnAggregate>(rootId);
+                var root = uow.Get<AnAggregate>("rootid");
                 root.DoStuff();
 
                 // act
@@ -275,7 +274,7 @@ namespace d60.Cirqus.Tests.Testing
 
                 // assert
                 Assert.That(_context.History.Cast<AnEvent>().Single(), Is.TypeOf<AnEvent>());
-                Assert.That(_context.History.Cast<AnEvent>().Single().GetAggregateRootId(), Is.EqualTo(rootId));
+                Assert.That(_context.History.Cast<AnEvent>().Single().GetAggregateRootId(), Is.EqualTo("rootid"));
             }
         }
 

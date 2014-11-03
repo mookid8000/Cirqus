@@ -15,7 +15,7 @@ namespace d60.Cirqus.Ntfs.Events
     /// </summary>
     internal class GlobalSequenceIndex : IDisposable
     {
-        public const int SizeofSeqRecord = 32;
+        public const int SizeofSeqRecord = 8 + 1 + 255 + 8;
 
         readonly string _seqFilePath;
         
@@ -48,10 +48,13 @@ namespace d60.Cirqus.Ntfs.Events
             {
                 _writer.Write(record.GlobalSequenceNumber);
                 
-                var keyBytes = Encoding.UTF8.GetBytes(record.AggregateRootId);
-                Array.Resize(ref keyBytes, 255);
+                var keyAsBytes = Encoding.UTF8.GetBytes(record.AggregateRootId);
+                var length = keyAsBytes.Length;
+                
+                Array.Resize(ref keyAsBytes, 255);
 
-                _writer.Write(keyBytes);
+                _writer.Write((byte)length);
+                _writer.Write(keyAsBytes);
                 _writer.Write(record.LocalSequenceNumber);
             }
 
@@ -70,7 +73,7 @@ namespace d60.Cirqus.Ntfs.Events
                     var record = new GlobalSequenceRecord
                     {
                         GlobalSequenceNumber = reader.ReadInt64(),
-                        AggregateRootId = Encoding.UTF8.GetString(reader.ReadBytes(255)),
+                        AggregateRootId = ReadFixedLengthString(reader),
                         LocalSequenceNumber = reader.ReadInt64(),
                     };
 
@@ -80,6 +83,14 @@ namespace d60.Cirqus.Ntfs.Events
                     yield return record;
                 }
             }
+        }
+
+        public string ReadFixedLengthString(BinaryReader reader)
+        {
+            var length = reader.ReadByte();
+            var str = Encoding.UTF8.GetString(reader.ReadBytes(length));
+            reader.ReadBytes(255 - length);
+            return str;
         }
 
         public void DetectCorruptionAndRecover(DataStore store, long lastCommittedGlobalSequenceNumber)
