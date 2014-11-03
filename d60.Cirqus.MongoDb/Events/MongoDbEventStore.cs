@@ -24,7 +24,6 @@ namespace d60.Cirqus.MongoDb.Events
         static readonly string GlobalSeqNoDocPath = string.Format("{0}.GlobalSequenceNumber", EventsDocPath);
         static readonly string AggregateRootIdDocPath = string.Format("{0}.AggregateRootId", EventsDocPath);
 
-        readonly MongoDbSerializer _serializer = new MongoDbSerializer();
         readonly MongoCollection<MongoEventBatch> _eventBatches;
 
         public MongoDbEventStore(MongoDatabase database, string eventCollectionName, bool automaticallyCreateIndexes = true)
@@ -36,16 +35,6 @@ namespace d60.Cirqus.MongoDb.Events
                 _eventBatches.CreateIndex(IndexKeys.Ascending(GlobalSeqNoDocPath), IndexOptions.SetUnique(true).SetName(GlobalSeqUniquenessIndexName));
                 _eventBatches.CreateIndex(IndexKeys.Ascending(AggregateRootIdDocPath, SeqNoDocPath), IndexOptions.SetUnique(true).SetName(SeqUniquenessIndexName));
             }
-        }
-
-        public void AddSerializationMutator(IJsonEventMutator mutator)
-        {
-            _serializer.EventSerializationMutators.Add(mutator);
-        }
-
-        public void AddDeserializationMutator(IJsonEventMutator mutator)
-        {
-            _serializer.EventDeserializationMutators.Add(mutator);
         }
 
         public IEnumerable<Event> Stream(long globalSequenceNumber = 0)

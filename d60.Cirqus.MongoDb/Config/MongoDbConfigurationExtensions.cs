@@ -38,22 +38,7 @@ namespace d60.Cirqus.MongoDb.Config
         {
             var configBuilder = new MongoDbConfigBuilder();
 
-            builder.Registrar.Register<IEventStore>(context =>
-            {
-                var eventStore = new MongoDbEventStore(database, eventCollectionName, automaticallyCreateIndexes: automaticallyCreateIndexes);
-
-                foreach (var serializationMutator in configBuilder.SerializationMutators)
-                {
-                    eventStore.AddSerializationMutator(serializationMutator);
-                }
-                
-                foreach (var serializationMutator in configBuilder.DeserializationMutators)
-                {
-                    eventStore.AddDeserializationMutator(serializationMutator);
-                }
-
-                return eventStore;
-            });
+            builder.Registrar.Register<IEventStore>(context => new MongoDbEventStore(database, eventCollectionName, automaticallyCreateIndexes: automaticallyCreateIndexes));
 
             return configBuilder;
         }

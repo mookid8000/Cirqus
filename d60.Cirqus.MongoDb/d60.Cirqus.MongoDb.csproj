@@ -49,9 +49,7 @@
   <ItemGroup>
     <Compile Include="Config\MongoDbConfigBuilder.cs" />
     <Compile Include="Config\MongoDbConfigurationExtensions.cs" />
-    <Compile Include="Events\IJsonEventMutator.cs" />
     <Compile Include="Events\MongoDbEventStore.cs" />
-    <Compile Include="Events\MongoDbSerializer.cs" />
     <Compile Include="Logging\MongoDbLoggerFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Views\MongoDbViewManager.cs" />
