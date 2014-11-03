@@ -115,6 +115,14 @@ namespace d60.Cirqus.Config
         }
 
         /// <summary>
+        /// Registers the given domain even serializer to be used instead of the default <see cref="JsonDomainEventSerializer"/>.
+        /// </summary>
+        public static void UseCustomDomainEventSerializer(this OptionsConfigurationBuilder builder, IDomainEventSerializer domainEventSerializer)
+        {
+            builder.Registrar.Register(o => domainEventSerializer);
+        }
+
+        /// <summary>
         /// Configures the number of retries to perform in the event that a <see cref="ConcurrencyException"/> occurs.
         /// </summary>
         public static void SetMaxRetries(this OptionsConfigurationBuilder builder, int maxRetries)

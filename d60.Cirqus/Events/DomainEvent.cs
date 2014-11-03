@@ -1,8 +1,10 @@
-﻿using d60.Cirqus.Aggregates;
+﻿using System;
+using d60.Cirqus.Aggregates;
 using d60.Cirqus.Numbers;
 
 namespace d60.Cirqus.Events
 {
+    [Serializable]
     public abstract class DomainEvent
     {
         public static class MetadataKeys
@@ -39,6 +41,7 @@ namespace d60.Cirqus.Events
         }
     }
 
+    [Serializable]
     public abstract class DomainEvent<TOwner> : DomainEvent where TOwner : AggregateRoot
     {
     }

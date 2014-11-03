@@ -182,6 +182,7 @@
     <Compile Include="MsSql\TestNewMsSqlViewManager_AutomaticSchemaRegeneration.cs" />
     <Compile Include="MsSql\TestNewMsSqlViewManager.cs" />
     <Compile Include="PostgreSql\PostgreSqlTestHelper.cs" />
+    <Compile Include="Contracts\Serialization\TestCustomSerialization.cs" />
     <Compile Include="Serialization\TestJsonDomainEventSerializer.cs" />
     <Compile Include="SqlTestHelperBase.cs" />
     <Compile Include="MsSql\MsSqlTestHelper.cs" />
