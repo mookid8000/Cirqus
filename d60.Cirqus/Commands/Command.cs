@@ -5,7 +5,8 @@ using d60.Cirqus.Numbers;
 namespace d60.Cirqus.Commands
 {
     /// <summary>
-    /// Ultimate command base class - don't derive off of this one directly, use <see cref="Command{TAggregateRoot}"/>
+    /// Ultimate command base class - use <see cref="Command{TAggregateRoot}"/> if you intend to address one single aggregate
+    /// root instance only (which you probably should in most cases)
     /// </summary>
     public abstract class Command
     {
@@ -27,9 +28,11 @@ namespace d60.Cirqus.Commands
     {
         protected Command(string aggregateRootId)
         {
+            if (aggregateRootId == null) throw new ArgumentNullException("aggregateRootId", "You need to specify an aggregate root ID");
+
             AggregateRootId = aggregateRootId;
         }
-       
+
         public string AggregateRootId { get; private set; }
 
         public sealed override void Execute(ICommandContext context)
