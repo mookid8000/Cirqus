@@ -25,12 +25,12 @@ namespace d60.Cirqus.Commands
     /// <typeparam name="TAggregateRoot">Specifies the type of aggregate root that this command targets</typeparam>
     public abstract class Command<TAggregateRoot> : Command where TAggregateRoot : AggregateRoot, new()
     {
-        protected Command(Guid aggregateRootId)
+        protected Command(string aggregateRootId)
         {
             AggregateRootId = aggregateRootId;
         }
        
-        public Guid AggregateRootId { get; private set; }
+        public string AggregateRootId { get; private set; }
 
         public sealed override void Execute(ICommandContext context)
         {

@@ -16,7 +16,7 @@ namespace d60.Cirqus.Events
         /// <summary>
         /// Loads events for the specified aggregate root
         /// </summary>
-        IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0);
+        IEnumerable<Event> Load(string aggregateRootId, long firstSeq = 0);
 
         /// <summary>
         /// Streams all events with a global sequence number that is greater than or equal to the one given

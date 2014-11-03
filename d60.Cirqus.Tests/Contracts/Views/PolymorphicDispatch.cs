@@ -44,13 +44,12 @@ namespace d60.Cirqus.Tests.Contracts.Views
         public void ViewsCanSubscribeToBaseClasses()
         {
             // arrange
-            var aggregateRootId = Guid.NewGuid();
-            var viewId = InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(aggregateRootId);
+            var viewId = InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId("id");
 
-            _context.Save(aggregateRootId, new Event());
-            _context.Save(aggregateRootId, new Event());
-            _context.Save(aggregateRootId, new AnotherEvent());
-            _context.Save(aggregateRootId, new AnotherEvent());
+            _context.Save("id", new Event());
+            _context.Save("id", new Event());
+            _context.Save("id", new AnotherEvent());
+            _context.Save("id", new AnotherEvent());
 
             _context.WaitForViewsToCatchUp();
 

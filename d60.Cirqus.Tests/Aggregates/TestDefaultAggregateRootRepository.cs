@@ -29,20 +29,17 @@ namespace d60.Cirqus.Tests.Aggregates
         [TestCase(4, true, true)]
         public void CanDetermineWhetherRootExistsAtDifferentPointsInTime(long globalSequenceNumberToCheck, bool expectedExistenceOfRoot1, bool expectedExistenceOfRoot2)
         {
-            var root1 = Guid.NewGuid();
-            var root2 = Guid.NewGuid();
-            
-            SaveEvent(root1, 0, 0);
-            SaveEvent(root1, 1, 1);
-            SaveEvent(root1, 2, 2);
-            SaveEvent(root2, 3, 0);
-            SaveEvent(root2, 4, 1);
+            SaveEvent("id1", 0, 0);
+            SaveEvent("id1", 1, 1);
+            SaveEvent("id1", 2, 2);
+            SaveEvent("id2", 3, 0);
+            SaveEvent("id2", 4, 1);
 
-            Assert.That(_repository.Exists<Root>(root1, globalSequenceNumberToCheck), Is.EqualTo(expectedExistenceOfRoot1), "Expected root1 existence to be {0} from global seq no {1}", expectedExistenceOfRoot1, globalSequenceNumberToCheck);
-            Assert.That(_repository.Exists<Root>(root2, globalSequenceNumberToCheck), Is.EqualTo(expectedExistenceOfRoot2), "Expected root2 existence to be {0} from global seq no {1}", expectedExistenceOfRoot2, globalSequenceNumberToCheck);
+            Assert.That(_repository.Exists<Root>("id1", globalSequenceNumberToCheck), Is.EqualTo(expectedExistenceOfRoot1), "Expected root1 existence to be {0} from global seq no {1}", expectedExistenceOfRoot1, globalSequenceNumberToCheck);
+            Assert.That(_repository.Exists<Root>("id2", globalSequenceNumberToCheck), Is.EqualTo(expectedExistenceOfRoot2), "Expected root2 existence to be {0} from global seq no {1}", expectedExistenceOfRoot2, globalSequenceNumberToCheck);
         }
 
-        void SaveEvent(Guid aggregateRootId, long globalSeqNo, long seqNo)
+        void SaveEvent(string aggregateRootId, long globalSeqNo, long seqNo)
         {
             _eventStore.Save(Guid.NewGuid(), new[]
             {
@@ -50,7 +47,7 @@ namespace d60.Cirqus.Tests.Aggregates
                 {
                     Meta =
                     {
-                        {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString()},
+                        {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId},
                         {DomainEvent.MetadataKeys.GlobalSequenceNumber, globalSeqNo.ToString(Metadata.NumberCulture)},
                         {DomainEvent.MetadataKeys.SequenceNumber, seqNo.ToString(Metadata.NumberCulture)},
                     }

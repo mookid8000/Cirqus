@@ -55,7 +55,7 @@ namespace d60.Cirqus.Ntfs.Events
             var aggregateRootId = domainEvent.GetAggregateRootId();
             var sequenceNumber = domainEvent.GetSequenceNumber();
 
-            var aggregateDirectory = Path.Combine(_dataDirectory, aggregateRootId.ToString());
+            var aggregateDirectory = Path.Combine(_dataDirectory, aggregateRootId);
             Directory.CreateDirectory(aggregateDirectory);
 
             var filename = Path.Combine(aggregateDirectory, GetFilename(sequenceNumber));
@@ -84,9 +84,9 @@ namespace d60.Cirqus.Ntfs.Events
             public byte[] Data { get; private set; }
         }
 
-        public IEnumerable<Event> Read(long lastCommittedGlobalSequenceNumber, Guid aggregateRootId, long offset)
+        public IEnumerable<Event> Read(long lastCommittedGlobalSequenceNumber, string aggregateRootId, long offset)
         {
-            var aggregateDirectory = Path.Combine(_dataDirectory, aggregateRootId.ToString());
+            var aggregateDirectory = Path.Combine(_dataDirectory, aggregateRootId);
 
             if (!Directory.Exists(aggregateDirectory))
             {
@@ -103,9 +103,9 @@ namespace d60.Cirqus.Ntfs.Events
 
         }
 
-        public Event Read(Guid aggregateRootId, long sequenceNumber)
+        public Event Read(string aggregateRootId, long sequenceNumber)
         {
-            var filename = Path.Combine(_dataDirectory, aggregateRootId.ToString(), GetFilename(sequenceNumber));
+            var filename = Path.Combine(_dataDirectory, aggregateRootId, GetFilename(sequenceNumber));
             
             var @event = TryRead(filename);
             
@@ -117,9 +117,9 @@ namespace d60.Cirqus.Ntfs.Events
             return @event;
         }
 
-        public void Truncate(Guid aggregateRootId, long sequenceNumber)
+        public void Truncate(string aggregateRootId, long sequenceNumber)
         {
-            var filename = Path.Combine(_dataDirectory, aggregateRootId.ToString(), GetFilename(sequenceNumber));
+            var filename = Path.Combine(_dataDirectory, aggregateRootId, GetFilename(sequenceNumber));
             if (File.Exists(filename))
                 File.Delete(filename);
         }

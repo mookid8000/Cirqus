@@ -49,20 +49,13 @@ namespace d60.Cirqus.Tests.Integration
         [Test]
         public void RunEntirePipelineAndProbePrivatesForMultipleAggregates()
         {
-            var firstAggregateRootId = Guid.NewGuid();
-
-            var firstChildId = Guid.NewGuid();
-            var secondChildId = Guid.NewGuid();
-
-            var grandChildId = Guid.NewGuid();
-
             var initialState = GetAllRoots();
 
-            _cirqus.ProcessCommand(new BearSomeChildrenCommand(firstAggregateRootId, new[] { firstChildId, secondChildId }));
+            _cirqus.ProcessCommand(new BearSomeChildrenCommand("rootid1", new[] { "child_id1", "child_id2" }));
 
             var afterBearingTwoChildren = GetAllRoots();
 
-            _cirqus.ProcessCommand(new BearSomeChildrenCommand(firstChildId, new[] { grandChildId }));
+            _cirqus.ProcessCommand(new BearSomeChildrenCommand("child_id1", new[] { "grandchild_id1" }));
 
             var afterBearingGrandChild = GetAllRoots();
 
@@ -72,24 +65,24 @@ namespace d60.Cirqus.Tests.Integration
 
             var idsOfChildren = afterBearingTwoChildren
                 .OfType<ProgrammerAggregate>()
-                .Single(p => p.Id == firstAggregateRootId)
+                .Single(p => p.Id == "rootid1")
                 .GetIdsOfChildren();
 
-            Assert.That(idsOfChildren, Is.EqualTo(new[] { firstChildId, secondChildId }));
+            Assert.That(idsOfChildren, Is.EqualTo(new[] { "child_id1", "child_id2" }));
 
             Assert.That(afterBearingGrandChild.Count, Is.EqualTo(4));
 
             var idsOfGrandChildren = afterBearingGrandChild
                 .OfType<ProgrammerAggregate>()
-                .Single(p => p.Id == firstChildId)
+                .Single(p => p.Id == "child_id1")
                 .GetIdsOfChildren();
 
-            Assert.That(idsOfGrandChildren, Is.EqualTo(new[] { grandChildId }));
+            Assert.That(idsOfGrandChildren, Is.EqualTo(new[] { "grandchild_id1" }));
         }
 
         List<AggregateRoot> GetAllRoots()
         {
-            return Enumerable.Select<DomainEvent, Guid>(_eventStore, e => DomainEventExtensions.GetAggregateRootId(e)).Distinct()
+            return _eventStore.Select(e => e.GetAggregateRootId()).Distinct()
                 .Select(aggregateRootId => _aggregateRootRepository.Get<ProgrammerAggregate>(aggregateRootId).AggregateRoot)
                 .Cast<AggregateRoot>()
                 .ToList();
@@ -97,9 +90,9 @@ namespace d60.Cirqus.Tests.Integration
 
         public class BearSomeChildrenCommand : Command<ProgrammerAggregate>
         {
-            public Guid[] IdsOfChildren { get; private set; }
+            public string[] IdsOfChildren { get; private set; }
 
-            public BearSomeChildrenCommand(Guid aggregateRootId, params Guid[] idsOfChildren)
+            public BearSomeChildrenCommand(string aggregateRootId, params string[] idsOfChildren)
                 : base(aggregateRootId)
             {
                 IdsOfChildren = idsOfChildren;
@@ -113,9 +106,9 @@ namespace d60.Cirqus.Tests.Integration
 
         public class ProgrammerAggregate : AggregateRoot, IEmit<HadChildren>, IEmit<WasBorn>
         {
-            readonly List<Guid> _idsOfChildren = new List<Guid>();
+            readonly List<string> _idsOfChildren = new List<string>();
 
-            public void BearChildren(IEnumerable<Guid> idsOfChildren)
+            public void BearChildren(IEnumerable<string> idsOfChildren)
             {
                 foreach (var id in idsOfChildren)
                 {
@@ -140,7 +133,7 @@ namespace d60.Cirqus.Tests.Integration
                 Emit(new WasBorn());
             }
 
-            public IEnumerable<Guid> GetIdsOfChildren()
+            public IEnumerable<string> GetIdsOfChildren()
             {
                 return _idsOfChildren;
             }
@@ -148,12 +141,12 @@ namespace d60.Cirqus.Tests.Integration
 
         public class HadChildren : DomainEvent<ProgrammerAggregate>
         {
-            public HadChildren(IEnumerable<Guid> childrenIds)
+            public HadChildren(IEnumerable<string> childrenIds)
             {
                 ChildrenIds = childrenIds.ToArray();
             }
 
-            public Guid[] ChildrenIds { get; private set; }
+            public string[] ChildrenIds { get; private set; }
         }
 
         public class WasBorn : DomainEvent<ProgrammerAggregate>

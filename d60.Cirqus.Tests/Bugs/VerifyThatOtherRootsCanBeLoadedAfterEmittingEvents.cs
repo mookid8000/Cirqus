@@ -20,35 +20,32 @@ namespace d60.Cirqus.Tests.Bugs
         [Test]
         public void YesWeCan()
         {
-            var root1Id = Guid.NewGuid();
-            var root2Id = Guid.NewGuid();
-
             using (var uow = _context.BeginUnitOfWork())
             {
-                uow.Get<Root>(root1Id);
+                uow.Get<Root>("id1");
                 uow.Commit();
             }
 
             using (var uow = _context.BeginUnitOfWork())
             {
-                uow.Get<Root>(root2Id);
+                uow.Get<Root>("id2");
                 uow.Commit();
             }
 
-            Assert.DoesNotThrow(() => _context.BeginUnitOfWork().Get<Root>(root1Id).AssociateWith(root2Id));
+            Assert.DoesNotThrow(() => _context.BeginUnitOfWork().Get<Root>("id1").AssociateWith("id2"));
         }
 
 
         public class Root : AggregateRoot, IEmit<RootCreated>, IEmit<RootAssociatedWithAnotherRoot>
         {
-            readonly HashSet<Guid> _associatedOtherRootIds = new HashSet<Guid>();
+            readonly HashSet<string> _associatedOtherRootIds = new HashSet<string>();
 
             protected override void Created()
             {
                 Emit(new RootCreated());
             }
 
-            public void AssociateWith(Guid otherRootId)
+            public void AssociateWith(string otherRootId)
             {
                 Emit(new RootAssociatedWithAnotherRoot
                 {
@@ -72,7 +69,7 @@ namespace d60.Cirqus.Tests.Bugs
 
         public class RootAssociatedWithAnotherRoot : DomainEvent<Root>
         {
-            public Guid OtherRootId { get; set; }
+            public string OtherRootId { get; set; }
         }
 
         public class RootCreated : DomainEvent<Root> { }

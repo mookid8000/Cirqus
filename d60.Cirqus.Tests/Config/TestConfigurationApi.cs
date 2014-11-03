@@ -43,17 +43,14 @@ namespace d60.Cirqus.Tests.Config
 
             RegisterForDisposal(commandProcessor);
 
-            var id1 = Guid.NewGuid();
-            var id2 = Guid.NewGuid();
-
             Console.WriteLine("Processing 100 commands...");
             99.Times(() =>
             {
-                commandProcessor.ProcessCommand(new ConfigTestCommand(id1));
-                commandProcessor.ProcessCommand(new ConfigTestCommand(id2));
+                commandProcessor.ProcessCommand(new ConfigTestCommand("id1"));
+                commandProcessor.ProcessCommand(new ConfigTestCommand("id2"));
             });
-            commandProcessor.ProcessCommand(new ConfigTestCommand(id1));
-            var lastResult = commandProcessor.ProcessCommand(new ConfigTestCommand(id2));
+            commandProcessor.ProcessCommand(new ConfigTestCommand("id1"));
+            var lastResult = commandProcessor.ProcessCommand(new ConfigTestCommand("id2"));
 
             Console.WriteLine("Waiting until views have been updated");
             waiter.WaitForAll(lastResult, TimeSpan.FromSeconds(5)).Wait();
@@ -75,8 +72,8 @@ namespace d60.Cirqus.Tests.Config
                         .FindOne(Query.EQ("_id", GlobalInstanceLocator.GetViewInstanceId()));
 
                     Assert.That(doc.ProcessedEventNumbers, Is.EqualTo(Enumerable.Range(0, 200).ToArray()));
-                    Assert.That(doc.CountsByRootId[id1], Is.EqualTo(100));
-                    Assert.That(doc.CountsByRootId[id2], Is.EqualTo(100));
+                    Assert.That(doc.CountsByRootId["id1"], Is.EqualTo(100));
+                    Assert.That(doc.CountsByRootId["id2"], Is.EqualTo(100));
                 });
         }
 
@@ -84,13 +81,13 @@ namespace d60.Cirqus.Tests.Config
         {
             public ConfigTestView()
             {
-                CountsByRootId = new Dictionary<Guid, int>();
+                CountsByRootId = new Dictionary<string, int>();
                 ProcessedEventNumbers = new List<long>();
             }
             public string Id { get; set; }
             public long LastGlobalSequenceNumber { get; set; }
             public List<long> ProcessedEventNumbers { get; set; }
-            public Dictionary<Guid, int> CountsByRootId { get; set; }
+            public Dictionary<string, int> CountsByRootId { get; set; }
             public void Handle(IViewContext context, ConfigTestEvent domainEvent)
             {
                 ProcessedEventNumbers.Add(domainEvent.GetGlobalSequenceNumber());
@@ -125,10 +122,7 @@ namespace d60.Cirqus.Tests.Config
 
         public class ConfigTestCommand : Command<ConfigTestRoot>
         {
-            public ConfigTestCommand(Guid aggregateRootId)
-                : base(aggregateRootId)
-            {
-            }
+            public ConfigTestCommand(string aggregateRootId) : base(aggregateRootId) { }
 
             public override void Execute(ConfigTestRoot aggregateRoot)
             {

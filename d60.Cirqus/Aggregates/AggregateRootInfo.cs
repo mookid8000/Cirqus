@@ -21,7 +21,7 @@ namespace d60.Cirqus.Aggregates
 
         public abstract Type AggregateRootType { get; }
 
-        public abstract Guid AggregateRootId { get; }
+        public abstract string AggregateRootId { get; }
     }
 
     public class AggregateRootInfo<TAggregateRoot> : AggregateRootInfo where TAggregateRoot : AggregateRoot
@@ -53,7 +53,7 @@ namespace d60.Cirqus.Aggregates
             get { return typeof(TAggregateRoot); }
         }
 
-        public override Guid AggregateRootId
+        public override string AggregateRootId
         {
             get { return AggregateRoot.Id; }
         }
@@ -133,12 +133,12 @@ namespace d60.Cirqus.Aggregates
                 _originalUnitOfWork.AddToCache(aggregateRoot, globalSequenceNumberCutoff);
             }
 
-            public bool Exists<TAggregateRootToLoad>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRootToLoad : AggregateRoot
+            public bool Exists<TAggregateRootToLoad>(string aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRootToLoad : AggregateRoot
             {
                 return _originalUnitOfWork.Exists<TAggregateRootToLoad>(aggregateRootId, globalSequenceNumberCutoff);
             }
 
-            public AggregateRootInfo<TAggregateRootToLoad> Get<TAggregateRootToLoad>(Guid aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists) where TAggregateRootToLoad : AggregateRoot, new()
+            public AggregateRootInfo<TAggregateRootToLoad> Get<TAggregateRootToLoad>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists) where TAggregateRootToLoad : AggregateRoot, new()
             {
                 return _originalUnitOfWork.Get<TAggregateRootToLoad>(aggregateRootId, globalSequenceNumberCutoff);
             }

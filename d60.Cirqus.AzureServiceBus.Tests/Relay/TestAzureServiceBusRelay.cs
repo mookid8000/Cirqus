@@ -60,7 +60,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
         [Test]
         public void CanDoIt()
         {
-            var id = new Guid("EB68A8A9-7660-46C1-A44A-48D3DD4A1308");
+            const string id = "EB68A8A9-7660-46C1-A44A-48D3DD4A1308";
 
             Process(new Command(id));
             Process(new Command(id));
@@ -112,7 +112,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
 
         public class Command : Command<Root>
         {
-            public Command(Guid aggregateRootId)
+            public Command(string aggregateRootId)
                 : base(aggregateRootId)
             {
             }

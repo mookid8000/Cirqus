@@ -24,7 +24,7 @@ namespace d60.Cirqus.Tests.Aggregates
             {
                 UnitOfWork = new ConsoleOutUnitOfWork(aggregateRootRepository),
             };
-            someAggregate.Initialize(Guid.NewGuid());
+            someAggregate.Initialize("root_id");
 
             someAggregate.DoSomething();
 
@@ -38,7 +38,6 @@ namespace d60.Cirqus.Tests.Aggregates
             var timeForFirstEvent = new DateTime(1979, 3, 19, 19, 0, 0, DateTimeKind.Utc);
             var timeForNextEvent = timeForFirstEvent.AddMilliseconds(2);
 
-            var aggregateRootId = Guid.NewGuid();
             var aggregateRootRepository = CreateAggregateRootRepository();
             var eventCollector = new InMemoryUnitOfWork(aggregateRootRepository);
 
@@ -46,7 +45,7 @@ namespace d60.Cirqus.Tests.Aggregates
             {
                 UnitOfWork = eventCollector,
             };
-            someAggregate.Initialize(aggregateRootId);
+            someAggregate.Initialize("root_id");
 
             TimeMachine.FixCurrentTimeTo(timeForFirstEvent);
 
@@ -62,14 +61,14 @@ namespace d60.Cirqus.Tests.Aggregates
             Assert.That(firstEvent.Meta[DomainEvent.MetadataKeys.TimeUtc], Is.EqualTo(timeForFirstEvent.ToString("u")));
             Assert.That(firstEvent.Meta[DomainEvent.MetadataKeys.Owner], Is.EqualTo("d60.Cirqus.Tests.Aggregates.TestEventApplication+SomeAggregate, d60.Cirqus.Tests"));
             Assert.That(firstEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber], Is.EqualTo("0"));
-            Assert.That(firstEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId], Is.EqualTo(aggregateRootId.ToString()));
+            Assert.That(firstEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId], Is.EqualTo("root_id"));
 
             var nextEvent = events[1];
 
             Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.TimeUtc], Is.EqualTo(timeForNextEvent.ToString("u")));
             Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.Owner], Is.EqualTo("d60.Cirqus.Tests.Aggregates.TestEventApplication+SomeAggregate, d60.Cirqus.Tests"));
             Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber], Is.EqualTo("1"));
-            Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId], Is.EqualTo(aggregateRootId.ToString()));
+            Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId], Is.EqualTo("root_id"));
         }
 
         DefaultAggregateRootRepository CreateAggregateRootRepository()

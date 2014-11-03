@@ -33,7 +33,7 @@ namespace d60.Cirqus.Tests.Commands
         [Test]
         public void CanProcessBaseCommand()
         {
-            var aggregateRootIds = Enumerable.Range(0, 5).Select(i => Guid.NewGuid()).ToArray();
+            var aggregateRootIds = Enumerable.Range(0, 5).Select(i => i.ToString()).ToArray();
             var command = new MyCommand{AggregateRootIds = aggregateRootIds};
 
             _cirqus.ProcessCommand(command);
@@ -59,7 +59,7 @@ namespace d60.Cirqus.Tests.Commands
 
         public class MyCommand : Command
         {
-            public Guid[] AggregateRootIds { get; set; }
+            public string[] AggregateRootIds { get; set; }
 
             public override void Execute(ICommandContext context)
             {
@@ -74,7 +74,7 @@ namespace d60.Cirqus.Tests.Commands
         {
             _cirqus.Options.AddDomainExceptionType<InvalidOperationException>();
 
-            var unwrappedException = Assert.Throws<InvalidOperationException>(() => _cirqus.ProcessCommand(new ErronousCommand(Guid.NewGuid())));
+            var unwrappedException = Assert.Throws<InvalidOperationException>(() => _cirqus.ProcessCommand(new ErronousCommand("someid1")));
 
             Console.WriteLine(unwrappedException);
 
@@ -85,7 +85,7 @@ namespace d60.Cirqus.Tests.Commands
         [Test]
         public void GeneratesPrettyException()
         {
-            var appEx = Assert.Throws<CommandProcessingException>(() => _cirqus.ProcessCommand(new ErronousCommand(Guid.NewGuid())));
+            var appEx = Assert.Throws<CommandProcessingException>(() => _cirqus.ProcessCommand(new ErronousCommand("someid1")));
 
             Console.WriteLine(appEx);
 
@@ -97,7 +97,7 @@ namespace d60.Cirqus.Tests.Commands
 
         class ErronousCommand : Command<Root>
         {
-            public ErronousCommand(Guid aggregateRootId)
+            public ErronousCommand(string aggregateRootId)
                 : base(aggregateRootId)
             {
             }
@@ -111,19 +111,14 @@ namespace d60.Cirqus.Tests.Commands
         [Test]
         public void CanProcessMappedCommand()
         {
-            var aggregateRootId = Guid.NewGuid();
-
-            _cirqus.ProcessCommand(new MappedCommand(aggregateRootId));
+            _cirqus.ProcessCommand(new MappedCommand("id"));
 
             Assert.That(_eventStore.ToList().Count, Is.EqualTo(1));
         }
 
         class MappedCommand : Command<Root>
         {
-            public MappedCommand(Guid aggregateRootId)
-                : base(aggregateRootId)
-            {
-            }
+            public MappedCommand(string aggregateRootId) : base(aggregateRootId) { }
 
             public override void Execute(Root aggregateRoot)
             {
@@ -134,19 +129,14 @@ namespace d60.Cirqus.Tests.Commands
         [Test]
         public void CanProcessOrdinaryCommand()
         {
-            var aggregateRootId = Guid.NewGuid();
-
-            _cirqus.ProcessCommand(new OrdinaryCommand(aggregateRootId));
+            _cirqus.ProcessCommand(new OrdinaryCommand("id"));
 
             Assert.That(_eventStore.ToList().Count, Is.EqualTo(1));
         }
 
         class OrdinaryCommand : Command<Root>
         {
-            public OrdinaryCommand(Guid aggregateRootId)
-                : base(aggregateRootId)
-            {
-            }
+            public OrdinaryCommand(string aggregateRootId) : base(aggregateRootId) { }
 
             public override void Execute(Root aggregateRoot)
             {
@@ -157,15 +147,13 @@ namespace d60.Cirqus.Tests.Commands
         [Test]
         public void ThrowsNiceExceptionForCommandThatHasNotBeenMapped()
         {
-            Assert.Throws<CommandProcessingException>(() => _cirqus.ProcessCommand(new AnotherCommand(Guid.NewGuid())));
+            Assert.Throws<CommandProcessingException>(() => 
+                _cirqus.ProcessCommand(new AnotherCommand("rootid")));
         }
 
         class AnotherCommand : Command<Root>
         {
-            public AnotherCommand(Guid aggregateRootId)
-                : base(aggregateRootId)
-            {
-            }
+            public AnotherCommand(string aggregateRootId) : base(aggregateRootId) { }
 
             public override void Execute(Root aggregateRoot)
             {

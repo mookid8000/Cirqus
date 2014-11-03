@@ -43,11 +43,12 @@ namespace d60.Cirqus.Tests.Aggregates
         {
             public void LoadOtherBeetRootWithDefaultBehavior()
             {
-                Load<BeetRoot>(Guid.NewGuid());
+                Load<BeetRoot>("id1");
             }
+
             public void LoadOtherBeetRootButOverrideBehavior()
             {
-                Load<BeetRoot>(Guid.NewGuid(), createIfNotExists: true);
+                Load<BeetRoot>("id2", createIfNotExists: true);
             }
         }
     }

@@ -47,7 +47,11 @@ namespace d60.Cirqus.Ntfs.Events
             foreach (var record in records)
             {
                 _writer.Write(record.GlobalSequenceNumber);
-                _writer.Write(record.AggregateRootId.ToByteArray());
+                
+                var keyBytes = Encoding.UTF8.GetBytes(record.AggregateRootId);
+                Array.Resize(ref keyBytes, 255);
+
+                _writer.Write(keyBytes);
                 _writer.Write(record.LocalSequenceNumber);
             }
 
@@ -66,7 +70,7 @@ namespace d60.Cirqus.Ntfs.Events
                     var record = new GlobalSequenceRecord
                     {
                         GlobalSequenceNumber = reader.ReadInt64(),
-                        AggregateRootId = new Guid(reader.ReadBytes(16)),
+                        AggregateRootId = Encoding.UTF8.GetString(reader.ReadBytes(255)),
                         LocalSequenceNumber = reader.ReadInt64(),
                     };
 
@@ -117,7 +121,7 @@ namespace d60.Cirqus.Ntfs.Events
         public class GlobalSequenceRecord
         {
             public long GlobalSequenceNumber { get; set; }
-            public Guid AggregateRootId { get; set; }
+            public string AggregateRootId { get; set; }
             public long LocalSequenceNumber { get; set; }
         }
     }

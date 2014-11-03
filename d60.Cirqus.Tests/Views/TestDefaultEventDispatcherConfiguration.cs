@@ -19,7 +19,7 @@ namespace d60.Cirqus.Tests.Views
                 .EventStore(e => e.Registrar.Register<IEventStore>(c => new InMemoryEventStore(c.Get<IDomainEventSerializer>())))
                 .Create())
             {
-                commandProcessor.ProcessCommand(new Commando(Guid.NewGuid()));
+                commandProcessor.ProcessCommand(new Commando("id"));
             }
         }
 
@@ -31,7 +31,7 @@ namespace d60.Cirqus.Tests.Views
                 .AggregateRootRepository(a => a.UseDefault())
                 .Create())
             {
-                commandProcessor.ProcessCommand(new Commando(Guid.NewGuid()));
+                commandProcessor.ProcessCommand(new Commando("id"));
             }
         }
 
@@ -51,7 +51,8 @@ namespace d60.Cirqus.Tests.Views
 
         public class Commando : Command<Root>
         {
-            public Commando(Guid aggregateRootId) : base(aggregateRootId)
+            public Commando(string aggregateRootId) 
+                : base(aggregateRootId)
             {
             }
 

@@ -134,10 +134,10 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _context.AddViewManager(view);
 
             // act
-            _context.ProcessCommand(new EmitEvent(Guid.NewGuid()) {Meta = {{customHeaderKey, "w00t!"}}});
-            _context.ProcessCommand(new EmitEvent(Guid.NewGuid()));
-            _context.ProcessCommand(new EmitEvent(Guid.NewGuid()));
-            var last = _context.ProcessCommand(new EmitEvent(Guid.NewGuid()));
+            _context.ProcessCommand(new EmitEvent("id1") {Meta = {{customHeaderKey, "w00t!"}}});
+            _context.ProcessCommand(new EmitEvent("id2"));
+            _context.ProcessCommand(new EmitEvent("id3"));
+            var last = _context.ProcessCommand(new EmitEvent("id4"));
 
             // assert
             view.WaitUntilProcessed(last, _defaultTimeout).Wait();

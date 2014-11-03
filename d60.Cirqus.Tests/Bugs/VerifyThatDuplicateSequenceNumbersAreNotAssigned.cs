@@ -27,17 +27,14 @@ namespace d60.Cirqus.Tests.Bugs
 
             RegisterForDisposal(commandProcessor);
 
-            var root1Id = new Guid("10000000-0000-0000-0000-000000000000");
-            var root2Id = new Guid("20000000-0000-0000-0000-000000000000");
-
             // make sure all roots exist
             Console.WriteLine("Processing initial two commands");
-            commandProcessor.ProcessCommand(new DoSomethingToABunchOfRootsCommand(root1Id));
-            commandProcessor.ProcessCommand(new DoSomethingToABunchOfRootsCommand(root2Id));
+            commandProcessor.ProcessCommand(new DoSomethingToABunchOfRootsCommand("id1"));
+            commandProcessor.ProcessCommand(new DoSomethingToABunchOfRootsCommand("id2"));
 
             // act
             Console.WriteLine("\r\n\r\nActing...");
-            commandProcessor.ProcessCommand(new DoSomethingToABunchOfRootsCommand(root1Id, root2Id));
+            commandProcessor.ProcessCommand(new DoSomethingToABunchOfRootsCommand("id1", "id2"));
 
             // assert
         }
@@ -50,17 +47,14 @@ namespace d60.Cirqus.Tests.Bugs
 
             try
             {
-                var root1Id = Guid.NewGuid();
-                var root2Id = Guid.NewGuid();
-
                 // make sure all roots exist
                 Console.WriteLine("Processing initial two commands");
-                context.ProcessCommand(new DoSomethingToABunchOfRootsCommand(root1Id));
-                context.ProcessCommand(new DoSomethingToABunchOfRootsCommand(root2Id));
+                context.ProcessCommand(new DoSomethingToABunchOfRootsCommand("id1"));
+                context.ProcessCommand(new DoSomethingToABunchOfRootsCommand("id2"));
 
                 // act
                 Console.WriteLine("\r\n\r\nActing...");
-                context.ProcessCommand(new DoSomethingToABunchOfRootsCommand(root1Id, root2Id));
+                context.ProcessCommand(new DoSomethingToABunchOfRootsCommand("id1", "id2"));
             }
             finally
             {
@@ -71,9 +65,10 @@ namespace d60.Cirqus.Tests.Bugs
 
         public class DoSomethingToABunchOfRootsCommand : Command<SomeRoot>
         {
-            public Guid[] AdditionalRootIds { get; set; }
+            public string[] AdditionalRootIds { get; set; }
 
-            public DoSomethingToABunchOfRootsCommand(Guid aggregateRootId, params Guid[] additionalRootIds) : base(aggregateRootId)
+            public DoSomethingToABunchOfRootsCommand(string aggregateRootId, params string[] additionalRootIds) 
+                : base(aggregateRootId)
             {
                 AdditionalRootIds = additionalRootIds;
             }
@@ -88,7 +83,7 @@ namespace d60.Cirqus.Tests.Bugs
 
         public class SomeRoot : AggregateRoot, IEmit<SomethingHappened>, IEmit<SomethingElseHappened>
         {
-            public void DoSomething(params Guid[] idsToDoSomethingTo)
+            public void DoSomething(params string[] idsToDoSomethingTo)
             {
                 Emit(new SomethingHappened());
 

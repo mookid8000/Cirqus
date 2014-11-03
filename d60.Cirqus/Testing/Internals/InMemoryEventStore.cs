@@ -75,7 +75,7 @@ namespace d60.Cirqus.Testing.Internals
             }
         }
 
-        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<Event> Load(string aggregateRootId, long firstSeq = 0)
         {
             lock (_lock)
             {
@@ -131,7 +131,7 @@ namespace d60.Cirqus.Testing.Internals
             }
         }
 
-        public long GetNextSeqNo(Guid aggregateRootId)
+        public long GetNextSeqNo(string aggregateRootId)
         {
             lock (_lock)
             {

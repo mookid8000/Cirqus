@@ -63,7 +63,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
                     .Select(id => new Event { EventId = id })
                     .ToList();
 
-                events.ForEach(e => _context.Save(Guid.NewGuid(), e));
+                events.ForEach(e => _context.Save("someid", e));
 
                 // act
                 _context.AddViewManager(_viewManager);

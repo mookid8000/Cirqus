@@ -11,7 +11,7 @@ namespace d60.Cirqus.Commands
         readonly IAggregateRootRepository _aggregateRootRepository;
         
         protected readonly List<DomainEvent> Events = new List<DomainEvent>();
-        protected readonly Dictionary<long, Dictionary<Guid, AggregateRoot>> CachedAggregateRoots = new Dictionary<long, Dictionary<Guid, AggregateRoot>>();
+        protected readonly Dictionary<long, Dictionary<string, AggregateRoot>> CachedAggregateRoots = new Dictionary<long, Dictionary<string, AggregateRoot>>();
 
         public RealUnitOfWork(IAggregateRootRepository aggregateRootRepository)
         {
@@ -30,17 +30,17 @@ namespace d60.Cirqus.Commands
 
         public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
         {
-            var cacheWithThisVersion = CachedAggregateRoots.GetOrAdd(globalSequenceNumberCutoff, cutoff => new Dictionary<Guid, AggregateRoot>());
+            var cacheWithThisVersion = CachedAggregateRoots.GetOrAdd(globalSequenceNumberCutoff, cutoff => new Dictionary<string, AggregateRoot>());
 
             cacheWithThisVersion[aggregateRoot.Id] = aggregateRoot;
         }
 
-        public bool Exists<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+        public bool Exists<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
         {
             return _aggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
         }
 
-        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
+        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
         {
             var aggregateRootInfoFromCache = GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
 
@@ -61,7 +61,7 @@ namespace d60.Cirqus.Commands
             return aggregateRootInfo;
         }
 
-        AggregateRootInfo<TAggregateRoot> GetAggregateRootFromCache<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+        AggregateRootInfo<TAggregateRoot> GetAggregateRootFromCache<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
         {
             if (!CachedAggregateRoots.ContainsKey(globalSequenceNumberCutoff)) return null;
             if (!CachedAggregateRoots[globalSequenceNumberCutoff].ContainsKey(aggregateRootId)) return null;

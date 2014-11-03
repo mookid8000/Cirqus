@@ -19,38 +19,36 @@ namespace d60.Cirqus.Tests.Aggregates
         [Test]
         public void GetsTheRightVersionWhenLoadingDuringReplay()
         {
-            var counterpartyId = Guid.NewGuid();
-            var contractId = Guid.NewGuid();
-
             using (var uow = _context.BeginUnitOfWork())
             {
-                var counterparty = uow.Get<Counterparty>(counterpartyId);
+                var counterparty = uow.Get<Counterparty>("counterparty1");
                 counterparty.SetName("joe");
                 uow.Commit();
             }
 
             using (var uow = _context.BeginUnitOfWork())
             {
-                var contract = uow.Get<Contract>(contractId);
-                contract.AssignToCounterparty(counterpartyId);
+                var contract = uow.Get<Contract>("contract1");
+                contract.AssignToCounterparty("counterparty1");
                 uow.Commit();
             }
 
             using (var uow = _context.BeginUnitOfWork())
             {
-                var counterparty = uow.Get<Counterparty>(counterpartyId);
+                var counterparty = uow.Get<Counterparty>("counterparty1");
                 counterparty.SetName("moe");
                 uow.Commit();
             }
 
-            var loadedContract = _context.BeginUnitOfWork().Get<Contract>(contractId);
+            var loadedContract = _context.BeginUnitOfWork().Get<Contract>("contract1");
             Assert.That(loadedContract.NameOfCounterparty, Is.EqualTo("joe"));
         }
 
         public class Contract : AggregateRoot, IEmit<ContractAssignedToCounterparty>
         {
             public string NameOfCounterparty { get; set; }
-            public void AssignToCounterparty(Guid counterpartyId)
+            
+            public void AssignToCounterparty(string counterpartyId)
             {
                 Emit(new ContractAssignedToCounterparty { CounterpartyId = counterpartyId });
             }
@@ -66,10 +64,12 @@ namespace d60.Cirqus.Tests.Aggregates
         public class Counterparty : AggregateRoot, IEmit<CounterpartyNameChanged>
         {
             public string Name { get; set; }
+            
             public void SetName(string name)
             {
                 Emit(new CounterpartyNameChanged {NewName = name});
             }
+
             public void Apply(CounterpartyNameChanged e)
             {
                 Name = e.NewName;
@@ -78,7 +78,7 @@ namespace d60.Cirqus.Tests.Aggregates
 
         public class ContractAssignedToCounterparty : DomainEvent<Contract>
         {
-            public Guid CounterpartyId { get; set; }
+            public string CounterpartyId { get; set; }
         }
 
         public class CounterpartyNameChanged : DomainEvent<Counterparty>

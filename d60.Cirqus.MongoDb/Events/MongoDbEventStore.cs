@@ -166,7 +166,7 @@ namespace d60.Cirqus.MongoDb.Events
             return metadata;
         }
 
-        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<Event> Load(string aggregateRootId, long firstSeq = 0)
         {
             var criteria = Query.And(
                 Query.EQ(AggregateRootIdDocPath, aggregateRootId),
@@ -213,6 +213,6 @@ namespace d60.Cirqus.MongoDb.Events
         
         public long GlobalSequenceNumber { get; set; }
         public long SequenceNumber { get; set; }
-        public Guid AggregateRootId { get; set; }
+        public string AggregateRootId { get; set; }
     }
 }

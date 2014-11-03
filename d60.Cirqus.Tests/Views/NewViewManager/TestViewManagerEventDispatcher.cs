@@ -63,9 +63,9 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             Console.WriteLine("Processing {0} commands....", numberOfCommands);
             Enumerable.Range(0, numberOfCommands - 1)
                 .ToList()
-                .ForEach(i => _commandProcessor.ProcessCommand(new BitePotato(Guid.NewGuid(), .01m)));
+                .ForEach(i => _commandProcessor.ProcessCommand(new BitePotato("someid1", .01m)));
 
-            var lastResult = _commandProcessor.ProcessCommand(new BitePotato(Guid.NewGuid(), .01m));
+            var lastResult = _commandProcessor.ProcessCommand(new BitePotato("someid2", .01m));
 
             Console.WriteLine("Waiting until {0} has been dispatched to the view...", lastResult.GetNewPosition());
             allPotatoesView.WaitUntilProcessed(lastResult, TimeSpan.FromSeconds(2)).Wait();
@@ -101,13 +101,12 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             var slowView = new MongoDbViewManager<SlowView>(_mongoDatabase);
             _dispatcher.AddViewManager(slowView);
 
-            var potatoId = Guid.NewGuid();
-            _commandProcessor.ProcessCommand(new BitePotato(potatoId, .1m));
-            _commandProcessor.ProcessCommand(new BitePotato(potatoId, .1m));
-            _commandProcessor.ProcessCommand(new BitePotato(potatoId, .1m));
-            _commandProcessor.ProcessCommand(new BitePotato(potatoId, .1m));
+            _commandProcessor.ProcessCommand(new BitePotato("potato1", .1m));
+            _commandProcessor.ProcessCommand(new BitePotato("potato1", .1m));
+            _commandProcessor.ProcessCommand(new BitePotato("potato1", .1m));
+            _commandProcessor.ProcessCommand(new BitePotato("potato1", .1m));
 
-            var result = _commandProcessor.ProcessCommand(new BitePotato(potatoId, 1));
+            var result = _commandProcessor.ProcessCommand(new BitePotato("potato1", 1));
 
             // act
             switch (blockOption)
@@ -124,7 +123,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             }
 
             // assert
-            var instance = slowView.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(potatoId));
+            var instance = slowView.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId("potato1"));
 
             if (blockOption == BlockOption.NoBlock)
             {
@@ -148,26 +147,21 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             _dispatcher.AddViewManager(allPotatoesView);
             _dispatcher.AddViewManager(potatoTimeToBeConsumedView);
 
-            // arrange
-            var potato1Id = Guid.NewGuid();
-            var potato2Id = Guid.NewGuid();
-            var potato3Id = Guid.NewGuid();
-
             // act
             var firstPointInTime = new DateTime(1979, 3, 1, 12, 0, 0, DateTimeKind.Utc);
             TimeMachine.FixCurrentTimeTo(firstPointInTime);
-            _commandProcessor.ProcessCommand(new BitePotato(potato1Id, 0.5m));
-            _commandProcessor.ProcessCommand(new BitePotato(potato2Id, 0.3m));
-            _commandProcessor.ProcessCommand(new BitePotato(potato2Id, 0.3m));
-            _commandProcessor.ProcessCommand(new BitePotato(potato3Id, 0.3m));
+            _commandProcessor.ProcessCommand(new BitePotato("potato1", 0.5m));
+            _commandProcessor.ProcessCommand(new BitePotato("potato2", 0.3m));
+            _commandProcessor.ProcessCommand(new BitePotato("potato2", 0.3m));
+            _commandProcessor.ProcessCommand(new BitePotato("potato3", 0.3m));
 
             var nextPointInTime = new DateTime(1981, 6, 9, 12, 0, 0, DateTimeKind.Utc);
             TimeMachine.FixCurrentTimeTo(nextPointInTime);
-            _commandProcessor.ProcessCommand(new BitePotato(potato1Id, 0.5m));
-            _commandProcessor.ProcessCommand(new BitePotato(potato2Id, 0.5m));
+            _commandProcessor.ProcessCommand(new BitePotato("potato1", 0.5m));
+            _commandProcessor.ProcessCommand(new BitePotato("potato2", 0.5m));
 
             var lastPointInTime = new DateTime(1981, 6, 9, 12, 0, 0, DateTimeKind.Utc);
-            _commandProcessor.ProcessCommand(new BitePotato(potato3Id, 0.8m));
+            _commandProcessor.ProcessCommand(new BitePotato("potato3", 0.8m));
 
             Thread.Sleep(1000);
 
@@ -176,18 +170,18 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
 
             Assert.That(allPotatoes, Is.Not.Null);
 
-            var potato1View = potatoTimeToBeConsumedView.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(potato1Id));
-            var potato2View = potatoTimeToBeConsumedView.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(potato2Id));
-            var potato3View = potatoTimeToBeConsumedView.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(potato3Id));
+            var potato1View = potatoTimeToBeConsumedView.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId("potato1"));
+            var potato2View = potatoTimeToBeConsumedView.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId("potato2"));
+            var potato3View = potatoTimeToBeConsumedView.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId("potato3"));
 
             Assert.That(potato1View, Is.Not.Null);
             Assert.That(potato2View, Is.Not.Null);
             Assert.That(potato3View, Is.Not.Null);
 
             Assert.That(allPotatoes.NamesOfPotatoes.Count, Is.EqualTo(3));
-            Assert.That(allPotatoes.NamesOfPotatoes[potato1Id], Is.EqualTo("Jeff"));
-            Assert.That(allPotatoes.NamesOfPotatoes[potato2Id], Is.EqualTo("Bunny"));
-            Assert.That(allPotatoes.NamesOfPotatoes[potato3Id], Is.EqualTo("Walter"));
+            Assert.That(allPotatoes.NamesOfPotatoes["potato1"], Is.EqualTo("Jeff"));
+            Assert.That(allPotatoes.NamesOfPotatoes["potato2"], Is.EqualTo("Bunny"));
+            Assert.That(allPotatoes.NamesOfPotatoes["potato3"], Is.EqualTo("Walter"));
 
             Assert.That(potato1View.Name, Is.EqualTo("Jeff"));
             Assert.That(potato1View.TimeOfCreation.ToUniversalTime(), Is.EqualTo(firstPointInTime));

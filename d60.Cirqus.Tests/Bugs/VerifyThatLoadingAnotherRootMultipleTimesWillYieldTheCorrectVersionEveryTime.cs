@@ -22,14 +22,11 @@ namespace d60.Cirqus.Tests.Bugs
         [Test]
         public void ItWorksInTheSameUnitOfWork()
         {
-            var root1Id = Guid.NewGuid();
-            var root2Id = Guid.NewGuid();
-
             using (var uow = _context.BeginUnitOfWork())
             {
                 Console.WriteLine("** Creating two aggregate roots **");
-                uow.Get<Root>(root1Id);
-                uow.Get<Root>(root2Id);
+                uow.Get<Root>("id1");
+                uow.Get<Root>("id2");
                 Commit(uow);
             }
 
@@ -37,7 +34,7 @@ namespace d60.Cirqus.Tests.Bugs
             {
                 Console.WriteLine("** Making 1 grab info from 2 **");
                 // expected grabbing: "N/A"
-                uow.Get<Root>(root1Id).GrabInformationFrom(root2Id);
+                uow.Get<Root>("id1").GrabInformationFrom("id2");
                 Commit(uow);
             }
 
@@ -47,15 +44,15 @@ namespace d60.Cirqus.Tests.Bugs
                 Console.WriteLine("** Setting name of 2 to 'I now have a NEW name!' **");
                 Console.WriteLine("** Making 1 grab info from 2 **");
                 // expected grabbing: "I now have a NEW name!"
-                uow.Get<Root>(root1Id).GrabInformationFrom(root2Id);
-                uow.Get<Root>(root2Id).SetName("I now have a NEW name!");
-                uow.Get<Root>(root1Id).GrabInformationFrom(root2Id);
+                uow.Get<Root>("id1").GrabInformationFrom("id2");
+                uow.Get<Root>("id2").SetName("I now have a NEW name!");
+                uow.Get<Root>("id1").GrabInformationFrom("id2");
                 Commit(uow);
             }
 
             using (var uow = _context.BeginUnitOfWork())
             {
-                var rootWithGrabbings = uow.Get<Root>(root1Id);
+                var rootWithGrabbings = uow.Get<Root>("id1");
                 var grabbedNames = rootWithGrabbings.InformationGrabbings.Select(g => g.Item2).ToArray();
                 var expectedNames = new[] {"N/A", "N/A", "I now have a NEW name!"};
 
@@ -66,14 +63,11 @@ namespace d60.Cirqus.Tests.Bugs
         [Test]
         public void ItWorksAcrossUnitsOfWork()
         {
-            var root1Id = Guid.NewGuid();
-            var root2Id = Guid.NewGuid();
-
             using (var uow = _context.BeginUnitOfWork())
             {
                 Console.WriteLine("** Creating two aggregate roots **");
-                uow.Get<Root>(root1Id);
-                uow.Get<Root>(root2Id);
+                uow.Get<Root>("id1");
+                uow.Get<Root>("id2");
                 Commit(uow);
             }
 
@@ -81,14 +75,14 @@ namespace d60.Cirqus.Tests.Bugs
             {
                 Console.WriteLine("** Making 1 grab info from 2 **");
                 // expected grabbing: "N/A"
-                uow.Get<Root>(root1Id).GrabInformationFrom(root2Id);
+                uow.Get<Root>("id1").GrabInformationFrom("id2");
                 Commit(uow);
             }
 
             using (var uow = _context.BeginUnitOfWork())
             {
                 Console.WriteLine("** Setting name of 2 to 'I now have a name!' **");
-                uow.Get<Root>(root2Id).SetName("I now have a name!");
+                uow.Get<Root>("id2").SetName("I now have a name!");
                 Commit(uow);
             }
 
@@ -96,13 +90,13 @@ namespace d60.Cirqus.Tests.Bugs
             {
                 Console.WriteLine("** Making 1 grab info from 2 **");
                 // expected grabbing: "I now have a name!"
-                uow.Get<Root>(root1Id).GrabInformationFrom(root2Id);
+                uow.Get<Root>("id1").GrabInformationFrom("id2");
                 Commit(uow);
             }
 
             using (var uow = _context.BeginUnitOfWork())
             {
-                var rootWithGrabbings = uow.Get<Root>(root1Id);
+                var rootWithGrabbings = uow.Get<Root>("id1");
                 var grabbedNames = rootWithGrabbings.InformationGrabbings.Select(g => g.Item2).ToArray();
                 var expectedNames = new[] {"N/A", "I now have a name!"};
 
@@ -134,7 +128,7 @@ Got
 
         public class Root : AggregateRoot, IEmit<RootCreated>, IEmit<InformationGrabbedFrom>, IEmit<RootNamed>
         {
-            readonly List<Tuple<Guid, string>> _informationGrabbings = new List<Tuple<Guid, string>>();
+            readonly List<Tuple<string, string>> _informationGrabbings = new List<Tuple<string, string>>();
             string _name;
 
             public string Name
@@ -142,7 +136,7 @@ Got
                 get { return _name; }
             }
 
-            public List<Tuple<Guid, string>> InformationGrabbings
+            public List<Tuple<string, string>> InformationGrabbings
             {
                 get { return _informationGrabbings; }
             }
@@ -152,7 +146,7 @@ Got
                 Emit(new RootCreated());
             }
 
-            public void GrabInformationFrom(Guid otherRootId)
+            public void GrabInformationFrom(string otherRootId)
             {
                 Emit(new InformationGrabbedFrom
                 {
@@ -203,7 +197,7 @@ Got
 
         public class InformationGrabbedFrom : DomainEvent<Root>
         {
-            public Guid OtherRootId { get; set; }
+            public string OtherRootId { get; set; }
         }
 
         public class RootCreated : DomainEvent<Root> { }

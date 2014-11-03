@@ -56,7 +56,7 @@ namespace d60.Cirqus.Tests.Views
             var listLoggerFactory = new ListLoggerFactory();
             CirqusLoggerFactory.Current = listLoggerFactory;
 
-            _cirqus.ProcessCommand(new MyCommand(new Guid("FDC3AF8E-8E89-4129-9D76-33D1B461F40E")));
+            _cirqus.ProcessCommand(new MyCommand("unknownid"));
 
             Thread.Sleep(300);
 
@@ -82,9 +82,8 @@ namespace d60.Cirqus.Tests.Views
 
             var listLoggerFactory = new ListLoggerFactory();
             CirqusLoggerFactory.Current = listLoggerFactory;
-            var aggregateRootId = Guid.NewGuid();
 
-            var result = _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
+            var result = _cirqus.ProcessCommand(new MyCommand("id"));
 
             Thread.Sleep(300);
 
@@ -109,17 +108,15 @@ namespace d60.Cirqus.Tests.Views
         {
             _eventDispatcher.AddViewManager(_viewManager1);
 
-            var aggregateRootId = Guid.NewGuid();
-
-            _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
-            _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
-            _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
-            _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
-            var lastResult = _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
+            _cirqus.ProcessCommand(new MyCommand("rootid"));
+            _cirqus.ProcessCommand(new MyCommand("rootid"));
+            _cirqus.ProcessCommand(new MyCommand("rootid"));
+            _cirqus.ProcessCommand(new MyCommand("rootid"));
+            var lastResult = _cirqus.ProcessCommand(new MyCommand("rootid"));
 
             _eventDispatcher.WaitUntilProcessed(lastResult, TimeSpan.FromSeconds(3)).Wait();
 
-            var view = _viewManager1.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(aggregateRootId));
+            var view = _viewManager1.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId("rootid"));
 
             Assert.That(view.Calls.All(c => c.Item1 == c.Item2), "Registered calls contained a call where the version of the loaded aggregate root did not correspond to the version of the event that the view got to process: {0}",
                 string.Join(", ", view.Calls.Select(c => string.Format("{0}/{1}", c.Item1, c.Item2))));
@@ -130,18 +127,16 @@ namespace d60.Cirqus.Tests.Views
         {
             _eventDispatcher.AddViewManager(_viewManager2);
 
-            var aggregateRootId = Guid.NewGuid();
+            _cirqus.ProcessCommand(new MyCommand("rootid"));
+            _cirqus.ProcessCommand(new MyCommand("rootid"));
+            _cirqus.ProcessCommand(new MyCommand("rootid"));
+            _cirqus.ProcessCommand(new MyCommand("rootid"));
 
-            _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
-            _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
-            _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
-            _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
-
-            var lastResult = _cirqus.ProcessCommand(new MyCommand(aggregateRootId));
+            var lastResult = _cirqus.ProcessCommand(new MyCommand("rootid"));
 
             _eventDispatcher.WaitUntilProcessed(lastResult, TimeSpan.FromSeconds(3)).Wait();
 
-            var view = _viewManager2.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(aggregateRootId));
+            var view = _viewManager2.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId("rootid"));
 
             Assert.That(view, Is.Not.Null);
 
@@ -151,10 +146,7 @@ namespace d60.Cirqus.Tests.Views
 
         class MyCommand : Command<MyRoot>
         {
-            public MyCommand(Guid aggregateRootId)
-                : base(aggregateRootId)
-            {
-            }
+            public MyCommand(string aggregateRootId) : base(aggregateRootId) { }
 
             public override void Execute(MyRoot aggregateRoot)
             {
@@ -238,9 +230,7 @@ namespace d60.Cirqus.Tests.Views
 
             public void Handle(IViewContext context, AnEvent domainEvent)
             {
-                var randomGuid = new Guid("6E421AEB-44E0-45E7-8EFF-744943C5106C");
-
-                var root = context.Load<MyRoot>(randomGuid);
+                var root = context.Load<MyRoot>("randomid");
             }
         }
     }

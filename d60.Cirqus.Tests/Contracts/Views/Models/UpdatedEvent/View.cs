@@ -10,7 +10,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.Models.UpdatedEvent
         public string Id { get; set; }
         public long LastGlobalSequenceNumber { get; set; }
         public int EventCount { get; set; }
-        public Guid AggregateRootId { get; set; }
+        public string AggregateRootId { get; set; }
         public void Handle(IViewContext context, Event domainEvent)
         {
             AggregateRootId = domainEvent.GetAggregateRootId();

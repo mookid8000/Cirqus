@@ -31,13 +31,12 @@ namespace d60.Cirqus.Tests.Snapshotting
         // ReSharper disable UnusedMember.Local
         void RunHashCodeTestWith<TAggregateRoot>() where TAggregateRoot : AggregateRoot, new()
         {
-            var id = Guid.NewGuid();
-            var instance = new TAggregateRoot {Id = id, GlobalSequenceNumberCutoff = 0};
+            var instance = new TAggregateRoot {Id = "root_id", GlobalSequenceNumberCutoff = 0};
 
             var cache = new InMemorySnapshotCache();
             cache.PutCloneToCache(AggregateRootInfo<TAggregateRoot>.Create(instance));
 
-            var rootInfo = cache.GetCloneFromCache<TAggregateRoot>(id, 0);
+            var rootInfo = cache.GetCloneFromCache<TAggregateRoot>("root_id", 0);
             Assert.That(rootInfo, Is.Not.Null, "Expected to have found a root in the cache!");
 
             var frozenInstance = rootInfo.AggregateRoot;

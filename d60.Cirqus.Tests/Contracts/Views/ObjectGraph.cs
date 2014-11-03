@@ -31,7 +31,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
         [Test]
         public void WorksWithChildren()
         {
-            var root1 = new Guid("B8FC0210-B7E4-4279-8BC8-53F13A557751");
+            var root1 = "B8FC0210-B7E4-4279-8BC8-53F13A557751";
             
             _context.Save(root1, new Event {NumberOfChildren = 3});
 
@@ -43,8 +43,9 @@ namespace d60.Cirqus.Tests.Contracts.Views
         [Test]
         public void ItWorksWithSeveralViewsAndDeletionOfRemovedChildren()
         {
-            var root1 = new Guid("B8FC0210-B7E4-4279-8BC8-53F13A557751");
-            var root2 = new Guid("394C50E4-245A-4C35-829D-B4625EDC59F4");
+            var root1 = "B8FC0210-B7E4-4279-8BC8-53F13A557751";
+            var root2 = "394C50E4-245A-4C35-829D-B4625EDC59F4";
+
             _context.Save(root1, new Event { NumberOfChildren = 30 });
             _context.Save(root2, new Event { NumberOfChildren = 20 });
             

@@ -128,7 +128,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 _errorProbability = errorProbability;
             }
 
-            public IEnumerable<Cirqus.Events.Event> Load(Guid aggregateRootId, long firstSeq = 0)
+            public IEnumerable<Cirqus.Events.Event> Load(string aggregateRootId, long firstSeq = 0)
             {
                 PossiblyThrowError();
 

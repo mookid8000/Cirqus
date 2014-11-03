@@ -55,7 +55,7 @@ namespace d60.Cirqus.SQLite
             public Guid BatchId { get; set; }
 
             [Indexed(Name = "aggregateRootIndex", Order = 1, Unique = true)]
-            public Guid AggregateRootId { get; set; }
+            public string AggregateRootId { get; set; }
 
             [Indexed(Name = "aggregateRootIndex", Order = 2, Unique = true)]
             public long SequenceNumber { get; set; }
@@ -117,7 +117,7 @@ namespace d60.Cirqus.SQLite
             }
         }
 
-        public IEnumerable<Events.Event> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<Events.Event> Load(string aggregateRootId, long firstSeq = 0)
         {
             // must be foreach here - SQLite's LINQ thingie does not play well with _domainEventSerializer.Deserialize(e.EventData)
             foreach (var e in _connection.Table<Event>()

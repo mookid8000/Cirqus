@@ -80,7 +80,7 @@ namespace d60.Cirqus.Tests.Bugs
 
         public class ContractAssignedToCounterpart : DomainEvent<Contract>
         {
-            public Guid CounterpartId { get; set; }
+            public string CounterpartId { get; set; }
         }
     }
 }

@@ -46,7 +46,7 @@ IF NOT EXISTS (
 CREATE TABLE IF NOT EXISTS ""{0}"" (
 	""id"" BIGSERIAL NOT NULL,
 	""batchId"" UUID NOT NULL,
-	""aggId"" UUID NOT NULL,
+	""aggId"" VARCHAR(255) NOT NULL,
 	""seqNo"" BIGINT NOT NULL,
 	""globSeqNo"" BIGINT NOT NULL,
 	""meta"" BYTEA NOT NULL,
@@ -168,7 +168,7 @@ INSERT INTO ""{0}"" (
             return connection;
         }
 
-        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<Event> Load(string aggregateRootId, long firstSeq = 0)
         {
             using (var connection = GetConnection())
             {

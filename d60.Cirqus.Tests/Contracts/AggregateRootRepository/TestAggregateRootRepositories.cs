@@ -23,7 +23,7 @@ namespace d60.Cirqus.Tests.Contracts.AggregateRootRepository
         [Test]
         public void CanLoadAggregateRoot()
         {
-            var aggregateRootId = Guid.NewGuid();
+            const string aggregateRootId = "root_id";
 
             _factory.SaveEvent<SomeEvent, SomeRoot>(NewEvent(aggregateRootId, 0));
             _factory.SaveEvent<SomeEvent, SomeRoot>(NewEvent(aggregateRootId, 1));
@@ -36,13 +36,13 @@ namespace d60.Cirqus.Tests.Contracts.AggregateRootRepository
             Assert.That(instance.EventCounter, Is.EqualTo(5));
         }
 
-        static SomeEvent NewEvent(Guid aggregateRootId, int sequenceNumber)
+        static SomeEvent NewEvent(string aggregateRootId, int sequenceNumber)
         {
             return new SomeEvent
             {
                 Meta =
                 {
-                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString()},
+                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId},
                     { DomainEvent.MetadataKeys.SequenceNumber, sequenceNumber.ToString(Metadata.NumberCulture)},
                 }
             };

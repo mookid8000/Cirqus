@@ -31,8 +31,7 @@ namespace d60.Cirqus.Tests.Snapshotting
         // ReSharper disable UnusedMember.Local
         void RunSerializationRoundtripTestWith<TAggregateRoot>() where TAggregateRoot : AggregateRoot, new()
         {
-            var id = Guid.NewGuid();
-            var instance = new TAggregateRoot { Id = id };
+            var instance = new TAggregateRoot { Id = "root_id" };
             Console.WriteLine(instance.GetHashCode());
 
             var firstSerialization = _sturdylizer.SerializeObject(instance);

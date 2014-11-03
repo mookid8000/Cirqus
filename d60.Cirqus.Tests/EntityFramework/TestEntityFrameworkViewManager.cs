@@ -42,7 +42,7 @@ namespace d60.Cirqus.Tests.EntityFramework
         [Test, Description(@"This test was created when child objects were observed to be left in the DB *with their FKs intact* - i.e. they would not be disassociated with their parents as they should. The problem turned out to be due to a missing 'virtual' on the collection property")]
         public void DoesNotLeaveConnectedOrphans()
         {
-            var ids = Enumerable.Range(0, 10).Select(_ => Guid.NewGuid());
+            var ids = Enumerable.Range(0, 10).Select(i => i.ToString());
 
             foreach (var id in ids)
             {
@@ -72,7 +72,7 @@ namespace d60.Cirqus.Tests.EntityFramework
             public List<SomeChild> Children { get; set; }
         }
 
-        void RunTest(Guid id)
+        void RunTest(string id)
         {
             _context.Save(id, new Event { NumberOfChildren = 1 });
             _context.Save(id, new Event { NumberOfChildren = 2 });

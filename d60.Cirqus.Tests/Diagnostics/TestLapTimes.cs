@@ -52,16 +52,14 @@ namespace d60.Cirqus.Tests.Diagnostics
                         .Create()
                     );
 
-                var id = new Guid("67509467-C686-410C-8862-E910B5AF70F0");
-
                 numberOfCommandsToProcess.Times(() =>
                 {
-                    commandProcessor.ProcessCommand(new MakeStuffHappen(id));
+                    commandProcessor.ProcessCommand(new MakeStuffHappen("id"));
                     Interlocked.Increment(ref commandCounter);
                 });
 
                 var repo = new DefaultAggregateRootRepository(new MongoDbEventStore(database, "Events"), new JsonDomainEventSerializer());
-                var currentState = repo.Get<Root>(id, new ConsoleOutUnitOfWork(repo));
+                var currentState = repo.Get<Root>("id", new ConsoleOutUnitOfWork(repo));
 
                 Assert.That(currentState.AggregateRoot.HowManyThingsHaveHappened, Is.EqualTo(numberOfCommandsToProcess));
             }
@@ -93,7 +91,7 @@ namespace d60.Cirqus.Tests.Diagnostics
 
         public class MakeStuffHappen : Command<Root>
         {
-            public MakeStuffHappen(Guid aggregateRootId)
+            public MakeStuffHappen(string aggregateRootId)
                 : base(aggregateRootId)
             {
             }
@@ -112,12 +110,12 @@ namespace d60.Cirqus.Tests.Diagnostics
         long _millisecondsSpentSavingEvents = 0;
         long _millisecondsSpentGettingNextSequenceNumber = 0;
 
-        public void RecordAggregateRootGet(TimeSpan elapsed, Type type, Guid aggregateRootId)
+        public void RecordAggregateRootGet(TimeSpan elapsed, Type type, string aggregateRootId)
         {
             _aggregateRootHydrationTimes.AddOrUpdate(type, id => elapsed, (id, total) => total + elapsed);
         }
 
-        public void RecordAggregateRootExists(TimeSpan elapsed, Guid aggregateRootId)
+        public void RecordAggregateRootExists(TimeSpan elapsed, string aggregateRootId)
         {
         }
 

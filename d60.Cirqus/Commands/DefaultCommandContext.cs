@@ -12,7 +12,7 @@ namespace d60.Cirqus.Commands
             _unitOfWork = unitOfWork;
         }
 
-        public TAggregateRoot Load<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
             var aggregateRootInfo = _unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true);
             var aggregateRoot = aggregateRootInfo.AggregateRoot;

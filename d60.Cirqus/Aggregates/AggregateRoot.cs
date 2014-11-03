@@ -10,7 +10,7 @@ namespace d60.Cirqus.Aggregates
 
         internal IUnitOfWork UnitOfWork { get; set; }
 
-        internal void Initialize(Guid id)
+        internal void Initialize(string id)
         {
             Id = id;
         }
@@ -22,7 +22,7 @@ namespace d60.Cirqus.Aggregates
 
         internal protected virtual void EventEmitted(DomainEvent e) { }
 
-        public Guid Id { get; internal set; }
+        public string Id { get; internal set; }
 
         internal long CurrentSequenceNumber = InitialAggregateRootSequenceNumber;
 
@@ -36,7 +36,7 @@ namespace d60.Cirqus.Aggregates
         {
             if (e == null) throw new ArgumentNullException("e", "Can't emit null!");
 
-            if (Id == Guid.Empty)
+            if (string.IsNullOrWhiteSpace(Id))
             {
                 throw new InvalidOperationException(
                     string.Format(
@@ -112,7 +112,7 @@ namespace d60.Cirqus.Aggregates
             return string.Format("{0} ({1})", GetType().Name, Id);
         }
 
-        protected TAggregateRoot Load<TAggregateRoot>(Guid aggregateRootId, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
+        protected TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
         {
             if (UnitOfWork == null)
             {

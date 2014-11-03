@@ -5,7 +5,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.Models.GeneralViewManagerTest
 {
     public class GenerateNewId : Command<IdGenerator>
     {
-        public GenerateNewId(Guid aggregateRootId)
+        public GenerateNewId(string aggregateRootId)
             : base(aggregateRootId)
         {
         }

@@ -79,7 +79,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             return Enumerable.Empty<Event>();
         }
 
-        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<Event> Load(string aggregateRootId, long firstSeq = 0)
         {
             var transportMessage = InnerLoad(aggregateRootId, firstSeq);
             
@@ -129,7 +129,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             }
         }
 
-        TransportMessage InnerLoad(Guid aggregateRootId, long firstSeq)
+        TransportMessage InnerLoad(string aggregateRootId, long firstSeq)
         {
             try
             {

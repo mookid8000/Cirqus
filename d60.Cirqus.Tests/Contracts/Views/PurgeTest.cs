@@ -37,7 +37,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
         {
             // arrange
             PurgeTestView.StaticBadBoy = "first value";
-            _context.Save(Guid.NewGuid(), new Event());
+            _context.Save("id", new Event());
             PurgeTestView.StaticBadBoy = "new value";
 
             // act

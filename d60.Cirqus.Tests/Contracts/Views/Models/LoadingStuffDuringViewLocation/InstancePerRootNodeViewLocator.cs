@@ -15,12 +15,12 @@ namespace d60.Cirqus.Tests.Contracts.Views.Models.LoadingStuffDuringViewLocation
 
             var node = context.Load<Node>(e.GetAggregateRootId());
 
-            while (node.ParentNodeId != Guid.Empty)
+            while (node.ParentNodeId != null)
             {
                 node = context.Load<Node>(node.ParentNodeId);
             }
 
-            return new[] { node.Id.ToString() };
+            return new[] { node.Id };
         }
     }
 }

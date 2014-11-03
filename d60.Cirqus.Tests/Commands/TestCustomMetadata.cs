@@ -33,23 +33,19 @@ namespace d60.Cirqus.Tests.Commands
         [Test]
         public void CopiesCustomHeadersToEmittedEvents()
         {
-            var programmer1Id = Guid.NewGuid();
-            var programmer2Id = Guid.NewGuid();
-            var programmer3Id = Guid.NewGuid();
-
             const string tenantId = "tenant-id";
 
-            _cirqus.ProcessCommand(new TakeNextStepCommand(programmer1Id)
+            _cirqus.ProcessCommand(new TakeNextStepCommand("programmer1")
             {
                 Meta = {{tenantId, "1"}}
             });
             
-            _cirqus.ProcessCommand(new TakeNextStepCommand(programmer2Id)
+            _cirqus.ProcessCommand(new TakeNextStepCommand("programmer2")
             {
                 Meta = {{tenantId, "2"}}
             });
             
-            _cirqus.ProcessCommand(new TakeNextStepCommand(programmer3Id)
+            _cirqus.ProcessCommand(new TakeNextStepCommand("programmer3")
             {
                 Meta = {{tenantId, "2"}}
             });
@@ -63,7 +59,7 @@ namespace d60.Cirqus.Tests.Commands
 
         public class TakeNextStepCommand : Command<ProgrammerAggregate>
         {
-            public TakeNextStepCommand(Guid aggregateRootId)
+            public TakeNextStepCommand(string aggregateRootId)
                 : base(aggregateRootId)
             {
             }
