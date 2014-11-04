@@ -32,6 +32,8 @@ namespace d60.Cirqus.Aggregates
 
         protected virtual void Created() { }
 
+        protected bool IsNew { get { return CurrentSequenceNumber == InitialAggregateRootSequenceNumber; } }
+
         protected void Emit<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
         {
             if (e == null) throw new ArgumentNullException("e", "Can't emit null!");
