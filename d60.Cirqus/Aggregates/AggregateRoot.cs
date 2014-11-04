@@ -32,7 +32,10 @@ namespace d60.Cirqus.Aggregates
 
         protected virtual void Created() { }
 
-        protected bool IsNew { get { return CurrentSequenceNumber == InitialAggregateRootSequenceNumber; } }
+        protected bool IsNew
+        {
+            get { return CurrentSequenceNumber == InitialAggregateRootSequenceNumber; }
+        }
 
         protected void Emit<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
         {

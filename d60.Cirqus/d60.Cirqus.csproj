@@ -52,7 +52,6 @@
     <Compile Include="Config\Configurers\AggregateRootRepositoryConfigurationBuilder.cs" />
     <Compile Include="Config\Configurers\CommandProcessorConfigurationBuilder.cs" />
     <Compile Include="Commands\Command.cs" />
-    <Compile Include="Commands\CommandMapper.cs" />
     <Compile Include="Commands\CompositeCommand.cs" />
     <Compile Include="Commands\ICommandContext.cs" />
     <Compile Include="CommandProcessor.cs" />

@@ -412,6 +412,9 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Changed aggregate root ID to be `string`s instead of `Guid`s - thanks [asgerhallas]
 
+## 0.44.0
+
+* Added `IsNew` property to aggregate root which allows for determining whether an instance is new or not
 
 [asgerhallas]: https://github.com/asgerhallas
 
