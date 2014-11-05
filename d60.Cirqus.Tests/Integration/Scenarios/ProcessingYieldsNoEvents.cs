@@ -34,7 +34,7 @@ namespace d60.Cirqus.Tests.Integration.Scenarios
 
             public override void Execute(ICommandContext context)
             {
-                var root = context.Load<SomeRoot>(SomeId);
+                var root = context.Load<SomeRoot>(SomeId, createIfNotExists: true);
 
                 root.PossiblyDoSomething();
             }

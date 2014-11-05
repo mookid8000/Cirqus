@@ -173,28 +173,7 @@ namespace d60.Cirqus.Aggregates
                 ? GlobalSequenceNumberCutoff
                 : long.MaxValue;
 
-            var cachedAggregateRoot = UnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists);
-
-            if (cachedAggregateRoot != null)
-            {
-                return cachedAggregateRoot.AggregateRoot;
-            }
-
-            if (!createIfNotExists && !UnitOfWork.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff: globalSequenceNumberCutoffToLookFor))
-            {
-                throw new ArgumentException(string.Format("Aggregate root {0} with ID {1} does not exist!", typeof(TAggregateRoot), aggregateRootId), "aggregateRootId");
-            }
-
-            var aggregateRootInfo = UnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff: globalSequenceNumberCutoffToLookFor);
-            var aggregateRoot = aggregateRootInfo.AggregateRoot;
-
-            var globalSequenceNumberToSaveUnder = ReplayState == ReplayState.None
-                ? long.MaxValue
-                : aggregateRootInfo.LastGlobalSeqNo;
-
-            UnitOfWork.AddToCache(aggregateRoot, globalSequenceNumberToSaveUnder);
-
-            return aggregateRoot;
+            return UnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists).AggregateRoot;
         }
     }
 }

@@ -4,6 +4,6 @@ namespace d60.Cirqus.Commands
 {
     public interface ICommandContext
     {
-        TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new();
+        TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new();
     }
 }

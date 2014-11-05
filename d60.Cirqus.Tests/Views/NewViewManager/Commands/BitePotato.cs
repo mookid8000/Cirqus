@@ -18,7 +18,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager.Commands
 
         public override void Execute(ICommandContext context)
         {
-            context.Load<Potato>(PotatoId).Bite(FractionToBiteOff);
+            context.Load<Potato>(PotatoId, createIfNotExists: true).Bite(FractionToBiteOff);
         }
     }
 }
