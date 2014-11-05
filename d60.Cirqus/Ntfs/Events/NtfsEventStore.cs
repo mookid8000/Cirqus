@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -33,7 +33,7 @@ namespace d60.Cirqus.Ntfs.Events
         internal DataStore DataStore { get; private set; }
         internal CommitLog CommitLog { get; private set; }
 
-        public void Save(Guid batchId, IEnumerable<Event> events)
+        public void Save(Guid batchId, IEnumerable<EventData> events)
         {
             lock (_lock)
             {
@@ -59,14 +59,14 @@ namespace d60.Cirqus.Ntfs.Events
             }
         }
 
-        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
         {
             var lastCommittedGlobalSequenceNumber = CommitLog.Read();
 
             return DataStore.Read(lastCommittedGlobalSequenceNumber, aggregateRootId, firstSeq);
         }
 
-        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
         {
             var lastCommittedGlobalSequenceNumber = CommitLog.Read();
 

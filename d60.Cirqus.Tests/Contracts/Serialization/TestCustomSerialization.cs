@@ -44,11 +44,9 @@ namespace d60.Cirqus.Tests.Contracts.Serialization
         [Test]
         public void WorksWithCustomSerializer()
         {
-            var aggregateRootId = Guid.NewGuid();
-
-            _commandProcessor.ProcessCommand(new LeCommand(aggregateRootId));
-            _commandProcessor.ProcessCommand(new LeCommand(aggregateRootId));
-            var lastResult = _commandProcessor.ProcessCommand(new LeCommand(aggregateRootId));
+            _commandProcessor.ProcessCommand(new LeCommand("rootid"));
+            _commandProcessor.ProcessCommand(new LeCommand("rootid"));
+            var lastResult = _commandProcessor.ProcessCommand(new LeCommand("rootid"));
 
             _viewManager.WaitUntilProcessed(lastResult, TimeSpan.FromSeconds(10)).Wait();
             var view = _viewManager.Load(GlobalInstanceLocator.GetViewInstanceId());
@@ -92,7 +90,7 @@ namespace d60.Cirqus.Tests.Contracts.Serialization
 
         public class LeCommand : Command<Root>
         {
-            public LeCommand(Guid aggregateRootId)
+            public LeCommand(string aggregateRootId)
                 : base(aggregateRootId)
             {
             }

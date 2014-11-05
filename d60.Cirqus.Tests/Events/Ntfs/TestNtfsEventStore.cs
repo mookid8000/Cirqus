@@ -22,45 +22,41 @@ namespace d60.Cirqus.Tests.Events.Ntfs
         [Test]
         public void OnlyReadCommittedOnLoad()
         {
-            var rootId = Guid.NewGuid();
-
             // make one full commit
-            _eventStore.Save(rootId, new[]
+            _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
-                    {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
+                    {DomainEvent.MetadataKeys.AggregateRootId, "id"}
 
                 }, new byte[0])
             });
 
             // save an event to a file, without committing
             _eventStore.DataStore.Write(
-                Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
-                    {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()},
+                    {DomainEvent.MetadataKeys.AggregateRootId, "id"},
                     {DomainEvent.MetadataKeys.GlobalSequenceNumber, 1.ToString(Metadata.NumberCulture)}
                 }, new byte[0]));
 
 
-            var events = _eventStore.Load(rootId);
+            var events = _eventStore.Load("id");
             Assert.AreEqual(1, events.Count());
         }
 
         [Test]
         public void OnlyReadCommittedOnStream()
         {
-            var rootId = Guid.NewGuid();
-
             // make one full commit
-            _eventStore.Save(rootId, new[]
+            _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
-                    {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
+                    {DomainEvent.MetadataKeys.AggregateRootId, "id".ToString()}
                 }, new byte[0])
             });
 
@@ -70,7 +66,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 new GlobalSequenceIndex.GlobalSequenceRecord
                 {
                     GlobalSequenceNumber = 1,
-                    AggregateRootId = rootId,
+                    AggregateRootId = "id",
                     LocalSequenceNumber = 1
                 }
             });
@@ -82,15 +78,13 @@ namespace d60.Cirqus.Tests.Events.Ntfs
         [Test]
         public void CanRecoverAfterWritingIndex()
         {
-            var rootId = Guid.NewGuid();
-
             // make one full commit
-            _eventStore.Save(rootId, new[]
+            _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
-                    {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
+                    {DomainEvent.MetadataKeys.AggregateRootId, "rootid"}
                 }, new byte[0])
             });
 
@@ -100,18 +94,18 @@ namespace d60.Cirqus.Tests.Events.Ntfs
                 new GlobalSequenceIndex.GlobalSequenceRecord
                 {
                     GlobalSequenceNumber = 1,
-                    AggregateRootId = rootId,
+                    AggregateRootId = "rootid",
                     LocalSequenceNumber = 1
                 }
             });
 
             // make one full commit
-            _eventStore.Save(rootId, new[]
+            _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
-                    {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
+                    {DomainEvent.MetadataKeys.AggregateRootId, "rootid"}
                 }, new byte[0])
             });
 
@@ -119,43 +113,41 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             Assert.AreEqual(1, stream.Last().GetGlobalSequenceNumber());
             Assert.AreEqual(2, stream.Count());
 
-            var load = _eventStore.Load(rootId);
+            var load = _eventStore.Load("rootid");
             Assert.AreEqual(2, load.Count());
         }
 
         [Test]
         public void CanRecoverAfterSavingEventData()
         {
-            var rootId = Guid.NewGuid();
-
             // make one full commit
-            _eventStore.Save(rootId, new[]
+            _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
-                    {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
+                    {DomainEvent.MetadataKeys.AggregateRootId, "rootid"}
                 }, new byte[0])
             });
 
             // make one that fails right after index write
-            var domainEvent = Event.FromMetadata(new Metadata
+            var domainEvent = EventData.FromMetadata(new Metadata
             {
                 {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
-                {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()},
+                {DomainEvent.MetadataKeys.AggregateRootId, "rootid"},
                 {DomainEvent.MetadataKeys.GlobalSequenceNumber, 1.ToString(Metadata.NumberCulture)}
             }, Encoding.UTF8.GetBytes("The bad one"));
 
-            _eventStore.GlobalSequenceIndex.Write(new[] { domainEvent });
+            _eventStore.GlobalSequenceIndex.Write(new[] {domainEvent});
             _eventStore.DataStore.Write(domainEvent);
 
             // make one full commit
-            _eventStore.Save(rootId, new[]
+            _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
-                    {DomainEvent.MetadataKeys.AggregateRootId, rootId.ToString()}
+                    {DomainEvent.MetadataKeys.AggregateRootId, "rootid"}
                 }, Encoding.UTF8.GetBytes("The good one"))
             });
 
@@ -163,7 +155,7 @@ namespace d60.Cirqus.Tests.Events.Ntfs
             Assert.AreEqual(2, stream.Count());
             Assert.AreEqual(1, stream.Last().GetGlobalSequenceNumber());
 
-            var load = _eventStore.Load(rootId).ToList();
+            var load = _eventStore.Load("rootid").ToList();
             Assert.AreEqual(2, load.Count());
             Assert.AreEqual("The good one", Encoding.UTF8.GetString(load.Last().Data));
         }

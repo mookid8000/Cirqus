@@ -5,6 +5,6 @@ namespace d60.Cirqus.Tests.Contracts.Views.Models.LoadingStuffDuringViewLocation
 {
     public class NodeAttachedToParentNode : DomainEvent<Node>
     {
-        public Guid ParentNodeId { get; set; }
+        public string ParentNodeId { get; set; }
     }
 }

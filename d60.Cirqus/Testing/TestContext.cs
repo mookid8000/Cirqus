@@ -39,6 +39,12 @@ namespace d60.Cirqus.Testing
             _eventDispatcher = new CompositeEventDispatcher(_viewManagerEventDispatcher);
         }
 
+        public int MaxDomainEventsPerBatch
+        {
+            get { return _viewManagerEventDispatcher.MaxDomainEventsPerBatch; }
+            set { _viewManagerEventDispatcher.MaxDomainEventsPerBatch = value; }
+        }
+
         /// <summary>
         /// Can be used to specify whether this test context will block & wait for views to catch up after each and every processed command
         /// </summary>
@@ -182,7 +188,7 @@ namespace d60.Cirqus.Testing
         /// <summary>
         /// Saves the given domain event to the history as if it was emitted by the specified aggregate root, immediately dispatching the event to the event dispatcher
         /// </summary>
-        public CommandProcessingResultWithEvents Save<TAggregateRoot>(Guid aggregateRootId, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
+        public CommandProcessingResultWithEvents Save<TAggregateRoot>(string aggregateRootId, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
         {
             return Save(aggregateRootId, new[] { domainEvent });
         }
@@ -190,7 +196,7 @@ namespace d60.Cirqus.Testing
         /// <summary>
         /// Saves the given domain events to the history as if they were emitted by the specified aggregate root, immediately dispatching the events to the event dispatcher
         /// </summary>
-        public CommandProcessingResultWithEvents Save<TAggregateRoot>(Guid aggregateRootId, params DomainEvent<TAggregateRoot>[] domainEvents) where TAggregateRoot : AggregateRoot
+        public CommandProcessingResultWithEvents Save<TAggregateRoot>(string aggregateRootId, params DomainEvent<TAggregateRoot>[] domainEvents) where TAggregateRoot : AggregateRoot
         {
             EnsureInitialized();
 
@@ -264,13 +270,14 @@ Current view positions:
             }
         }
 
-        void SetMetadata<TAggregateRoot>(Guid aggregateRootId, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
+        void SetMetadata<TAggregateRoot>(string aggregateRootId, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
         {
             var now = GetNow();
 
-            domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId] = aggregateRootId.ToString();
+            domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId] = aggregateRootId;
             domainEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber] = _eventStore.GetNextSeqNo(aggregateRootId).ToString(Metadata.NumberCulture);
             domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = AggregateRoot.GetOwnerFromType(typeof(TAggregateRoot));
+            domainEvent.Meta[DomainEvent.MetadataKeys.Type] = AggregateRoot.GetEventTypeFromType(domainEvent.GetType());
             domainEvent.Meta[DomainEvent.MetadataKeys.TimeUtc] = now.ToString("u");
 
             domainEvent.Meta.TakeFromAttributes(domainEvent.GetType());

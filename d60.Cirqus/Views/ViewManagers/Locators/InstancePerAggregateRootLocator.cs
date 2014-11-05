@@ -12,7 +12,7 @@ namespace d60.Cirqus.Views.ViewManagers.Locators
     {
         protected override IEnumerable<string> GetViewIds(IViewContext context, DomainEvent e)
         {
-            return new[] {e.Meta[DomainEvent.MetadataKeys.AggregateRootId].ToString()};
+            return new[] {e.Meta[DomainEvent.MetadataKeys.AggregateRootId]};
         }
 
         public static string GetViewIdFromAggregateRoot(AggregateRoot aggregateRoot)
@@ -20,9 +20,9 @@ namespace d60.Cirqus.Views.ViewManagers.Locators
             return GetViewIdFromAggregateRootId(aggregateRoot.Id);
         }
 
-        public static string GetViewIdFromAggregateRootId(Guid guid)
+        public static string GetViewIdFromAggregateRootId(string id)
         {
-            return guid.ToString();
+            return id;
         }
     }
 }

@@ -37,17 +37,16 @@ namespace d60.Cirqus.Tests.Examples
 
             RegisterForDisposal(processor);
 
-            var aggregateRootId = Guid.NewGuid();
-            processor.ProcessCommand(new IncrementCounter(aggregateRootId, 1));
-            processor.ProcessCommand(new IncrementCounter(aggregateRootId, 2));
-            processor.ProcessCommand(new IncrementCounter(aggregateRootId, 3));
-            processor.ProcessCommand(new IncrementCounter(aggregateRootId, 5));
-            processor.ProcessCommand(new IncrementCounter(aggregateRootId, 8));
+            processor.ProcessCommand(new IncrementCounter("id", 1));
+            processor.ProcessCommand(new IncrementCounter("id", 2));
+            processor.ProcessCommand(new IncrementCounter("id", 3));
+            processor.ProcessCommand(new IncrementCounter("id", 5));
+            processor.ProcessCommand(new IncrementCounter("id", 8));
         }
 
         public class IncrementCounter : Command<Counter>
         {
-            public IncrementCounter(Guid aggregateRootId, int delta)
+            public IncrementCounter(string aggregateRootId, int delta)
                 : base(aggregateRootId)
             {
                 Delta = delta;

@@ -5,7 +5,8 @@ namespace d60.Cirqus.Tests.Contracts.Views.Models.GeneralViewManagerTest
 {
     public class EmitEvent : Command<EventEmitter>
     {
-        public EmitEvent(Guid aggregateRootId) : base(aggregateRootId)
+        public EmitEvent(string aggregateRootId)
+            : base(aggregateRootId)
         {
         }
 

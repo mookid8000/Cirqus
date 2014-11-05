@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Reflection;
 using d60.Cirqus.Events;
+using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
 
 namespace d60.Cirqus.Aggregates
@@ -10,7 +13,7 @@ namespace d60.Cirqus.Aggregates
 
         internal IUnitOfWork UnitOfWork { get; set; }
 
-        internal void Initialize(Guid id)
+        internal void Initialize(string id)
         {
             Id = id;
         }
@@ -22,7 +25,7 @@ namespace d60.Cirqus.Aggregates
 
         internal protected virtual void EventEmitted(DomainEvent e) { }
 
-        public Guid Id { get; internal set; }
+        public string Id { get; internal set; }
 
         internal long CurrentSequenceNumber = InitialAggregateRootSequenceNumber;
 
@@ -32,11 +35,16 @@ namespace d60.Cirqus.Aggregates
 
         protected virtual void Created() { }
 
+        protected bool IsNew
+        {
+            get { return CurrentSequenceNumber == InitialAggregateRootSequenceNumber; }
+        }
+
         protected void Emit<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
         {
             if (e == null) throw new ArgumentNullException("e", "Can't emit null!");
 
-            if (Id == Guid.Empty)
+            if (string.IsNullOrWhiteSpace(Id))
             {
                 throw new InvalidOperationException(
                     string.Format(
@@ -73,12 +81,13 @@ namespace d60.Cirqus.Aggregates
             }
 
             var now = Time.UtcNow();
-            var sequenceNumber = ++CurrentSequenceNumber;
+            var sequenceNumber = CurrentSequenceNumber + 1;
 
-            e.Meta[DomainEvent.MetadataKeys.AggregateRootId] = Id.ToString();
+            e.Meta[DomainEvent.MetadataKeys.AggregateRootId] = Id;
             e.Meta[DomainEvent.MetadataKeys.TimeUtc] = now.ToString("u");
             e.Meta[DomainEvent.MetadataKeys.SequenceNumber] = sequenceNumber.ToString(Metadata.NumberCulture);
             e.Meta[DomainEvent.MetadataKeys.Owner] = GetOwnerFromType(GetType());
+            e.Meta[DomainEvent.MetadataKeys.Type] = GetOwnerFromType(e.GetType());
 
             e.Meta.TakeFromAttributes(eventType);
             e.Meta.TakeFromAttributes(GetType());
@@ -87,9 +96,7 @@ namespace d60.Cirqus.Aggregates
             {
                 ReplayState = ReplayState.EmitApply;
 
-                var dynamicThis = (dynamic)this;
-
-                dynamicThis.Apply((dynamic)e);
+                ApplyEvent(e);
 
                 ReplayState = ReplayState.None;
             }
@@ -102,9 +109,43 @@ namespace d60.Cirqus.Aggregates
             EventEmitted(e);
         }
 
+        internal void ApplyEvent(DomainEvent e)
+        {
+            // tried caching here with a (aggRootType, eventType) lookup in two levels of concurrent dictionaries.... didn't provide significant perf boost
+            var applyMethod = GetType().GetMethod("Apply", new[] { e.GetType() });
+
+            if (applyMethod == null)
+            {
+                throw new ApplicationException(
+                    string.Format("Could not find appropriate Apply method - expects a method with a public void Apply({0}) signature",
+                        e.GetType().FullName));
+            }
+
+            try
+            {
+                applyMethod.Invoke(this, new object[] { e });
+            }
+            catch (TargetInvocationException tae)
+            {
+                throw new ApplicationException(string.Format("Error when applying event {0} to aggregate root with ID {1}", e, Id), tae);
+            }
+
+            CurrentSequenceNumber = e.GetSequenceNumber();
+        }
+
         internal static string GetOwnerFromType(Type aggregateRootType)
         {
-            return string.Format("{0}, {1}", aggregateRootType.FullName, aggregateRootType.Assembly.GetName().Name);
+            return FormatType(aggregateRootType);
+        }
+
+        internal static string GetEventTypeFromType(Type domainEventType)
+        {
+            return FormatType(domainEventType);
+        }
+
+        static string FormatType(Type type)
+        {
+            return string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().Name);
         }
 
         public override string ToString()
@@ -112,7 +153,7 @@ namespace d60.Cirqus.Aggregates
             return string.Format("{0} ({1})", GetType().Name, Id);
         }
 
-        protected TAggregateRoot Load<TAggregateRoot>(Guid aggregateRootId, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
+        protected TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
         {
             if (UnitOfWork == null)
             {

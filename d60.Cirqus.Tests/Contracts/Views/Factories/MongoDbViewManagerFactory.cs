@@ -17,7 +17,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
         protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>()
         {
             var viewManager = new MongoDbViewManager<TViewInstance>(_database);
-
+            
             return viewManager;
         }
     }

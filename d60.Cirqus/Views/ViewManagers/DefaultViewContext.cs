@@ -21,7 +21,7 @@ namespace d60.Cirqus.Views.ViewManagers
             _realUnitOfWork = new RealUnitOfWork(_aggregateRootRepository);
         }
 
-        public TAggregateRoot Load<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
             if (CurrentEvent == null)
             {
@@ -34,17 +34,17 @@ namespace d60.Cirqus.Views.ViewManagers
             return Load<TAggregateRoot>(aggregateRootId, CurrentEvent.GetGlobalSequenceNumber());
         }
 
-        public bool Exists<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+        public bool Exists<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
         {
             return _aggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
         }
 
-        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists) where TAggregateRoot : AggregateRoot, new()
+        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists) where TAggregateRoot : AggregateRoot, new()
         {
             return _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, _realUnitOfWork, globalSequenceNumberCutoff);
         }
 
-        public TAggregateRoot Load<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
+        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
         {
             if (!_aggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, maxGlobalSequenceNumber: globalSequenceNumber))
             {
@@ -80,17 +80,17 @@ namespace d60.Cirqus.Views.ViewManagers
                         typeof(TAggregateRoot), _aggregateRootInfo.AggregateRoot.Id, e, _aggregateRootInfo.LastGlobalSeqNo));
             }
 
-            public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+            public void AddToCache<TAggregateRootToAdd>(TAggregateRootToAdd aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRootToAdd : AggregateRoot
             {
-                _realUnitOfWork.AddToCache<TAggregateRoot>(aggregateRoot, globalSequenceNumberCutoff);
+                _realUnitOfWork.AddToCache(aggregateRoot, globalSequenceNumberCutoff);
             }
 
-            public bool Exists<TAggregateRoot1>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot1 : AggregateRoot
+            public bool Exists<TAggregateRootToCheck>(string aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRootToCheck : AggregateRoot
             {
-                return _realUnitOfWork.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
+                return _realUnitOfWork.Exists<TAggregateRootToCheck>(aggregateRootId, globalSequenceNumberCutoff);
             }
 
-            public AggregateRootInfo<TAggregateRootToLoad> Get<TAggregateRootToLoad>(Guid aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists) where TAggregateRootToLoad : AggregateRoot, new()
+            public AggregateRootInfo<TAggregateRootToLoad> Get<TAggregateRootToLoad>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists) where TAggregateRootToLoad : AggregateRoot, new()
             {
                 return _realUnitOfWork.Get<TAggregateRootToLoad>(aggregateRootId, globalSequenceNumberCutoff);
             }

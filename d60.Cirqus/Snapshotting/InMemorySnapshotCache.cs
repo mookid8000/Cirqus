@@ -22,7 +22,8 @@ namespace d60.Cirqus.Snapshotting
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
         }
 
-        readonly ConcurrentDictionary<Guid, ConcurrentDictionary<long, CacheEntry>> _cacheEntries = new ConcurrentDictionary<Guid, ConcurrentDictionary<long, CacheEntry>>();
+        readonly ConcurrentDictionary<string, ConcurrentDictionary<long, CacheEntry>> _cacheEntries = 
+            new ConcurrentDictionary<string, ConcurrentDictionary<long, CacheEntry>>();
 
         long _currentNumberOfCacheEntries; //<long because of Interlocked.Read
         int _approximateMaxNumberOfCacheEntries = 1000; //< approximate because who cares if we're slightly off
@@ -84,7 +85,7 @@ namespace d60.Cirqus.Snapshotting
 
             public long GlobalSequenceNumber { get; private set; }
 
-            public Guid AggregateRootId { get; private set; }
+            public string AggregateRootId { get; private set; }
 
             public Type AggregateRootType { get; private set; }
 
@@ -125,7 +126,7 @@ namespace d60.Cirqus.Snapshotting
             }
         }
 
-        public AggregateRootInfo<TAggregateRoot> GetCloneFromCache<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
+        public AggregateRootInfo<TAggregateRoot> GetCloneFromCache<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
         {
             try
             {

@@ -30,7 +30,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _context.AddViewManager(_factory.GetViewManager<View>());
 
             // act
-            _context.Save(Guid.NewGuid(), new Event());
+            _context.Save("key", new Event());
 
             // assert
         }

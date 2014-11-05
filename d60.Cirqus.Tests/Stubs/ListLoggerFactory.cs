@@ -1,12 +1,14 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using d60.Cirqus.Logging;
 
 namespace d60.Cirqus.Tests.Stubs
 {
     public class ListLoggerFactory : CirqusLoggerFactory
     {
-        readonly List<LogLine>_loggedLines = new List<LogLine>();
+        readonly ConcurrentQueue<LogLine> _loggedLines = new ConcurrentQueue<LogLine>();
 
         public class LogLine
         {
@@ -31,13 +33,13 @@ namespace d60.Cirqus.Tests.Stubs
 
         public IEnumerable<LogLine> LoggedLines
         {
-            get { return _loggedLines; }
+            get { return _loggedLines.ToList(); }
         }
 
         public override Logger GetLogger(Type ownerType)
         {
             var logger = new LineEmittingLogger(ownerType);
-            logger.Logged += _loggedLines.Add;
+            logger.Logged += _loggedLines.Enqueue;
             return logger;
         }
 

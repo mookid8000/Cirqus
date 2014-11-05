@@ -18,7 +18,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.Models.GeneralViewManagerTest
         
         public void Handle(IViewContext context, AnEvent domainEvent)
         {
-            var value = domainEvent.Meta[Id].ToString();
+            var value = domainEvent.Meta[Id];
 
             HeaderValues.Add(value);
         }

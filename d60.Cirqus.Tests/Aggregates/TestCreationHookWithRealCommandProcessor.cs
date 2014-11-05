@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
@@ -28,13 +27,8 @@ namespace d60.Cirqus.Tests.Aggregates
         [Test]
         public void InvokesCreatedHookWhenAggregateRootIsFirstCreated()
         {
-            // arrange
-            var rootId = Guid.NewGuid();
+            _commandProcessor.ProcessCommand(new MakeRootDoSomething("id1"));
 
-            // act
-            _commandProcessor.ProcessCommand(new MakeRootDoSomething(rootId));
-
-            // assert
             var expectedSequenceOfEvents = new[] { typeof(RootCreated), typeof(RootDidSomething) };
             var actualSequenceOfEvents = _eventStore.Select(e => e.GetType()).ToArray();
 
@@ -45,12 +39,11 @@ namespace d60.Cirqus.Tests.Aggregates
         public void InvokesCreatedHookWhenAggregateRootIsFirstCreatedAndNeverAgain()
         {
             // arrange
-            var rootId = Guid.NewGuid();
 
             // act
-            _commandProcessor.ProcessCommand(new MakeRootDoSomething(rootId));
-            _commandProcessor.ProcessCommand(new MakeRootDoSomething(rootId));
-            _commandProcessor.ProcessCommand(new MakeRootDoSomething(rootId));
+            _commandProcessor.ProcessCommand(new MakeRootDoSomething("rootid"));
+            _commandProcessor.ProcessCommand(new MakeRootDoSomething("rootid"));
+            _commandProcessor.ProcessCommand(new MakeRootDoSomething("rootid"));
 
             // assert
             var expectedSequenceOfEvents = new[]
@@ -67,7 +60,8 @@ namespace d60.Cirqus.Tests.Aggregates
 
         public class MakeRootDoSomething : Command<Root>
         {
-            public MakeRootDoSomething(Guid aggregateRootId) : base(aggregateRootId)
+            public MakeRootDoSomething(string aggregateRootId) 
+                : base(aggregateRootId)
             {
             }
 

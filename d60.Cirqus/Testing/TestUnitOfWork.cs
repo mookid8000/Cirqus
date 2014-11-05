@@ -34,7 +34,7 @@ namespace d60.Cirqus.Testing
 
         internal event Action Committed = delegate { };
 
-        public TAggregateRoot Get<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
             var aggregateRootInfo = _realUnitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true);
             var aggregateRoot = aggregateRootInfo.AggregateRoot;
@@ -87,7 +87,7 @@ namespace d60.Cirqus.Testing
 
         public void Dispose()
         {
-            if (!_wasCommitted)
+            if (!_wasCommitted && EmittedEvents.Any())
             {
                 Console.WriteLine("Unit of work was disposed with {0} events without being committed", EmittedEvents.Count());
             }

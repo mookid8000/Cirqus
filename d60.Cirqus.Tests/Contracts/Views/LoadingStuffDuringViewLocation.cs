@@ -32,20 +32,19 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _context.AddViewManager(_factory.GetViewManager<CountTheNodes>());
 
             // arrange
-            var rootNodeId = Guid.NewGuid();
             using (var uow = _context.BeginUnitOfWork())
             {
-                var node = uow.Get<Node>(rootNodeId);
+                var node = uow.Load<Node>("rootnodeid");
 
-                var child1 = uow.Get<Node>(Guid.NewGuid());
-                var child2 = uow.Get<Node>(Guid.NewGuid());
+                var child1 = uow.Load<Node>("child1");
+                var child2 = uow.Load<Node>("child2");
 
                 child1.AttachTo(node);
                 child2.AttachTo(node);
 
-                var subChild1 = uow.Get<Node>(Guid.NewGuid());
-                var subChild2 = uow.Get<Node>(Guid.NewGuid());
-                var subChild3 = uow.Get<Node>(Guid.NewGuid());
+                var subChild1 = uow.Load<Node>("subchild1");
+                var subChild2 = uow.Load<Node>("subchild2");
+                var subChild3 = uow.Load<Node>("subchild3");
 
                 subChild1.AttachTo(child1);
                 subChild2.AttachTo(child1);
@@ -58,7 +57,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _context.WaitForViewToCatchUp<CountTheNodes>();
 
             // assert
-            var view = _factory.Load<CountTheNodes>(rootNodeId.ToString());
+            var view = _factory.Load<CountTheNodes>("rootnodeid");
             Assert.That(view.Nodes, Is.EqualTo(5));
         }
     }

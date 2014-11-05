@@ -36,20 +36,17 @@ namespace d60.Cirqus.Tests.Contracts.Views
         {
             _context.AddViewManager(_instancePerAggregateRootViewManager);
 
-            var rootId1 = Guid.NewGuid();
-            var rootId2 = Guid.NewGuid();
+            _context.Save("id1", new ThisIsJustAnEvent());
+            _context.Save("id1", new ThisIsJustAnEvent());
+            _context.Save("id1", new ThisIsJustAnEvent());
 
-            _context.Save(rootId1, new ThisIsJustAnEvent());
-            _context.Save(rootId1, new ThisIsJustAnEvent());
-            _context.Save(rootId1, new ThisIsJustAnEvent());
-
-            _context.Save(rootId2, new ThisIsJustAnEvent());
-            _context.Save(rootId2, new ThisIsJustAnEvent());
-            _context.Save(rootId2, new ThisIsJustAnEvent());
+            _context.Save("id2", new ThisIsJustAnEvent());
+            _context.Save("id2", new ThisIsJustAnEvent());
+            _context.Save("id2", new ThisIsJustAnEvent());
 
             _context.WaitForViewsToCatchUp();
 
-            var view = _factory.Load<InstancePerAggregateRootView>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(rootId1));
+            var view = _factory.Load<InstancePerAggregateRootView>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId("id1"));
             Assert.That(view.EventCounter, Is.EqualTo(3));
         }
 
@@ -58,16 +55,13 @@ namespace d60.Cirqus.Tests.Contracts.Views
         {
             _context.AddViewManager(_globalInstanceViewManager);
 
-            var rootId1 = Guid.NewGuid();
-            var rootId2 = Guid.NewGuid();
+            _context.Save("id1", new ThisIsJustAnEvent());
+            _context.Save("id1", new ThisIsJustAnEvent());
+            _context.Save("id1", new ThisIsJustAnEvent());
 
-            _context.Save(rootId1, new ThisIsJustAnEvent());
-            _context.Save(rootId1, new ThisIsJustAnEvent());
-            _context.Save(rootId1, new ThisIsJustAnEvent());
-
-            _context.Save(rootId2, new ThisIsJustAnEvent());
-            _context.Save(rootId2, new ThisIsJustAnEvent());
-            _context.Save(rootId2, new ThisIsJustAnEvent());
+            _context.Save("id2", new ThisIsJustAnEvent());
+            _context.Save("id2", new ThisIsJustAnEvent());
+            _context.Save("id2", new ThisIsJustAnEvent());
 
             _context.WaitForViewsToCatchUp();
 
@@ -80,9 +74,8 @@ namespace d60.Cirqus.Tests.Contracts.Views
         {
             _context.AddViewManager(_globalInstanceViewManager);
 
-            Assert.DoesNotThrow(() => _context.Save(Guid.NewGuid(), new JustAnEvent()));
-
-            Assert.DoesNotThrow(() => _context.Save(Guid.NewGuid(), new AnotherEvent()));
+            Assert.DoesNotThrow(() => _context.Save("id1", new JustAnEvent()));
+            Assert.DoesNotThrow(() => _context.Save("id2", new AnotherEvent()));
         }
     }
 }

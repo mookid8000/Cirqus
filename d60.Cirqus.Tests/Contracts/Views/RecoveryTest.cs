@@ -29,7 +29,11 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             _factory = RegisterForDisposal(new TFactory());
 
-            _context = RegisterForDisposal(new TestContext { Asynchronous = true });
+            _context = RegisterForDisposal(new TestContext
+            {
+                Asynchronous = true,
+                MaxDomainEventsPerBatch = 10
+            });
 
             _viewManager = _factory.GetViewManager<View>();
         }
@@ -63,7 +67,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
                     .Select(id => new Event { EventId = id })
                     .ToList();
 
-                events.ForEach(e => _context.Save(Guid.NewGuid(), e));
+                events.ForEach(e => _context.Save("someid", e));
 
                 // act
                 _context.AddViewManager(_viewManager);

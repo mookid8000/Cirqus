@@ -24,7 +24,7 @@ namespace d60.Cirqus.Aggregates
         /// Checks whether one or more events exist for an aggregate root with the specified ID. If <seealso cref="maxGlobalSequenceNumber"/> is specified,
         /// it will check whether the root instance existed at that point in time
         /// </summary>
-        public bool Exists<TAggregateRoot>(Guid aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue, IUnitOfWork unitOfWork = null) 
+        public bool Exists<TAggregateRoot>(string aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue, IUnitOfWork unitOfWork = null) 
             where TAggregateRoot : AggregateRoot
         {
             var firstEvent = _eventStore.Load(aggregateRootId).FirstOrDefault();
@@ -37,7 +37,7 @@ namespace d60.Cirqus.Aggregates
         /// root will have events replayed until the specified <seealso cref="maxGlobalSequenceNumber"/> ceiling. If the root has
         /// no events (i.e. it doesn't exist yet), a newly initialized instance is returned.
         /// </summary>
-        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false) 
+        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false) 
             where TAggregateRoot : AggregateRoot, new()
         {
             var aggregateRootInfo = CreateNewAggregateRootInstance<TAggregateRoot>(aggregateRootId);
@@ -64,7 +64,7 @@ namespace d60.Cirqus.Aggregates
             return aggregateRootInfo;
         }
 
-        AggregateRootInfo<TAggregateRoot> CreateNewAggregateRootInstance<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        AggregateRootInfo<TAggregateRoot> CreateNewAggregateRootInstance<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
             var aggregate = new TAggregateRoot();
             

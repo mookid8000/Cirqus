@@ -21,7 +21,7 @@ namespace d60.Cirqus.Aggregates
 
         public abstract Type AggregateRootType { get; }
 
-        public abstract Guid AggregateRootId { get; }
+        public abstract string AggregateRootId { get; }
     }
 
     public class AggregateRootInfo<TAggregateRoot> : AggregateRootInfo where TAggregateRoot : AggregateRoot
@@ -53,7 +53,7 @@ namespace d60.Cirqus.Aggregates
             get { return typeof(TAggregateRoot); }
         }
 
-        public override Guid AggregateRootId
+        public override string AggregateRootId
         {
             get { return AggregateRoot.Id; }
         }
@@ -61,8 +61,6 @@ namespace d60.Cirqus.Aggregates
         public void Apply(IEnumerable<DomainEvent> eventsToApply, IUnitOfWork unitOfWork)
         {
             AggregateRoot.UnitOfWork = unitOfWork;
-
-            var dynamicAggregate = (dynamic)AggregateRoot;
 
             using (new ThrowingUnitOfWork(AggregateRoot))
             {
@@ -83,16 +81,7 @@ namespace d60.Cirqus.Aggregates
                                 e.GetSequenceNumber(), typeof(TAggregateRoot), AggregateRoot.Id, expectedNextSequenceNumber));
                         }
 
-                        //var applyMethod = AggregateRoot.GetType().GetMethod("Apply", new []{e.GetType()});
-                        //if (applyMethod == null)
-                        //{
-                        //    throw new ApplicationException(string.Format("Could not find appropriate Apply method - expects a method with a public void Apply({0}) signature", e.GetType().FullName));
-                        //}
-
-                        //applyMethod.Invoke(AggregateRoot, new object[] {e});
-
-                        dynamicAggregate.Apply((dynamic)e);
-                        AggregateRoot.CurrentSequenceNumber = e.GetSequenceNumber();
+                        AggregateRoot.ApplyEvent(e);
                     }
                     catch (Exception exception)
                     {
@@ -133,12 +122,12 @@ namespace d60.Cirqus.Aggregates
                 _originalUnitOfWork.AddToCache(aggregateRoot, globalSequenceNumberCutoff);
             }
 
-            public bool Exists<TAggregateRootToLoad>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRootToLoad : AggregateRoot
+            public bool Exists<TAggregateRootToLoad>(string aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRootToLoad : AggregateRoot
             {
                 return _originalUnitOfWork.Exists<TAggregateRootToLoad>(aggregateRootId, globalSequenceNumberCutoff);
             }
 
-            public AggregateRootInfo<TAggregateRootToLoad> Get<TAggregateRootToLoad>(Guid aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists) where TAggregateRootToLoad : AggregateRoot, new()
+            public AggregateRootInfo<TAggregateRootToLoad> Get<TAggregateRootToLoad>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists) where TAggregateRootToLoad : AggregateRoot, new()
             {
                 return _originalUnitOfWork.Get<TAggregateRootToLoad>(aggregateRootId, globalSequenceNumberCutoff);
             }

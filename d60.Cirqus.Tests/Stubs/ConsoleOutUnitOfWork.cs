@@ -8,7 +8,7 @@ namespace d60.Cirqus.Tests.Stubs
     public class ConsoleOutUnitOfWork : IUnitOfWork
     {
         readonly IAggregateRootRepository _aggregateRootRepository;
-        readonly Dictionary<Guid, AggregateRoot> _cachedAggregateRoots = new Dictionary<Guid, AggregateRoot>();
+        readonly Dictionary<string, AggregateRoot> _cachedAggregateRoots = new Dictionary<string, AggregateRoot>();
 
         public ConsoleOutUnitOfWork(IAggregateRootRepository aggregateRootRepository)
         {
@@ -20,22 +20,26 @@ namespace d60.Cirqus.Tests.Stubs
             Console.WriteLine("Emitted: {0}", e);
         }
 
-        public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+        public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) 
+            where TAggregateRoot : AggregateRoot
         {
             _cachedAggregateRoots[aggregateRoot.Id] = aggregateRoot;
         }
 
-        public bool Exists<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+        public bool Exists<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff) 
+            where TAggregateRoot : AggregateRoot
         {
             return _aggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
         }
 
-        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists) where TAggregateRoot : AggregateRoot, new()
+        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists) 
+            where TAggregateRoot : AggregateRoot, new()
         {
             return _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff);
         }
 
-        TAggregateRoot GetAggregateRootFromCache<TAggregateRoot>(Guid aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+        TAggregateRoot GetAggregateRootFromCache<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff) 
+            where TAggregateRoot : AggregateRoot
         {
             if (!_cachedAggregateRoots.ContainsKey(aggregateRootId)) return null;
 

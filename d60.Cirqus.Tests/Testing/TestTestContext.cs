@@ -31,13 +31,12 @@ namespace d60.Cirqus.Tests.Testing
         {
             var myBirthday = new DateTime(1979, 3, 19, 12, 30, 00, DateTimeKind.Utc);
             _context.SetCurrentTime(myBirthday);
-            var aggregateRootId = Guid.NewGuid();
 
-            _context.Save(aggregateRootId, new RandomEvent());
+            _context.Save("root_id", new RandomEvent());
 
             var domainEvent = _context.History.Single();
             Assert.That(domainEvent.GetUtcTime(), Is.EqualTo(myBirthday));
-            Assert.That(domainEvent.GetAggregateRootId(), Is.EqualTo(aggregateRootId));
+            Assert.That(domainEvent.GetAggregateRootId(), Is.EqualTo("root_id"));
 
         }
 
@@ -49,13 +48,8 @@ namespace d60.Cirqus.Tests.Testing
         [Test]
         public void CopiesCommandHeadersToEventsLikeTheRealCommandProcessor()
         {
-            // arrange
-            var id1 = Guid.NewGuid();
+            _context.ProcessCommand(new RootCommand("id1") {Meta = {{"custom-header", "hej!!!11"}}});
 
-            // act
-            _context.ProcessCommand(new RootCommand(id1) {Meta = {{"custom-header", "hej!!!11"}}});
-
-            // assert
             Assert.That(_context.History.OfType<RootEvent>().Single().Meta.ContainsKey("custom-header"), Is.True);
             Assert.That(_context.History.OfType<RootEvent>().Single().Meta["custom-header"], Is.EqualTo("hej!!!11"));
         }
@@ -65,8 +59,8 @@ namespace d60.Cirqus.Tests.Testing
         public void CanGetFullyHydratedAggregateRootOutsideOfUnitOfWork()
         {
             // arrange
-            var id1 = Guid.NewGuid();
-            var id2 = Guid.NewGuid();
+            var id1 = "id1";
+            var id2 = "id2";
             _context.ProcessCommand(new RootCommand(id1));
             _context.ProcessCommand(new RootCommand(id1));
             _context.ProcessCommand(new RootCommand(id2));
@@ -97,7 +91,7 @@ namespace d60.Cirqus.Tests.Testing
 
         public class RootCommand : Command<Root>
         {
-            public RootCommand(Guid aggregateRootId)
+            public RootCommand(string aggregateRootId)
                 : base(aggregateRootId)
             {
             }
@@ -116,13 +110,9 @@ namespace d60.Cirqus.Tests.Testing
         [Test]
         public void CanWriteEventHistory()
         {
-            var aggregateRoot1Id = new Guid("03af8b3e-1f9f-4143-90ad-c22bb978210f");
-            var aggregateRoot2Id = new Guid("82d07316-4891-4806-96cf-c42d2e011df3");
-
-            _context.Save(aggregateRoot1Id, new EventForThatRoot());
-
-            _context.Save(aggregateRoot2Id, new EventForThatRoot());
-            _context.Save(aggregateRoot2Id, new EventForThatRoot());
+            _context.Save("rootid1", new EventForThatRoot());
+            _context.Save("rootid2", new EventForThatRoot());
+            _context.Save("rootid2", new EventForThatRoot());
 
             var builder = new StringBuilder();
             _context.History.WriteTo(new StringWriter(builder));
@@ -139,9 +129,9 @@ namespace d60.Cirqus.Tests.Testing
 
             Assert.That(linesWithRootIds, Is.EqualTo(new[]
             {
-                @"""root_id"":""03af8b3e-1f9f-4143-90ad-c22bb978210f""",
-                @"""root_id"":""82d07316-4891-4806-96cf-c42d2e011df3""",
-                @"""root_id"":""82d07316-4891-4806-96cf-c42d2e011df3""",
+                @"""root_id"":""rootid1""",
+                @"""root_id"":""rootid2""",
+                @"""root_id"":""rootid2""",
             }));
         }
 
@@ -151,7 +141,7 @@ namespace d60.Cirqus.Tests.Testing
         {
             // arrange
             // act
-            _context.Save(Guid.NewGuid(), new EventForThatRoot());
+            _context.Save("rootid", new EventForThatRoot());
 
             // assert
             var thatEvent = _context.History.Cast<EventForThatRoot>().Single();
@@ -174,9 +164,8 @@ namespace d60.Cirqus.Tests.Testing
         {
             var viewMan = new SillyViewManager();
             _context.AddViewManager(viewMan);
-            var aggregateRootId = Guid.NewGuid();
 
-            _context.Save(aggregateRootId, new AnEvent());
+            _context.Save("rootid", new AnEvent());
 
             _context.WaitForViewsToCatchUp();
 
@@ -186,7 +175,7 @@ namespace d60.Cirqus.Tests.Testing
         [Test]
         public void VerifiesThatEventsCanBeSerialized()
         {
-            Assert.Throws<ArgumentException>(() => _context.Save(Guid.NewGuid(), UnserializableDomainEvent.Create("hej der!")));
+            Assert.Throws<ArgumentException>(() => _context.Save("rootid", UnserializableDomainEvent.Create("hej der!")));
         }
 
         class UnserializableDomainEvent : DomainEvent<AnAggregate>
@@ -245,17 +234,12 @@ namespace d60.Cirqus.Tests.Testing
         [Test]
         public void HydratesEntitiesWithExistingEvents()
         {
-            // arrange
-            var rootId = Guid.NewGuid();
+            _context.Save("rootid", new AnEvent());
+            _context.Save("rootid", new AnEvent());
+            _context.Save("rootid", new AnEvent());
 
-            _context.Save(rootId, new AnEvent());
-            _context.Save(rootId, new AnEvent());
-            _context.Save(rootId, new AnEvent());
+            var firstInstance = _context.BeginUnitOfWork().Load<AnAggregate>("rootid");
 
-            // act
-            var firstInstance = _context.BeginUnitOfWork().Get<AnAggregate>(rootId);
-
-            // assert
             Assert.That(firstInstance.ProcessedEvents, Is.EqualTo(3));
         }
 
@@ -263,17 +247,16 @@ namespace d60.Cirqus.Tests.Testing
         public void EmittedEventsAreCollectedInUnitOfWork()
         {
             // arrange
-            var rootId = Guid.NewGuid();
             using (var uow = _context.BeginUnitOfWork())
             {
-                var root = uow.Get<AnAggregate>(rootId);
+                var root = uow.Load<AnAggregate>("rootid");
 
                 // act
                 root.DoStuff();
 
                 // assert
                 Assert.That(uow.EmittedEvents.Cast<AnEvent>().Single(), Is.TypeOf<AnEvent>());
-                Assert.That(uow.EmittedEvents.Cast<AnEvent>().Single().GetAggregateRootId(), Is.EqualTo(rootId));
+                Assert.That(uow.EmittedEvents.Cast<AnEvent>().Single().GetAggregateRootId(), Is.EqualTo("rootid"));
             }
         }
 
@@ -281,10 +264,9 @@ namespace d60.Cirqus.Tests.Testing
         public void CommittedEventsBecomeTheHistory()
         {
             // arrange
-            var rootId = Guid.NewGuid();
             using (var uow = _context.BeginUnitOfWork())
             {
-                var root = uow.Get<AnAggregate>(rootId);
+                var root = uow.Load<AnAggregate>("rootid");
                 root.DoStuff();
 
                 // act
@@ -292,7 +274,7 @@ namespace d60.Cirqus.Tests.Testing
 
                 // assert
                 Assert.That(_context.History.Cast<AnEvent>().Single(), Is.TypeOf<AnEvent>());
-                Assert.That(_context.History.Cast<AnEvent>().Single().GetAggregateRootId(), Is.EqualTo(rootId));
+                Assert.That(_context.History.Cast<AnEvent>().Single().GetAggregateRootId(), Is.EqualTo("rootid"));
             }
         }
 
@@ -300,10 +282,9 @@ namespace d60.Cirqus.Tests.Testing
         public void EventsAreNotAppendedToHistoryBeforeCommit()
         {
             // arrange
-            var rootId = Guid.NewGuid();
             using (var uow = _context.BeginUnitOfWork())
             {
-                var root = uow.Get<AnAggregate>(rootId);
+                var root = uow.Load<AnAggregate>("rootid");
                 root.DoStuff();
 
                 Assert.That(_context.History.Count(), Is.EqualTo(0));
@@ -314,10 +295,9 @@ namespace d60.Cirqus.Tests.Testing
         public void CommittedEventsAreStillAvailableInUnitOfWorkAfterCommit()
         {
             // arrange
-            var rootId = Guid.NewGuid();
             using (var uow = _context.BeginUnitOfWork())
             {
-                var root = uow.Get<AnAggregate>(rootId);
+                var root = uow.Load<AnAggregate>("rootid");
                 root.DoStuff();
 
                 // act

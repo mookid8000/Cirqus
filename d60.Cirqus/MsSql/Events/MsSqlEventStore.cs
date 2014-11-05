@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -37,7 +37,7 @@ namespace d60.Cirqus.MsSql.Events
             }
         }
 
-        public void Save(Guid batchId, IEnumerable<Event> events)
+        public void Save(Guid batchId, IEnumerable<EventData> events)
         {
             var eventList = events.ToList();
 
@@ -82,7 +82,7 @@ INSERT INTO [{0}] (
 
 ", _tableName);
                                 cmd.Parameters.Add("batchId", SqlDbType.UniqueIdentifier).Value = batchId;
-                                cmd.Parameters.Add("aggId", SqlDbType.UniqueIdentifier).Value = new Guid(@event.Meta[DomainEvent.MetadataKeys.AggregateRootId].ToString());
+                                cmd.Parameters.Add("aggId", SqlDbType.NVarChar).Value = @event.Meta[DomainEvent.MetadataKeys.AggregateRootId];
                                 cmd.Parameters.Add("seqNo", SqlDbType.BigInt).Value = @event.Meta[DomainEvent.MetadataKeys.SequenceNumber];
                                 cmd.Parameters.Add("globSeqNo", SqlDbType.BigInt).Value = @event.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber];
                                 cmd.Parameters.Add("meta", SqlDbType.NVarChar).Value = JsonConvert.SerializeObject(@event.Meta);
@@ -107,7 +107,7 @@ INSERT INTO [{0}] (
             }
         }
 
-        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
         {
             SqlConnection conn = null;
 
@@ -125,7 +125,7 @@ INSERT INTO [{0}] (
 SELECT [meta],[data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo
 
 ", _tableName);
-                        cmd.Parameters.Add("aggId", SqlDbType.UniqueIdentifier).Value = aggregateRootId;
+                        cmd.Parameters.Add("aggId", SqlDbType.VarChar).Value = aggregateRootId;
                         cmd.Parameters.Add("firstSeqNo", SqlDbType.BigInt).Value = firstSeq;
 
                         using (var reader = cmd.ExecuteReader())
@@ -149,7 +149,7 @@ SELECT [meta],[data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqN
             }
         }
 
-        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
         {
             SqlConnection connection = null;
 
@@ -204,12 +204,12 @@ SELECT [meta],[data] FROM [{0}] WHERE [globSeqNo] >= @cutoff ORDER BY [globSeqNo
             return globalSequenceNumber;
         }
 
-        static Event ReadEvent(IDataRecord reader)
+        static EventData ReadEvent(IDataRecord reader)
         {
             var meta = (string) reader["meta"];
             var data = (byte[]) reader["data"];
 
-            return Event.FromMetadata(JsonConvert.DeserializeObject<Metadata>(meta), data);
+            return EventData.FromMetadata(JsonConvert.DeserializeObject<Metadata>(meta), data);
         }
 
         long GetNextGlobalSequenceNumber(SqlConnection conn, SqlTransaction tx)
@@ -267,7 +267,7 @@ BEGIN
     CREATE TABLE [dbo].[{0}] (
 	    [id] [bigint] IDENTITY(1,1) NOT NULL,
 	    [batchId] [uniqueidentifier] NOT NULL,
-	    [aggId] [uniqueidentifier] NOT NULL,
+	    [aggId] [nvarchar](255) NOT NULL,
 	    [seqNo] [bigint] NOT NULL,
 	    [globSeqNo] [bigint] NOT NULL,
 	    [meta] [nvarchar](max) NOT NULL,

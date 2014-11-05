@@ -10,9 +10,9 @@ namespace d60.Cirqus.Extensions
         /// <summary>
         /// Gets the aggregate root ID from the domain event
         /// </summary>
-        public static Guid GetAggregateRootId(this DomainEvent domainEvent, bool throwIfNotFound = true)
+        public static string GetAggregateRootId(this DomainEvent domainEvent, bool throwIfNotFound = true)
         {
-            return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.AggregateRootId, value => new Guid(Convert.ToString(value)), throwIfNotFound);
+            return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.AggregateRootId, value => value, throwIfNotFound);
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace d60.Cirqus.Extensions
         }
 
 
-        static TValue GetMetadataField<TValue>(DomainEvent domainEvent, string key, Func<object, TValue> converter, bool throwIfNotFound)
+        static TValue GetMetadataField<TValue>(DomainEvent domainEvent, string key, Func<string, TValue> converter, bool throwIfNotFound)
         {
             var metadata = domainEvent.Meta;
 

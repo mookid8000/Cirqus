@@ -32,11 +32,9 @@ namespace d60.Cirqus.Tests.MsSql
         [Test]
         public void VerifyDataTypes()
         {
-            var aggregateRootId = Guid.NewGuid();
+            _viewManager.Dispatch(new ThrowingViewContext(), new DomainEvent[] { GetAnEvent("key") });
 
-            _viewManager.Dispatch(new ThrowingViewContext(), new DomainEvent[] { GetAnEvent(aggregateRootId) });
-
-            var view = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(aggregateRootId));
+            var view = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId("key"));
 
             Assert.That(view, Is.Not.Null, "View was not properly generated");
             Assert.That(view.NullString, Is.Null);
@@ -67,13 +65,13 @@ namespace d60.Cirqus.Tests.MsSql
             Assert.That(string.Join(" ", view.ListOfComplexThings.SelectMany(t => t.Children.Select(c => c.Message))), Is.EqualTo("oh my god woota da f00k"));
         }
 
-        static AnEvent GetAnEvent(Guid aggregateRootId)
+        static AnEvent GetAnEvent(string aggregateRootId)
         {
             return new AnEvent
             {
                 Meta =
                 {
-                    {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString()},
+                    {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId},
                     {DomainEvent.MetadataKeys.SequenceNumber, 0.ToString(Metadata.NumberCulture)},
                     {DomainEvent.MetadataKeys.GlobalSequenceNumber, 0.ToString(Metadata.NumberCulture)},
                 }

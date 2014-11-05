@@ -20,7 +20,7 @@ namespace d60.Cirqus.Tests.MongoDb
         [TestCase(false, 100, 10 * 1000, Description = "NO indexes", Ignore = TestCategories.IgnoreLongRunning)]
         public void IndexSpeedTest(bool useIndexes, int numberOfQueries, int numberOfEvents)
         {
-            var sequenceNumbers = new Dictionary<Guid, long>();
+            var sequenceNumbers = new Dictionary<string, long>();
             var serializer = new JsonDomainEventSerializer();
 
             try
@@ -30,10 +30,10 @@ namespace d60.Cirqus.Tests.MongoDb
                 var eventStore = new MongoDbEventStore(database, "events", automaticallyCreateIndexes: useIndexes);
 
                 var random = new Random(DateTime.Now.GetHashCode());
-                var aggregateRootIds = Enumerable.Range(0, 1000).Select(i => Guid.NewGuid()).ToArray();
+                var aggregateRootIds = Enumerable.Range(0, 1000).Select(i => i.ToString()).ToArray();
 
-                Func<Guid, long> getNextSequenceNumber = id => !sequenceNumbers.ContainsKey(id) ? (sequenceNumbers[id] = 0) : ++sequenceNumbers[id];
-                Func<Guid> randomAggregateRootId = () => aggregateRootIds[random.Next(aggregateRootIds.Length)];
+                Func<string, long> getNextSequenceNumber = id => !sequenceNumbers.ContainsKey(id) ? (sequenceNumbers[id] = 0) : ++sequenceNumbers[id];
+                Func<string> randomAggregateRootId = () => aggregateRootIds[random.Next(aggregateRootIds.Length)];
 
                 var events = Enumerable.Range(1, numberOfEvents)
                     .Select(i => Event(getNextSequenceNumber, randomAggregateRootId()))
@@ -56,7 +56,7 @@ namespace d60.Cirqus.Tests.MongoDb
             }
         }
 
-        static DomainEvent Event(Func<Guid, long> getNextSeqNo, Guid aggregateRootId)
+        static DomainEvent Event(Func<string, long> getNextSeqNo, string aggregateRootId)
         {
             var nextSeqNo = getNextSeqNo(aggregateRootId);
 
@@ -68,7 +68,7 @@ namespace d60.Cirqus.Tests.MongoDb
                 Meta =
                 {
                     { DomainEvent.MetadataKeys.SequenceNumber, nextSeqNo.ToString(Metadata.NumberCulture) },
-                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString() }
+                    { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId }
                 }
             };
         }

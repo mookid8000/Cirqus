@@ -71,9 +71,9 @@ many time in parallel, and after some time the consistency of everything is veri
         void RunTest(int parallellism, int numberOfOperations, int numberOfAggregates)
         {
             var random = new Random(DateTime.Now.GetHashCode());
-            var aggregateRootIds = Enumerable.Range(0, numberOfAggregates).Select(i => Guid.NewGuid()).ToArray();
+            var aggregateRootIds = Enumerable.Range(0, numberOfAggregates).Select(i => i.ToString()).ToArray();
 
-            Func<Guid> getRandomAggregateRootId = () => aggregateRootIds[random.Next(aggregateRootIds.Length)];
+            Func<string> getRandomAggregateRootId = () => aggregateRootIds[random.Next(aggregateRootIds.Length)];
 
             var threads = Enumerable
                 .Range(0, parallellism)
@@ -100,7 +100,7 @@ many time in parallel, and after some time the consistency of everything is veri
 
         public class TakeNextStepCommand : Command<ProgrammerAggregate>
         {
-            public TakeNextStepCommand(Guid aggregateRootId)
+            public TakeNextStepCommand(string aggregateRootId)
                 : base(aggregateRootId)
             {
             }

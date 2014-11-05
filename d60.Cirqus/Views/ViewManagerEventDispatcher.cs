@@ -38,7 +38,7 @@ namespace d60.Cirqus.Views
         readonly Thread _worker;
 
         volatile bool _keepWorking = true;
-        int _maxItemsPerBatch = 100;
+        int _maxDomainEventsPerBatch = 100;
         TimeSpan _automaticCatchUpInterval = TimeSpan.FromSeconds(1);
         long _sequenceNumberToCatchUpTo = -1;
 
@@ -104,16 +104,16 @@ namespace d60.Cirqus.Views
                 .ToArray());
         }
 
-        public int MaxItemsPerBatch
+        public int MaxDomainEventsPerBatch
         {
-            get { return _maxItemsPerBatch; }
+            get { return _maxDomainEventsPerBatch; }
             set
             {
                 if (value < 1)
                 {
                     throw new ArgumentException(string.Format("Attempted to set MAX items per batch to {0}! Please set it to at least 1...", value));
                 }
-                _maxItemsPerBatch = value;
+                _maxDomainEventsPerBatch = value;
             }
         }
 
@@ -184,7 +184,7 @@ namespace d60.Cirqus.Views
             // ok, we must replay - start from here:
             var sequenceNumberToReplayFrom = lowestSequenceNumberSuccessfullyProcessed + 1;
 
-            foreach (var batch in eventStore.Stream(sequenceNumberToReplayFrom).Batch(MaxItemsPerBatch))
+            foreach (var batch in eventStore.Stream(sequenceNumberToReplayFrom).Batch(MaxDomainEventsPerBatch))
             {
                 var context = new DefaultViewContext(_aggregateRootRepository);
                 var list = batch.ToList();

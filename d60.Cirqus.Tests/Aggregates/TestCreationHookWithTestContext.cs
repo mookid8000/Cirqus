@@ -20,13 +20,10 @@ namespace d60.Cirqus.Tests.Aggregates
         [Test]
         public void InvokesCreatedHookWhenAggregateRootIsFirstCreated()
         {
-            // arrange
-            var rootId = Guid.NewGuid();
-
             // act
             using (var uow = _context.BeginUnitOfWork())
             {
-                uow.Get<Root>(rootId).DoSomething();
+                uow.Load<Root>("rootid").DoSomething();
                 uow.Commit();
             }
 
@@ -40,23 +37,20 @@ namespace d60.Cirqus.Tests.Aggregates
         [Test]
         public void InvokesCreatedHookWhenAggregateRootIsFirstCreatedAndNeverAgain()
         {
-            // arrange
-            var rootId = Guid.NewGuid();
-
             // act
             using (var uow = _context.BeginUnitOfWork())
             {
-                uow.Get<Root>(rootId).DoSomething();
+                uow.Load<Root>("rootid").DoSomething();
                 uow.Commit();
             }
             using (var uow = _context.BeginUnitOfWork())
             {
-                uow.Get<Root>(rootId).DoSomething();
+                uow.Load<Root>("rootid").DoSomething();
                 uow.Commit();
             }
             using (var uow = _context.BeginUnitOfWork())
             {
-                uow.Get<Root>(rootId).DoSomething();
+                uow.Load<Root>("rootid").DoSomething();
                 uow.Commit();
             }
 

@@ -19,17 +19,13 @@ namespace d60.Cirqus.Tests.Bugs
         [Test]
         public void ItHasBeenFixed()
         {
-            // arrange
-            var counterpartId = Guid.NewGuid();
-            var contractId = Guid.NewGuid();
-
             using (var uow = _context.BeginUnitOfWork())
             {
-                var counterpart = uow.Get<Counterpart>(counterpartId);
+                var counterpart = uow.Load<Counterpart>("counterpartid");
                 // create fresh counterpart AR by setting its name
                 counterpart.SetName("muggie");
 
-                var contract = uow.Get<Contract>(contractId);
+                var contract = uow.Load<Contract>("contractid");
 
                 // now make the contract do something that causes the counterpart to be loaded
                 // act
@@ -39,7 +35,7 @@ namespace d60.Cirqus.Tests.Bugs
             }
 
             // assert
-            var reloadedContract = _context.BeginUnitOfWork().Get<Contract>(contractId);
+            var reloadedContract = _context.BeginUnitOfWork().Load<Contract>("contractid");
             Assert.That(reloadedContract.AssignedCounterpartName, Is.EqualTo("muggie"));
         }
 
@@ -80,7 +76,7 @@ namespace d60.Cirqus.Tests.Bugs
 
         public class ContractAssignedToCounterpart : DomainEvent<Contract>
         {
-            public Guid CounterpartId { get; set; }
+            public string CounterpartId { get; set; }
         }
     }
 }

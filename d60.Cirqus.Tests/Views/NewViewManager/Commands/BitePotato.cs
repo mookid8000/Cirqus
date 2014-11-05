@@ -6,13 +6,13 @@ namespace d60.Cirqus.Tests.Views.NewViewManager.Commands
 {
     public class BitePotato : Command
     {
-        public BitePotato(Guid potatoId, decimal fractionToBiteOff)
+        public BitePotato(string potatoId, decimal fractionToBiteOff)
         {
             PotatoId = potatoId;
             FractionToBiteOff = fractionToBiteOff;
         }
 
-        public Guid PotatoId { get; private set; }
+        public string PotatoId { get; private set; }
 
         public decimal FractionToBiteOff { get; private set; }
 

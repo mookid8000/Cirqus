@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
-using d60.Cirqus.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 
@@ -35,7 +33,7 @@ namespace d60.Cirqus.Ntfs.Events
             Directory.CreateDirectory(_dataDirectory);
         }
 
-        public void Write(Guid batchId, IReadOnlyCollection<Event> events)
+        public void Write(Guid batchId, IReadOnlyCollection<Cirqus.Events.EventData> events)
         {
             foreach (var domainEvent in events)
             {
@@ -50,12 +48,12 @@ namespace d60.Cirqus.Ntfs.Events
             }
         }
 
-        public void Write(Event domainEvent)
+        public void Write(Cirqus.Events.EventData domainEvent)
         {
             var aggregateRootId = domainEvent.GetAggregateRootId();
             var sequenceNumber = domainEvent.GetSequenceNumber();
 
-            var aggregateDirectory = Path.Combine(_dataDirectory, aggregateRootId.ToString());
+            var aggregateDirectory = Path.Combine(_dataDirectory, aggregateRootId);
             Directory.CreateDirectory(aggregateDirectory);
 
             var filename = Path.Combine(aggregateDirectory, GetFilename(sequenceNumber));
@@ -75,7 +73,7 @@ namespace d60.Cirqus.Ntfs.Events
                 Data = data;
             }
 
-            public static EventData Create(Event domainEvent)
+            public static EventData Create(Cirqus.Events.EventData domainEvent)
             {
                 return new EventData(domainEvent.Meta, domainEvent.Data);
             }
@@ -84,13 +82,13 @@ namespace d60.Cirqus.Ntfs.Events
             public byte[] Data { get; private set; }
         }
 
-        public IEnumerable<Event> Read(long lastCommittedGlobalSequenceNumber, Guid aggregateRootId, long offset)
+        public IEnumerable<Cirqus.Events.EventData> Read(long lastCommittedGlobalSequenceNumber, string aggregateRootId, long offset)
         {
-            var aggregateDirectory = Path.Combine(_dataDirectory, aggregateRootId.ToString());
+            var aggregateDirectory = Path.Combine(_dataDirectory, aggregateRootId);
 
             if (!Directory.Exists(aggregateDirectory))
             {
-                return Enumerable.Empty<Event>();
+                return Enumerable.Empty<Cirqus.Events.EventData>();
             }
 
             return from path in Directory.EnumerateFiles(aggregateDirectory)
@@ -103,9 +101,9 @@ namespace d60.Cirqus.Ntfs.Events
 
         }
 
-        public Event Read(Guid aggregateRootId, long sequenceNumber)
+        public Cirqus.Events.EventData Read(string aggregateRootId, long sequenceNumber)
         {
-            var filename = Path.Combine(_dataDirectory, aggregateRootId.ToString(), GetFilename(sequenceNumber));
+            var filename = Path.Combine(_dataDirectory, aggregateRootId, GetFilename(sequenceNumber));
             
             var @event = TryRead(filename);
             
@@ -117,14 +115,14 @@ namespace d60.Cirqus.Ntfs.Events
             return @event;
         }
 
-        public void Truncate(Guid aggregateRootId, long sequenceNumber)
+        public void Truncate(string aggregateRootId, long sequenceNumber)
         {
-            var filename = Path.Combine(_dataDirectory, aggregateRootId.ToString(), GetFilename(sequenceNumber));
+            var filename = Path.Combine(_dataDirectory, aggregateRootId, GetFilename(sequenceNumber));
             if (File.Exists(filename))
                 File.Delete(filename);
         }
 
-        Event TryRead(string filename)
+        Cirqus.Events.EventData TryRead(string filename)
         {
             if (!File.Exists(filename))
                 return null;
@@ -139,7 +137,7 @@ namespace d60.Cirqus.Ntfs.Events
                 {
                     var eventData = _serializer.Deserialize<EventData>(bsonReader);
                     
-                    return Event.FromMetadata(eventData.Meta, eventData.Data);
+                    return Cirqus.Events.EventData.FromMetadata(eventData.Meta, eventData.Data);
                 }
                 catch (Exception)
                 {

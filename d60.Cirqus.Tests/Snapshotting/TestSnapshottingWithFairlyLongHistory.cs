@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -34,11 +34,10 @@ namespace d60.Cirqus.Tests.Snapshotting
         [Test]
         public void ProcessOneMoreCommand()
         {
-            var aggregateRootId = new Guid("c231140b-ca3c-41e9-ac98-013bcea31aca");
             var commandProcessor = GetCommandProcessor(true);
             
-            commandProcessor.ProcessCommand(new CrushItRealGood(aggregateRootId, 0.1m));
-            commandProcessor.ProcessCommand(new CrushItRealGood(aggregateRootId, 0.1m));
+            commandProcessor.ProcessCommand(new CrushItRealGood("id", 0.1m));
+            commandProcessor.ProcessCommand(new CrushItRealGood("id", 0.1m));
         }
 
         [TestCase(true, 3, 50)]
@@ -51,9 +50,9 @@ namespace d60.Cirqus.Tests.Snapshotting
         [TestCase(false, 10, 10000, Ignore = TestCategories.IgnoreLongRunning)]
         public void RunTest(bool useCaching, int numberOfRoots, int numberOfCommands)
         {
-            var aggregateRootIds = Enumerable.Range(0, numberOfRoots).Select(i => Guid.NewGuid()).ToArray();
+            var aggregateRootIds = Enumerable.Range(0, numberOfRoots).Select(i => i.ToString()).ToArray();
             var random = new Random(DateTime.Now.GetHashCode());
-            Func<Guid> getRandomRootId = () => aggregateRootIds[random.Next(aggregateRootIds.Length)];
+            Func<string> getRandomRootId = () => aggregateRootIds[random.Next(aggregateRootIds.Length)];
 
             var commandProcessor = GetCommandProcessor(useCaching);
             var processedCommands = 0L;
@@ -133,7 +132,7 @@ caching in use: {3}",
                 get { return _timeSpentSavingEvents; }
             }
 
-            public AggregateRootInfo<TAggregate> Get<TAggregate>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false) where TAggregate : AggregateRoot, new()
+            public AggregateRootInfo<TAggregate> Get<TAggregate>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false) where TAggregate : AggregateRoot, new()
             {
                 var stopwatch = Stopwatch.StartNew();
                 
@@ -145,12 +144,12 @@ caching in use: {3}",
                 return aggregateRootInfo;
             }
 
-            public bool Exists<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = Int64.MaxValue, IUnitOfWork unitOfWork = null) where TAggregate : AggregateRoot
+            public bool Exists<TAggregate>(string aggregateRootId, long maxGlobalSequenceNumber = Int64.MaxValue, IUnitOfWork unitOfWork = null) where TAggregate : AggregateRoot
             {
                 return InnerAggregateRootRepository.Exists<TAggregate>(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
             }
 
-            public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
+            public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
             {
                 var stopwatch = Stopwatch.StartNew();
 
@@ -161,7 +160,7 @@ caching in use: {3}",
                 return domainEvents;
             }
 
-            public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
+            public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
             {
                 return InnerEventStore.Stream(globalSequenceNumber);
             }
@@ -171,7 +170,7 @@ caching in use: {3}",
                 return InnerEventStore.GetNextGlobalSequenceNumber();
             }
 
-            public void Save(Guid batchId, IEnumerable<Event> events)
+            public void Save(Guid batchId, IEnumerable<EventData> events)
             {
                 var stopwatch = Stopwatch.StartNew();
 
@@ -224,7 +223,8 @@ caching in use: {3}",
 
         public class CrushItRealGood : Command<Beetroot>
         {
-            public CrushItRealGood(Guid aggregateRootId, decimal howMuch) : base(aggregateRootId)
+            public CrushItRealGood(string aggregateRootId, decimal howMuch)
+                : base(aggregateRootId)
             {
                 HowMuch = howMuch;
             }

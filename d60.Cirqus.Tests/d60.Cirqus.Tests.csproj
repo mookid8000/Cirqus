@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -76,6 +77,8 @@
     <Compile Include="Aggregates\TestCreationHookWithRealCommandProcessor.cs" />
     <Compile Include="Aggregates\TestCreationHookWithTestContext.cs" />
     <Compile Include="Aggregates\TestDefaultAggregateRootRepository.cs" />
+    <Compile Include="Aggregates\TestEventApplicationOnPrivateAggregateRoot.cs" />
+    <Compile Include="Aggregates\TestIsNewProperty.cs" />
     <Compile Include="Aggregates\TestLoading.cs" />
     <Compile Include="Aggregates\TestVersionAttributeApplication.cs" />
     <Compile Include="Aggregates\TestVersioningWhenLoadingAnotherAggregate.cs" />

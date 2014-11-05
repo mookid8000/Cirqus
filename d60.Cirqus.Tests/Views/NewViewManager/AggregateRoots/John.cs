@@ -7,7 +7,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager.AggregateRoots
 {
     public class John : AggregateRoot, IEmit<BaptizedSomeone>
     {
-        public static readonly Guid TheJohnId = new Guid("97E939E3-E84F-49DB-8856-1740A915F784");
+        public static readonly string TheJohnId = "97E939E3-E84F-49DB-8856-1740A915F784";
 
         readonly string[] _names = { "Jeff", "Bunny", "Walter", "Donny" };
 

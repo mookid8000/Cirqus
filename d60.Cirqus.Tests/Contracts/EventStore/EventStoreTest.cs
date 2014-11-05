@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -44,10 +44,10 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         [Test]
         public void AssignsGlobalSequenceNumberToEvents()
         {
-            var events = new List<Event>
+            var events = new List<EventData>
             {
-                Event(0, Guid.NewGuid()), 
-                Event(0, Guid.NewGuid())
+                Event(0, "id1"), 
+                Event(0, "id2")
             };
 
             _eventStore.Save(Guid.NewGuid(), events);
@@ -68,8 +68,8 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             var batch1 = Guid.NewGuid();
             var batch2 = Guid.NewGuid();
 
-            _eventStore.Save(batch1, new[] { Event(0, Guid.NewGuid()), Event(0, Guid.NewGuid()) });
-            _eventStore.Save(batch2, new[] { Event(0, Guid.NewGuid()), Event(0, Guid.NewGuid()), Event(0, Guid.NewGuid()) });
+            _eventStore.Save(batch1, new[] { Event(0, "id1"), Event(0, "id2") });
+            _eventStore.Save(batch2, new[] { Event(0, "id3"), Event(0, "id4"), Event(0, "id5") });
 
             // assert
             var allEvents = _eventStore.Stream().ToList();
@@ -96,11 +96,11 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             // arrange
 
             // act
-            _eventStore.Save(Guid.NewGuid(), new[] { Event(0, Guid.NewGuid()) });
-            _eventStore.Save(Guid.NewGuid(), new[] { Event(0, Guid.NewGuid()) });
-            _eventStore.Save(Guid.NewGuid(), new[] { Event(0, Guid.NewGuid()) });
-            _eventStore.Save(Guid.NewGuid(), new[] { Event(0, Guid.NewGuid()) });
-            _eventStore.Save(Guid.NewGuid(), new[] { Event(0, Guid.NewGuid()) });
+            _eventStore.Save(Guid.NewGuid(), new[] { Event(0, "id1") });
+            _eventStore.Save(Guid.NewGuid(), new[] { Event(0, "id2") });
+            _eventStore.Save(Guid.NewGuid(), new[] { Event(0, "id3") });
+            _eventStore.Save(Guid.NewGuid(), new[] { Event(0, "id4") });
+            _eventStore.Save(Guid.NewGuid(), new[] { Event(0, "id5") });
 
             // assert
             var allEvents = _eventStore
@@ -122,18 +122,17 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         {
             // arrange
             var batchId = Guid.NewGuid();
-            var aggregateRootId = Guid.NewGuid();
 
-            var events = new Event[]
+            var events = new[]
             {
-                Event(1, aggregateRootId)
+                Event(1, "rootid")
             };
 
             // act
             _eventStore.Save(batchId, events);
 
             // assert
-            var persistedEvents = _eventStore.Load(aggregateRootId);
+            var persistedEvents = _eventStore.Load("rootid");
             var someEvent = persistedEvents.Single();
             var data = Encoding.UTF8.GetString(someEvent.Data);
 
@@ -146,9 +145,9 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             // arrange
             var batchId = Guid.NewGuid();
 
-            var events = new Event[]
+            var events = new[]
             {
-                Cirqus.Events.Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid().ToString()},
                     //{DomainEvent.MetadataKeys.SequenceNumber, 1}, //< this one is missing!
@@ -168,9 +167,9 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             // arrange
             var batchId = Guid.NewGuid();
 
-            var events = new Event[]
+            var events = new[]
             {
-                Cirqus.Events.Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     //{DomainEvent.MetadataKeys.AggregateRootId, Guid.NewGuid()}, //< this one is missing!
                     {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)},
@@ -192,18 +191,18 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
             var events = new[]
             {
-                Cirqus.Events.Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 1.ToString(Metadata.NumberCulture)}
                 }, new byte[0]),
-                Cirqus.Events.Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 2.ToString(Metadata.NumberCulture)}
                 }, new byte[0]),
-                Cirqus.Events.Event.FromMetadata(new Metadata
+                EventData.FromMetadata(new Metadata
                 {
                     {DomainEvent.MetadataKeys.SequenceNumber, 4.ToString(Metadata.NumberCulture)}
-                }, new byte[0]),
+                }, new byte[0])
             };
 
             // act
@@ -216,24 +215,19 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         [Test]
         public void SavedSequenceNumbersAreUnique()
         {
-            // arrange
-
-            var aggregateRootId = Guid.NewGuid();
             var events = new[]
             {
-                Event(1, aggregateRootId), 
-                Event(2, aggregateRootId), 
-                Event(3, aggregateRootId),
+                Event(1, "id"), 
+                Event(2, "id"), 
+                Event(3, "id")
             };
 
             _eventStore.Save(Guid.NewGuid(), events);
 
-            var batchWithAlreadyUsedSequenceNumber = new[] { Event(2, aggregateRootId) };
+            var batchWithAlreadyUsedSequenceNumber = new[] { Event(2, "id") };
 
-            // act
-            // assert
             var ex = Assert.Throws<ConcurrencyException>(() => _eventStore.Save(Guid.NewGuid(), batchWithAlreadyUsedSequenceNumber));
-
+            
             Console.WriteLine(ex);
         }
 
@@ -241,22 +235,20 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         public void SavedSequenceNumbersAreUniqueScopedToAggregateRoot()
         {
             // arrange
-            var agg1Id = Guid.NewGuid();
-            var agg2Id = Guid.NewGuid();
 
             var events = new[]
             {
-                Event(1, agg1Id), 
-                Event(2, agg1Id), 
-                Event(3, agg1Id),
+                Event(1, "id1"), 
+                Event(2, "id1"), 
+                Event(3, "id1")
             };
 
             _eventStore.Save(Guid.NewGuid(), events);
 
             var batchWithAlreadyUsedSequenceNumberOnlyForAnotherAggregate = new[]
             {
-                Event(1, agg2Id),
-                Event(2, agg2Id)
+                Event(1, "id2"),
+                Event(2, "id2")
             };
 
             // act
@@ -265,8 +257,8 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
             var batchWithAlreadyUsedSequenceNumber = new[]
             {
-                Event(4, agg1Id),
-                Event(2, agg2Id)
+                Event(4, "id1"),
+                Event(2, "id2")
             };
 
             var ex = Assert.Throws<ConcurrencyException>(() => _eventStore.Save(Guid.NewGuid(), batchWithAlreadyUsedSequenceNumber));
@@ -276,69 +268,66 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         public void CanLoadEvents()
         {
             // arrange
-            var aggregateRootId = Guid.NewGuid();
             _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event(0, aggregateRootId),
-                Event(1, aggregateRootId),
-                Event(2, aggregateRootId),
-                Event(3, aggregateRootId),
-                Event(4, aggregateRootId),
-                Event(5, aggregateRootId),
+                Event(0, "rootid"),
+                Event(1, "rootid"),
+                Event(2, "rootid"),
+                Event(3, "rootid"),
+                Event(4, "rootid"),
+                Event(5, "rootid"),
             });
             _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event(6, aggregateRootId),
-                Event(7, aggregateRootId),
-                Event(8, aggregateRootId),
-                Event(9, aggregateRootId),
-                Event(10, aggregateRootId),
-                Event(11, aggregateRootId),
+                Event(6, "rootid"),
+                Event(7, "rootid"),
+                Event(8, "rootid"),
+                Event(9, "rootid"),
+                Event(10, "rootid"),
+                Event(11, "rootid"),
             });
             _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event(12, aggregateRootId),
-                Event(13, aggregateRootId),
-                Event(14, aggregateRootId),
+                Event(12, "rootid"),
+                Event(13, "rootid"),
+                Event(14, "rootid"),
             });
 
             // act
             // assert
-            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(1).Count(), Is.EqualTo(1));
-            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(1).GetSeq().ToArray(), Is.EqualTo(Enumerable.Range(1, 1).ToArray()));
+            Assert.That(_eventStore.Load("rootid", 1).Take(1).Count(), Is.EqualTo(1));
+            Assert.That(_eventStore.Load("rootid", 1).Take(1).GetSeq().ToArray(), Is.EqualTo(Enumerable.Range(1, 1).ToArray()));
 
-            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(2).Count(), Is.EqualTo(2));
-            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(2).GetSeq(), Is.EqualTo(Enumerable.Range(1, 2)));
+            Assert.That(_eventStore.Load("rootid", 1).Take(2).Count(), Is.EqualTo(2));
+            Assert.That(_eventStore.Load("rootid", 1).Take(2).GetSeq(), Is.EqualTo(Enumerable.Range(1, 2)));
 
-            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(10).Count(), Is.EqualTo(10));
-            Assert.That(_eventStore.Load(aggregateRootId, 1).Take(10).GetSeq(), Is.EqualTo(Enumerable.Range(1, 10)));
+            Assert.That(_eventStore.Load("rootid", 1).Take(10).Count(), Is.EqualTo(10));
+            Assert.That(_eventStore.Load("rootid", 1).Take(10).GetSeq(), Is.EqualTo(Enumerable.Range(1, 10)));
 
-            Assert.That(_eventStore.Load(aggregateRootId, 4).Take(10).Count(), Is.EqualTo(10));
-            Assert.That(_eventStore.Load(aggregateRootId, 4).Take(10).GetSeq().ToArray(), Is.EqualTo(Enumerable.Range(4, 10).ToArray()));
+            Assert.That(_eventStore.Load("rootid", 4).Take(10).Count(), Is.EqualTo(10));
+            Assert.That(_eventStore.Load("rootid", 4).Take(10).GetSeq().ToArray(), Is.EqualTo(Enumerable.Range(4, 10).ToArray()));
         }
 
         [Test]
         public void CanLoadEventsByAggregateRootId()
         {
             // arrange
-            var agg1 = Guid.NewGuid();
-            var agg2 = Guid.NewGuid();
             _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event(0, agg1),
-                Event(1, agg1),
-                Event(2, agg2)
+                Event(0, "agg1"),
+                Event(1, "agg1"),
+                Event(2, "agg2")
             });
             _eventStore.Save(Guid.NewGuid(), new[]
             {
-                Event(3, agg1),
-                Event(4, agg1),
-                Event(5, agg2)
+                Event(3, "agg1"),
+                Event(4, "agg1"),
+                Event(5, "agg2")
             });
 
             // act
-            var allEventsForAgg1 = _eventStore.Load(agg1).ToList();
-            var allEventsForAgg2 = _eventStore.Load(agg2).ToList();
+            var allEventsForAgg1 = _eventStore.Load("agg1").ToList();
+            var allEventsForAgg2 = _eventStore.Load("agg2").ToList();
 
             // assert
             Assert.That(allEventsForAgg1.Count, Is.EqualTo(4));
@@ -351,21 +340,18 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         [Test]
         public void SaveIsAtomic()
         {
-            var agg1 = Guid.NewGuid();
-            var agg2 = Guid.NewGuid();
-
             try
             {
                 _eventStore.Save(Guid.NewGuid(), new[]
                 {
-                    Event(1, agg1),
-                    Event(1, agg2),
+                    Event(1, "agg1"),
+                    Event(1, "agg2"),
                     new ThrowingEvent
                     {
                         Meta =
                         {
                             {DomainEvent.MetadataKeys.SequenceNumber, 2.ToString(Metadata.NumberCulture)},
-                            {DomainEvent.MetadataKeys.AggregateRootId, agg2.ToString()}
+                            {DomainEvent.MetadataKeys.AggregateRootId, "agg2"}
                         }
                     }
                 });
@@ -376,8 +362,8 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             }
 
             Assert.AreEqual(0, _eventStore.Stream().Count());
-            Assert.AreEqual(0, _eventStore.Load(agg1).Count());
-            Assert.AreEqual(0, _eventStore.Load(agg2).Count());
+            Assert.AreEqual(0, _eventStore.Load("agg1").Count());
+            Assert.AreEqual(0, _eventStore.Load("agg2").Count());
         }
 
         [TestCase(0)]
@@ -389,7 +375,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             {
                 _eventStore.Save(Guid.NewGuid(), new[]
                 {
-                    Event(1, Guid.NewGuid()),
+                    Event(1, string.Format("id{0}", i)),
                 });
             }
 
@@ -402,7 +388,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         public void LoadingFromEmptyStreamDoesNotFail()
         {
             Assert.AreEqual(0, _eventStore.Stream().Count());
-            Assert.AreEqual(0, _eventStore.Load(Guid.NewGuid()).Count());
+            Assert.AreEqual(0, _eventStore.Load("someid").Count());
         }
 
         [TestCase(100, 3)]
@@ -418,12 +404,11 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                 () =>
                 {
                     var seqNo = 0;
-                    var id = Guid.NewGuid();
                     numberOfBatches.Times(() =>
                     {
                         var events = Enumerable
                             .Range(0, numberOfEventsPerBatch)
-                            .Select(i => Event(seqNo++, id))
+                            .Select(i => Event(seqNo++, "id"))
                             .ToList();
 
                         _eventStore.Save(Guid.NewGuid(), events);
@@ -439,8 +424,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             CirqusLoggerFactory.Current = new NullLoggerFactory();
 
             var seqNo = 0;
-            var id = Guid.NewGuid();
-            _eventStore.Save(Guid.NewGuid(), Enumerable.Range(0, numberOfEvents).Select(i => Event(seqNo++, id)));
+            _eventStore.Save(Guid.NewGuid(), Enumerable.Range(0, numberOfEvents).Select(i => Event(seqNo++, "rootid")));
 
             TakeTime(
                 string.Format("Read stream of {0} events", numberOfEvents),
@@ -462,27 +446,24 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
             RegisterForDisposal(processor);
 
-            processor.ProcessCommand(new MakeSomeRootEmitTheEvent(Guid.NewGuid()));
+            processor.ProcessCommand(new MakeSomeRootEmitTheEvent("rootid"));
 
             var domainEvents = _eventStore.Stream().Select(serializer.Deserialize).Single();
             Assert.That(domainEvents.GetUtcTime(), Is.EqualTo(someUtcTime));
         }
 
-        static Event Event(int seq, Guid aggregateRootId)
+        static EventData Event(int seq, string aggregateRootId)
         {
-            return Cirqus.Events.Event.FromMetadata(new Metadata
+            return EventData.FromMetadata(new Metadata
             {
                 {DomainEvent.MetadataKeys.SequenceNumber, seq.ToString(Metadata.NumberCulture)},
-                {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId.ToString()}
+                {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId}
             }, Encoding.UTF8.GetBytes("hej"));
         }
 
         public class MakeSomeRootEmitTheEvent : Command<SomeRoot>
         {
-            public MakeSomeRootEmitTheEvent(Guid aggregateRootId)
-                : base(aggregateRootId)
-            {
-            }
+            public MakeSomeRootEmitTheEvent(string aggregateRootId) : base(aggregateRootId) { }
 
             public override void Execute(SomeRoot aggregateRoot)
             {
@@ -504,7 +485,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
         public class SomeRootEvent : DomainEvent<SomeRoot> { }
 
-        class ThrowingEvent : Event
+        class ThrowingEvent : EventData
         {
             public ThrowingEvent()
                 : base(null, null, null)

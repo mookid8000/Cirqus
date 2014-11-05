@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -46,7 +46,7 @@ IF NOT EXISTS (
 CREATE TABLE IF NOT EXISTS ""{0}"" (
 	""id"" BIGSERIAL NOT NULL,
 	""batchId"" UUID NOT NULL,
-	""aggId"" UUID NOT NULL,
+	""aggId"" VARCHAR(255) NOT NULL,
 	""seqNo"" BIGINT NOT NULL,
 	""globSeqNo"" BIGINT NOT NULL,
 	""meta"" BYTEA NOT NULL,
@@ -73,7 +73,7 @@ END$$;
             }
         }
 
-        public void Save(Guid batchId, IEnumerable<Event> batch)
+        public void Save(Guid batchId, IEnumerable<EventData> batch)
         {
             var eventList = batch.ToList();
 
@@ -168,7 +168,7 @@ INSERT INTO ""{0}"" (
             return connection;
         }
 
-        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
         {
             using (var connection = GetConnection())
             {
@@ -196,7 +196,7 @@ INSERT INTO ""{0}"" (
             }
         }
 
-        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
         {
             using (var connection = GetConnection())
             {
@@ -223,12 +223,12 @@ SELECT ""data"", ""meta"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY "
             }
         }
 
-        Event ReadEvent(IDataRecord reader)
+        EventData ReadEvent(IDataRecord reader)
         {
             var data = (byte[]) reader["data"];
             var meta = (byte[]) reader["meta"];
 
-            return Event.FromMetadata(_metadataSerializer.Deserialize(Encoding.UTF8.GetString(meta)), data);
+            return EventData.FromMetadata(_metadataSerializer.Deserialize(Encoding.UTF8.GetString(meta)), data);
         }
 
         public long GetNextGlobalSequenceNumber()

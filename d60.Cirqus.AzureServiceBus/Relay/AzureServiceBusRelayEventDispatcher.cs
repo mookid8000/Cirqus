@@ -90,7 +90,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
     public interface IHostService
     {
         [OperationContract]
-        TransportMessage Load(Guid aggregateRootId, long firstSeq);
+        TransportMessage Load(string aggregateRootId, long firstSeq);
 
         [OperationContract]
         TransportMessage Stream(long globalSequenceNumber);
@@ -108,7 +108,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             _eventStore = eventStore;
         }
 
-        public TransportMessage Load(Guid aggregateRootId, long firstSeq)
+        public TransportMessage Load(string aggregateRootId, long firstSeq)
         {
             var domainEvents = _eventStore
                 .Load(aggregateRootId, firstSeq)
@@ -145,7 +145,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             };
         }
 
-        byte[] SerializeMetadata(Event e)
+        byte[] SerializeMetadata(EventData e)
         {
             return DefaultEncoding.GetBytes(_metadataSerializer.Serialize(e.Meta));
         }

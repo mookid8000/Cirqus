@@ -11,14 +11,14 @@ namespace d60.Cirqus.Tests.Views.NewViewManager.Views
     {
         public AllPotatoesView()
         {
-            NamesOfPotatoes = new Dictionary<Guid, string>();
+            NamesOfPotatoes = new Dictionary<string, string>();
         }
 
         public string Id { get; set; }
 
         public long LastGlobalSequenceNumber { get; set; }
 
-        public Dictionary<Guid, string> NamesOfPotatoes { get; set; }
+        public Dictionary<string, string> NamesOfPotatoes { get; set; }
 
         public void Handle(IViewContext context, PotatoCreated domainEvent)
         {

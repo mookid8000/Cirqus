@@ -15,7 +15,7 @@ namespace d60.Cirqus.Ntfs.Events
     /// </summary>
     internal class GlobalSequenceIndex : IDisposable
     {
-        public const int SizeofSeqRecord = 32;
+        public const int SizeofSeqRecord = 8 + 1 + 255 + 8;
 
         readonly string _seqFilePath;
         
@@ -31,7 +31,7 @@ namespace d60.Cirqus.Ntfs.Events
             OpenWriter();
         }
 
-        public void Write(IEnumerable<Event> events)
+        public void Write(IEnumerable<EventData> events)
         {
             Write(from @event in events
                   select new GlobalSequenceRecord
@@ -47,7 +47,14 @@ namespace d60.Cirqus.Ntfs.Events
             foreach (var record in records)
             {
                 _writer.Write(record.GlobalSequenceNumber);
-                _writer.Write(record.AggregateRootId.ToByteArray());
+                
+                var keyAsBytes = Encoding.UTF8.GetBytes(record.AggregateRootId);
+                var length = keyAsBytes.Length;
+                
+                Array.Resize(ref keyAsBytes, 255);
+
+                _writer.Write((byte)length);
+                _writer.Write(keyAsBytes);
                 _writer.Write(record.LocalSequenceNumber);
             }
 
@@ -66,7 +73,7 @@ namespace d60.Cirqus.Ntfs.Events
                     var record = new GlobalSequenceRecord
                     {
                         GlobalSequenceNumber = reader.ReadInt64(),
-                        AggregateRootId = new Guid(reader.ReadBytes(16)),
+                        AggregateRootId = ReadFixedLengthString(reader),
                         LocalSequenceNumber = reader.ReadInt64(),
                     };
 
@@ -76,6 +83,14 @@ namespace d60.Cirqus.Ntfs.Events
                     yield return record;
                 }
             }
+        }
+
+        public string ReadFixedLengthString(BinaryReader reader)
+        {
+            var length = reader.ReadByte();
+            var str = Encoding.UTF8.GetString(reader.ReadBytes(length));
+            reader.ReadBytes(255 - length);
+            return str;
         }
 
         public void DetectCorruptionAndRecover(DataStore store, long lastCommittedGlobalSequenceNumber)
@@ -117,7 +132,7 @@ namespace d60.Cirqus.Ntfs.Events
         public class GlobalSequenceRecord
         {
             public long GlobalSequenceNumber { get; set; }
-            public Guid AggregateRootId { get; set; }
+            public string AggregateRootId { get; set; }
             public long LocalSequenceNumber { get; set; }
         }
     }

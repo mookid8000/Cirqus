@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using d60.Cirqus.Aggregates;
@@ -51,12 +51,12 @@ namespace d60.Cirqus.Diagnostics
                 _profiler = profiler;
             }
 
-            public void RecordAggregateRootGet(TimeSpan elapsed, Type type, Guid aggregateRootId)
+            public void RecordAggregateRootGet(TimeSpan elapsed, Type type, string aggregateRootId)
             {
                 _profiler.RecordAggregateRootGet(elapsed, type, aggregateRootId);
             }
 
-            public void RecordAggregateRootExists(TimeSpan elapsed, Guid aggregateRootId)
+            public void RecordAggregateRootExists(TimeSpan elapsed, string aggregateRootId)
             {
                 _profiler.RecordAggregateRootExists(elapsed, aggregateRootId);
             }
@@ -118,7 +118,7 @@ namespace d60.Cirqus.Diagnostics
                 _operationProfiler = operationProfiler;
             }
 
-            public AggregateRootInfo<TAggregate> Get<TAggregate>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false) where TAggregate : AggregateRoot, new()
+            public AggregateRootInfo<TAggregate> Get<TAggregate>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false) where TAggregate : AggregateRoot, new()
             {
                 var stopwatch = Stopwatch.StartNew();
                 try
@@ -132,7 +132,7 @@ namespace d60.Cirqus.Diagnostics
                 }
             }
 
-            public bool Exists<TAggregate>(Guid aggregateRootId, long maxGlobalSequenceNumber = Int64.MaxValue, IUnitOfWork unitOfWork = null) where TAggregate : AggregateRoot
+            public bool Exists<TAggregate>(string aggregateRootId, long maxGlobalSequenceNumber = Int64.MaxValue, IUnitOfWork unitOfWork = null) where TAggregate : AggregateRoot
             {
                 var stopwatch = Stopwatch.StartNew();
                 try
@@ -158,12 +158,12 @@ namespace d60.Cirqus.Diagnostics
                 _operationProfiler = operationProfiler;
             }
 
-            public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
+            public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
             {
                 return _innerEventStore.Load(aggregateRootId, firstSeq);
             }
 
-            public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
+            public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
             {
                 return _innerEventStore.Stream(globalSequenceNumber);
             }
@@ -181,7 +181,7 @@ namespace d60.Cirqus.Diagnostics
                 }
             }
 
-            public void Save(Guid batchId, IEnumerable<Event> events)
+            public void Save(Guid batchId, IEnumerable<EventData> events)
             {
                 var stopwatch = Stopwatch.StartNew();
                 try

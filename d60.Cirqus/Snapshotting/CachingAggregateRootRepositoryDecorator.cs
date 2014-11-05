@@ -28,7 +28,7 @@ namespace d60.Cirqus.Snapshotting
             _domainEventSerializer = domainEventSerializer;
         }
 
-        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
+        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
         {
             var cloneFromCache = PrepareCloneFromCache<TAggregateRoot>(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
 
@@ -44,12 +44,12 @@ namespace d60.Cirqus.Snapshotting
             return fromRepository;
         }
 
-        public bool Exists<TAggregateRoot>(Guid aggregateRootId, long maxGlobalSequenceNumber = Int64.MaxValue, IUnitOfWork unitOfWork = null) where TAggregateRoot : AggregateRoot
+        public bool Exists<TAggregateRoot>(string aggregateRootId, long maxGlobalSequenceNumber = Int64.MaxValue, IUnitOfWork unitOfWork = null) where TAggregateRoot : AggregateRoot
         {
             return _innerAggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
         }
 
-        AggregateRootInfo<TAggregateRoot> PrepareCloneFromCache<TAggregateRoot>(Guid aggregateRootId, long maxGlobalSequenceNumber, IUnitOfWork unitOfWork) where TAggregateRoot : AggregateRoot, new()
+        AggregateRootInfo<TAggregateRoot> PrepareCloneFromCache<TAggregateRoot>(string aggregateRootId, long maxGlobalSequenceNumber, IUnitOfWork unitOfWork) where TAggregateRoot : AggregateRoot, new()
         {
             var cloneInfo = _snapshotCache.GetCloneFromCache<TAggregateRoot>(aggregateRootId, maxGlobalSequenceNumber);
 
@@ -77,7 +77,7 @@ namespace d60.Cirqus.Snapshotting
             return cloneInfo;
         }
 
-        AggregateRootInfo<TAggregateRoot> GetFromInnerRepository<TAggregateRoot>(Guid aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber, bool createIfNotExists) where TAggregateRoot : AggregateRoot, new()
+        AggregateRootInfo<TAggregateRoot> GetFromInnerRepository<TAggregateRoot>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber, bool createIfNotExists) where TAggregateRoot : AggregateRoot, new()
         {
             var aggregateRootInfo = _innerAggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber, createIfNotExists);
 

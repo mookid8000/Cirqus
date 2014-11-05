@@ -6,17 +6,17 @@ namespace d60.Cirqus.Serialization
 {
     public class BinaryDomainEventSerializer : IDomainEventSerializer
     {
-        public Event Serialize(DomainEvent e)
+        public EventData Serialize(DomainEvent e)
         {
             using (var result = new MemoryStream())
             {
                 var formatter = new BinaryFormatter();
                 formatter.Serialize(result, e);
-                return Event.FromDomainEvent(e, result.GetBuffer());
+                return EventData.FromDomainEvent(e, result.GetBuffer());
             }
         }
 
-        public DomainEvent Deserialize(Event e)
+        public DomainEvent Deserialize(EventData e)
         {
             using (var data = new MemoryStream(e.Data))
             {

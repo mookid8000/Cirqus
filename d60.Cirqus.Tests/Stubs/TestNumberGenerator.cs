@@ -8,7 +8,7 @@ namespace d60.Cirqus.Tests.Stubs
 {
     public class TestNumberGenerator
     {
-        readonly Dictionary<Guid, long> _aggregateRootSequenceNumbers = new Dictionary<Guid, long>();
+        readonly Dictionary<string, long> _aggregateRootSequenceNumbers = new Dictionary<string, long>();
         long _globalSequenceNumber;
 
         public void AssignNumbers(DomainEvent domainEvent)

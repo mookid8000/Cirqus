@@ -31,7 +31,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             var viewManager = _factory.GetViewManager<View>();
             _context.AddViewManager(viewManager);
 
-            var registeredUpdates = new Dictionary<Guid, int>();
+            var registeredUpdates = new Dictionary<string, int>();
 
             viewManager.Updated += view =>
             {
@@ -44,17 +44,15 @@ namespace d60.Cirqus.Tests.Contracts.Views
             };
 
             // act
-            var aggregateRootId1 = Guid.NewGuid();
-            var aggregateRootId2 = Guid.NewGuid();
-            _context.Save(aggregateRootId1, new Event());
-            _context.Save(aggregateRootId1, new Event());
-            _context.Save(aggregateRootId1, new Event());
-            _context.Save(aggregateRootId2, new Event());
+            _context.Save("id1", new Event());
+            _context.Save("id1", new Event());
+            _context.Save("id1", new Event());
+            _context.Save("id2", new Event());
 
             // assert
             Assert.That(registeredUpdates.Count, Is.EqualTo(2));
-            Assert.That(registeredUpdates[aggregateRootId1], Is.EqualTo(3));
-            Assert.That(registeredUpdates[aggregateRootId2], Is.EqualTo(1));
+            Assert.That(registeredUpdates["id1"], Is.EqualTo(3));
+            Assert.That(registeredUpdates["id2"], Is.EqualTo(1));
         }
     }
 }

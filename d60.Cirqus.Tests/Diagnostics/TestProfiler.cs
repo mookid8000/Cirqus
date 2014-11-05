@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -33,14 +33,11 @@ namespace d60.Cirqus.Tests.Diagnostics
 
             RegisterForDisposal(commandProcessor);
 
-            var rootId = new Guid("65F49D9D-C5C3-4E28-890A-E1D8B5763AD1");
-            var otherRootId = new Guid("39E5BC53-B87E-4100-B436-F32E2FB576B0");
-
-            commandProcessor.ProcessCommand(new DoStuffCommand(rootId) { OtherRootId = otherRootId });
+            commandProcessor.ProcessCommand(new DoStuffCommand("rootid") { OtherRootId = "otherrootid" });
 
             profilero.Space();
 
-            commandProcessor.ProcessCommand(new DoStuffCommand(rootId) { OtherRootId = otherRootId });
+            commandProcessor.ProcessCommand(new DoStuffCommand("rootid") { OtherRootId = "otherrootid" });
 
 
             var firstLines = profilero.Calls
@@ -69,11 +66,12 @@ namespace d60.Cirqus.Tests.Diagnostics
 
         public class DoStuffCommand : Command<Root>
         {
-            public DoStuffCommand(Guid aggregateRootId) : base(aggregateRootId)
+            public DoStuffCommand(string aggregateRootId) 
+                : base(aggregateRootId)
             {
             }
 
-            public Guid OtherRootId { get; set; }
+            public string OtherRootId { get; set; }
 
             public override void Execute(Root aggregateRoot)
             {
@@ -83,7 +81,7 @@ namespace d60.Cirqus.Tests.Diagnostics
 
         public class Root : AggregateRoot, IEmit<SomethingHappenedInRoot>
         {
-            public void DoStuff(Guid otherRootId)
+            public void DoStuff(string otherRootId)
             {
                 Emit(new SomethingHappenedInRoot { IdOfAnotherRoot = otherRootId });
 
@@ -111,7 +109,7 @@ namespace d60.Cirqus.Tests.Diagnostics
 
         public class SomethingHappenedInRoot : DomainEvent<Root>
         {
-            public Guid IdOfAnotherRoot { get; set; }
+            public string IdOfAnotherRoot { get; set; }
         }
 
         public class SomethingHappenedInAnotherRoot : DomainEvent<AnotherRoot>
@@ -132,12 +130,12 @@ namespace d60.Cirqus.Tests.Diagnostics
                 _calls.Add("");
             }
 
-            public void RecordAggregateRootGet(TimeSpan elapsed, Type type, Guid aggregateRootId)
+            public void RecordAggregateRootGet(TimeSpan elapsed, Type type, string aggregateRootId)
             {
                 _calls.Add(string.Format("RecordAggregateRootGet {0}, {1}, {2}", elapsed, type, aggregateRootId));
             }
 
-            public void RecordAggregateRootExists(TimeSpan elapsed, Guid aggregateRootId)
+            public void RecordAggregateRootExists(TimeSpan elapsed, string aggregateRootId)
             {
             }
 
@@ -165,7 +163,7 @@ namespace d60.Cirqus.Tests.Diagnostics
             _innerEventStore = innerEventStore;
         }
 
-        public IEnumerable<Event> Load(Guid aggregateRootId, long firstSeq = 0)
+        public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
         {
             foreach (var e in _innerEventStore.Load(aggregateRootId, firstSeq))
             {
@@ -175,7 +173,7 @@ namespace d60.Cirqus.Tests.Diagnostics
             }
         }
 
-        public IEnumerable<Event> Stream(long globalSequenceNumber = 0)
+        public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
         {
             return _innerEventStore.Stream(globalSequenceNumber);
         }
@@ -185,7 +183,7 @@ namespace d60.Cirqus.Tests.Diagnostics
             return _innerEventStore.GetNextGlobalSequenceNumber();
         }
 
-        public void Save(Guid batchId, IEnumerable<Event> events)
+        public void Save(Guid batchId, IEnumerable<EventData> events)
         {
             _innerEventStore.Save(batchId, events);
         }
