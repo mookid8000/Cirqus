@@ -49,9 +49,16 @@ namespace d60.Cirqus.Aggregates
 
             aggregateRootInfo.Apply(eventsToApply, unitOfWork);
 
-            if (aggregateRootInfo.IsNew && !createIfNotExists)
+            if (aggregateRootInfo.IsNew)
             {
-                throw new ArgumentException(string.Format("Could not find aggregate root of type {0} with ID {1}", typeof(TAggregateRoot), aggregateRootId));
+                if (createIfNotExists)
+                {
+                    aggregateRootInfo.AggregateRoot.InvokeCreated();
+                }
+                else
+                {
+                    throw new ArgumentException(string.Format("Could not find aggregate root of type {0} with ID {1}", typeof(TAggregateRoot), aggregateRootId));
+                }
             }
 
             return aggregateRootInfo;

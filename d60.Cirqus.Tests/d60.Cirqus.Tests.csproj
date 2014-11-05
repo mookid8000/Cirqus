@@ -79,6 +79,7 @@
     <Compile Include="Aggregates\TestLoading.cs" />
     <Compile Include="Aggregates\TestVersionAttributeApplication.cs" />
     <Compile Include="Aggregates\TestVersioningWhenLoadingAnotherAggregate.cs" />
+    <Compile Include="Bugs\Issue27_CallingLoadFromWithinRootInvokesCreatedCallback.cs" />
     <Compile Include="Bugs\VerifyThatDuplicateSequenceNumbersAreNotAssigned.cs" />
     <Compile Include="Bugs\VerifyThatLoadingAnotherRootMultipleTimesWillYieldTheCorrectVersionEveryTime.cs" />
     <Compile Include="Bugs\VerifyThatNewlyCreatedAggregateRootsAreAvailableForLoading.cs" />

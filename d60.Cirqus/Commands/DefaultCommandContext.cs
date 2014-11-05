@@ -15,13 +15,6 @@ namespace d60.Cirqus.Commands
         public TAggregateRoot Load<TAggregateRoot>(Guid aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
             var aggregateRootInfo = _unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true);
-            var aggregateRoot = aggregateRootInfo.AggregateRoot;
-
-            if (aggregateRootInfo.IsNew)
-            {
-                aggregateRoot.InvokeCreated();
-            }
-
             return aggregateRootInfo.AggregateRoot;
         }
     }
