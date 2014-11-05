@@ -77,6 +77,7 @@
     <Compile Include="Aggregates\TestCreationHookWithRealCommandProcessor.cs" />
     <Compile Include="Aggregates\TestCreationHookWithTestContext.cs" />
     <Compile Include="Aggregates\TestDefaultAggregateRootRepository.cs" />
+    <Compile Include="Aggregates\TestEventApplicationOnPrivateAggregateRoot.cs" />
     <Compile Include="Aggregates\TestIsNewProperty.cs" />
     <Compile Include="Aggregates\TestLoading.cs" />
     <Compile Include="Aggregates\TestVersionAttributeApplication.cs" />

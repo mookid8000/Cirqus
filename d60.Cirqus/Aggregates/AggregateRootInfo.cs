@@ -62,8 +62,6 @@ namespace d60.Cirqus.Aggregates
         {
             AggregateRoot.UnitOfWork = unitOfWork;
 
-            var dynamicAggregate = (dynamic)AggregateRoot;
-
             using (new ThrowingUnitOfWork(AggregateRoot))
             {
                 AggregateRoot.ReplayState = ReplayState.ReplayApply;
@@ -83,16 +81,7 @@ namespace d60.Cirqus.Aggregates
                                 e.GetSequenceNumber(), typeof(TAggregateRoot), AggregateRoot.Id, expectedNextSequenceNumber));
                         }
 
-                        //var applyMethod = AggregateRoot.GetType().GetMethod("Apply", new []{e.GetType()});
-                        //if (applyMethod == null)
-                        //{
-                        //    throw new ApplicationException(string.Format("Could not find appropriate Apply method - expects a method with a public void Apply({0}) signature", e.GetType().FullName));
-                        //}
-
-                        //applyMethod.Invoke(AggregateRoot, new object[] {e});
-
-                        dynamicAggregate.Apply((dynamic)e);
-                        AggregateRoot.CurrentSequenceNumber = e.GetSequenceNumber();
+                        AggregateRoot.ApplyEvent(e);
                     }
                     catch (Exception exception)
                     {

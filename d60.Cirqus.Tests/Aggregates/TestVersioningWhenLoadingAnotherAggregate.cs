@@ -21,26 +21,26 @@ namespace d60.Cirqus.Tests.Aggregates
         {
             using (var uow = _context.BeginUnitOfWork())
             {
-                var counterparty = uow.Get<Counterparty>("counterparty1");
+                var counterparty = uow.Load<Counterparty>("counterparty1");
                 counterparty.SetName("joe");
                 uow.Commit();
             }
 
             using (var uow = _context.BeginUnitOfWork())
             {
-                var contract = uow.Get<Contract>("contract1");
+                var contract = uow.Load<Contract>("contract1");
                 contract.AssignToCounterparty("counterparty1");
                 uow.Commit();
             }
 
             using (var uow = _context.BeginUnitOfWork())
             {
-                var counterparty = uow.Get<Counterparty>("counterparty1");
+                var counterparty = uow.Load<Counterparty>("counterparty1");
                 counterparty.SetName("moe");
                 uow.Commit();
             }
 
-            var loadedContract = _context.BeginUnitOfWork().Get<Contract>("contract1");
+            var loadedContract = _context.BeginUnitOfWork().Load<Contract>("contract1");
             Assert.That(loadedContract.NameOfCounterparty, Is.EqualTo("joe"));
         }
 

@@ -24,7 +24,7 @@ namespace d60.Cirqus.Tests.Aggregates
         {
             // arrange
             var uow = _context.BeginUnitOfWork();
-            var root = uow.Get<Root>("someid");
+            var root = uow.Load<Root>("someid");
 
             // act
             root.DoStuff();
@@ -44,7 +44,7 @@ namespace d60.Cirqus.Tests.Aggregates
         {
             // arrange
             var uow = _context.BeginUnitOfWork();
-            var root = uow.Get<Root>("rootid");
+            var root = uow.Load<Root>("rootid");
 
             // act
             root.DoStuff();

@@ -23,7 +23,7 @@ namespace d60.Cirqus.Tests.Aggregates
             // act
             using (var uow = _context.BeginUnitOfWork())
             {
-                uow.Get<Root>("rootid").DoSomething();
+                uow.Load<Root>("rootid").DoSomething();
                 uow.Commit();
             }
 
@@ -40,17 +40,17 @@ namespace d60.Cirqus.Tests.Aggregates
             // act
             using (var uow = _context.BeginUnitOfWork())
             {
-                uow.Get<Root>("rootid").DoSomething();
+                uow.Load<Root>("rootid").DoSomething();
                 uow.Commit();
             }
             using (var uow = _context.BeginUnitOfWork())
             {
-                uow.Get<Root>("rootid").DoSomething();
+                uow.Load<Root>("rootid").DoSomething();
                 uow.Commit();
             }
             using (var uow = _context.BeginUnitOfWork())
             {
-                uow.Get<Root>("rootid").DoSomething();
+                uow.Load<Root>("rootid").DoSomething();
                 uow.Commit();
             }
 

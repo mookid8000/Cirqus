@@ -1,5 +1,4 @@
-﻿using System;
-using d60.Cirqus.Events;
+﻿using d60.Cirqus.Events;
 
 namespace d60.Cirqus.Aggregates
 {

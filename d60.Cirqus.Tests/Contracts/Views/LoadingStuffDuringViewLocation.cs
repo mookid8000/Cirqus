@@ -34,17 +34,17 @@ namespace d60.Cirqus.Tests.Contracts.Views
             // arrange
             using (var uow = _context.BeginUnitOfWork())
             {
-                var node = uow.Get<Node>("rootnodeid");
+                var node = uow.Load<Node>("rootnodeid");
 
-                var child1 = uow.Get<Node>("child1");
-                var child2 = uow.Get<Node>("child2");
+                var child1 = uow.Load<Node>("child1");
+                var child2 = uow.Load<Node>("child2");
 
                 child1.AttachTo(node);
                 child2.AttachTo(node);
 
-                var subChild1 = uow.Get<Node>("subchild1");
-                var subChild2 = uow.Get<Node>("subchild2");
-                var subChild3 = uow.Get<Node>("subchild3");
+                var subChild1 = uow.Load<Node>("subchild1");
+                var subChild2 = uow.Load<Node>("subchild2");
+                var subChild3 = uow.Load<Node>("subchild3");
 
                 subChild1.AttachTo(child1);
                 subChild2.AttachTo(child1);

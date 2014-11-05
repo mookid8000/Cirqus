@@ -238,7 +238,7 @@ namespace d60.Cirqus.Tests.Testing
             _context.Save("rootid", new AnEvent());
             _context.Save("rootid", new AnEvent());
 
-            var firstInstance = _context.BeginUnitOfWork().Get<AnAggregate>("rootid");
+            var firstInstance = _context.BeginUnitOfWork().Load<AnAggregate>("rootid");
 
             Assert.That(firstInstance.ProcessedEvents, Is.EqualTo(3));
         }
@@ -249,7 +249,7 @@ namespace d60.Cirqus.Tests.Testing
             // arrange
             using (var uow = _context.BeginUnitOfWork())
             {
-                var root = uow.Get<AnAggregate>("rootid");
+                var root = uow.Load<AnAggregate>("rootid");
 
                 // act
                 root.DoStuff();
@@ -266,7 +266,7 @@ namespace d60.Cirqus.Tests.Testing
             // arrange
             using (var uow = _context.BeginUnitOfWork())
             {
-                var root = uow.Get<AnAggregate>("rootid");
+                var root = uow.Load<AnAggregate>("rootid");
                 root.DoStuff();
 
                 // act
@@ -284,7 +284,7 @@ namespace d60.Cirqus.Tests.Testing
             // arrange
             using (var uow = _context.BeginUnitOfWork())
             {
-                var root = uow.Get<AnAggregate>("rootid");
+                var root = uow.Load<AnAggregate>("rootid");
                 root.DoStuff();
 
                 Assert.That(_context.History.Count(), Is.EqualTo(0));
@@ -297,7 +297,7 @@ namespace d60.Cirqus.Tests.Testing
             // arrange
             using (var uow = _context.BeginUnitOfWork())
             {
-                var root = uow.Get<AnAggregate>("rootid");
+                var root = uow.Load<AnAggregate>("rootid");
                 root.DoStuff();
 
                 // act

@@ -1,5 +1,6 @@
 ﻿using System;
 using d60.Cirqus.Events;
+using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
 
 namespace d60.Cirqus.Aggregates
@@ -78,7 +79,7 @@ namespace d60.Cirqus.Aggregates
             }
 
             var now = Time.UtcNow();
-            var sequenceNumber = ++CurrentSequenceNumber;
+            var sequenceNumber = CurrentSequenceNumber + 1;
 
             e.Meta[DomainEvent.MetadataKeys.AggregateRootId] = Id;
             e.Meta[DomainEvent.MetadataKeys.TimeUtc] = now.ToString("u");
@@ -93,9 +94,7 @@ namespace d60.Cirqus.Aggregates
             {
                 ReplayState = ReplayState.EmitApply;
 
-                var dynamicThis = (dynamic)this;
-
-                dynamicThis.Apply((dynamic)e);
+                ApplyEvent(e);
 
                 ReplayState = ReplayState.None;
             }
@@ -106,6 +105,23 @@ namespace d60.Cirqus.Aggregates
 
             UnitOfWork.AddEmittedEvent(e);
             EventEmitted(e);
+        }
+
+        internal void ApplyEvent(DomainEvent e) 
+        {
+            var applyMethod = GetType().GetMethod("Apply", new[] {e.GetType()});
+            
+            if (applyMethod == null)
+            {
+                throw new ApplicationException(
+                    string.Format(
+                        "Could not find appropriate Apply method - expects a method with a public void Apply({0}) signature",
+                        e.GetType().FullName));
+            }
+
+            applyMethod.Invoke(this, new object[] {e});
+
+            CurrentSequenceNumber = e.GetSequenceNumber();
         }
 
         internal static string GetOwnerFromType(Type aggregateRootType)

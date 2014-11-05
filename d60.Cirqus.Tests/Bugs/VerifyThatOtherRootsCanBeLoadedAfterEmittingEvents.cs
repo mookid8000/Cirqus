@@ -22,17 +22,17 @@ namespace d60.Cirqus.Tests.Bugs
         {
             using (var uow = _context.BeginUnitOfWork())
             {
-                uow.Get<Root>("id1");
+                uow.Load<Root>("id1");
                 uow.Commit();
             }
 
             using (var uow = _context.BeginUnitOfWork())
             {
-                uow.Get<Root>("id2");
+                uow.Load<Root>("id2");
                 uow.Commit();
             }
 
-            Assert.DoesNotThrow(() => _context.BeginUnitOfWork().Get<Root>("id1").AssociateWith("id2"));
+            Assert.DoesNotThrow(() => _context.BeginUnitOfWork().Load<Root>("id1").AssociateWith("id2"));
         }
 
 

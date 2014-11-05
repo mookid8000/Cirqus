@@ -80,14 +80,14 @@ namespace d60.Cirqus.Views.ViewManagers
                         typeof(TAggregateRoot), _aggregateRootInfo.AggregateRoot.Id, e, _aggregateRootInfo.LastGlobalSeqNo));
             }
 
-            public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+            public void AddToCache<TAggregateRootToAdd>(TAggregateRootToAdd aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRootToAdd : AggregateRoot
             {
-                _realUnitOfWork.AddToCache<TAggregateRoot>(aggregateRoot, globalSequenceNumberCutoff);
+                _realUnitOfWork.AddToCache(aggregateRoot, globalSequenceNumberCutoff);
             }
 
-            public bool Exists<TAggregateRoot1>(string aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot1 : AggregateRoot
+            public bool Exists<TAggregateRootToCheck>(string aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRootToCheck : AggregateRoot
             {
-                return _realUnitOfWork.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
+                return _realUnitOfWork.Exists<TAggregateRootToCheck>(aggregateRootId, globalSequenceNumberCutoff);
             }
 
             public AggregateRootInfo<TAggregateRootToLoad> Get<TAggregateRootToLoad>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists) where TAggregateRootToLoad : AggregateRoot, new()

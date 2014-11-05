@@ -21,11 +21,11 @@ namespace d60.Cirqus.Tests.Bugs
         {
             using (var uow = _context.BeginUnitOfWork())
             {
-                var counterpart = uow.Get<Counterpart>("counterpartid");
+                var counterpart = uow.Load<Counterpart>("counterpartid");
                 // create fresh counterpart AR by setting its name
                 counterpart.SetName("muggie");
 
-                var contract = uow.Get<Contract>("contractid");
+                var contract = uow.Load<Contract>("contractid");
 
                 // now make the contract do something that causes the counterpart to be loaded
                 // act
@@ -35,7 +35,7 @@ namespace d60.Cirqus.Tests.Bugs
             }
 
             // assert
-            var reloadedContract = _context.BeginUnitOfWork().Get<Contract>("contractid");
+            var reloadedContract = _context.BeginUnitOfWork().Load<Contract>("contractid");
             Assert.That(reloadedContract.AssignedCounterpartName, Is.EqualTo("muggie"));
         }
 

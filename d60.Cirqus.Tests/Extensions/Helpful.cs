@@ -1,5 +1,4 @@
-﻿using System;
-using d60.Cirqus.Aggregates;
+﻿using d60.Cirqus.Aggregates;
 using d60.Cirqus.Testing.Internals;
 
 namespace d60.Cirqus.Tests.Extensions
