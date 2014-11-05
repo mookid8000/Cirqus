@@ -44,15 +44,15 @@ namespace d60.Cirqus.Testing.Internals
                             throw new InvalidOperationException(string.Format("Found duplicate: {0}", tuple));
                         }
                     }
-
-                    foreach (var tuple in tuplesInBatch)
-                    {
-                        _idAndSeqNoTuples.Add(tuple, null);
-                    }
                 }
                 catch (Exception exception)
                 {
                     throw new ConcurrencyException(batchId, batch, exception);
+                }
+
+                foreach (var tuple in tuplesInBatch)
+                {
+                    _idAndSeqNoTuples.Add(tuple, null);
                 }
 
                 var sequenceNumbersToAllocate = batch.Count;

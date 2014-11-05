@@ -87,7 +87,7 @@ namespace d60.Cirqus.Testing
 
         public void Dispose()
         {
-            if (!_wasCommitted)
+            if (!_wasCommitted && EmittedEvents.Any())
             {
                 Console.WriteLine("Unit of work was disposed with {0} events without being committed", EmittedEvents.Count());
             }

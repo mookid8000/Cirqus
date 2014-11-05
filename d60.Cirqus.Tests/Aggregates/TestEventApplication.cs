@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Timers;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Numbers;
@@ -8,6 +10,7 @@ using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
+using TestContext = d60.Cirqus.Testing.TestContext;
 
 namespace d60.Cirqus.Tests.Aggregates
 {
@@ -15,6 +18,48 @@ namespace d60.Cirqus.Tests.Aggregates
     public class TestEventApplication
     {
         readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
+
+        /// <summary>
+        /// Without caching: Elapsed total: 00:00:03.0647447, hydrations/s: 32,6
+        /// </summary>
+        [TestCase(2000, 100)]
+        public void TestRawApplicationPerformance(int numberOfEvents, int numberOfHydrations)
+        {
+            const string aggregateRootId = "bim";
+
+            using (var context = new TestContext())
+            {
+                context.Asynchronous = true;
+
+                Console.WriteLine("Saving {0} to history of '{1}'", numberOfEvents, aggregateRootId);
+
+                using (var printer = new Timer(2000))
+                {
+                    var inserts = 0;
+                    printer.Elapsed += delegate { Console.WriteLine("{0} events saved...", inserts); };
+                    printer.Start();
+
+                    foreach (var e in Enumerable.Range(0, numberOfEvents).Select(i => new SomeEvent(string.Format("Event {0}", i))))
+                    {
+                        context.Save(aggregateRootId, e);
+                        inserts++;
+                    }
+                }
+
+                Console.WriteLine("Hydrating {0} times", numberOfHydrations);
+                var stopwatch = Stopwatch.StartNew();
+                numberOfHydrations.Times(() =>
+                {
+                    using (var uow = context.BeginUnitOfWork())
+                    {
+                        var instance = uow.Load<SomeAggregate>(aggregateRootId);
+                    }
+                });
+                
+                var elapsed = stopwatch.Elapsed;
+                Console.WriteLine("Elapsed total: {0}, hydrations/s: {1:0.0}", elapsed, numberOfHydrations/elapsed.TotalSeconds);
+            }
+        }
 
         [Test]
         public void AppliesEmittedEvents()
@@ -80,7 +125,7 @@ namespace d60.Cirqus.Tests.Aggregates
             return new DefaultAggregateRootRepository(inMemoryEventStore, _domainEventSerializer);
         }
 
-        public class SomeEvent : DomainEvent<SomeAggregate>
+        class SomeEvent : DomainEvent<SomeAggregate>
         {
             public readonly string What;
 
@@ -90,9 +135,10 @@ namespace d60.Cirqus.Tests.Aggregates
             }
         }
 
-        public class SomeAggregate : AggregateRoot, IEmit<SomeEvent>
+        class SomeAggregate : AggregateRoot, IEmit<SomeEvent>
         {
             public readonly List<string> StuffThatWasDone = new List<string>();
+        
             public void DoSomething()
             {
                 Emit(new SomeEvent("emitted an event"));

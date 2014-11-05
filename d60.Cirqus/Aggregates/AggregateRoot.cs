@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Reflection;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
@@ -107,19 +109,26 @@ namespace d60.Cirqus.Aggregates
             EventEmitted(e);
         }
 
-        internal void ApplyEvent(DomainEvent e) 
+        internal void ApplyEvent(DomainEvent e)
         {
-            var applyMethod = GetType().GetMethod("Apply", new[] {e.GetType()});
-            
+            // tried caching here with a (aggRootType, eventType) lookup in two levels of concurrent dictionaries.... didn't provide significant perf boost
+            var applyMethod = GetType().GetMethod("Apply", new[] { e.GetType() });
+
             if (applyMethod == null)
             {
                 throw new ApplicationException(
-                    string.Format(
-                        "Could not find appropriate Apply method - expects a method with a public void Apply({0}) signature",
+                    string.Format("Could not find appropriate Apply method - expects a method with a public void Apply({0}) signature",
                         e.GetType().FullName));
             }
 
-            applyMethod.Invoke(this, new object[] {e});
+            try
+            {
+                applyMethod.Invoke(this, new object[] { e });
+            }
+            catch (TargetInvocationException tae)
+            {
+                throw new ApplicationException(string.Format("Error when applying event {0} to aggregate root with ID {1}", e, Id), tae);
+            }
 
             CurrentSequenceNumber = e.GetSequenceNumber();
         }
