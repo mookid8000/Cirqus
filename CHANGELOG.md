@@ -415,6 +415,9 @@ This is a big update that completes the transition to the new, vastly improved v
 ## 0.44.0
 
 * Added `IsNew` property to aggregate root which allows for determining whether an instance is new or not
+* Fixed `Created` that would not fire when creating aggregate roots from within another aggregate root - thanks [asgerhallas]
+
+
 
 [asgerhallas]: https://github.com/asgerhallas
 
