@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using d60.Cirqus.Events;
+using d60.Cirqus.Extensions;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.Numbers;
 using d60.Cirqus.Serialization;
@@ -76,7 +77,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
                 .OfType<Event>()
                 .ToList();
 
-            Assert.That(myKindOfEvents.Count, Is.EqualTo(3));
+            Assert.That(myKindOfEvents.Count, Is.EqualTo(3), "Expected event 0, 1, 2 but got only {0}", string.Join(", ", myKindOfEvents.Select(e => e.GetGlobalSequenceNumber())));
             var expectedSourceBatchIds = new[]
             {
                 batchId1.ToString(),
