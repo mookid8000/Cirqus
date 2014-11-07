@@ -21,16 +21,11 @@ namespace d60.Cirqus.Commands
     }
 
     /// <summary>
-    /// Command base class that is mapped to one specific aggregate root instance for which the <seealso cref="Execute"/> method will be invoked
+    /// Command base class that is mapped to one specific aggregate root instance for which the <seealso cref="Execute(TAggregateRoot)"/> method will be invoked
     /// </summary>
     /// <typeparam name="TAggregateRoot">Specifies the type of aggregate root that this command targets</typeparam>
     public abstract class Command<TAggregateRoot> : Command where TAggregateRoot : AggregateRoot, new()
     {
-        protected Command(Guid aggregateRootId)
-            : this(aggregateRootId.ToString())
-        {
-        }
-
         protected Command(string aggregateRootId)
         {
             if (aggregateRootId == null) throw new ArgumentNullException("aggregateRootId", "You need to specify an aggregate root ID");

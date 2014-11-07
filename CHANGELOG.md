@@ -416,8 +416,7 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added `IsNew` property to aggregate root which allows for determining whether an instance is new or not
 * Fixed `Created` that would not fire when creating aggregate roots from within another aggregate root - thanks [asgerhallas]
-
-
+* Removed the `Guid` ctor on `Command<>` because it's in the way when using R# to generate ctor in subclasses
 
 [asgerhallas]: https://github.com/asgerhallas
 
