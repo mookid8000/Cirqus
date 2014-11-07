@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
@@ -28,7 +29,7 @@ namespace d60.Cirqus.Tests.Aggregates
             _context.ProcessCommand(new InvokeBam(aggregateRootId));
 
             var instance = _context.AggregateRoots.OfType<Root>().Single(r => r.Id == aggregateRootId);
-            Assert.That(instance.CollectedValuesOfIsNew, Is.EqualTo(new[]{true, false, false}));
+            Assert.That(instance.CollectedValuesOfIsNew, Is.EqualTo(new[] { true, false, false }));
         }
 
         [Test]
@@ -44,7 +45,23 @@ namespace d60.Cirqus.Tests.Aggregates
             Assert.That(instance.CollectedValuesOfIsNew, Is.EqualTo(new[] { true, false, false }));
         }
 
-        public class Root : AggregateRoot, IEmit<Event>
+        [Test]
+        [Description("In this case, the brand new aggregate root emits the OtherRootCreated event from its Created method - question is whether the root is to be considered new...")]
+        public void AggregateRootIsNeverNewWhenEmittingOnCreation()
+        {
+            const string aggregateRootId = "someId";
+
+            _context.ProcessCommand(new InvokeBamOnOtherRoot(aggregateRootId));
+            _context.ProcessCommand(new InvokeBamOnOtherRoot(aggregateRootId));
+            _context.ProcessCommand(new InvokeBamOnOtherRoot(aggregateRootId));
+
+            var instance = _context.AggregateRoots.OfType<OtherRoot>().Single(r => r.Id == aggregateRootId);
+            
+            Assert.That(instance.CollectedValuesOfIsNew, Is.EqualTo(new[] { false, false, false }));
+        }
+
+
+        public class Root : AggregateRoot, IEmit<RootEvent>
         {
             readonly List<bool> _collectedValuesOfIsNew = new List<bool>();
 
@@ -53,14 +70,14 @@ namespace d60.Cirqus.Tests.Aggregates
                 get { return _collectedValuesOfIsNew; }
             }
 
-            public void Apply(Event e)
+            public void Apply(RootEvent e)
             {
                 _collectedValuesOfIsNew.Add(e.EmittedByNewAggregateRoot);
             }
 
             public void Bam()
             {
-                Emit(new Event
+                Emit(new RootEvent
                 {
                     EmittedByNewAggregateRoot = IsNew
                 });
@@ -70,9 +87,52 @@ namespace d60.Cirqus.Tests.Aggregates
             {
                 Load<Root>(friendId, createIfNotExists: true).Bam();
             }
+
+            public void BamOnOtherRoot(string otherRootId)
+            {
+                var otherRoot = Load<OtherRoot>(otherRootId, createIfNotExists: true);
+            }
         }
 
-        public class Event : DomainEvent<Root>
+        public class OtherRoot : AggregateRoot, IEmit<OtherRootCreated>, IEmit<OtherRootEvent>
+        {
+            readonly List<bool> _collectedValuesOfIsNew = new List<bool>();
+
+            protected override void Created()
+            {
+                Emit(new OtherRootCreated());
+            }
+
+            public void Bam()
+            {
+                Emit(new OtherRootEvent {EmittedByNewAggregateRoot = IsNew});
+            }
+
+            public void Apply(OtherRootCreated e)
+            {
+            }
+
+            public void Apply(OtherRootEvent e)
+            {
+                _collectedValuesOfIsNew.Add(e.EmittedByNewAggregateRoot);
+            }
+
+            public List<bool> CollectedValuesOfIsNew
+            {
+                get { return _collectedValuesOfIsNew; }
+            }
+        }
+
+        public class OtherRootCreated : DomainEvent<OtherRoot>
+        {
+        }
+
+        public class OtherRootEvent : DomainEvent<OtherRoot>
+        {
+            public bool EmittedByNewAggregateRoot { get; set; }
+        }
+
+        public class RootEvent : DomainEvent<Root>
         {
             public bool EmittedByNewAggregateRoot { get; set; }
         }
@@ -102,6 +162,18 @@ namespace d60.Cirqus.Tests.Aggregates
             public override void Execute(Root aggregateRoot)
             {
                 aggregateRoot.BamOnFriend(FriendId);
+            }
+        }
+
+        public class InvokeBamOnOtherRoot : Command<OtherRoot>
+        {
+            public InvokeBamOnOtherRoot(string aggregateRootId) : base(aggregateRootId)
+            {
+            }
+
+            public override void Execute(OtherRoot aggregateRoot)
+            {
+                aggregateRoot.Bam();
             }
         }
     }
