@@ -49,6 +49,8 @@
     <Compile Include="Aggregates\IAggregateRootRepository.cs" />
     <Compile Include="Aggregates\ReplayState.cs" />
     <Compile Include="CommandProcessingResult.cs" />
+    <Compile Include="Commands\CreateCommand.cs" />
+    <Compile Include="Commands\UpdateCommand.cs" />
     <Compile Include="Config\Configurers\AggregateRootRepositoryConfigurationBuilder.cs" />
     <Compile Include="Config\Configurers\CommandProcessorConfigurationBuilder.cs" />
     <Compile Include="Commands\Command.cs" />
