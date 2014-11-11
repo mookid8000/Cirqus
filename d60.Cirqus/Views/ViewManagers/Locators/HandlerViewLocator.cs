@@ -21,8 +21,6 @@ namespace d60.Cirqus.Views.ViewManagers.Locators
             {
                 var ids = ((IEnumerable<string>)handlerMethod.Invoke(this, new object[] { context, e })).ToList();
 
-                Console.WriteLine("Dispatching {0} => {1}", e, string.Join(", ", ids));
-
                 return ids;
             }
             catch (Exception exception)

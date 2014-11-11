@@ -422,5 +422,9 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Fixed TS Client generator to generate a command processor proxy without the "process" in the names - i.e. a command `DoWhatever` will now yield a `doWhatever` method on the command processor proxy
 
+## 0.44.2
+
+* Removed some accidental `Console.WriteLine` in `ViewManagerEventDispatcher` and `HandlerViewLocator`
+
 [asgerhallas]: https://github.com/asgerhallas
 

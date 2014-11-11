@@ -191,8 +191,6 @@ namespace d60.Cirqus.Views
 
                 foreach (var viewManager in viewManagers)
                 {
-                    Console.WriteLine("Dispatching batch of {0} events to {1}", list.Count, viewManager);
-
                     _logger.Debug("Dispatching batch of {0} events to {1}", list.Count, viewManager);
 
                     viewManager.Dispatch(context, list.Select(e => _domainEventSerializer.Deserialize(e)));
