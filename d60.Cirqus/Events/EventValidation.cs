@@ -5,8 +5,14 @@ using d60.Cirqus.Extensions;
 
 namespace d60.Cirqus.Events
 {
+    /// <summary>
+    /// Provides a bunch of static methods that make it easy to perform some simple integrity tests on an event batch that is to be committed
+    /// </summary>
     public class EventValidation
     {
+        /// <summary>
+        /// Validates the integrity of the given event batch with respect to sequence numbers etc.
+        /// </summary>
         public static void ValidateBatchIntegrity(Guid batchId, List<EventData> events)
         {
             EnsureAllEventsHaveSequenceNumbers(events);

@@ -7,6 +7,9 @@ namespace d60.Cirqus.Events
     [Serializable]
     public abstract class DomainEvent
     {
+        /// <summary>
+        /// Provides the keys of various predefined metadata elements with special meaning
+        /// </summary>
         public static class MetadataKeys
         {
             public const string GlobalSequenceNumber = "gl_seq";
