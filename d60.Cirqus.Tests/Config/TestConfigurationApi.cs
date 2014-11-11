@@ -157,7 +157,7 @@ namespace d60.Cirqus.Tests.Config
             Assert.That(someCommand.WasProcessed, Is.EqualTo(true));
         }
 
-        public class SomeCommand : Command
+        public class SomeCommand : ExecutableCommand
         {
             public bool WasProcessed { get; set; }
 

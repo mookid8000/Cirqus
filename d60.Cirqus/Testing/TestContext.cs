@@ -57,6 +57,8 @@ namespace d60.Cirqus.Testing
             return this;
         }
 
+        readonly CommandMapper _commandMapper = new CommandMapper();
+
         /// <summary>
         /// Processes the specified command in a unit of work.
         /// </summary>
@@ -64,7 +66,9 @@ namespace d60.Cirqus.Testing
         {
             using (var unitOfWork = BeginUnitOfWork())
             {
-                command.Execute(new DefaultCommandContext(unitOfWork.RealUnitOfWork));
+                var handler = _commandMapper.GetHandleFor(command);
+
+                handler(new DefaultCommandContext(unitOfWork.RealUnitOfWork), command);
 
                 var eventsToReturn = unitOfWork.EmittedEvents.ToList();
 

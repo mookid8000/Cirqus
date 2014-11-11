@@ -28,7 +28,7 @@ namespace d60.Cirqus.Tests.Integration.Scenarios
             }
         }
 
-        public class SomeCommand : Command
+        public class SomeCommand : ExecutableCommand
         {
             public string SomeId { get; set; }
 

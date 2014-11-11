@@ -10,6 +10,7 @@ using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Serialization;
+using d60.Cirqus.Testing;
 using d60.Cirqus.Views;
 
 namespace d60.Cirqus
@@ -40,6 +41,7 @@ namespace d60.Cirqus
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventDispatcher _eventDispatcher;
         readonly IDomainEventSerializer _domainEventSerializer;
+        readonly CommandMapper _commandMapper = new CommandMapper();
 
         public CommandProcessor(IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, IEventDispatcher eventDispatcher, IDomainEventSerializer domainEventSerializer)
         {
@@ -141,7 +143,9 @@ namespace d60.Cirqus
         {
             var unitOfWork = new RealUnitOfWork(_aggregateRootRepository);
 
-            command.Execute(new DefaultCommandContext(unitOfWork));
+            var handler = _commandMapper.GetHandleFor(command);
+            
+            handler(new DefaultCommandContext(unitOfWork), command);
 
             var emittedEvents = unitOfWork.EmittedEvents.ToList();
 

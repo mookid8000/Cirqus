@@ -57,7 +57,7 @@ namespace d60.Cirqus.Tests.Commands
 
         public class MyEvent : DomainEvent<MyRoot> { }
 
-        public class MyCommand : Command
+        public class MyCommand : ExecutableCommand
         {
             public string[] AggregateRootIds { get; set; }
 
