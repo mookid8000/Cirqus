@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Tests.Views.NewViewManager.Events;

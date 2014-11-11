@@ -27,6 +27,8 @@ namespace d60.Cirqus.MongoDb.Views
 
         long _cachedPosition;
 
+        volatile bool _purging;
+
         public MongoDbViewManager(MongoDatabase database, string collectionName, string positionCollectionName = null)
         {
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
@@ -39,7 +41,7 @@ namespace d60.Cirqus.MongoDb.Views
             _viewCollection.CreateIndex(IndexKeys<TViewInstance>.Ascending(i => i.LastGlobalSequenceNumber), IndexOptions.SetName(CurrentPositionPropertyName));
 
             _positionCollection = database.GetCollection <PositionDoc>(positionCollectionName);
-            _currentPositionDocId = "__" + collectionName + "__position__";
+            _currentPositionDocId = string.Format("__{0}__position__", collectionName);
         }
 
         class PositionDoc
@@ -90,13 +92,22 @@ namespace d60.Cirqus.MongoDb.Views
 
         public override void Purge()
         {
-            _logger.Info("Purging '{0}'", _viewCollection.Name);
+            try
+            {
+                _purging = true;
 
-            _viewCollection.RemoveAll();
+                _logger.Info("Purging '{0}'", _viewCollection.Name);
 
-            UpdatePersistentCache(DefaultPosition);
+                _viewCollection.RemoveAll();
 
-            Interlocked.Exchange(ref _cachedPosition, DefaultPosition);
+                UpdatePersistentCache(DefaultPosition);
+
+                Interlocked.Exchange(ref _cachedPosition, DefaultPosition);
+            }
+            finally
+            {
+                _purging = false;
+            }
         }
 
         void UpdatePersistentCache(long newPosition)
@@ -114,6 +125,8 @@ namespace d60.Cirqus.MongoDb.Views
 
         public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
         {
+            if (_purging) return;
+
             var cachedViewInstances = new Dictionary<string, TViewInstance>();
 
             var eventList = batch.ToList();

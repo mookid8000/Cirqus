@@ -77,7 +77,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             allPotatoesView.Purge();
 
             Console.WriteLine("Waiting until {0} has been dispatched to the view...", lastResult.GetNewPosition());
-            allPotatoesView.WaitUntilProcessed(lastResult, TimeSpan.FromSeconds(2)).Wait();
+            allPotatoesView.WaitUntilProcessed(lastResult, TimeSpan.FromSeconds(4)).Wait();
 
             var viewOnNextLoad = allPotatoesView.Load(GlobalInstanceLocator.GetViewInstanceId());
             Assert.That(viewOnNextLoad, Is.Not.Null);
