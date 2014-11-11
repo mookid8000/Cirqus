@@ -6,6 +6,10 @@ using d60.Cirqus.Extensions;
 
 namespace d60.Cirqus.Commands
 {
+    /// <summary>
+    /// Unit of work implementation that works and uses the given <see cref="IAggregateRootRepository"/> to supply aggregate root instances
+    /// when it cannot find them in its cache
+    /// </summary>
     public class RealUnitOfWork : IUnitOfWork
     {
         readonly IAggregateRootRepository _aggregateRootRepository;
