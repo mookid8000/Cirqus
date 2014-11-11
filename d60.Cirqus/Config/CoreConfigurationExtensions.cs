@@ -1,5 +1,6 @@
 ﻿using System;
 using d60.Cirqus.Aggregates;
+using d60.Cirqus.Commands;
 using d60.Cirqus.Config.Configurers;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
@@ -128,6 +129,14 @@ namespace d60.Cirqus.Config
         public static void SetMaxRetries(this OptionsConfigurationBuilder builder, int maxRetries)
         {
             builder.Registrar.RegisterInstance<Action<Options>>(o => o.MaxRetries = maxRetries, multi: true);
+        }
+
+        /// <summary>
+        /// Decorates the <see cref="ICommandMapper"/> pipeline with a command mapper that can use the given <see cref="CommandMappings"/>
+        /// </summary>
+        public static void AddCommandMappings(this OptionsConfigurationBuilder builder, CommandMappings mappings)
+        {
+            builder.Registrar.Register(c => mappings.CreateCommandMapperDecorator(c.Get<ICommandMapper>()), decorator: true);
         }
 
         /// <summary>

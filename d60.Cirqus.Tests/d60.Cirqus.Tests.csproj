@@ -87,6 +87,7 @@
     <Compile Include="Bugs\VerifyThatLoadingAnotherRootMultipleTimesWillYieldTheCorrectVersionEveryTime.cs" />
     <Compile Include="Bugs\VerifyThatNewlyCreatedAggregateRootsAreAvailableForLoading.cs" />
     <Compile Include="Bugs\VerifyThatOtherRootsCanBeLoadedAfterEmittingEvents.cs" />
+    <Compile Include="Commands\TestCommandMappingApi.cs" />
     <Compile Include="Commands\TestCommandProcessing.cs" />
     <Compile Include="Config\TestConfigurationApi.cs" />
     <Compile Include="Config\TestConfigurationContainer.cs" />
