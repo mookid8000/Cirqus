@@ -13,14 +13,8 @@ namespace d60.Cirqus.Views.ViewManagers
     /// </summary>
     public class ViewDispatcherHelper<TViewInstance> where TViewInstance : ISubscribeTo, IViewInstance, new()
     {
-        static Logger _logger;
-
-        static ViewDispatcherHelper()
-        {
-            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
-        }
-
         readonly ConcurrentDictionary<Type, MethodInfo> _dispatcherMethods = new ConcurrentDictionary<Type, MethodInfo>();
+        readonly Logger _logger = CirqusLoggerFactory.Current.GetCurrentClassLogger();
         readonly MethodInfo _dispatchToViewGenericMethod;
 
         public ViewDispatcherHelper()

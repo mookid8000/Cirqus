@@ -39,7 +39,7 @@ namespace d60.Cirqus.Logging
             get { return _current; }
             set
             {
-                _current = value;
+                _current = value ?? new NullLoggerFactory();
 
                 lock (ChangedHandlersLock)
                 {

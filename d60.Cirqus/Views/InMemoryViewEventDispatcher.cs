@@ -22,13 +22,12 @@ namespace d60.Cirqus.Views
         readonly ConcurrentDictionary<string, TViewInstance> _views = new ConcurrentDictionary<string, TViewInstance>();
         readonly ViewDispatcherHelper<TViewInstance> _dispatcher = new ViewDispatcherHelper<TViewInstance>();
         readonly ViewLocator _viewLocator = ViewLocator.GetLocatorFor<TViewInstance>();
+        readonly Logger _logger = CirqusLoggerFactory.Current.GetCurrentClassLogger();
 
-        Logger _logger;
         bool _stopped;
 
         public InMemoryViewEventDispatcher(IAggregateRootRepository aggregateRootRepository, IDomainEventSerializer domainEventSerializer)
         {
-            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
             _aggregateRootRepository = aggregateRootRepository;
             _domainEventSerializer = domainEventSerializer;
         }

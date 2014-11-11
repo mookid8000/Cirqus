@@ -21,9 +21,8 @@ namespace d60.Cirqus.MongoDb.Views
         readonly MongoCollection<TViewInstance> _viewCollection;
         readonly MongoCollection<PositionDoc> _positionCollection;
         readonly ViewLocator _viewLocator = ViewLocator.GetLocatorFor<TViewInstance>();
+        readonly Logger _logger = CirqusLoggerFactory.Current.GetCurrentClassLogger();
         readonly string _currentPositionDocId;
-
-        Logger _logger;
 
         long _cachedPosition;
 
@@ -31,8 +30,6 @@ namespace d60.Cirqus.MongoDb.Views
 
         public MongoDbViewManager(MongoDatabase database, string collectionName, string positionCollectionName = null)
         {
-            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
-
             positionCollectionName = positionCollectionName ?? collectionName + "Position";
 
             _viewCollection = database.GetCollection<TViewInstance>(collectionName);

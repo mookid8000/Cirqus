@@ -21,6 +21,7 @@ namespace d60.Cirqus.MsSql.Views
 
         readonly ViewDispatcherHelper<TViewInstance> _dispatcher = new ViewDispatcherHelper<TViewInstance>();
         readonly ViewLocator _viewLocator = ViewLocator.GetLocatorFor<TViewInstance>();
+        readonly Logger _logger = CirqusLoggerFactory.Current.GetCurrentClassLogger();
         readonly string _connectionString;
         readonly string _tableName;
         readonly string _positionTableName;
@@ -32,14 +33,10 @@ namespace d60.Cirqus.MsSql.Views
             new Prop {ColumnName = "Position", SqlDbType = SqlDbType.BigInt},
         };
 
-        Logger _logger;
-
         long _cachedPosition;
 
         public MsSqlViewManager(string connectionStringOrConnectionStringName, string tableName, string positionTableName = null, bool automaticallyCreateSchema = true)
         {
-            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
-
             _connectionString = SqlHelper.GetConnectionString(connectionStringOrConnectionStringName);
             _tableName = tableName;
             _positionTableName = positionTableName ?? tableName + "_Position";
