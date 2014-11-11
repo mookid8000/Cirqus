@@ -156,10 +156,10 @@ namespace d60.Cirqus.TsClient.Model
                 var commandType in
                     _types.Values.Where(t => t.TypeType == TypeType.Command).OrderBy(t => t.FullyQualifiedTsTypeName))
             {
-                builder.AppendLine(string.Format(@"    process{0}(command: {1}) : void {{
+                builder.AppendLine(string.Format(@"    {0}(command: {1}) : void {{
         command[""$type""] = ""{2}"";
         this.invokeCallback(command);
-    }}", commandType.Name.Name, commandType.FullyQualifiedTsTypeName, commandType.AssemblyQualifiedName));
+    }}", ToCamelCase(commandType), commandType.FullyQualifiedTsTypeName, commandType.AssemblyQualifiedName));
 
                 builder.AppendLine();
             }
@@ -179,6 +179,13 @@ namespace d60.Cirqus.TsClient.Model
 }");
 
             return builder.ToString();
+        }
+
+        static string ToCamelCase(TypeDef commandType)
+        {
+            var name = commandType.Name.Name;
+
+            return char.ToLower(name[0]) + name.Substring(1);
         }
 
         public string GetCommandDefinitations()

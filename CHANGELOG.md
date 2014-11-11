@@ -418,5 +418,9 @@ This is a big update that completes the transition to the new, vastly improved v
 * Fixed `Created` that would not fire when creating aggregate roots from within another aggregate root - thanks [asgerhallas]
 * Removed the `Guid` ctor on `Command<>` because it's in the way when using R# to generate ctor in subclasses
 
+## 0.44.1
+
+* Fixed TS Client generator to generate a command processor proxy without the "process" in the names - i.e. a command `DoWhatever` will now yield a `doWhatever` method on the command processor proxy
+
 [asgerhallas]: https://github.com/asgerhallas
 
