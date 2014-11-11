@@ -97,7 +97,9 @@ namespace d60.Cirqus.Tests.Events.Replicator
                     return result;
                 }
 
-                Console.WriteLine("Didn't get any events in the {0}. attempt", attempt);
+                Console.WriteLine("Didn't get any events in the {0}. attempt - sleeping one second", attempt);
+                
+                Thread.Sleep(TimeSpan.FromSeconds(1));
             }
 
             return new List<DomainEvent>();
