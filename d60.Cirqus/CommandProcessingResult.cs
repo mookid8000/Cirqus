@@ -16,21 +16,35 @@ namespace d60.Cirqus
             _newPosition = newPosition;
         }
 
+        /// <summary>
+        /// Constructs a new <see cref="CommandProcessingResult"/> that indicates that no events were emitted
+        /// </summary>
         public static CommandProcessingResult NoEvents()
         {
             return new CommandProcessingResult(null);
         }
 
+        /// <summary>
+        /// Constructs a new <see cref="CommandProcessingResult"/> that indicates that events were emitted, including the global
+        /// sequence number of the last event
+        /// </summary>
         public static CommandProcessingResult WithNewPosition(long newPosition)
         {
             return new CommandProcessingResult(newPosition);
         }
 
+        /// <summary>
+        /// Indicates whether events were emitted
+        /// </summary>
         public bool EventsWereEmitted
         {
             get { return _newPosition.HasValue; }
         }
 
+        /// <summary>
+        /// Returns the global sequence number of the last event that was emitted. If no events were emitted, the number is unknown and
+        /// this method will throw an exception
+        /// </summary>
         public long GetNewPosition()
         {
             if (!_newPosition.HasValue)
@@ -44,8 +58,8 @@ namespace d60.Cirqus
         public override string ToString()
         {
             return EventsWereEmitted 
-                ? string.Format("New position: {0}", _newPosition) 
-                : "No events were emitted";
+                ? string.Format("[NEW POSITION: {0}]", _newPosition) 
+                : "[NEW POSITION: n/a]";
         }
     }
 }
