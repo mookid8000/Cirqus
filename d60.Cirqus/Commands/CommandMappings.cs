@@ -21,22 +21,28 @@ namespace d60.Cirqus.Commands
         class CommandMapperDecorator : ICommandMapper
         {
             readonly ICommandMapper _innerCommandMapper;
-            readonly Dictionary<Type, Action<ICommandContext, Command>> _commandActions;
+            readonly CommandMappings _commandMappings;
 
             public CommandMapperDecorator(ICommandMapper innerCommandMapper, CommandMappings commandMappings)
             {
                 _innerCommandMapper = innerCommandMapper;
-                _commandActions = new Dictionary<Type, Action<ICommandContext, Command>>(commandMappings._commandActions);
+                _commandMappings = commandMappings;
             }
 
             public Action<ICommandContext, Command> GetCommandAction(Command command)
             {
-                Action<ICommandContext, Command> action;
-
-                return _commandActions.TryGetValue(command.GetType(), out action)
-                    ? action
-                    : _innerCommandMapper.GetCommandAction(command);
+                return _commandMappings.GetHandlerFor(command)
+                       ?? _innerCommandMapper.GetCommandAction(command);
             }
+        }
+
+        internal Action<ICommandContext, Command> GetHandlerFor(Command command)
+        {
+            Action<ICommandContext, Command> action;
+
+            return _commandActions.TryGetValue(command.GetType(), out action)
+                ? action
+                : null;
         }
     }
 }

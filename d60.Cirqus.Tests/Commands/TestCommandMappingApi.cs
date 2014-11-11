@@ -5,6 +5,7 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using NUnit.Framework;
+using TestContext = d60.Cirqus.Testing.TestContext;
 
 namespace d60.Cirqus.Tests.Commands
 {
@@ -12,7 +13,8 @@ namespace d60.Cirqus.Tests.Commands
     public class TestCommandMappingApi : FixtureBase
     {
         readonly JsonDomainEventSerializer _serializer = new JsonDomainEventSerializer();
-        ICommandProcessor _commandProcessor;
+        ICommandProcessor _realCommandProcessor;
+        TestContext _fakeCommandProcessor;
 
         protected override void DoSetUp()
         {
@@ -23,18 +25,30 @@ namespace d60.Cirqus.Tests.Commands
                     instance.DoStuff();
                 });
 
-            _commandProcessor = CommandProcessor.With()
+            _realCommandProcessor = CommandProcessor.With()
                 .EventStore(e => e.Registrar.Register<IEventStore>(c => new InMemoryEventStore(_serializer)))
                 .Options(o => o.AddCommandMappings(commandMappings))
                 .Create();
 
-            RegisterForDisposal(_commandProcessor);
+            RegisterForDisposal(_realCommandProcessor);
+
+            _fakeCommandProcessor = new TestContext()
+                .AddCommandMappings(commandMappings);
         }
 
         [Test]
-        public void CanExecuteRawBaseCommand()
+        public void CanExecuteRawBaseCommandWithRealCommandProcessor()
         {
-            _commandProcessor.ProcessCommand(new RawRootCommand
+            _realCommandProcessor.ProcessCommand(new RawRootCommand
+            {
+                AggregateRootId = "hej"
+            });
+        }
+
+        [Test]
+        public void CanExecuteRawBaseCommandWithFakeCommandProcessor()
+        {
+            _fakeCommandProcessor.ProcessCommand(new RawRootCommand
             {
                 AggregateRootId = "hej"
             });

@@ -125,6 +125,7 @@
     <Compile Include="Commands\ICommandMapper.cs" />
     <Compile Include="Testing\Internals\InMemoryEventStore.cs" />
     <Compile Include="Testing\Internals\InMemoryUnitOfWork.cs" />
+    <Compile Include="Testing\TestCommandMapper.cs" />
     <Compile Include="Testing\TestContext.cs" />
     <Compile Include="Testing\TestUnitOfWork.cs" />
     <Compile Include="Views\InMemoryViewEventDispatcher.cs" />
