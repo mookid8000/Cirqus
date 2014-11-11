@@ -34,6 +34,7 @@ many time in parallel, and after some time the consistency of everything is veri
         CommandProcessor _cirqus;
         MongoDatabase _mongoDatabase;
         readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
+        readonly DefaultCommandMapper _commandMapper = new DefaultCommandMapper();
 
         protected override void DoSetUp()
         {
@@ -44,7 +45,7 @@ many time in parallel, and after some time the consistency of everything is veri
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager, _domainEventSerializer);
+            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager, _domainEventSerializer, _commandMapper);
 
             RegisterForDisposal(_cirqus);
         }

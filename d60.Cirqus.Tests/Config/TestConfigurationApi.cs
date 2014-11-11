@@ -31,7 +31,6 @@ namespace d60.Cirqus.Tests.Config
             var commandProcessor = CommandProcessor.With()
                 .Logging(l => l.UseConsole(minLevel: Logger.Level.Warn))
                 .EventStore(e => e.UseMongoDb(database, "Events"))
-                
                 .EventDispatcher(d =>
                 {
                     d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view1"));

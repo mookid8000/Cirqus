@@ -25,6 +25,7 @@ namespace d60.Cirqus.Testing
         readonly CompositeEventDispatcher _eventDispatcher;
         readonly ViewManagerWaitHandle _waitHandle = new ViewManagerWaitHandle();
         readonly List<IViewManager> _addedViews = new List<IViewManager>();
+        readonly ICommandMapper _commandMapper = new DefaultCommandMapper();
         readonly InMemoryEventStore _eventStore;
 
         DateTime _currentTime = DateTime.MinValue;
@@ -57,8 +58,6 @@ namespace d60.Cirqus.Testing
             return this;
         }
 
-        readonly CommandMapper _commandMapper = new CommandMapper();
-
         /// <summary>
         /// Processes the specified command in a unit of work.
         /// </summary>
@@ -66,7 +65,7 @@ namespace d60.Cirqus.Testing
         {
             using (var unitOfWork = BeginUnitOfWork())
             {
-                var handler = _commandMapper.GetHandleFor(command);
+                var handler = _commandMapper.GetCommandAction(command);
 
                 handler(new DefaultCommandContext(unitOfWork.RealUnitOfWork), command);
 

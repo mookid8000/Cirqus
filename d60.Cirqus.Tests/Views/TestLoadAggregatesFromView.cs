@@ -41,7 +41,7 @@ namespace d60.Cirqus.Tests.Views
 
             _eventDispatcher = new ViewManagerEventDispatcher(basicAggregateRootRepository, eventStore, _domainEventSerializer);
 
-            _cirqus = new CommandProcessor(eventStore, basicAggregateRootRepository, _eventDispatcher, _domainEventSerializer);
+            _cirqus = new CommandProcessor(eventStore, basicAggregateRootRepository, _eventDispatcher, _domainEventSerializer, new DefaultCommandMapper());
 
             _cirqus.Initialize();
 

@@ -31,6 +31,7 @@ this time by using actual MongoDB underneath
         DefaultAggregateRootRepository _aggregateRootRepository;
         CommandProcessor _cirqus;
         readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
+        readonly DefaultCommandMapper _commandMapper = new DefaultCommandMapper();
 
         protected override void DoSetUp()
         {
@@ -41,7 +42,7 @@ this time by using actual MongoDB underneath
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager, _domainEventSerializer);
+            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager, _domainEventSerializer, _commandMapper);
 
             RegisterForDisposal(_cirqus);
         }

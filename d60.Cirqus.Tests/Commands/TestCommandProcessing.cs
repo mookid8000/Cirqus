@@ -27,7 +27,7 @@ namespace d60.Cirqus.Tests.Commands
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
 
             _cirqus = RegisterForDisposal(new CommandProcessor(_eventStore, _aggregateRootRepository, eventDispatcher,
-                _domainEventSerializer));
+                _domainEventSerializer, new DefaultCommandMapper()));
         }
 
         [Test]

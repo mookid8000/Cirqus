@@ -32,6 +32,7 @@ namespace d60.Cirqus.Tests.Integration
         DefaultAggregateRootRepository _aggregateRootRepository;
         InMemoryEventStore _eventStore;
         readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
+        readonly DefaultCommandMapper _commandMapper = new DefaultCommandMapper();
 
         protected override void DoSetUp()
         {
@@ -41,7 +42,7 @@ namespace d60.Cirqus.Tests.Integration
 
             var viewManager = new ConsoleOutEventDispatcher();
 
-            _cirqus = new CommandProcessor(_eventStore, _aggregateRootRepository, viewManager, _domainEventSerializer);
+            _cirqus = new CommandProcessor(_eventStore, _aggregateRootRepository, viewManager, _domainEventSerializer, _commandMapper);
 
             RegisterForDisposal(_cirqus);
         }

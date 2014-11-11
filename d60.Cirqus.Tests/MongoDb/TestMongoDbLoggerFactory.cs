@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using d60.Cirqus.Aggregates;
+using d60.Cirqus.Commands;
 using d60.Cirqus.Logging;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.MongoDb.Logging;
@@ -15,6 +16,7 @@ namespace d60.Cirqus.Tests.MongoDb
     {
         MongoDatabase _database;
         readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
+        readonly DefaultCommandMapper _commandMapper = new DefaultCommandMapper();
 
         protected override void DoSetUp()
         {
@@ -29,7 +31,7 @@ namespace d60.Cirqus.Tests.MongoDb
             var eventStore = new MongoDbEventStore(_database, "events");
             var aggregateRootRepository = new DefaultAggregateRootRepository(eventStore, _domainEventSerializer);
             var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, new ConsoleOutEventDispatcher(),
-                _domainEventSerializer);
+                _domainEventSerializer, _commandMapper);
             
             RegisterForDisposal(commandProcessor);
             

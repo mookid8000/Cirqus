@@ -1,5 +1,6 @@
 ﻿using System;
 using d60.Cirqus.Aggregates;
+using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.MsSql.Events;
@@ -29,7 +30,7 @@ namespace d60.Cirqus.Tests.Integration
             var eventStore = GetEventStore(eventStoreOption);
 
             var commandProcessor = new CommandProcessor(eventStore, new DefaultAggregateRootRepository(eventStore, _domainEventSerializer), new ConsoleOutEventDispatcher(),
-                _domainEventSerializer);
+                _domainEventSerializer, new DefaultCommandMapper());
 
             RegisterForDisposal(commandProcessor);
 

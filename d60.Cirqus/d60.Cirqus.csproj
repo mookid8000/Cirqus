@@ -118,9 +118,10 @@
     <Compile Include="Serialization\BinaryDomainEventSerializer.cs" />
     <Compile Include="Serialization\IDomainEventSerializer.cs" />
     <Compile Include="Serialization\MetadataSerializer.cs" />
-    <Compile Include="Testing\CommandMapper.cs" />
+    <Compile Include="Commands\DefaultCommandMapper.cs" />
     <Compile Include="Testing\CommandProcessingResultWithEvents.cs" />
     <Compile Include="Testing\EventCollection.cs" />
+    <Compile Include="Commands\ICommandMapper.cs" />
     <Compile Include="Testing\Internals\InMemoryEventStore.cs" />
     <Compile Include="Testing\Internals\InMemoryUnitOfWork.cs" />
     <Compile Include="Testing\TestContext.cs" />

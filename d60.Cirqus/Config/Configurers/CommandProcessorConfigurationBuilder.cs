@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using d60.Cirqus.Aggregates;
+using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Serialization;
@@ -63,8 +64,9 @@ namespace d60.Cirqus.Config.Configurers
             var aggregateRootRepository = resolutionContext.Get<IAggregateRootRepository>();
             var eventDispatcher = resolutionContext.Get<IEventDispatcher>();
             var serializer = resolutionContext.Get<IDomainEventSerializer>();
+            var commandMapper = resolutionContext.Get<ICommandMapper>();
 
-            var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher, serializer);
+            var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher, serializer, commandMapper);
 
             commandProcessor.Disposed += () =>
             {
@@ -102,6 +104,11 @@ namespace d60.Cirqus.Config.Configurers
             if (!_container.HasService<IEventDispatcher>(checkForPrimary: true))
             {
                 _container.Register<IEventDispatcher>(context => new NullEventDispatcher());
+            }
+
+            if (!_container.HasService<ICommandMapper>(checkForPrimary: true))
+            {
+                _container.Register<ICommandMapper>(context => new DefaultCommandMapper());
             }
         }
     }

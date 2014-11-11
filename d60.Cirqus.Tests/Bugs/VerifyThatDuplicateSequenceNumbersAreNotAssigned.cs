@@ -23,7 +23,7 @@ namespace d60.Cirqus.Tests.Bugs
             // arrange
             var eventStore = new MongoDbEventStore(MongoHelper.InitializeTestDatabase(), "events");
             var commandProcessor = new CommandProcessor(eventStore, new DefaultAggregateRootRepository(eventStore, _domainEventSerializer), new ConsoleOutEventDispatcher(),
-                _domainEventSerializer);
+                _domainEventSerializer, new DefaultCommandMapper());
 
             RegisterForDisposal(commandProcessor);
 

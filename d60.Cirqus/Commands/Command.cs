@@ -7,7 +7,7 @@ namespace d60.Cirqus.Commands
 {
     /// <summary>
     /// Ultimate command base class. When you use this class to create your commands, you need to provide
-    /// an action mapping on the current <see cref="CommandMapper"/>. Use <see cref="ExecutableCommand"/>
+    /// an action mapping on the current <see cref="DefaultCommandMapper"/>. Use <see cref="ExecutableCommand"/>
     /// if you want to skip the action mapping and provide an executable command, or <see cref="Command{TAggregateRoot}"/> 
     /// if you intend to address one single aggregate root instance only (which you probably should in most cases)
     /// </summary>

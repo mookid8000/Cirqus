@@ -442,7 +442,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
             var processor = new CommandProcessor(
                 _eventStore, new DefaultAggregateRootRepository(_eventStore, serializer),
-                new ConsoleOutEventDispatcher(), serializer);
+                new ConsoleOutEventDispatcher(), serializer, new DefaultCommandMapper());
 
             RegisterForDisposal(processor);
 

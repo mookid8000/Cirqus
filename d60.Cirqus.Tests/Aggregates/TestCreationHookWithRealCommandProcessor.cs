@@ -20,7 +20,7 @@ namespace d60.Cirqus.Tests.Aggregates
         {
             _eventStore = new InMemoryEventStore(_domainEventSerializer);
             var aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
-            _commandProcessor = new CommandProcessor(_eventStore, aggregateRootRepository, new ConsoleOutEventDispatcher(), _domainEventSerializer);
+            _commandProcessor = new CommandProcessor(_eventStore, aggregateRootRepository, new ConsoleOutEventDispatcher(), _domainEventSerializer, new DefaultCommandMapper());
             RegisterForDisposal(_commandProcessor);
         }
 
