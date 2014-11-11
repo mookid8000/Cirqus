@@ -41,17 +41,11 @@ namespace d60.Cirqus.Tests.Events.Replicator
         [Test]
         public void CanReplicateEventBatch()
         {
-            _source.Save(Guid.NewGuid(), new[]
-            {
-                CreateNewEvent(Guid.NewGuid(), "hej")
-            }.Select(e => _serializer.Serialize(e)));
+            _source.Save(Guid.NewGuid(), GetEventData("hej"));
 
             Thread.Sleep(1000);
 
-            var allEventsInDestinationStore = _destination
-                .Stream()
-                .Select(e => _serializer.Deserialize(e))
-                .ToList();
+            var allEventsInDestinationStore = GetAllEventsInDestinationStore();
 
             Assert.That(allEventsInDestinationStore.Count, Is.EqualTo(1));
 
@@ -67,13 +61,12 @@ namespace d60.Cirqus.Tests.Events.Replicator
             var batchId1 = Guid.NewGuid();
             var batchId2 = Guid.NewGuid();
 
-            _source.Save(batchId1, new[] { CreateNewEvent(Guid.NewGuid(), "hej") }.Select(e => _serializer.Serialize(e)));
-            _source.Save(batchId2, new[] { CreateNewEvent(Guid.NewGuid(), "hej"), CreateNewEvent(Guid.NewGuid(), "hej") }.Select(e => _serializer.Serialize(e)));
+            _source.Save(batchId1, GetEventData("hej"));
+            _source.Save(batchId2, GetEventData("hej", "hej"));
 
             Thread.Sleep(1000);
 
-            var myKindOfEvents = _destination.Stream()
-                .Select(e => _serializer.Deserialize(e))
+            var myKindOfEvents = GetAllEventsInDestinationStore()
                 .OfType<Event>()
                 .ToList();
 
@@ -86,6 +79,36 @@ namespace d60.Cirqus.Tests.Events.Replicator
             };
 
             Assert.That(myKindOfEvents.Select(e => e.Meta[EventReplicator.SourceEventBatchId]).ToArray(), Is.EqualTo(expectedSourceBatchIds));
+        }
+
+        List<DomainEvent> GetAllEventsInDestinationStore()
+        {
+            var attempt = 0;
+
+            while (attempt++ < 3)
+            {
+                var result = _destination
+                    .Stream()
+                    .Select(e => _serializer.Deserialize(e))
+                    .ToList();
+
+                if (result.Any())
+                {
+                    return result;
+                }
+
+                Console.WriteLine("Didn't get any events in the {0}. attempt", attempt);
+            }
+
+            return new List<DomainEvent>();
+        }
+
+        IEnumerable<EventData> GetEventData(params string[] data)
+        {
+            return data
+                .Select(str => CreateNewEvent(Guid.NewGuid(), str))
+                .Select(e => _serializer.Serialize(e))
+                .ToArray();
         }
 
 
