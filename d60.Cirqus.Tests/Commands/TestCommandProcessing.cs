@@ -26,8 +26,15 @@ namespace d60.Cirqus.Tests.Commands
 
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
 
+            var commandMapper = new CommandMappings()
+                .Map<CustomMappedErronousCommand>((context, command) =>
+                {
+                    throw new InvalidOperationException("oh no, you cannot do that");
+                })
+                .CreateCommandMapperDecorator(new DefaultCommandMapper());
+
             _cirqus = RegisterForDisposal(new CommandProcessor(_eventStore, _aggregateRootRepository, eventDispatcher,
-                _domainEventSerializer, new DefaultCommandMapper()));
+                _domainEventSerializer, commandMapper));
         }
 
         [Test]
@@ -83,6 +90,19 @@ namespace d60.Cirqus.Tests.Commands
         }
 
         [Test]
+        public void CanLetSpecificExceptionTypesThroughAlsoWhenUsingCustomMappedCommands()
+        {
+            _cirqus.Options.AddDomainExceptionType<InvalidOperationException>();
+
+            var unwrappedException = Assert.Throws<InvalidOperationException>(() => _cirqus.ProcessCommand(new CustomMappedErronousCommand()));
+
+            Console.WriteLine(unwrappedException);
+
+            Assert.That(unwrappedException, Is.TypeOf<InvalidOperationException>());
+            Assert.That(unwrappedException.Message, Contains.Substring("oh no, you cannot do that"));
+        }
+
+        [Test]
         public void GeneratesPrettyException()
         {
             var appEx = Assert.Throws<CommandProcessingException>(() => _cirqus.ProcessCommand(new ErronousCommand("someid1")));
@@ -106,6 +126,10 @@ namespace d60.Cirqus.Tests.Commands
             {
                 throw new InvalidOperationException("oh no, you cannot do that");
             }
+        }
+
+        class CustomMappedErronousCommand : Command
+        {
         }
 
         [Test]
