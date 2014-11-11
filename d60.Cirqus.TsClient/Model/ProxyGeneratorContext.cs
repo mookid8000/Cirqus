@@ -145,7 +145,7 @@ namespace d60.Cirqus.TsClient.Model
         this.processCommandCallback = processCommandCallback;
     }
 
-    generateId() : Guid {
+    public static newGuid() : Guid {
         var guid = (this.g() + this.g() + ""-"" + this.g() + ""-"" + this.g() + ""-"" + this.g() + ""-"" + this.g() + this.g() + this.g());
         
         return guid.toUpperCase();
@@ -156,7 +156,7 @@ namespace d60.Cirqus.TsClient.Model
                 var commandType in
                     _types.Values.Where(t => t.TypeType == TypeType.Command).OrderBy(t => t.FullyQualifiedTsTypeName))
             {
-                builder.AppendLine(string.Format(@"    {0}(command: {1}) : void {{
+                builder.AppendLine(string.Format(@"    public {0}(command: {1}) : void {{
         command[""$type""] = ""{2}"";
         this.invokeCallback(command);
     }}", ToCamelCase(commandType), commandType.FullyQualifiedTsTypeName, commandType.AssemblyQualifiedName));
