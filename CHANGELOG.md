@@ -426,5 +426,9 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Removed some accidental `Console.WriteLine` in `ViewManagerEventDispatcher` and `HandlerViewLocator`
 
+## 0.45.0
+
+* Re-introduced the command mapper concept, making `Command` the ultimate base class of all commands (which must be explicitly mapped using the command mapper API) - use either `ExecutableCommand` or the generic `Command<TAggregateRoot>` to supply the command action as part of the command
+
 [asgerhallas]: https://github.com/asgerhallas
 
