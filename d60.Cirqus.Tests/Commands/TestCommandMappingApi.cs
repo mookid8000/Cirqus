@@ -23,6 +23,19 @@ namespace d60.Cirqus.Tests.Commands
                 {
                     var instance = context.Load<Root>(command.AggregateRootId, createIfNotExists: true);
                     instance.DoStuff();
+                })
+                .Map<AnotherRawRootCommand>((context, command) =>
+                {
+                    context
+                        .Load<Root>(command.AggregateRootId, createIfNotExists: true)
+                        .DoStuff()
+                        .DoStuff();
+
+                    context
+                        .Load<Root>(command.AggregateRootId + "w00t!", createIfNotExists: true)
+                        .DoStuff()
+                        .DoStuff()
+                        .DoStuff();
                 });
 
             _realCommandProcessor = CommandProcessor.With()
@@ -43,12 +56,22 @@ namespace d60.Cirqus.Tests.Commands
             {
                 AggregateRootId = "hej"
             });
+
+            _realCommandProcessor.ProcessCommand(new AnotherRawRootCommand
+            {
+                AggregateRootId = "hej"
+            });
         }
 
         [Test]
         public void CanExecuteRawBaseCommandWithFakeCommandProcessor()
         {
             _fakeCommandProcessor.ProcessCommand(new RawRootCommand
+            {
+                AggregateRootId = "hej"
+            });
+
+            _fakeCommandProcessor.ProcessCommand(new AnotherRawRootCommand
             {
                 AggregateRootId = "hej"
             });
@@ -59,11 +82,17 @@ namespace d60.Cirqus.Tests.Commands
             public string AggregateRootId { get; set; }
         }
 
+        public class AnotherRawRootCommand : Command
+        {
+            public string AggregateRootId { get; set; }
+        }
+
         public class Root : AggregateRoot, IEmit<Event>
         {
-            public void DoStuff()
+            public Root DoStuff()
             {
                 Emit(new Event());
+                return this;
             }
 
             public void Apply(Event e)
