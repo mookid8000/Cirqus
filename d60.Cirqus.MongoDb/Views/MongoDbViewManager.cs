@@ -138,7 +138,7 @@ namespace d60.Cirqus.MongoDb.Views
 
                 foreach (var viewId in viewIds)
                 {
-                    var viewInstance = GetOrCreateViewInstance(viewId, cachedViewInstances);
+                    var viewInstance = cachedViewInstances[viewId] = GetOrCreateViewInstance(viewId, cachedViewInstances);
 
                     _dispatcherHelper.DispatchToView(viewContext, e, viewInstance);
                 }
@@ -172,8 +172,6 @@ namespace d60.Cirqus.MongoDb.Views
 
             instanceToReturn = _viewCollection.FindOneById(viewId)
                                ?? _dispatcherHelper.CreateNewInstance(viewId);
-
-            cachedViewInstances[viewId] = instanceToReturn;
 
             return instanceToReturn;
         }
