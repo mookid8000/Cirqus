@@ -65,7 +65,7 @@ namespace d60.Cirqus.Config.Configurers
             var eventDispatcher = resolutionContext.Get<IEventDispatcher>();
             var serializer = resolutionContext.Get<IDomainEventSerializer>();
             var commandMapper = resolutionContext.Get<ICommandMapper>();
-            var domainTypeMapper = resolutionContext.Get<IDomainTypeMapper>();
+            var domainTypeMapper = resolutionContext.Get<IDomainTypeNameMapper>();
 
             var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher, serializer, commandMapper, domainTypeMapper);
 
@@ -120,9 +120,9 @@ namespace d60.Cirqus.Config.Configurers
                 _container.Register<ICommandMapper>(context => new DefaultCommandMapper());
             }
 
-            if (!_container.HasService<IDomainTypeMapper>(checkForPrimary: true))
+            if (!_container.HasService<IDomainTypeNameMapper>(checkForPrimary: true))
             {
-                _container.Register<IDomainTypeMapper>(context => new DefaultDomainTypeMapper());
+                _container.Register<IDomainTypeNameMapper>(context => new DefaultDomainTypeNameMapper());
             }
         }
     }

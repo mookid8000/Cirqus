@@ -21,7 +21,7 @@ namespace d60.Cirqus.Testing
     public class TestContext : IDisposable
     {
         readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer("<events>");
-        readonly DefaultDomainTypeMapper _domainTypeMapper = new DefaultDomainTypeMapper();
+        readonly DefaultDomainTypeNameMapper _domainTypeNameMapper = new DefaultDomainTypeNameMapper();
         readonly DefaultAggregateRootRepository _aggregateRootRepository;
         readonly ViewManagerEventDispatcher _viewManagerEventDispatcher;
         readonly CompositeEventDispatcher _eventDispatcher;
@@ -37,7 +37,7 @@ namespace d60.Cirqus.Testing
         {
             _eventStore = new InMemoryEventStore(_domainEventSerializer);
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
-            _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore, _domainEventSerializer, _domainTypeMapper);
+            _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore, _domainEventSerializer, _domainTypeNameMapper);
             _waitHandle.Register(_viewManagerEventDispatcher);
             _eventDispatcher = new CompositeEventDispatcher(_viewManagerEventDispatcher);
         }
@@ -104,7 +104,7 @@ namespace d60.Cirqus.Testing
         {
             EnsureInitialized();
 
-            var unitOfWork = new TestUnitOfWork(_aggregateRootRepository, _eventStore, _eventDispatcher, _domainEventSerializer, _domainTypeMapper);
+            var unitOfWork = new TestUnitOfWork(_aggregateRootRepository, _eventStore, _eventDispatcher, _domainEventSerializer, _domainTypeNameMapper);
 
             unitOfWork.Committed += () =>
             {
@@ -151,7 +151,7 @@ namespace d60.Cirqus.Testing
 
                         if (type == null) return null;
 
-                        var unitOfWork = new RealUnitOfWork(_aggregateRootRepository, _domainTypeMapper);
+                        var unitOfWork = new RealUnitOfWork(_aggregateRootRepository, _domainTypeNameMapper);
 
                         var parameters = new object[]
                         {
@@ -184,8 +184,7 @@ namespace d60.Cirqus.Testing
         {
             try
             {
-                return _domainTypeMapper.GetType(typeName);
-
+                return _domainTypeNameMapper.GetType(typeName);
             }
             catch
             {
@@ -300,8 +299,8 @@ Current view positions:
 
             domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId] = aggregateRootId;
             domainEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber] = _eventStore.GetNextSeqNo(aggregateRootId).ToString(Metadata.NumberCulture);
-            domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = _domainTypeMapper.GetName(typeof(TAggregateRoot));
-            domainEvent.Meta[DomainEvent.MetadataKeys.Type] = _domainTypeMapper.GetName(domainEvent.GetType());
+            domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = _domainTypeNameMapper.GetName(typeof(TAggregateRoot));
+            domainEvent.Meta[DomainEvent.MetadataKeys.Type] = _domainTypeNameMapper.GetName(domainEvent.GetType());
             domainEvent.Meta[DomainEvent.MetadataKeys.TimeUtc] = now.ToString("u");
 
             domainEvent.Meta.TakeFromAttributes(domainEvent.GetType());

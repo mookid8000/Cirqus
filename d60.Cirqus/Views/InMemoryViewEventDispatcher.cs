@@ -20,7 +20,7 @@ namespace d60.Cirqus.Views
     {
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IDomainEventSerializer _domainEventSerializer;
-        readonly IDomainTypeMapper _domainTypeMapper;
+        readonly IDomainTypeNameMapper _domainTypeNameMapper;
         readonly ConcurrentDictionary<string, TViewInstance> _views = new ConcurrentDictionary<string, TViewInstance>();
         readonly ViewDispatcherHelper<TViewInstance> _dispatcher = new ViewDispatcherHelper<TViewInstance>();
         readonly ViewLocator _viewLocator = ViewLocator.GetLocatorFor<TViewInstance>();
@@ -28,11 +28,11 @@ namespace d60.Cirqus.Views
 
         bool _stopped;
 
-        public InMemoryViewEventDispatcher(IAggregateRootRepository aggregateRootRepository, IDomainEventSerializer domainEventSerializer, IDomainTypeMapper domainTypeMapper)
+        public InMemoryViewEventDispatcher(IAggregateRootRepository aggregateRootRepository, IDomainEventSerializer domainEventSerializer, IDomainTypeNameMapper domainTypeNameMapper)
         {
             _aggregateRootRepository = aggregateRootRepository;
             _domainEventSerializer = domainEventSerializer;
-            _domainTypeMapper = domainTypeMapper;
+            _domainTypeNameMapper = domainTypeNameMapper;
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace d60.Cirqus.Views
 
             try
             {
-                var viewContext = new DefaultViewContext(_aggregateRootRepository, _domainTypeMapper);
+                var viewContext = new DefaultViewContext(_aggregateRootRepository, _domainTypeNameMapper);
 
                 foreach (var e in events)
                 {

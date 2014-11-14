@@ -17,15 +17,15 @@ namespace d60.Cirqus.Tests.Integration
     {
         ICommandProcessor _commandProcessor;
         Task<InMemoryEventStore> _eventStore;
-        MyNameMapper _nameMapper;
+        MyNameNameMapper _nameNameMapper;
 
         protected override void DoSetUp()
         {
-            _nameMapper = new MyNameMapper();
+            _nameNameMapper = new MyNameNameMapper();
 
             _commandProcessor = CommandProcessor.With()
                 .EventStore(e => _eventStore = e.UseInMemoryEventStore())
-                .Options(o => o.UseCustomAggregateRootTypeMapper(_nameMapper))
+                .Options(o => o.UseCustomDomainTypeNameMapper(_nameNameMapper))
                 .Create();
 
             RegisterForDisposal(_commandProcessor);
@@ -37,8 +37,8 @@ namespace d60.Cirqus.Tests.Integration
             const string eventAlias = "customizzle event nizzle ";
             const string rootAlias = "customizzle aggregizzle nizlledizzle";
 
-            _nameMapper.AddAlias<OneRoot>(rootAlias);
-            _nameMapper.AddAlias<OneEvent>(eventAlias);
+            _nameNameMapper.AddAlias<OneRoot>(rootAlias);
+            _nameNameMapper.AddAlias<OneEvent>(eventAlias);
 
             var command = new GenericCommand(context =>
             {
@@ -84,7 +84,7 @@ namespace d60.Cirqus.Tests.Integration
         }
     }
 
-    public class MyNameMapper : IDomainTypeMapper
+    public class MyNameNameMapper : IDomainTypeNameMapper
     {
         readonly ConcurrentDictionary<string, Type> _aliasToType = new ConcurrentDictionary<string, Type>();
         readonly ConcurrentDictionary<Type, string> _typeToAlias = new ConcurrentDictionary<Type, string>();

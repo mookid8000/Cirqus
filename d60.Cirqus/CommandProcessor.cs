@@ -41,23 +41,23 @@ namespace d60.Cirqus
         readonly IEventDispatcher _eventDispatcher;
         readonly IDomainEventSerializer _domainEventSerializer;
         readonly ICommandMapper _commandMapper;
-        readonly IDomainTypeMapper _domainTypeMapper;
+        readonly IDomainTypeNameMapper _domainTypeNameMapper;
 
-        public CommandProcessor(IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, IEventDispatcher eventDispatcher, IDomainEventSerializer domainEventSerializer, ICommandMapper commandMapper, IDomainTypeMapper domainTypeMapper)
+        public CommandProcessor(IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, IEventDispatcher eventDispatcher, IDomainEventSerializer domainEventSerializer, ICommandMapper commandMapper, IDomainTypeNameMapper domainTypeNameMapper)
         {
             if (eventStore == null) throw new ArgumentNullException("eventStore");
             if (aggregateRootRepository == null) throw new ArgumentNullException("aggregateRootRepository");
             if (eventDispatcher == null) throw new ArgumentNullException("eventDispatcher");
             if (domainEventSerializer == null) throw new ArgumentNullException("domainEventSerializer");
             if (commandMapper == null) throw new ArgumentNullException("commandMapper");
-            if (domainTypeMapper == null) throw new ArgumentNullException("domainTypeMapper");
+            if (domainTypeNameMapper == null) throw new ArgumentNullException("domainTypeNameMapper");
 
             _eventStore = eventStore;
             _aggregateRootRepository = aggregateRootRepository;
             _eventDispatcher = eventDispatcher;
             _domainEventSerializer = domainEventSerializer;
             _commandMapper = commandMapper;
-            _domainTypeMapper = domainTypeMapper;
+            _domainTypeNameMapper = domainTypeNameMapper;
         }
 
         /// <summary>
@@ -146,7 +146,7 @@ namespace d60.Cirqus
 
         IEnumerable<DomainEvent> InnerProcessCommand(Command command)
         {
-            var unitOfWork = new RealUnitOfWork(_aggregateRootRepository, _domainTypeMapper);
+            var unitOfWork = new RealUnitOfWork(_aggregateRootRepository, _domainTypeNameMapper);
 
             var handler = _commandMapper.GetCommandAction(command);
             

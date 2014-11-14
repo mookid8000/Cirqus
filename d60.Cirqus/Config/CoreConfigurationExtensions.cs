@@ -57,7 +57,7 @@ namespace d60.Cirqus.Config
                 context.Get<IAggregateRootRepository>(), 
                 context.Get<IEventStore>(), 
                 context.Get<IDomainEventSerializer>(),
-                context.Get<IDomainTypeMapper>(),
+                context.Get<IDomainTypeNameMapper>(),
                 viewManagers));
         }
 
@@ -74,7 +74,7 @@ namespace d60.Cirqus.Config
                     context.Get<IAggregateRootRepository>(),
                     context.Get<IEventStore>(),
                     context.Get<IDomainEventSerializer>(),
-                    context.Get<IDomainTypeMapper>(),
+                    context.Get<IDomainTypeNameMapper>(),
                     viewManagers);
 
                 waitHandle.Register(eventDispatcher);
@@ -126,11 +126,11 @@ namespace d60.Cirqus.Config
         }
 
         /// <summary>
-        /// Registers the given type mapper to be used instead of the default <see cref="DefaultDomainTypeMapper"/>
+        /// Registers the given type name mapper to be used instead of the default <see cref="DefaultDomainTypeNameMapper"/>
         /// </summary>
-        public static void UseCustomAggregateRootTypeMapper(this OptionsConfigurationBuilder builder, IDomainTypeMapper domainTypeMapper)
+        public static void UseCustomDomainTypeNameMapper(this OptionsConfigurationBuilder builder, IDomainTypeNameMapper domainTypeNameMapper)
         {
-            builder.Registrar.RegisterInstance(domainTypeMapper);
+            builder.Registrar.RegisterInstance(domainTypeNameMapper);
         }
 
         /// <summary>

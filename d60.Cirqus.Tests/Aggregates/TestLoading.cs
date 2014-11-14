@@ -36,7 +36,7 @@ namespace d60.Cirqus.Tests.Aggregates
 
         static InMemoryUnitOfWork GetUnitOfWork()
         {
-            return new InMemoryUnitOfWork(new DefaultAggregateRootRepository(new InMemoryEventStore(DomainEventSerializer), DomainEventSerializer), new DefaultDomainTypeMapper());
+            return new InMemoryUnitOfWork(new DefaultAggregateRootRepository(new InMemoryEventStore(DomainEventSerializer), DomainEventSerializer), new DefaultDomainTypeNameMapper());
         }
 
 

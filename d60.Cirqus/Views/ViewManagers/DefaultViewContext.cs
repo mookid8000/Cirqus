@@ -15,11 +15,11 @@ namespace d60.Cirqus.Views.ViewManagers
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly RealUnitOfWork _realUnitOfWork;
 
-        public DefaultViewContext(IAggregateRootRepository aggregateRootRepository, IDomainTypeMapper domainTypeMapper)
+        public DefaultViewContext(IAggregateRootRepository aggregateRootRepository, IDomainTypeNameMapper domainTypeNameMapper)
         {
             _aggregateRootRepository = aggregateRootRepository;
 
-            _realUnitOfWork = new RealUnitOfWork(_aggregateRootRepository, domainTypeMapper);
+            _realUnitOfWork = new RealUnitOfWork(_aggregateRootRepository, domainTypeNameMapper);
         }
 
         public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()

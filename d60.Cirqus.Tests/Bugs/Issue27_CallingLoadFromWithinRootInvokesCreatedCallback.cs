@@ -51,7 +51,7 @@ namespace d60.Cirqus.Tests.Bugs
         static InMemoryUnitOfWork GetUnitOfWork()
         {
             var serializer = new JsonDomainEventSerializer();
-            var mapper = new DefaultDomainTypeMapper();
+            var mapper = new DefaultDomainTypeNameMapper();
             var eventStore = new InMemoryEventStore(serializer);
             var repository = new DefaultAggregateRootRepository(eventStore, serializer);
             return new InMemoryUnitOfWork(repository, mapper);

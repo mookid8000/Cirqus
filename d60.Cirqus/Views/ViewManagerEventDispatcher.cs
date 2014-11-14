@@ -34,7 +34,7 @@ namespace d60.Cirqus.Views
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventStore _eventStore;
         readonly IDomainEventSerializer _domainEventSerializer;
-        readonly IDomainTypeMapper _domainTypeMapper;
+        readonly IDomainTypeNameMapper _domainTypeNameMapper;
 
         readonly Timer _automaticCatchUpTimer = new Timer();
         readonly Thread _worker;
@@ -44,18 +44,18 @@ namespace d60.Cirqus.Views
         TimeSpan _automaticCatchUpInterval = TimeSpan.FromSeconds(1);
         long _sequenceNumberToCatchUpTo = -1;
 
-        public ViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IDomainEventSerializer domainEventSerializer, IDomainTypeMapper domainTypeMapper, params IViewManager[] viewManagers)
+        public ViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IDomainEventSerializer domainEventSerializer, IDomainTypeNameMapper domainTypeNameMapper, params IViewManager[] viewManagers)
         {
             if (aggregateRootRepository == null) throw new ArgumentNullException("aggregateRootRepository");
             if (eventStore == null) throw new ArgumentNullException("eventStore");
             if (domainEventSerializer == null) throw new ArgumentNullException("domainEventSerializer");
-            if (domainTypeMapper == null) throw new ArgumentNullException("domainTypeMapper");
+            if (domainTypeNameMapper == null) throw new ArgumentNullException("domainTypeNameMapper");
             if (viewManagers == null) throw new ArgumentNullException("viewManagers");
             
             _aggregateRootRepository = aggregateRootRepository;
             _eventStore = eventStore;
             _domainEventSerializer = domainEventSerializer;
-            _domainTypeMapper = domainTypeMapper;
+            _domainTypeNameMapper = domainTypeNameMapper;
 
             viewManagers.ToList().ForEach(view => _viewManagers.Enqueue(view));
 
@@ -195,7 +195,7 @@ namespace d60.Cirqus.Views
 
             foreach (var batch in eventStore.Stream(sequenceNumberToReplayFrom).Batch(MaxDomainEventsPerBatch))
             {
-                var context = new DefaultViewContext(_aggregateRootRepository, _domainTypeMapper);
+                var context = new DefaultViewContext(_aggregateRootRepository, _domainTypeNameMapper);
                 var list = batch.ToList();
 
                 foreach (var viewManager in viewManagers)

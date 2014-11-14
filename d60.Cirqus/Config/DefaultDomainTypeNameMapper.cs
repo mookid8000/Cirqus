@@ -2,7 +2,7 @@
 
 namespace d60.Cirqus.Config
 {
-    public class DefaultDomainTypeMapper : IDomainTypeMapper
+    public class DefaultDomainTypeNameMapper : IDomainTypeNameMapper
     {
         public Type GetType(string name)
         {

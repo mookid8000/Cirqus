@@ -18,12 +18,12 @@ namespace d60.Cirqus.Testing
 
         bool _wasCommitted;
 
-        internal TestUnitOfWork(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IEventDispatcher eventDispatcher, JsonDomainEventSerializer domainEventSerializer, IDomainTypeMapper domainTypeMapper)
+        internal TestUnitOfWork(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IEventDispatcher eventDispatcher, JsonDomainEventSerializer domainEventSerializer, IDomainTypeNameMapper domainTypeNameMapper)
         {
             _eventStore = eventStore;
             _eventDispatcher = eventDispatcher;
             _domainEventSerializer = domainEventSerializer;
-            _realUnitOfWork = new RealUnitOfWork(aggregateRootRepository, domainTypeMapper);
+            _realUnitOfWork = new RealUnitOfWork(aggregateRootRepository, domainTypeNameMapper);
         }
 
         internal RealUnitOfWork RealUnitOfWork

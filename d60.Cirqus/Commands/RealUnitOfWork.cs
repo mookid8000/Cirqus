@@ -14,15 +14,15 @@ namespace d60.Cirqus.Commands
     public class RealUnitOfWork : IUnitOfWork
     {
         readonly IAggregateRootRepository _aggregateRootRepository;
-        readonly IDomainTypeMapper _typeMapper;
+        readonly IDomainTypeNameMapper _typeNameMapper;
 
         protected readonly List<DomainEvent> Events = new List<DomainEvent>();
         protected readonly Dictionary<long, Dictionary<string, AggregateRoot>> CachedAggregateRoots = new Dictionary<long, Dictionary<string, AggregateRoot>>();
 
-        public RealUnitOfWork(IAggregateRootRepository aggregateRootRepository, IDomainTypeMapper typeMapper)
+        public RealUnitOfWork(IAggregateRootRepository aggregateRootRepository, IDomainTypeNameMapper typeNameMapper)
         {
             _aggregateRootRepository = aggregateRootRepository;
-            _typeMapper = typeMapper;
+            _typeNameMapper = typeNameMapper;
         }
 
         public IEnumerable<DomainEvent> EmittedEvents
@@ -32,8 +32,8 @@ namespace d60.Cirqus.Commands
 
         public void AddEmittedEvent<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
         {
-            e.Meta[DomainEvent.MetadataKeys.Owner] = _typeMapper.GetName(typeof (TAggregateRoot));
-            e.Meta[DomainEvent.MetadataKeys.Type] = _typeMapper.GetName(e.GetType());
+            e.Meta[DomainEvent.MetadataKeys.Owner] = _typeNameMapper.GetName(typeof (TAggregateRoot));
+            e.Meta[DomainEvent.MetadataKeys.Type] = _typeNameMapper.GetName(e.GetType());
 
             Events.Add(e);
         }

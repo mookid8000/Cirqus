@@ -46,9 +46,9 @@
     <Compile Include="Aggregates\AggregateRoot.cs" />
     <Compile Include="Aggregates\AggregateRootInfo.cs" />
     <Compile Include="Aggregates\DefaultAggregateRootRepository.cs" />
-    <Compile Include="Config\DefaultDomainTypeMapper.cs" />
+    <Compile Include="Config\DefaultDomainTypeNameMapper.cs" />
     <Compile Include="Aggregates\IAggregateRootRepository.cs" />
-    <Compile Include="Config\IDomainTypeMapper.cs" />
+    <Compile Include="Config\IDomainTypeNameMapper.cs" />
     <Compile Include="Aggregates\ReplayState.cs" />
     <Compile Include="CommandProcessingResult.cs" />
     <Compile Include="Commands\CommandMappings.cs" />

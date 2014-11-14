@@ -42,7 +42,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
                     var repository = r.Get<IAggregateRootRepository>();
                     var eventStore = r.Get<IEventStore>();
                     var serializer = r.Get<IDomainEventSerializer>();
-                    var typeMapper = r.Get<IDomainTypeMapper>();
+                    var typeMapper = r.Get<IDomainTypeNameMapper>();
 
                     _dispatcher = new ViewManagerEventDispatcher(repository, eventStore, serializer, typeMapper);
 

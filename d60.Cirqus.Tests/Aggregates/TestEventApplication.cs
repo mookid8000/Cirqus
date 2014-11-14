@@ -85,7 +85,7 @@ namespace d60.Cirqus.Tests.Aggregates
             var timeForNextEvent = timeForFirstEvent.AddMilliseconds(2);
 
             var aggregateRootRepository = CreateAggregateRootRepository();
-            var eventCollector = new InMemoryUnitOfWork(aggregateRootRepository, new DefaultDomainTypeMapper());
+            var eventCollector = new InMemoryUnitOfWork(aggregateRootRepository, new DefaultDomainTypeNameMapper());
 
             var someAggregate = new SomeAggregate
             {
