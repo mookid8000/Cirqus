@@ -9,7 +9,7 @@ namespace d60.Cirqus.Tests.Aggregates
     [TestFixture]
     public class TestLoading : FixtureBase
     {
-        static readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
+        static readonly JsonDomainEventSerializer DomainEventSerializer = new JsonDomainEventSerializer();
 
         [Test]
         public void DefaultsToThrowingIfLoadedAggregateRootCannotBeFound()
@@ -35,7 +35,7 @@ namespace d60.Cirqus.Tests.Aggregates
 
         static InMemoryUnitOfWork GetUnitOfWork()
         {
-            return new InMemoryUnitOfWork(new DefaultAggregateRootRepository(new InMemoryEventStore(_domainEventSerializer), _domainEventSerializer));
+            return new InMemoryUnitOfWork(new DefaultAggregateRootRepository(new InMemoryEventStore(DomainEventSerializer), DomainEventSerializer));
         }
 
 
