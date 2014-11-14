@@ -7,7 +7,6 @@ using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 
@@ -116,6 +115,8 @@ namespace d60.Cirqus.MongoDb.Events
             var json = Encoding.UTF8.GetString(data);
             var doc = BsonDocument.Parse(json);
 
+            // recursively replace property names that begin with a $ - deep inside, we know that
+            // it's probably only a matter of avoiding JSON.NET's $type properties
             ReplacePropertyPrefixes(doc, "$", "¤");
 
             return doc;
@@ -129,6 +130,7 @@ namespace d60.Cirqus.MongoDb.Events
                 {
                     doc.Remove(property.Name);
 
+                    // since we know that it's most likely just about JSON.NET's $type property, we ensure that the replaced element gets to be first (which is required by JSON.NET)
                     doc.InsertAt(0, new BsonElement(replacement + property.Name.Substring(prefixToReplace.Length), property.Value));
                 }
 
@@ -191,28 +193,10 @@ namespace d60.Cirqus.MongoDb.Events
         {
             var doc = body.AsBsonDocument;
 
+            // make sure to replace ¤ with $ again
             ReplacePropertyPrefixes(doc, "¤", "$");
 
             return Encoding.UTF8.GetBytes(doc.ToString());
         }
-    }
-
-    class MongoEventBatch
-    {
-        [BsonId]
-        public string BatchId { get; set; }
-
-        public List<MongoEvent> Events { get; set; }
-    }
-
-    class MongoEvent
-    {
-        public Dictionary<string, string> Meta { get; set; }
-        public byte[] Bin { get; set; }
-        public BsonValue Body { get; set; }
-        
-        public long GlobalSequenceNumber { get; set; }
-        public long SequenceNumber { get; set; }
-        public string AggregateRootId { get; set; }
     }
 }
