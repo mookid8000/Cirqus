@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
@@ -8,7 +8,6 @@ using d60.Cirqus.Extensions;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Extensions;
-using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Integration
@@ -28,21 +27,22 @@ namespace d60.Cirqus.Tests.Integration
 ")]
     public class SimpleScenarioWithDelegation : FixtureBase
     {
-        CommandProcessor _cirqus;
-        DefaultAggregateRootRepository _aggregateRootRepository;
-        InMemoryEventStore _eventStore;
-        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
-        readonly DefaultCommandMapper _commandMapper = new DefaultCommandMapper();
+        ICommandProcessor _cirqus;
+        Task<InMemoryEventStore> _eventStore;
+        IAggregateRootRepository _aggregateRootRepository;
 
         protected override void DoSetUp()
         {
-            _eventStore = new InMemoryEventStore(_domainEventSerializer);
-
-            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
-
-            var viewManager = new ConsoleOutEventDispatcher();
-
-            _cirqus = new CommandProcessor(_eventStore, _aggregateRootRepository, viewManager, _domainEventSerializer, _commandMapper);
+            _cirqus = CommandProcessor.With()
+                .EventStore(e => _eventStore = e.UseInMemoryEventStore())
+                .AggregateRootRepository(r => r.Registrar.Register(c =>
+                {
+                    _aggregateRootRepository = new DefaultAggregateRootRepository(c.Get<IEventStore>(), c.Get<IDomainEventSerializer>());
+                    
+                    return _aggregateRootRepository;
+                }))
+                .EventDispatcher(e => e.UseConsoleOutEventDispatcher())
+                .Create();
 
             RegisterForDisposal(_cirqus);
         }
@@ -83,7 +83,7 @@ namespace d60.Cirqus.Tests.Integration
 
         List<AggregateRoot> GetAllRoots()
         {
-            return _eventStore.Select(e => e.GetAggregateRootId()).Distinct()
+            return _eventStore.Result.Select(e => e.GetAggregateRootId()).Distinct()
                 .Select(aggregateRootId => _aggregateRootRepository.Get<ProgrammerAggregate>(aggregateRootId).AggregateRoot)
                 .Cast<AggregateRoot>()
                 .ToList();

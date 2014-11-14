@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
-using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
-using d60.Cirqus.Tests.Stubs;
+using d60.Cirqus.Tests.Extensions;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Commands
@@ -13,21 +13,17 @@ namespace d60.Cirqus.Tests.Commands
     [TestFixture]
     public class TestCustomMetadata : FixtureBase
     {
-        CommandProcessor _cirqus;
-        DefaultAggregateRootRepository _aggregateRootRepository;
-        InMemoryEventStore _eventStore;
-        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
+        ICommandProcessor _cirqus;
+        Task<InMemoryEventStore> _eventStore;
 
         protected override void DoSetUp()
         {
-            _eventStore = new InMemoryEventStore(_domainEventSerializer);
+            _cirqus = CommandProcessor.With()
+                .EventStore(e => _eventStore = e.UseInMemoryEventStore())
+                .EventDispatcher(e => e.UseConsoleOutEventDispatcher())
+                .Create();
 
-            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
-
-            var viewManager = new ConsoleOutEventDispatcher();
-
-            _cirqus = RegisterForDisposal(new CommandProcessor(_eventStore, _aggregateRootRepository, viewManager,
-                _domainEventSerializer, new DefaultCommandMapper()));
+            RegisterForDisposal(_cirqus);
         }
 
         [Test]
@@ -50,7 +46,7 @@ namespace d60.Cirqus.Tests.Commands
                 Meta = {{tenantId, "2"}}
             });
 
-            var allEvents = _eventStore.ToList();
+            var allEvents = _eventStore.Result.ToList();
 
             Assert.That(allEvents.Count, Is.EqualTo(3));
             Assert.That(allEvents.Count(e => int.Parse(e.Meta[tenantId].ToString()) == 1), Is.EqualTo(1));

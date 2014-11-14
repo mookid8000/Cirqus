@@ -2,11 +2,10 @@
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
-using d60.Cirqus.MongoDb.Events;
+using d60.Cirqus.MongoDb.Config;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.Extensions;
 using d60.Cirqus.Tests.MongoDb;
-using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Integration
@@ -28,21 +27,24 @@ this time by using actual MongoDB underneath
 ")]
     public class SimpleScenarioWithPersistence : FixtureBase
     {
-        DefaultAggregateRootRepository _aggregateRootRepository;
-        CommandProcessor _cirqus;
-        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
-        readonly DefaultCommandMapper _commandMapper = new DefaultCommandMapper();
+        ICommandProcessor _cirqus;
+        IAggregateRootRepository _aggregateRootRepository;
 
         protected override void DoSetUp()
         {
             var mongoDatabase = MongoHelper.InitializeTestDatabase();
-            var eventStore = new MongoDbEventStore(mongoDatabase, "events", automaticallyCreateIndexes: true);
 
-            _aggregateRootRepository = new DefaultAggregateRootRepository(eventStore, _domainEventSerializer);
+            _cirqus = CommandProcessor.With()
+                .EventStore(e => e.UseMongoDb(mongoDatabase, "events"))
+                .AggregateRootRepository(r => r.Registrar.Register(c =>
+                {
+                    _aggregateRootRepository = new DefaultAggregateRootRepository(c.Get<IEventStore>(),
+                        c.Get<IDomainEventSerializer>());
 
-            var viewManager = new ConsoleOutEventDispatcher();
-
-            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager, _domainEventSerializer, _commandMapper);
+                    return _aggregateRootRepository;
+                }))
+                .EventDispatcher(e => e.UseConsoleOutEventDispatcher())
+                .Create();
 
             RegisterForDisposal(_cirqus);
         }

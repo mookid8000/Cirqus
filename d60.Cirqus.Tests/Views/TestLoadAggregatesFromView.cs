@@ -4,11 +4,13 @@ using System.Linq;
 using System.Threading;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
+using d60.Cirqus.Tests.Extensions;
 using d60.Cirqus.Tests.Stubs;
 using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
@@ -20,30 +22,34 @@ namespace d60.Cirqus.Tests.Views
     [TestFixture]
     public class TestLoadAggregatesFromView : FixtureBase
     {
-        CommandProcessor _cirqus;
+        ICommandProcessor _cirqus;
+        ViewManagerEventDispatcher _eventDispatcher;
+
         InMemoryViewManager<MyViewInstance> _viewManager1;
         InMemoryViewManager<MyViewInstanceImplicit> _viewManager2;
         InMemoryViewManager<MyViewInstanceEmitting> _viewManager3;
-        ViewManagerEventDispatcher _eventDispatcher;
         InMemoryViewManager<MyViewInstanceLoadingNonexistentRoot> _viewManager4;
-        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
 
         protected override void DoSetUp()
         {
-            var eventStore = new InMemoryEventStore(_domainEventSerializer);
-
             _viewManager1 = new InMemoryViewManager<MyViewInstance>();
             _viewManager2 = new InMemoryViewManager<MyViewInstanceImplicit>();
             _viewManager3 = new InMemoryViewManager<MyViewInstanceEmitting>();
             _viewManager4 = new InMemoryViewManager<MyViewInstanceLoadingNonexistentRoot>();
 
-            var basicAggregateRootRepository = new DefaultAggregateRootRepository(eventStore, _domainEventSerializer);
+            _cirqus = CommandProcessor.With()
+                .EventStore(e => e.UseInMemoryEventStore())
+                .EventDispatcher(e => e.Registrar.Register<IEventDispatcher>(c =>
+                {
+                    var repository = c.Get<IAggregateRootRepository>();
+                    var store = c.Get<IEventStore>();
+                    var serializer = c.Get<IDomainEventSerializer>();
 
-            _eventDispatcher = new ViewManagerEventDispatcher(basicAggregateRootRepository, eventStore, _domainEventSerializer);
+                    _eventDispatcher = new ViewManagerEventDispatcher(repository, store, serializer);
 
-            _cirqus = new CommandProcessor(eventStore, basicAggregateRootRepository, _eventDispatcher, _domainEventSerializer, new DefaultCommandMapper());
-
-            _cirqus.Initialize();
+                    return _eventDispatcher;
+                }))
+                .Create();
 
             RegisterForDisposal(_cirqus);
         }

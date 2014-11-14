@@ -1,5 +1,4 @@
-﻿using System;
-using d60.Cirqus.Aggregates;
+﻿using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using NUnit.Framework;
 
@@ -16,9 +15,10 @@ namespace d60.Cirqus.Tests.Integration.Scenarios
         {
             var commandProcessor = GetCommandProcessor(eventStoreOption);
 
-            commandProcessor.ProcessCommand(new SomeCommand { SomeId = "somekey" });
-        }
+            var result = commandProcessor.ProcessCommand(new SomeCommand { SomeId = "somekey" });
 
+            Assert.That(result.EventsWereEmitted, Is.False);
+        }
 
         public class SomeRoot : AggregateRoot
         {

@@ -44,9 +44,11 @@ namespace d60.Cirqus
 
         public CommandProcessor(IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, IEventDispatcher eventDispatcher, IDomainEventSerializer domainEventSerializer, ICommandMapper commandMapper)
         {
-            if (eventStore == null) throw new ArgumentNullException("eventStore");
-            if (aggregateRootRepository == null) throw new ArgumentNullException("aggregateRootRepository");
-            if (eventDispatcher == null) throw new ArgumentNullException("eventDispatcher");
+            if (eventStore == null) throw new ArgumentNullException("eventStore", "You need to supply an event store");
+            if (aggregateRootRepository == null) throw new ArgumentNullException("aggregateRootRepository", "You need to supply an aggregate root repository");
+            if (eventDispatcher == null) throw new ArgumentNullException("eventDispatcher", "You need to supply an event dispatcher");
+            if (domainEventSerializer == null) throw new ArgumentNullException("domainEventSerializer");
+            if (commandMapper == null) throw new ArgumentNullException("commandMapper");
 
             _eventStore = eventStore;
             _aggregateRootRepository = aggregateRootRepository;

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
-using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
+using d60.Cirqus.Tests.Extensions;
 using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
 
@@ -14,27 +16,28 @@ namespace d60.Cirqus.Tests.Commands
     [TestFixture]
     public class TestCommandProcessing : FixtureBase
     {
-        CommandProcessor _cirqus;
-        DefaultAggregateRootRepository _aggregateRootRepository;
-        InMemoryEventStore _eventStore;
-        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
+        ICommandProcessor _cirqus;
+        Task<InMemoryEventStore> _eventStore;
 
         protected override void DoSetUp()
         {
-            _eventStore = new InMemoryEventStore(_domainEventSerializer);
-            var eventDispatcher = new ConsoleOutEventDispatcher();
-
-            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
-
-            var commandMapper = new CommandMappings()
+            var commandMappings = new CommandMappings()
                 .Map<CustomMappedErronousCommand>((context, command) =>
                 {
                     throw new InvalidOperationException("oh no, you cannot do that");
-                })
-                .CreateCommandMapperDecorator(new DefaultCommandMapper());
+                });
 
-            _cirqus = RegisterForDisposal(new CommandProcessor(_eventStore, _aggregateRootRepository, eventDispatcher,
-                _domainEventSerializer, commandMapper));
+            _cirqus = CommandProcessor.With()
+                .EventStore(e => _eventStore = e.UseInMemoryEventStore())
+                .EventDispatcher(e => e.AddEventDispatcher(c => new ConsoleOutEventDispatcher()))
+                .Options(o =>
+                {
+                    o.AddDomainExceptionType<InvalidOperationException>();
+                    o.AddCommandMappings(commandMappings);
+                })
+                .Create();
+
+            RegisterForDisposal(_cirqus);
         }
 
         [Test]
@@ -45,7 +48,7 @@ namespace d60.Cirqus.Tests.Commands
 
             _cirqus.ProcessCommand(command);
 
-            var events = _eventStore.ToList();
+            var events = _eventStore.Result.ToList();
             Assert.That(events.Count, Is.EqualTo(10));
         }
 
@@ -79,9 +82,7 @@ namespace d60.Cirqus.Tests.Commands
         [Test]
         public void CanLetSpecificExceptionTypesThrough()
         {
-            _cirqus.Options.AddDomainExceptionType<InvalidOperationException>();
-
-            var unwrappedException = Assert.Throws<InvalidOperationException>(() => _cirqus.ProcessCommand(new ErronousCommand("someid1")));
+            var unwrappedException = Assert.Throws<InvalidOperationException>(() => _cirqus.ProcessCommand(new CommandThatThrowsDomainException("someid1")));
 
             Console.WriteLine(unwrappedException);
 
@@ -92,8 +93,6 @@ namespace d60.Cirqus.Tests.Commands
         [Test]
         public void CanLetSpecificExceptionTypesThroughAlsoWhenUsingCustomMappedCommands()
         {
-            _cirqus.Options.AddDomainExceptionType<InvalidOperationException>();
-
             var unwrappedException = Assert.Throws<InvalidOperationException>(() => _cirqus.ProcessCommand(new CustomMappedErronousCommand()));
 
             Console.WriteLine(unwrappedException);
@@ -105,19 +104,19 @@ namespace d60.Cirqus.Tests.Commands
         [Test]
         public void GeneratesPrettyException()
         {
-            var appEx = Assert.Throws<CommandProcessingException>(() => _cirqus.ProcessCommand(new ErronousCommand("someid1")));
+            var appEx = Assert.Throws<CommandProcessingException>(() => _cirqus.ProcessCommand(new CommandThatThrowsUnanticipatedException("someid1")));
 
             Console.WriteLine(appEx);
 
             var inner = appEx.InnerException;
 
-            Assert.That(inner, Is.TypeOf<InvalidOperationException>());
+            Assert.That(inner, Is.TypeOf<ApplicationException>());
             Assert.That(inner.Message, Contains.Substring("oh no, you cannot do that"));
         }
 
-        class ErronousCommand : Command<Root>
+        class CommandThatThrowsDomainException : Command<Root>
         {
-            public ErronousCommand(string aggregateRootId)
+            public CommandThatThrowsDomainException(string aggregateRootId)
                 : base(aggregateRootId)
             {
             }
@@ -125,6 +124,19 @@ namespace d60.Cirqus.Tests.Commands
             public override void Execute(Root aggregateRoot)
             {
                 throw new InvalidOperationException("oh no, you cannot do that");
+            }
+        }
+
+        class CommandThatThrowsUnanticipatedException : Command<Root>
+        {
+            public CommandThatThrowsUnanticipatedException(string aggregateRootId)
+                : base(aggregateRootId)
+            {
+            }
+
+            public override void Execute(Root aggregateRoot)
+            {
+                throw new ApplicationException("oh no, you cannot do that");
             }
         }
 
@@ -137,7 +149,7 @@ namespace d60.Cirqus.Tests.Commands
         {
             _cirqus.ProcessCommand(new MappedCommand("id"));
 
-            Assert.That(_eventStore.ToList().Count, Is.EqualTo(1));
+            Assert.That(_eventStore.Result.ToList().Count, Is.EqualTo(1));
         }
 
         class MappedCommand : Command<Root>
@@ -155,7 +167,7 @@ namespace d60.Cirqus.Tests.Commands
         {
             _cirqus.ProcessCommand(new OrdinaryCommand("id"));
 
-            Assert.That(_eventStore.ToList().Count, Is.EqualTo(1));
+            Assert.That(_eventStore.Result.ToList().Count, Is.EqualTo(1));
         }
 
         class OrdinaryCommand : Command<Root>

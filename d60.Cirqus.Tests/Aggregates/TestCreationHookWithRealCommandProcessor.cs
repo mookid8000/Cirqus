@@ -1,10 +1,11 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
-using d60.Cirqus.Tests.Stubs;
+using d60.Cirqus.Tests.Extensions;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Aggregates
@@ -14,13 +15,14 @@ namespace d60.Cirqus.Tests.Aggregates
     {
         readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
         ICommandProcessor _commandProcessor;
-        InMemoryEventStore _eventStore;
+        Task<InMemoryEventStore> _eventStoreTask;
 
         protected override void DoSetUp()
         {
-            _eventStore = new InMemoryEventStore(_domainEventSerializer);
-            var aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
-            _commandProcessor = new CommandProcessor(_eventStore, aggregateRootRepository, new ConsoleOutEventDispatcher(), _domainEventSerializer, new DefaultCommandMapper());
+            _commandProcessor = CommandProcessor.With()
+                .EventStore(e => _eventStoreTask = e.UseInMemoryEventStore())
+                .Create();
+
             RegisterForDisposal(_commandProcessor);
         }
 
@@ -30,7 +32,7 @@ namespace d60.Cirqus.Tests.Aggregates
             _commandProcessor.ProcessCommand(new MakeRootDoSomething("id1"));
 
             var expectedSequenceOfEvents = new[] { typeof(RootCreated), typeof(RootDidSomething) };
-            var actualSequenceOfEvents = _eventStore.Select(e => e.GetType()).ToArray();
+            var actualSequenceOfEvents = _eventStoreTask.Result.Select(e => e.GetType()).ToArray();
 
             Assert.That(actualSequenceOfEvents, Is.EqualTo(expectedSequenceOfEvents));
         }
@@ -53,14 +55,14 @@ namespace d60.Cirqus.Tests.Aggregates
                 typeof(RootDidSomething), 
                 typeof(RootDidSomething)
             };
-            var actualSequenceOfEvents = _eventStore.Select(e => e.GetType()).ToArray();
+            var actualSequenceOfEvents = _eventStoreTask.Result.Select(e => e.GetType()).ToArray();
 
             Assert.That(actualSequenceOfEvents, Is.EqualTo(expectedSequenceOfEvents));
         }
 
         public class MakeRootDoSomething : Command<Root>
         {
-            public MakeRootDoSomething(string aggregateRootId) 
+            public MakeRootDoSomething(string aggregateRootId)
                 : base(aggregateRootId)
             {
             }

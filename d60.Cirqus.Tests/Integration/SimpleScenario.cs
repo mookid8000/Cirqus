@@ -2,12 +2,8 @@
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
-using d60.Cirqus.Logging;
-using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Serialization;
-using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Extensions;
-using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Integration
@@ -25,35 +21,21 @@ namespace d60.Cirqus.Tests.Integration
 ")]
     public class SimpleScenario : FixtureBase
     {
-        CommandProcessor _cirqus;
+        ICommandProcessor _cirqus;
         DefaultAggregateRootRepository _aggregateRootRepository;
-        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
-        readonly DefaultCommandMapper _commandMapper = new DefaultCommandMapper();
 
         protected override void DoSetUp()
         {
-            var eventStore = new InMemoryEventStore(_domainEventSerializer);
-
-            _aggregateRootRepository = new DefaultAggregateRootRepository(eventStore, _domainEventSerializer);
-
-            var viewManager = new ConsoleOutEventDispatcher();
-
-            _cirqus = new CommandProcessor(eventStore, _aggregateRootRepository, viewManager, _domainEventSerializer, _commandMapper)
-            {
-                Options =
+            _cirqus = CommandProcessor.With()
+                .EventStore(e => e.UseInMemoryEventStore())
+                .AggregateRootRepository(e => e.Registrar.Register<IAggregateRootRepository>(c =>
                 {
-                    MaxRetries = 3,
+                    _aggregateRootRepository = new DefaultAggregateRootRepository(c.Get<IEventStore>(), c.Get<IDomainEventSerializer>());
 
-                    PurgeExistingViews = true,
-
-                    GlobalLoggerFactory = new ConsoleLoggerFactory(minLevel: Logger.Level.Warn),
-
-                    DomainExceptionTypes =
-                    {
-                        typeof(ApplicationException)
-                    },
-                }
-            };
+                    return _aggregateRootRepository;
+                }))
+                .EventDispatcher(e => e.UseConsoleOutEventDispatcher())
+                .Create();
 
             RegisterForDisposal(_cirqus);
         }

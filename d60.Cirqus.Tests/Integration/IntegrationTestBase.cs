@@ -1,16 +1,14 @@
 ﻿using System;
-using d60.Cirqus.Aggregates;
-using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.MsSql.Events;
 using d60.Cirqus.PostgreSql;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
+using d60.Cirqus.Tests.Extensions;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.MsSql;
 using d60.Cirqus.Tests.PostgreSql;
-using d60.Cirqus.Tests.Stubs;
 using MongoDB.Driver;
 
 namespace d60.Cirqus.Tests.Integration
@@ -22,15 +20,16 @@ namespace d60.Cirqus.Tests.Integration
 
         protected override void DoSetUp()
         {
-            
         }
 
         protected ICommandProcessor GetCommandProcessor(EventStoreOption eventStoreOption)
         {
             var eventStore = GetEventStore(eventStoreOption);
 
-            var commandProcessor = new CommandProcessor(eventStore, new DefaultAggregateRootRepository(eventStore, _domainEventSerializer), new ConsoleOutEventDispatcher(),
-                _domainEventSerializer, new DefaultCommandMapper());
+            var commandProcessor = CommandProcessor.With()
+                .EventStore(e => e.Registrar.RegisterInstance(eventStore))
+                .EventDispatcher(e => e.UseConsoleOutEventDispatcher())
+                .Create();
 
             RegisterForDisposal(commandProcessor);
 
