@@ -94,7 +94,7 @@ caching in use: {3}",
 
             var serializer = new JsonDomainEventSerializer();
 
-            IAggregateRootRepository aggregateRootRepository = new DefaultAggregateRootRepository(_timeTaker, serializer);
+            IAggregateRootRepository aggregateRootRepository = new DefaultAggregateRootRepository(_timeTaker, serializer, _domainTypeNameMapper);
 
             if (useCaching)
             {

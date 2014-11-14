@@ -1,6 +1,7 @@
 ﻿using System;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.Extensions;
@@ -30,7 +31,7 @@ namespace d60.Cirqus.Tests.Integration
                 .EventStore(e => e.UseInMemoryEventStore())
                 .AggregateRootRepository(e => e.Registrar.Register<IAggregateRootRepository>(c =>
                 {
-                    _aggregateRootRepository = new DefaultAggregateRootRepository(c.Get<IEventStore>(), c.Get<IDomainEventSerializer>());
+                    _aggregateRootRepository = new DefaultAggregateRootRepository(c.Get<IEventStore>(), c.Get<IDomainEventSerializer>(), c.Get<IDomainTypeNameMapper>());
 
                     return _aggregateRootRepository;
                 }))

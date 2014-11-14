@@ -98,8 +98,9 @@ namespace d60.Cirqus.Config.Configurers
                 {
                     var eventStore = context.Get<IEventStore>();
                     var domainEventSerializer = context.Get<IDomainEventSerializer>();
-                    
-                    var aggregateRootRepository = new DefaultAggregateRootRepository(eventStore, domainEventSerializer);
+                    var domainTypeNameMapper = context.Get<IDomainTypeNameMapper>();
+
+                    var aggregateRootRepository = new DefaultAggregateRootRepository(eventStore, domainEventSerializer, domainTypeNameMapper);
 
                     return aggregateRootRepository;
                 });

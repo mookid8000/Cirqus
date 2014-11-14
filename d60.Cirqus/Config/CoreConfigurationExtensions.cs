@@ -44,7 +44,14 @@ namespace d60.Cirqus.Config
         public static void UseDefault(this AggregateRootRepositoryConfigurationBuilder builder)
         {
             builder.Registrar
-                .Register<IAggregateRootRepository>(context => new DefaultAggregateRootRepository(context.Get<IEventStore>(), context.Get<IDomainEventSerializer>()));
+                .Register<IAggregateRootRepository>(context =>
+                {
+                    var eventStore = context.Get<IEventStore>();
+                    var domainEventSerializer = context.Get<IDomainEventSerializer>();
+                    var domainTypeNameMapper = context.Get<IDomainTypeNameMapper>();
+
+                    return new DefaultAggregateRootRepository(eventStore, domainEventSerializer, domainTypeNameMapper);
+                });
         }
 
         /// <summary>

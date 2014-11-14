@@ -19,6 +19,7 @@ namespace d60.Cirqus.Tests.Aggregates
     public class TestEventApplication
     {
         readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
+        readonly DefaultDomainTypeNameMapper _defaultDomainTypeNameMapper = new DefaultDomainTypeNameMapper();
 
         /// <summary>
         /// Without caching: Elapsed total: 00:00:03.0647447, hydrations/s: 32,6
@@ -85,7 +86,7 @@ namespace d60.Cirqus.Tests.Aggregates
             var timeForNextEvent = timeForFirstEvent.AddMilliseconds(2);
 
             var aggregateRootRepository = CreateAggregateRootRepository();
-            var eventCollector = new InMemoryUnitOfWork(aggregateRootRepository, new DefaultDomainTypeNameMapper());
+            var eventCollector = new InMemoryUnitOfWork(aggregateRootRepository, _defaultDomainTypeNameMapper);
 
             var someAggregate = new SomeAggregate
             {
@@ -123,7 +124,7 @@ namespace d60.Cirqus.Tests.Aggregates
         {
             var inMemoryEventStore = new InMemoryEventStore(_domainEventSerializer);
 
-            return new DefaultAggregateRootRepository(inMemoryEventStore, _domainEventSerializer);
+            return new DefaultAggregateRootRepository(inMemoryEventStore, _domainEventSerializer, _defaultDomainTypeNameMapper);
         }
 
         class SomeEvent : DomainEvent<SomeAggregate>

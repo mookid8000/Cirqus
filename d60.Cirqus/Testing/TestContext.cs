@@ -36,7 +36,7 @@ namespace d60.Cirqus.Testing
         public TestContext()
         {
             _eventStore = new InMemoryEventStore(_domainEventSerializer);
-            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
+            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer, _domainTypeNameMapper);
             _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore, _domainEventSerializer, _domainTypeNameMapper);
             _waitHandle.Register(_viewManagerEventDispatcher);
             _eventDispatcher = new CompositeEventDispatcher(_viewManagerEventDispatcher);

@@ -1,6 +1,7 @@
 ﻿using System;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Config;
 using d60.Cirqus.Serialization;
@@ -38,8 +39,10 @@ this time by using actual MongoDB underneath
                 .EventStore(e => e.UseMongoDb(mongoDatabase, "events"))
                 .AggregateRootRepository(r => r.Registrar.Register(c =>
                 {
-                    _aggregateRootRepository = new DefaultAggregateRootRepository(c.Get<IEventStore>(),
-                        c.Get<IDomainEventSerializer>());
+                    _aggregateRootRepository = new DefaultAggregateRootRepository(
+                        c.Get<IEventStore>(),
+                        c.Get<IDomainEventSerializer>(),
+                        c.Get<IDomainTypeNameMapper>());
 
                     return _aggregateRootRepository;
                 }))

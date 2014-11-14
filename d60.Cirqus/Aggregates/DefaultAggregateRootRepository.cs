@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Serialization;
@@ -13,11 +14,13 @@ namespace d60.Cirqus.Aggregates
     {
         readonly IEventStore _eventStore;
         readonly IDomainEventSerializer _domainEventSerializer;
+        readonly IDomainTypeNameMapper _domainTypeNameMapper;
 
-        public DefaultAggregateRootRepository(IEventStore eventStore, IDomainEventSerializer domainEventSerializer)
+        public DefaultAggregateRootRepository(IEventStore eventStore, IDomainEventSerializer domainEventSerializer, IDomainTypeNameMapper domainTypeNameMapper)
         {
             _eventStore = eventStore;
             _domainEventSerializer = domainEventSerializer;
+            _domainTypeNameMapper = domainTypeNameMapper;
         }
 
         /// <summary>

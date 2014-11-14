@@ -45,7 +45,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
             var serializer = new JsonDomainEventSerializer();
             var typeMapper = new DefaultDomainTypeNameMapper();
 
-            var eventDispatcher = new ViewManagerEventDispatcher(new DefaultAggregateRootRepository(_eventStoreProxy, serializer), _eventStoreProxy, serializer, typeMapper);
+            var eventDispatcher = new ViewManagerEventDispatcher(new DefaultAggregateRootRepository(_eventStoreProxy, serializer, typeMapper), _eventStoreProxy, serializer, typeMapper);
 
             RegisterForDisposal(eventDispatcher);
 

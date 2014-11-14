@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using d60.Cirqus.Aggregates;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Numbers;
 using d60.Cirqus.Serialization;
@@ -15,11 +16,12 @@ namespace d60.Cirqus.Tests.Aggregates
         InMemoryEventStore _eventStore;
         DefaultAggregateRootRepository _repository;
         readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
+        readonly DefaultDomainTypeNameMapper _defaultDomainTypeNameMapper = new DefaultDomainTypeNameMapper();
 
         protected override void DoSetUp()
         {
             _eventStore = new InMemoryEventStore(_domainEventSerializer);
-            _repository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
+            _repository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer, _defaultDomainTypeNameMapper);
         }
 
         [TestCase(0, true, false)]
