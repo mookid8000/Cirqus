@@ -2,6 +2,9 @@
 
 namespace d60.Cirqus.Config
 {
+    /// <summary>
+    /// Implementation of <see cref="IDomainTypeNameMapper"/> that uses assembly-qualified type names without version and culture information
+    /// </summary>
     public class DefaultDomainTypeNameMapper : IDomainTypeNameMapper
     {
         public Type GetType(string name)
