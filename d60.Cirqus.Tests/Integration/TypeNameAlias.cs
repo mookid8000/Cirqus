@@ -13,32 +13,24 @@ using NUnit.Framework;
 namespace d60.Cirqus.Tests.Integration
 {
     [TestFixture]
-    public class TypeNameAliases : FixtureBase
+    public class TypeNameAliaseses : FixtureBase
     {
         ICommandProcessor _commandProcessor;
         Task<InMemoryEventStore> _eventStore;
-        MyNameNameMapper _nameNameMapper;
-
-        protected override void DoSetUp()
-        {
-            _nameNameMapper = new MyNameNameMapper();
-
-            _commandProcessor = CommandProcessor.With()
-                .EventStore(e => _eventStore = e.UseInMemoryEventStore())
-                .Options(o => o.UseCustomDomainTypeNameMapper(_nameNameMapper))
-                .Create();
-
-            RegisterForDisposal(_commandProcessor);
-        }
+        MyNameNameMapper _myNameNameMapper;
 
         [Test]
         public void SetsOwnerToGivenAlias()
         {
+            _myNameNameMapper = new MyNameNameMapper();
+
+            SetUpCommandProcessor(_myNameNameMapper);
+
             const string eventAlias = "customizzle event nizzle ";
             const string rootAlias = "customizzle aggregizzle nizlledizzle";
 
-            _nameNameMapper.AddAlias<OneRoot>(rootAlias);
-            _nameNameMapper.AddAlias<OneEvent>(eventAlias);
+            _myNameNameMapper.AddAlias<OneRoot>(rootAlias);
+            _myNameNameMapper.AddAlias<OneEvent>(eventAlias);
 
             var command = new GenericCommand(context =>
             {
@@ -52,6 +44,39 @@ namespace d60.Cirqus.Tests.Integration
 
             Assert.That(metadataOfEvent[DomainEvent.MetadataKeys.Owner], Is.EqualTo(rootAlias));
             Assert.That(metadataOfEvent[DomainEvent.MetadataKeys.Type], Is.EqualTo(eventAlias));
+        }
+
+        [Test]
+        public void SetsOwnerToGivenAliasWithAssemblyScannerThingie()
+        {
+            SetUpCommandProcessor(
+                CustomizableDomainTypeNameMapper
+                    .UseShortTypeNames()
+                    .AddTypes(typeof(OneRoot), typeof(OneEvent))
+                );
+
+            var command = new GenericCommand(context =>
+            {
+                var oneRoot = context.Load<OneRoot>("someId", createIfNotExists: true);
+                oneRoot.Bam();
+            });
+
+            _commandProcessor.ProcessCommand(command);
+
+            var metadataOfEvent = _eventStore.Result.Single().Meta;
+
+            Assert.That(metadataOfEvent[DomainEvent.MetadataKeys.Owner], Is.EqualTo("OneRoot"));
+            Assert.That(metadataOfEvent[DomainEvent.MetadataKeys.Type], Is.EqualTo("OneEvent"));
+        }
+
+        void SetUpCommandProcessor(IDomainTypeNameMapper typeNameMapperToUse)
+        {
+            _commandProcessor = CommandProcessor.With()
+                .EventStore(e => _eventStore = e.UseInMemoryEventStore())
+                .Options(o => o.UseCustomDomainTypeNameMapper(typeNameMapperToUse))
+                .Create();
+
+            RegisterForDisposal(_commandProcessor);
         }
 
         class OneRoot : AggregateRoot, IEmit<OneEvent>
