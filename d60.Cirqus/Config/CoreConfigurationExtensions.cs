@@ -54,9 +54,10 @@ namespace d60.Cirqus.Config
         public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IViewManager[] viewManagers)
         {
             AddEventDispatcherRegistration(builder, context => new ViewManagerEventDispatcher(
-                context.Get<IAggregateRootRepository>(),
+                context.Get<IAggregateRootRepository>(), 
                 context.Get<IEventStore>(), 
-                context.Get<IDomainEventSerializer>(), 
+                context.Get<IDomainEventSerializer>(),
+                context.Get<IDomainTypeMapper>(),
                 viewManagers));
         }
 
@@ -71,8 +72,9 @@ namespace d60.Cirqus.Config
             {
                 var eventDispatcher = new ViewManagerEventDispatcher(
                     context.Get<IAggregateRootRepository>(),
-                    context.Get<IEventStore>(), 
-                    context.Get<IDomainEventSerializer>(), 
+                    context.Get<IEventStore>(),
+                    context.Get<IDomainEventSerializer>(),
+                    context.Get<IDomainTypeMapper>(),
                     viewManagers);
 
                 waitHandle.Register(eventDispatcher);
@@ -124,11 +126,11 @@ namespace d60.Cirqus.Config
         }
 
         /// <summary>
-        /// Registers the given type mapper to be used instead of the default <see cref="DefaultAggregateRootTypeMapper"/>
+        /// Registers the given type mapper to be used instead of the default <see cref="DefaultDomainTypeMapper"/>
         /// </summary>
-        public static void UseCustomAggregateRootTypeMapper(this OptionsConfigurationBuilder builder, IAggregateRootTypeMapper aggregateRootTypeMapper)
+        public static void UseCustomAggregateRootTypeMapper(this OptionsConfigurationBuilder builder, IDomainTypeMapper domainTypeMapper)
         {
-            builder.Registrar.RegisterInstance(aggregateRootTypeMapper);
+            builder.Registrar.RegisterInstance(domainTypeMapper);
         }
 
         /// <summary>

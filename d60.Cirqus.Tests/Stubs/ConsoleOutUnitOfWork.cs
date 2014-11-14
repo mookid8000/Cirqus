@@ -15,44 +15,27 @@ namespace d60.Cirqus.Tests.Stubs
             _aggregateRootRepository = aggregateRootRepository;
         }
 
-        public void AddEmittedEvent(DomainEvent e)
+        public void AddEmittedEvent<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
         {
             Console.WriteLine("Emitted: {0}", e);
         }
 
-        public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) 
+        public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff)
             where TAggregateRoot : AggregateRoot
         {
             _cachedAggregateRoots[aggregateRoot.Id] = aggregateRoot;
         }
 
-        public bool Exists<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff) 
+        public bool Exists<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff)
             where TAggregateRoot : AggregateRoot
         {
             return _aggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
         }
 
-        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists) 
+        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists)
             where TAggregateRoot : AggregateRoot, new()
         {
             return _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff);
-        }
-
-        TAggregateRoot GetAggregateRootFromCache<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff) 
-            where TAggregateRoot : AggregateRoot
-        {
-            if (!_cachedAggregateRoots.ContainsKey(aggregateRootId)) return null;
-
-            var aggregateRoot = _cachedAggregateRoots[aggregateRootId];
-
-            if (!(aggregateRoot is TAggregateRoot))
-            {
-                throw new InvalidOperationException(
-                    string.Format("Attempted to load {0} with ID {1} as if it was a {2} - did you use the wrong ID?",
-                        aggregateRoot.GetType(), aggregateRootId, typeof(TAggregateRoot)));
-            }
-
-            return (TAggregateRoot)aggregateRoot;
         }
     }
 }

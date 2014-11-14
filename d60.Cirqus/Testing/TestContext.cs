@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
@@ -20,6 +21,7 @@ namespace d60.Cirqus.Testing
     public class TestContext : IDisposable
     {
         readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer("<events>");
+        readonly DefaultDomainTypeMapper _domainTypeMapper = new DefaultDomainTypeMapper();
         readonly DefaultAggregateRootRepository _aggregateRootRepository;
         readonly ViewManagerEventDispatcher _viewManagerEventDispatcher;
         readonly CompositeEventDispatcher _eventDispatcher;
@@ -35,7 +37,7 @@ namespace d60.Cirqus.Testing
         {
             _eventStore = new InMemoryEventStore(_domainEventSerializer);
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer);
-            _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore, _domainEventSerializer);
+            _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore, _domainEventSerializer, _domainTypeMapper);
             _waitHandle.Register(_viewManagerEventDispatcher);
             _eventDispatcher = new CompositeEventDispatcher(_viewManagerEventDispatcher);
         }
@@ -102,7 +104,7 @@ namespace d60.Cirqus.Testing
         {
             EnsureInitialized();
 
-            var unitOfWork = new TestUnitOfWork(_aggregateRootRepository, _eventStore, _eventDispatcher, _domainEventSerializer);
+            var unitOfWork = new TestUnitOfWork(_aggregateRootRepository, _eventStore, _eventDispatcher, _domainEventSerializer, _domainTypeMapper);
 
             unitOfWork.Committed += () =>
             {
@@ -144,12 +146,12 @@ namespace d60.Cirqus.Testing
                     .Select(aggregateRootId =>
                     {
                         var firstEvent = _eventStore.Load(aggregateRootId).First();
-                        var typeName = (firstEvent.Meta[DomainEvent.MetadataKeys.Owner] ?? "").ToString();
-                        var type = Type.GetType(typeName);
+                        var typeName = firstEvent.Meta[DomainEvent.MetadataKeys.Owner] ?? "";
+                        var type = TryGetType(typeName);
 
                         if (type == null) return null;
 
-                        var unitOfWork = new RealUnitOfWork(_aggregateRootRepository);
+                        var unitOfWork = new RealUnitOfWork(_aggregateRootRepository, _domainTypeMapper);
 
                         var parameters = new object[]
                         {
@@ -175,6 +177,19 @@ namespace d60.Cirqus.Testing
                         }
                     })
                     .Where(aggregateRoot => aggregateRoot != null);
+            }
+        }
+
+        Type TryGetType(string typeName)
+        {
+            try
+            {
+                return _domainTypeMapper.GetType(typeName);
+
+            }
+            catch
+            {
+                return null;
             }
         }
 
@@ -285,8 +300,8 @@ Current view positions:
 
             domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId] = aggregateRootId;
             domainEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber] = _eventStore.GetNextSeqNo(aggregateRootId).ToString(Metadata.NumberCulture);
-            domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = AggregateRoot.GetOwnerFromType(typeof(TAggregateRoot));
-            domainEvent.Meta[DomainEvent.MetadataKeys.Type] = AggregateRoot.GetEventTypeFromType(domainEvent.GetType());
+            domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = _domainTypeMapper.GetName(typeof(TAggregateRoot));
+            domainEvent.Meta[DomainEvent.MetadataKeys.Type] = _domainTypeMapper.GetName(domainEvent.GetType());
             domainEvent.Meta[DomainEvent.MetadataKeys.TimeUtc] = now.ToString("u");
 
             domainEvent.Meta.TakeFromAttributes(domainEvent.GetType());

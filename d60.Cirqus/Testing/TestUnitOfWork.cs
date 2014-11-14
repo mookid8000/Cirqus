@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Views;
@@ -10,7 +11,6 @@ namespace d60.Cirqus.Testing
 {
     public class TestUnitOfWork : IDisposable
     {
-        readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventStore _eventStore;
         readonly IEventDispatcher _eventDispatcher;
         readonly JsonDomainEventSerializer _domainEventSerializer;
@@ -18,13 +18,12 @@ namespace d60.Cirqus.Testing
 
         bool _wasCommitted;
 
-        internal TestUnitOfWork(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IEventDispatcher eventDispatcher, JsonDomainEventSerializer domainEventSerializer)
+        internal TestUnitOfWork(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IEventDispatcher eventDispatcher, JsonDomainEventSerializer domainEventSerializer, IDomainTypeMapper domainTypeMapper)
         {
-            _aggregateRootRepository = aggregateRootRepository;
             _eventStore = eventStore;
             _eventDispatcher = eventDispatcher;
             _domainEventSerializer = domainEventSerializer;
-            _realUnitOfWork = new RealUnitOfWork(aggregateRootRepository);
+            _realUnitOfWork = new RealUnitOfWork(aggregateRootRepository, domainTypeMapper);
         }
 
         internal RealUnitOfWork RealUnitOfWork

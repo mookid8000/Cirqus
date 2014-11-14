@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using d60.Cirqus.Aggregates;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 
@@ -13,13 +14,15 @@ namespace d60.Cirqus.Commands
     public class RealUnitOfWork : IUnitOfWork
     {
         readonly IAggregateRootRepository _aggregateRootRepository;
-        
+        readonly IDomainTypeMapper _typeMapper;
+
         protected readonly List<DomainEvent> Events = new List<DomainEvent>();
         protected readonly Dictionary<long, Dictionary<string, AggregateRoot>> CachedAggregateRoots = new Dictionary<long, Dictionary<string, AggregateRoot>>();
 
-        public RealUnitOfWork(IAggregateRootRepository aggregateRootRepository)
+        public RealUnitOfWork(IAggregateRootRepository aggregateRootRepository, IDomainTypeMapper typeMapper)
         {
             _aggregateRootRepository = aggregateRootRepository;
+            _typeMapper = typeMapper;
         }
 
         public IEnumerable<DomainEvent> EmittedEvents
@@ -27,8 +30,11 @@ namespace d60.Cirqus.Commands
             get { return Events; }
         }
 
-        public void AddEmittedEvent(DomainEvent e)
+        public void AddEmittedEvent<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
         {
+            e.Meta[DomainEvent.MetadataKeys.Owner] = _typeMapper.GetName(typeof (TAggregateRoot));
+            e.Meta[DomainEvent.MetadataKeys.Type] = _typeMapper.GetName(e.GetType());
+
             Events.Add(e);
         }
 
@@ -76,7 +82,7 @@ namespace d60.Cirqus.Commands
             {
                 throw new InvalidOperationException(
                     string.Format("Attempted to load {0} with ID {1} as if it was a {2} - did you use the wrong ID?",
-                        aggregateRoot.GetType(), aggregateRootId, typeof (TAggregateRoot)));
+                        aggregateRoot.GetType(), aggregateRootId, typeof(TAggregateRoot)));
             }
 
             return AggregateRootInfo<TAggregateRoot>.Create((TAggregateRoot)aggregateRoot);

@@ -111,7 +111,7 @@ namespace d60.Cirqus.Aggregates
                 _root.UnitOfWork = this;
             }
 
-            public void AddEmittedEvent(DomainEvent e)
+            public void AddEmittedEvent<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
             {
                 throw new InvalidOperationException(string.Format("The aggregate root of type {0} with ID {1} attempted to emit event {2} while applying events, which is not allowed",
                     _root.GetType(), _root.Id, e));

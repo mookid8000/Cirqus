@@ -34,9 +34,11 @@ namespace d60.Cirqus.Tests.Integration
         [Test]
         public void SetsOwnerToGivenAlias()
         {
-            const string alias = "I_am_calling_it_something_else";
+            const string eventAlias = "customizzle event nizzle ";
+            const string rootAlias = "customizzle aggregizzle nizlledizzle";
 
-            _nameMapper.AddAlias<OneRoot>(alias);
+            _nameMapper.AddAlias<OneRoot>(rootAlias);
+            _nameMapper.AddAlias<OneEvent>(eventAlias);
 
             var command = new GenericCommand(context =>
             {
@@ -48,7 +50,8 @@ namespace d60.Cirqus.Tests.Integration
 
             var metadataOfEvent = _eventStore.Result.Single().Meta;
 
-            Assert.That(metadataOfEvent[DomainEvent.MetadataKeys.Owner], Is.EqualTo(alias));
+            Assert.That(metadataOfEvent[DomainEvent.MetadataKeys.Owner], Is.EqualTo(rootAlias));
+            Assert.That(metadataOfEvent[DomainEvent.MetadataKeys.Type], Is.EqualTo(eventAlias));
         }
 
         class OneRoot : AggregateRoot, IEmit<OneEvent>
@@ -81,14 +84,14 @@ namespace d60.Cirqus.Tests.Integration
         }
     }
 
-    public class MyNameMapper : IAggregateRootTypeMapper
+    public class MyNameMapper : IDomainTypeMapper
     {
         readonly ConcurrentDictionary<string, Type> _aliasToType = new ConcurrentDictionary<string, Type>();
         readonly ConcurrentDictionary<Type, string> _typeToAlias = new ConcurrentDictionary<Type, string>();
 
-        public void AddAlias<TAggregateRoot>(string alias) where TAggregateRoot : AggregateRoot
+        public void AddAlias<TDomainType>(string alias)
         {
-            var type = typeof(TAggregateRoot);
+            var type = typeof(TDomainType);
             _aliasToType[alias] = type;
             _typeToAlias[type] = alias;
         }

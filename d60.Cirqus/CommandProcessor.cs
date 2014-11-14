@@ -41,20 +41,23 @@ namespace d60.Cirqus
         readonly IEventDispatcher _eventDispatcher;
         readonly IDomainEventSerializer _domainEventSerializer;
         readonly ICommandMapper _commandMapper;
+        readonly IDomainTypeMapper _domainTypeMapper;
 
-        public CommandProcessor(IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, IEventDispatcher eventDispatcher, IDomainEventSerializer domainEventSerializer, ICommandMapper commandMapper)
+        public CommandProcessor(IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, IEventDispatcher eventDispatcher, IDomainEventSerializer domainEventSerializer, ICommandMapper commandMapper, IDomainTypeMapper domainTypeMapper)
         {
-            if (eventStore == null) throw new ArgumentNullException("eventStore", "You need to supply an event store");
-            if (aggregateRootRepository == null) throw new ArgumentNullException("aggregateRootRepository", "You need to supply an aggregate root repository");
-            if (eventDispatcher == null) throw new ArgumentNullException("eventDispatcher", "You need to supply an event dispatcher");
+            if (eventStore == null) throw new ArgumentNullException("eventStore");
+            if (aggregateRootRepository == null) throw new ArgumentNullException("aggregateRootRepository");
+            if (eventDispatcher == null) throw new ArgumentNullException("eventDispatcher");
             if (domainEventSerializer == null) throw new ArgumentNullException("domainEventSerializer");
             if (commandMapper == null) throw new ArgumentNullException("commandMapper");
+            if (domainTypeMapper == null) throw new ArgumentNullException("domainTypeMapper");
 
             _eventStore = eventStore;
             _aggregateRootRepository = aggregateRootRepository;
             _eventDispatcher = eventDispatcher;
             _domainEventSerializer = domainEventSerializer;
             _commandMapper = commandMapper;
+            _domainTypeMapper = domainTypeMapper;
         }
 
         /// <summary>
@@ -143,7 +146,7 @@ namespace d60.Cirqus
 
         IEnumerable<DomainEvent> InnerProcessCommand(Command command)
         {
-            var unitOfWork = new RealUnitOfWork(_aggregateRootRepository);
+            var unitOfWork = new RealUnitOfWork(_aggregateRootRepository, _domainTypeMapper);
 
             var handler = _commandMapper.GetCommandAction(command);
             

@@ -1,8 +1,8 @@
 ﻿using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Numbers;
-using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Contracts.AggregateRootRepository.Factories;
+using d60.Cirqus.Tests.Extensions;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Contracts.AggregateRootRepository
@@ -30,7 +30,7 @@ namespace d60.Cirqus.Tests.Contracts.AggregateRootRepository
             _factory.SaveEvent<SomeEvent, SomeRoot>(NewEvent(aggregateRootId, 3));
             _factory.SaveEvent<SomeEvent, SomeRoot>(NewEvent(aggregateRootId, 4));
 
-            var instance = _repo.Get<SomeRoot>(aggregateRootId, new InMemoryUnitOfWork(_repo)).AggregateRoot;
+            var instance = _repo.Get<SomeRoot>(aggregateRootId).AggregateRoot;
 
             Assert.That(instance.EventCounter, Is.EqualTo(5));
         }

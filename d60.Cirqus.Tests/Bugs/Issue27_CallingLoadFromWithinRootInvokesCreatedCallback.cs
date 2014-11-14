@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using d60.Cirqus.Aggregates;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
@@ -50,7 +51,10 @@ namespace d60.Cirqus.Tests.Bugs
         static InMemoryUnitOfWork GetUnitOfWork()
         {
             var serializer = new JsonDomainEventSerializer();
-            return new InMemoryUnitOfWork(new DefaultAggregateRootRepository(new InMemoryEventStore(serializer), serializer));
+            var mapper = new DefaultDomainTypeMapper();
+            var eventStore = new InMemoryEventStore(serializer);
+            var repository = new DefaultAggregateRootRepository(eventStore, serializer);
+            return new InMemoryUnitOfWork(repository, mapper);
         }
     }
 }

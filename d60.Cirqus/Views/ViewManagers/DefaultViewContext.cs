@@ -1,6 +1,7 @@
 ﻿using System;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 
@@ -14,11 +15,11 @@ namespace d60.Cirqus.Views.ViewManagers
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly RealUnitOfWork _realUnitOfWork;
 
-        public DefaultViewContext(IAggregateRootRepository aggregateRootRepository)
+        public DefaultViewContext(IAggregateRootRepository aggregateRootRepository, IDomainTypeMapper domainTypeMapper)
         {
             _aggregateRootRepository = aggregateRootRepository;
 
-            _realUnitOfWork = new RealUnitOfWork(_aggregateRootRepository);
+            _realUnitOfWork = new RealUnitOfWork(_aggregateRootRepository, domainTypeMapper);
         }
 
         public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
@@ -73,7 +74,7 @@ namespace d60.Cirqus.Views.ViewManagers
                 _realUnitOfWork = realUnitOfWork;
             }
 
-            public void AddEmittedEvent(DomainEvent e)
+            public void AddEmittedEvent<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
             {
                 throw new InvalidOperationException(
                     string.Format("Aggregate root {0} with ID {1} attempted to emit event {2}, but that cannot be done when the root instance is frozen! (global sequence number: {3})",
@@ -98,7 +99,7 @@ namespace d60.Cirqus.Views.ViewManagers
 
         public DomainEvent CurrentEvent { get; set; }
 
-        public void AddEmittedEvent(DomainEvent e)
+        public void AddEmittedEvent<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
         {
             throw new NotImplementedException("A view context cannot be used as a unit of work when emitting events");
         }

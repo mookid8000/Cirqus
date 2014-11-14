@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace d60.Cirqus.Aggregates
+namespace d60.Cirqus.Config
 {
-    public interface IAggregateRootTypeMapper
+    public interface IDomainTypeMapper
     {
         Type GetType(string name);
         string GetName(Type type);

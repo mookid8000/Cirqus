@@ -85,8 +85,6 @@ namespace d60.Cirqus.Aggregates
             e.Meta[DomainEvent.MetadataKeys.AggregateRootId] = Id;
             e.Meta[DomainEvent.MetadataKeys.TimeUtc] = now.ToString("u");
             e.Meta[DomainEvent.MetadataKeys.SequenceNumber] = sequenceNumber.ToString(Metadata.NumberCulture);
-            e.Meta[DomainEvent.MetadataKeys.Owner] = GetOwnerFromType(GetType());
-            e.Meta[DomainEvent.MetadataKeys.Type] = GetOwnerFromType(e.GetType());
 
             e.Meta.TakeFromAttributes(eventType);
             e.Meta.TakeFromAttributes(GetType());
@@ -130,21 +128,6 @@ namespace d60.Cirqus.Aggregates
             }
 
             CurrentSequenceNumber = e.GetSequenceNumber();
-        }
-
-        internal static string GetOwnerFromType(Type aggregateRootType)
-        {
-            return FormatType(aggregateRootType);
-        }
-
-        internal static string GetEventTypeFromType(Type domainEventType)
-        {
-            return FormatType(domainEventType);
-        }
-
-        static string FormatType(Type type)
-        {
-            return string.Format("{0}, {1}", type.FullName, type.Assembly.GetName().Name);
         }
 
         public override string ToString()

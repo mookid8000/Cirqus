@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Timers;
 using d60.Cirqus.Aggregates;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Numbers;
 using d60.Cirqus.Serialization;
@@ -84,7 +85,7 @@ namespace d60.Cirqus.Tests.Aggregates
             var timeForNextEvent = timeForFirstEvent.AddMilliseconds(2);
 
             var aggregateRootRepository = CreateAggregateRootRepository();
-            var eventCollector = new InMemoryUnitOfWork(aggregateRootRepository);
+            var eventCollector = new InMemoryUnitOfWork(aggregateRootRepository, new DefaultDomainTypeMapper());
 
             var someAggregate = new SomeAggregate
             {

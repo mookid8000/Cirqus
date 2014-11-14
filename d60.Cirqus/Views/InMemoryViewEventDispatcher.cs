@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Aggregates;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
@@ -19,6 +20,7 @@ namespace d60.Cirqus.Views
     {
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IDomainEventSerializer _domainEventSerializer;
+        readonly IDomainTypeMapper _domainTypeMapper;
         readonly ConcurrentDictionary<string, TViewInstance> _views = new ConcurrentDictionary<string, TViewInstance>();
         readonly ViewDispatcherHelper<TViewInstance> _dispatcher = new ViewDispatcherHelper<TViewInstance>();
         readonly ViewLocator _viewLocator = ViewLocator.GetLocatorFor<TViewInstance>();
@@ -26,10 +28,11 @@ namespace d60.Cirqus.Views
 
         bool _stopped;
 
-        public InMemoryViewEventDispatcher(IAggregateRootRepository aggregateRootRepository, IDomainEventSerializer domainEventSerializer)
+        public InMemoryViewEventDispatcher(IAggregateRootRepository aggregateRootRepository, IDomainEventSerializer domainEventSerializer, IDomainTypeMapper domainTypeMapper)
         {
             _aggregateRootRepository = aggregateRootRepository;
             _domainEventSerializer = domainEventSerializer;
+            _domainTypeMapper = domainTypeMapper;
         }
 
         /// <summary>
@@ -71,7 +74,7 @@ namespace d60.Cirqus.Views
 
             try
             {
-                var viewContext = new DefaultViewContext(_aggregateRootRepository);
+                var viewContext = new DefaultViewContext(_aggregateRootRepository, _domainTypeMapper);
 
                 foreach (var e in events)
                 {

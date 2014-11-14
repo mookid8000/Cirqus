@@ -65,8 +65,9 @@ namespace d60.Cirqus.Config.Configurers
             var eventDispatcher = resolutionContext.Get<IEventDispatcher>();
             var serializer = resolutionContext.Get<IDomainEventSerializer>();
             var commandMapper = resolutionContext.Get<ICommandMapper>();
+            var domainTypeMapper = resolutionContext.Get<IDomainTypeMapper>();
 
-            var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher, serializer, commandMapper);
+            var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher, serializer, commandMapper, domainTypeMapper);
 
             commandProcessor.Disposed += () =>
             {
@@ -93,7 +94,15 @@ namespace d60.Cirqus.Config.Configurers
         {
             if (!_container.HasService<IAggregateRootRepository>(checkForPrimary: true))
             {
-                _container.Register<IAggregateRootRepository>(context => new DefaultAggregateRootRepository(context.Get<IEventStore>(), context.Get<IDomainEventSerializer>()));
+                _container.Register<IAggregateRootRepository>(context =>
+                {
+                    var eventStore = context.Get<IEventStore>();
+                    var domainEventSerializer = context.Get<IDomainEventSerializer>();
+                    
+                    var aggregateRootRepository = new DefaultAggregateRootRepository(eventStore, domainEventSerializer);
+
+                    return aggregateRootRepository;
+                });
             }
 
             if (!_container.HasService<IDomainEventSerializer>(checkForPrimary: true))
@@ -109,6 +118,11 @@ namespace d60.Cirqus.Config.Configurers
             if (!_container.HasService<ICommandMapper>(checkForPrimary: true))
             {
                 _container.Register<ICommandMapper>(context => new DefaultCommandMapper());
+            }
+
+            if (!_container.HasService<IDomainTypeMapper>(checkForPrimary: true))
+            {
+                _container.Register<IDomainTypeMapper>(context => new DefaultDomainTypeMapper());
             }
         }
     }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
@@ -21,6 +22,8 @@ namespace d60.Cirqus.Tests.Snapshotting
     [TestFixture, Category(TestCategories.MongoDb)]
     public class TestSnapshottingWithFairlyLongHistory : FixtureBase
     {
+        readonly DefaultDomainTypeMapper _domainTypeMapper = new DefaultDomainTypeMapper();
+        readonly DefaultCommandMapper _commandMapper = new DefaultCommandMapper();
         MongoDatabase _database;
         TimeTaker _timeTaker;
 
@@ -100,7 +103,9 @@ caching in use: {3}",
 
             _timeTaker.InnerAggregateRootRepository = aggregateRootRepository;
 
-            var commandProcessor = new CommandProcessor(_timeTaker, _timeTaker, new ViewManagerEventDispatcher(_timeTaker, eventStore, serializer), serializer, new DefaultCommandMapper());
+            var eventDispatcher = new ViewManagerEventDispatcher(_timeTaker, eventStore, serializer, _domainTypeMapper);
+
+            var commandProcessor = new CommandProcessor(_timeTaker, _timeTaker, eventDispatcher, serializer, _commandMapper, _domainTypeMapper);
 
             RegisterForDisposal(commandProcessor);
 
