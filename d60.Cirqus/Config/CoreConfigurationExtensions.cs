@@ -120,7 +120,15 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void UseCustomDomainEventSerializer(this OptionsConfigurationBuilder builder, IDomainEventSerializer domainEventSerializer)
         {
-            builder.Registrar.Register(o => domainEventSerializer);
+            builder.Registrar.RegisterInstance(domainEventSerializer);
+        }
+
+        /// <summary>
+        /// Registers the given type mapper to be used instead of the default <see cref="DefaultAggregateRootTypeMapper"/>
+        /// </summary>
+        public static void UseCustomAggregateRootTypeMapper(this OptionsConfigurationBuilder builder, IAggregateRootTypeMapper aggregateRootTypeMapper)
+        {
+            builder.Registrar.RegisterInstance(aggregateRootTypeMapper);
         }
 
         /// <summary>

@@ -180,6 +180,7 @@
     <Compile Include="Integration\SimpleScenarioWithConcurrency.cs" />
     <Compile Include="Integration\SimpleScenarioWithPersistence.cs" />
     <Compile Include="Integration\SimpleScenario.cs" />
+    <Compile Include="Integration\TypeNameAlias.cs" />
     <Compile Include="Logging\TestCirqusLoggerFactory.cs" />
     <Compile Include="MongoDb\MongoHelper.cs" />
     <Compile Include="MongoDb\TestMongoDbEventStore.cs" />

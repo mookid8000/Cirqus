@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Reflection;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
