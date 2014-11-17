@@ -32,7 +32,7 @@ namespace d60.Cirqus.Views.ViewManagers
             return _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, _realUnitOfWork, globalSequenceNumberCutoff);
         }
 
-        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
+        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : class
         {
             if (!_aggregateRootRepository.Exists(aggregateRootId, maxGlobalSequenceNumber: globalSequenceNumber))
             {
@@ -47,10 +47,10 @@ namespace d60.Cirqus.Views.ViewManagers
             var frozen = new FrozenAggregateRootService(aggregateRootInfo, _realUnitOfWork);
             aggregateRoot.UnitOfWork = frozen;
 
-            return (TAggregateRoot)aggregateRoot;
+            return aggregateRoot as TAggregateRoot;
         }
 
-        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : class
         {
             if (CurrentEvent == null)
             {
@@ -63,7 +63,7 @@ namespace d60.Cirqus.Views.ViewManagers
             return Load<TAggregateRoot>(aggregateRootId, CurrentEvent.GetGlobalSequenceNumber());
         }
 
-        public TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        public TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : class
         {
             try
             {
@@ -76,7 +76,7 @@ namespace d60.Cirqus.Views.ViewManagers
             }
         }
 
-        public TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
+        public TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : class
         {
             try
             {

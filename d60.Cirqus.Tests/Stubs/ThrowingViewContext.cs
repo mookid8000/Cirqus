@@ -1,5 +1,4 @@
 ﻿using System;
-using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Views.ViewManagers;
 
@@ -7,22 +6,22 @@ namespace d60.Cirqus.Tests.Stubs
 {
     public class ThrowingViewContext : IViewContext
     {
-        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : class
         {
             throw new NotImplementedException("This view context is a stub that throws when someone uses it");
         }
 
-        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
+        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : class
         {
             throw new NotImplementedException("This view context is a stub that throws when someone uses it");
         }
 
-        public TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        public TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : class
         {
             throw new NotImplementedException("This view context is a stub that throws when someone uses it");
         }
 
-        public TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
+        public TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : class
         {
             throw new NotImplementedException("This view context is a stub that throws when someone uses it");
         }
