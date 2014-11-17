@@ -20,6 +20,6 @@ namespace d60.Cirqus.Commands
         /// <summary>
         /// Attempts to load the given aggregate root, throwing an exception if it does not exist
         /// </summary>
-        TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new();
+        TAggregateRoot Load<TAggregateRoot>(string aggregateRootId);
     }
 }
