@@ -432,7 +432,7 @@ This is a big update that completes the transition to the new, vastly improved v
 * Prettified some code - thanks [ssboisen]
 * Introduced `IDomainTypeNameMapper` that allows for customizing names of events and aggregate roots as they go into event metadata
 * Split `Load` up into `Create`, `TryLoad`, and `Load` - each with appropriate and more explicit behavior
-* Relax type constraints on `Load` and `TryLoad` methods, allowing for loading as base classes and interfaces
+* Relaxed type constraints on `Load` and `TryLoad` methods, allowing for loading as base classes and interfaces
 
 
 [asgerhallas]: https://github.com/asgerhallas
