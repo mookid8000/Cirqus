@@ -72,6 +72,12 @@ namespace d60.Cirqus.Aggregates
 
         AggregateRoot CreateNewAggregateRootInstance(Type aggregateRootType, string aggregateRootId, IUnitOfWork unitOfWork)
         {
+            if (!typeof (AggregateRoot).IsAssignableFrom(aggregateRootType))
+            {
+                throw new ArgumentException(string.Format("Cannot create new aggregate root with ID {0} of type {1} because it is not derived from AggregateRoot!",
+                    aggregateRootId, aggregateRootType));
+            }
+
             var aggregateRoot = (AggregateRoot)Activator.CreateInstance(aggregateRootType);
             
             aggregateRoot.Initialize(aggregateRootId);
