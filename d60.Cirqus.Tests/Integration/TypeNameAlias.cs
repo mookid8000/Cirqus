@@ -34,7 +34,9 @@ namespace d60.Cirqus.Tests.Integration
 
             var command = new GenericCommand(context =>
             {
-                var oneRoot = context.Load<OneRoot>("someId", createIfNotExists: true);
+                var oneRoot = context.TryLoad<OneRoot>("someId")
+                              ?? context.Create<OneRoot>("someId");
+
                 oneRoot.Bam();
             });
 
@@ -57,7 +59,9 @@ namespace d60.Cirqus.Tests.Integration
 
             var command = new GenericCommand(context =>
             {
-                var oneRoot = context.Load<OneRoot>("someId", createIfNotExists: true);
+                var oneRoot = context.TryLoad<OneRoot>("someId")
+                              ?? context.Create<OneRoot>("someId");
+
                 oneRoot.Bam();
             });
 

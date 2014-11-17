@@ -433,7 +433,6 @@ This is a big update that completes the transition to the new, vastly improved v
 * Introduced `IDomainTypeNameMapper` that allows for customizing names of events and aggregate roots as they go into event metadata
 
 
-
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 

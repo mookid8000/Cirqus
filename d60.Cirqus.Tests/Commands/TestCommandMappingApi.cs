@@ -21,18 +21,24 @@ namespace d60.Cirqus.Tests.Commands
             var commandMappings = new CommandMappings()
                 .Map<RawRootCommand>((context, command) =>
                 {
-                    var instance = context.Load<Root>(command.AggregateRootId, createIfNotExists: true);
+                    var instance = context.TryLoad<Root>(command.AggregateRootId)
+                               ?? context.Create<Root>(command.AggregateRootId);
+                    
                     instance.DoStuff();
                 })
                 .Map<AnotherRawRootCommand>((context, command) =>
                 {
-                    context
-                        .Load<Root>(command.AggregateRootId, createIfNotExists: true)
+                    var instance = context.TryLoad<Root>(command.AggregateRootId)
+                                   ?? context.Create<Root>(command.AggregateRootId);
+
+                    instance
                         .DoStuff()
                         .DoStuff();
 
-                    context
-                        .Load<Root>(command.AggregateRootId + "w00t!", createIfNotExists: true)
+                    var otherInstance = context.TryLoad<Root>(command.AggregateRootId + "w00t!")
+                                        ?? context.Create<Root>(command.AggregateRootId + "w00t!");
+
+                    otherInstance
                         .DoStuff()
                         .DoStuff()
                         .DoStuff();

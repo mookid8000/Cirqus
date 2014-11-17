@@ -73,8 +73,8 @@ namespace d60.Cirqus.Tests.Commands
 
             public override void Execute(ICommandContext context)
             {
-                AggregateRootIds.Select(x => context.Load<MyRoot>(x, createIfNotExists: true)).ToList().ForEach(r => r.EmitMyEvent());
-                AggregateRootIds.Select(x => context.Load<MyRoot>(x, createIfNotExists: true)).ToList().ForEach(r => r.EmitMyEvent());
+                AggregateRootIds.Select(x => (context.TryLoad<MyRoot>(x) ?? context.Create<MyRoot>(x))).ToList().ForEach(r => r.EmitMyEvent());
+                AggregateRootIds.Select(x => (context.TryLoad<MyRoot>(x) ?? context.Create<MyRoot>(x))).ToList().ForEach(r => r.EmitMyEvent());
             }
         }
 

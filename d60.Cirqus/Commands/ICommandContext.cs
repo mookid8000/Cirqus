@@ -1,5 +1,4 @@
-﻿using System;
-using d60.Cirqus.Aggregates;
+﻿using d60.Cirqus.Aggregates;
 
 namespace d60.Cirqus.Commands
 {
@@ -8,12 +7,6 @@ namespace d60.Cirqus.Commands
     /// </summary>
     public interface ICommandContext
     {
-        /// <summary>
-        /// Loads the aggregate root with the specified type and ID, optionally creating it if it does not already exist
-        /// </summary>
-        [Obsolete]
-        TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new();
-
         /// <summary>
         /// Creates an aggregate root of the given type with the given ID. Throws if an instance already exists with the given ID
         /// </summary>

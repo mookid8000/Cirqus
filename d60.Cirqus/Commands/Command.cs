@@ -47,7 +47,8 @@ namespace d60.Cirqus.Commands
 
         public sealed override void Execute(ICommandContext context)
         {
-            var aggregateRootInstance = context.Load<TAggregateRoot>(AggregateRootId, createIfNotExists: true);
+            var aggregateRootInstance = context.TryLoad<TAggregateRoot>(AggregateRootId)
+                                        ?? context.Create<TAggregateRoot>(AggregateRootId);
 
             Execute(aggregateRootInstance);
         }
