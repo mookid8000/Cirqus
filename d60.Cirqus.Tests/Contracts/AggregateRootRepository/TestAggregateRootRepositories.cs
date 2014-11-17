@@ -1,4 +1,5 @@
 ﻿using d60.Cirqus.Aggregates;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Numbers;
 using d60.Cirqus.Tests.Contracts.AggregateRootRepository.Factories;
@@ -42,6 +43,7 @@ namespace d60.Cirqus.Tests.Contracts.AggregateRootRepository
                 Meta =
                 {
                     { DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId},
+                    { DomainEvent.MetadataKeys.Owner, new DefaultDomainTypeNameMapper().GetName(typeof(SomeRoot))},
                     { DomainEvent.MetadataKeys.SequenceNumber, sequenceNumber.ToString(Metadata.NumberCulture)},
                 }
             };

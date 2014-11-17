@@ -53,15 +53,27 @@ namespace d60.Cirqus.Aggregates
             {
                 if (aggregateRoot == null)
                 {
-                    var aggregateRootType = _domainTypeNameMapper.GetType(e.Meta[DomainEvent.MetadataKeys.Owner]);
+                    if (!e.Meta.ContainsKey(DomainEvent.MetadataKeys.Owner))
+                    {
+                        throw new InvalidOperationException(string.Format("Attempted to load aggregate root with ID {0} but the first event {1} did not contain metadata with the aggregate root type name!",
+                            aggregateRootId, e));
+                    }
+
+                    var aggregateRootTypeName = e.Meta[DomainEvent.MetadataKeys.Owner];
+                    var aggregateRootType = _domainTypeNameMapper.GetType(aggregateRootTypeName);
                     aggregateRoot = CreateNewAggregateRootInstance(aggregateRootType, aggregateRootId, unitOfWork);
                 }
 
-                aggregateRoot.ApplyEvent(e);
+                aggregateRoot.ApplyEvent(e, ReplayState.ReplayApply);
             }
 
             if (aggregateRoot == null)
             {
+                if (!createIfNotExists)
+                {
+                    throw new ArgumentException(string.Format("Attempted to load aggregate root with ID {0} as {1}, but it didn't exist!", aggregateRootId, typeof(TAggregateRoot)));
+                }
+
                 aggregateRoot = CreateNewAggregateRootInstance(typeof(TAggregateRoot), aggregateRootId, unitOfWork);
 
                 aggregateRoot.InvokeCreated();

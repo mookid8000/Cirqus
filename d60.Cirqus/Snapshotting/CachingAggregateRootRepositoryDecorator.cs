@@ -65,7 +65,7 @@ namespace d60.Cirqus.Snapshotting
 
             foreach (var e in eventsToApply)
             {
-                cloneInfo.ApplyEvent(e);
+                cloneInfo.ApplyEvent(e, ReplayState.ReplayApply);
             }
 
             var timeElapsedFetchingAndApplyingEvents = stopwatch.Elapsed;

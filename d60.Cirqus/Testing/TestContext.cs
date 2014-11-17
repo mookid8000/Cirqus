@@ -163,13 +163,13 @@ namespace d60.Cirqus.Testing
 
                         try
                         {
-                            var info = _aggregateRootRepository
+                            var aggregateRoot = _aggregateRootRepository
                                 .GetType()
                                 .GetMethod("Get")
                                 .MakeGenericMethod(type)
                                 .Invoke(_aggregateRootRepository, parameters);
 
-                            return (AggregateRoot)info.GetType().GetProperty("AggregateRoot").GetValue(info);
+                            return (AggregateRoot)aggregateRoot;
                         }
                         catch (Exception exception)
                         {

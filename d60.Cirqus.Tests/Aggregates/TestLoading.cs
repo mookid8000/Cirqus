@@ -45,7 +45,7 @@ namespace d60.Cirqus.Tests.Aggregates
         {
             public void LoadOtherBeetRootWithDefaultBehavior()
             {
-                Load<BeetRoot>("id1");
+                var otherBeetroot = Load<BeetRoot>("id1");
             }
 
             public void LoadOtherBeetRootButOverrideBehavior()

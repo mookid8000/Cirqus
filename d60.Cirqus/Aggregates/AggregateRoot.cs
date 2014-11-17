@@ -91,11 +91,7 @@ namespace d60.Cirqus.Aggregates
 
             try
             {
-                ReplayState = ReplayState.EmitApply;
-
-                ApplyEvent(e);
-
-                ReplayState = ReplayState.None;
+                ApplyEvent(e, ReplayState.EmitApply);
             }
             catch (Exception exception)
             {
@@ -106,7 +102,7 @@ namespace d60.Cirqus.Aggregates
             EventEmitted(e);
         }
 
-        internal void ApplyEvent(DomainEvent e)
+        internal void ApplyEvent(DomainEvent e, ReplayState replayState)
         {
             // tried caching here with a (aggRootType, eventType) lookup in two levels of concurrent dictionaries.... didn't provide significant perf boost
             var applyMethod = GetType().GetMethod("Apply", new[] { e.GetType() });
@@ -118,9 +114,21 @@ namespace d60.Cirqus.Aggregates
                         e.GetType().FullName));
             }
 
+            var previousReplayState = ReplayState;
+
             try
             {
+                ReplayState = replayState;
+
+                if (ReplayState == ReplayState.ReplayApply)
+                {
+                    GlobalSequenceNumberCutoff = e.GetGlobalSequenceNumber();
+                }
+
                 applyMethod.Invoke(this, new object[] { e });
+
+                GlobalSequenceNumberCutoff = long.MaxValue;
+                ReplayState = previousReplayState;
             }
             catch (TargetInvocationException tae)
             {
@@ -201,7 +209,15 @@ namespace d60.Cirqus.Aggregates
                 ? GlobalSequenceNumberCutoff
                 : long.MaxValue;
 
-            return (TAggregateRoot)UnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists: false);
+            var aggregateRoot = UnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists: false);
+
+            if (!(aggregateRoot is TAggregateRoot))
+            {
+                throw new InvalidOperationException(string.Format("Attempted to load aggregate root with ID {0} as a {1}, but the concrete type is {2} which is not compatible",
+                    aggregateRootId, typeof(TAggregateRoot), aggregateRootId.GetType()));
+            }
+
+            return (TAggregateRoot)aggregateRoot;
         }
     }
 }
