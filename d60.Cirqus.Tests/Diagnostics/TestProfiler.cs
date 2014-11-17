@@ -56,8 +56,8 @@ namespace d60.Cirqus.Tests.Diagnostics
             Console.WriteLine(string.Join(Environment.NewLine, nextLines));
 
             Assert.That(string.Join("; ", firstLines.Select(l => l.Substring(0, l.IndexOf('.')))),
-                Is.EqualTo("RecordAggregateRootGet 00:00:00; RecordAggregateRootGet 00:00:00"),
-                "Expected that two loads were performed, each taking way less than a second");
+                Is.EqualTo("RecordAggregateRootGet 00:00:00; RecordAggregateRootGet 00:00:00; RecordAggregateRootGet 00:00:00; RecordAggregateRootGet 00:00:00"),
+                "Expected that four loads (2 x (tryload + create)) were performed, each taking way less than a second");
 
             Assert.That(string.Join("; ", nextLines.Select(l => l.Substring(0, l.IndexOf('.')))),
                 Is.EqualTo("RecordAggregateRootGet 00:00:01; RecordAggregateRootGet 00:00:01"),
