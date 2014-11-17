@@ -48,7 +48,11 @@ namespace d60.Cirqus.Tests.Diagnostics
                         .AggregateRootRepository(e => e.EnableInMemorySnapshotCaching(1000))
                         
                         .EventDispatcher(e => e.UseViewManagerEventDispatcher())
-                        .Options(o => o.AddProfiler(profiler))
+                        .Options(o =>
+                        {
+                            o.AddProfiler(profiler);
+                            o.SetMaxRetries(0);
+                        })
                         .Create()
                     );
 

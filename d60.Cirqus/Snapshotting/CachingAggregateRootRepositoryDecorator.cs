@@ -63,6 +63,8 @@ namespace d60.Cirqus.Snapshotting
                 .Where(e => e.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber)
                 .Select(e => _domainEventSerializer.Deserialize(e));
 
+            cloneInfo.UnitOfWork = unitOfWork;
+
             foreach (var e in eventsToApply)
             {
                 cloneInfo.ApplyEvent(e, ReplayState.ReplayApply);

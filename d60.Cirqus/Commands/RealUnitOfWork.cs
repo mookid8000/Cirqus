@@ -78,15 +78,6 @@ namespace d60.Cirqus.Commands
             var aggregateRoot = CachedAggregateRoots[globalSequenceNumberCutoff][aggregateRootId];
 
             return aggregateRoot;
-
-            //if (!(aggregateRoot is TAggregateRoot))
-            //{
-            //    throw new InvalidOperationException(
-            //        string.Format("Attempted to load {0} with ID {1} as if it was a {2} - did you use the wrong ID?",
-            //            aggregateRoot.GetType(), aggregateRootId, typeof(TAggregateRoot)));
-            //}
-
-            //return AggregateRootInfo<TAggregateRoot>.Create((TAggregateRoot)aggregateRoot);
         }
     }
 }
