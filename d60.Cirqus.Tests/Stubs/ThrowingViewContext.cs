@@ -17,6 +17,16 @@ namespace d60.Cirqus.Tests.Stubs
             throw new NotImplementedException("This view context is a stub that throws when someone uses it");
         }
 
+        public TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        {
+            throw new NotImplementedException("This view context is a stub that throws when someone uses it");
+        }
+
+        public TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
+        {
+            throw new NotImplementedException("This view context is a stub that throws when someone uses it");
+        }
+
         /// <summary>
         /// We do allow for setting/getting the event currently being handled though
         /// </summary>
