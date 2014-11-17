@@ -66,6 +66,39 @@ namespace d60.Cirqus.Tests.Integration
             Assert.That(invalidOperationException.Message, Contains.Substring("already exists"));
         }
 
+        [Test]
+        public void TryLoadAggregateRootWhenItExists()
+        {
+            _commandProcessor.ProcessCommand(new GenericCommand(c => c.Create<SomeAggregateRoot>("doesNotExist")));
+            var gotAnInstance = false;
+
+            _commandProcessor.ProcessCommand(new GenericCommand(c =>
+            {
+                var instance = c.TryLoad<SomeAggregateRoot>("doesNotExist");
+
+                gotAnInstance = instance != null;
+            }));
+
+            Assert.That(gotAnInstance, Is.True);
+        }
+
+        [Test]
+        public void TryLoadAggregateRootWhenItDoesNotExist()
+        {
+            var gotAnInstance = false;
+            var command = new GenericCommand(c =>
+            {
+                var instance = c.TryLoad<SomeAggregateRoot>("doesNotExist");
+
+                gotAnInstance = instance != null;
+            });
+
+            _commandProcessor.ProcessCommand(command);
+
+            Assert.That(gotAnInstance, Is.False);
+        }
+
+
         class GenericCommand : ExecutableCommand
         {
             readonly Action<ICommandContext> _action;
