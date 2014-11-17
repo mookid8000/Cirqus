@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
@@ -25,11 +24,9 @@ namespace d60.Cirqus.Tests.Contracts.Views.Models.RecoveryTest
         {
             if (Fail)
             {
-                Console.WriteLine("FAILING!!");
                 throw new BarrierPostPhaseException("oh noes!");
             }
 
-            Console.WriteLine("Adding {0} ... ", domainEvent.EventId);
             EventIds.Add(domainEvent.EventId);
             Thread.Sleep(10);
         }

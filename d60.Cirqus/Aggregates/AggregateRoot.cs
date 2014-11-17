@@ -135,6 +135,70 @@ namespace d60.Cirqus.Aggregates
             return string.Format("{0} ({1})", GetType().Name, Id);
         }
 
+        protected TAggregateRoot Create<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        {
+            if (UnitOfWork == null)
+            {
+                throw new InvalidOperationException(
+                    string.Format(
+                        "Attempted to Load {0} with ID {1} from {2}, but it has not been initialized with a unit of work! The unit of work must be attached to the aggregate root in order to cache hydrated aggregate roots within the current unit of work.",
+                        typeof(TAggregateRoot), aggregateRootId, GetType()));
+            }
+
+            if (ReplayState != ReplayState.None)
+            {
+                throw new InvalidOperationException(string.Format("Attempted to create new aggregate root of type {0} with ID {1}, but cannot create anything when replay state is {2}",
+                    typeof(TAggregateRoot), aggregateRootId, ReplayState));
+            }
+
+            return UnitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true).AggregateRoot;
+        }
+
+        protected TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        {
+            if (UnitOfWork == null)
+            {
+                throw new InvalidOperationException(
+                    string.Format(
+                        "Attempted to Load {0} with ID {1} from {2}, but it has not been initialized with a unit of work! The unit of work must be attached to the aggregate root in order to cache hydrated aggregate roots within the current unit of work.",
+                        typeof(TAggregateRoot), aggregateRootId, GetType()));
+            }
+
+            var globalSequenceNumberCutoffToLookFor = ReplayState == ReplayState.ReplayApply
+                ? GlobalSequenceNumberCutoff
+                : long.MaxValue;
+
+            try
+            {
+                var aggregateRootInfo = UnitOfWork
+                    .Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists: false);
+
+                return aggregateRootInfo.AggregateRoot;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        protected TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        {
+            if (UnitOfWork == null)
+            {
+                throw new InvalidOperationException(
+                    string.Format(
+                        "Attempted to Load {0} with ID {1} from {2}, but it has not been initialized with a unit of work! The unit of work must be attached to the aggregate root in order to cache hydrated aggregate roots within the current unit of work.",
+                        typeof(TAggregateRoot), aggregateRootId, GetType()));
+            }
+
+            var globalSequenceNumberCutoffToLookFor = ReplayState == ReplayState.ReplayApply
+                ? GlobalSequenceNumberCutoff
+                : long.MaxValue;
+
+            return UnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists: false).AggregateRoot;
+        }
+
+        [Obsolete]
         protected TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
         {
             if (UnitOfWork == null)

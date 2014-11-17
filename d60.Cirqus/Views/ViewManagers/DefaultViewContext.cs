@@ -22,19 +22,6 @@ namespace d60.Cirqus.Views.ViewManagers
             _realUnitOfWork = new RealUnitOfWork(_aggregateRootRepository, domainTypeNameMapper);
         }
 
-        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
-        {
-            if (CurrentEvent == null)
-            {
-                throw new InvalidOperationException(
-                    string.Format(
-                        "Attempted to load aggregate root {0} with ID {1} in snapshot at the time of the current event, but there was no current event on the context!",
-                        typeof(TAggregateRoot), aggregateRootId));
-            }
-
-            return Load<TAggregateRoot>(aggregateRootId, CurrentEvent.GetGlobalSequenceNumber());
-        }
-
         public bool Exists<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
         {
             return _aggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
@@ -61,6 +48,45 @@ namespace d60.Cirqus.Views.ViewManagers
             aggregateRoot.UnitOfWork = frozen;
 
             return aggregateRoot;
+        }
+
+        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        {
+            if (CurrentEvent == null)
+            {
+                throw new InvalidOperationException(
+                    string.Format(
+                        "Attempted to load aggregate root {0} with ID {1} in snapshot at the time of the current event, but there was no current event on the context!",
+                        typeof(TAggregateRoot), aggregateRootId));
+            }
+
+            return Load<TAggregateRoot>(aggregateRootId, CurrentEvent.GetGlobalSequenceNumber());
+        }
+
+        public TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        {
+            try
+            {
+                return Load<TAggregateRoot>(aggregateRootId);
+
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
+        {
+            try
+            {
+                return Load<TAggregateRoot>(aggregateRootId, globalSequenceNumber);
+
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         class FrozenAggregateRootService<TAggregateRoot> : IUnitOfWork where TAggregateRoot : AggregateRoot, new()
