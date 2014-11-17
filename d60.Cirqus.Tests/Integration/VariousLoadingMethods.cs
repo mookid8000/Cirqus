@@ -9,7 +9,6 @@ using d60.Cirqus.Exceptions;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Extensions;
-using MongoDB.Driver.Linq;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Integration
@@ -53,11 +52,13 @@ namespace d60.Cirqus.Tests.Integration
         [Test]
         public void CreateThrowsWhenAggregateRootInstanceAlreadyExists()
         {
-            _commandProcessor.ProcessCommand(new GenericCommand(c => c.Create<SomeAggregateRoot>("doesNotExist")));
+            const string someAggregateRootId = "just/an/id";
+
+            _commandProcessor.ProcessCommand(new GenericCommand(c => c.Create<SomeAggregateRoot>(someAggregateRootId)));
 
             var commandProcessingException = Assert.Throws<CommandProcessingException>(() =>
             {
-                var commandThatShouldFail = new GenericCommand(c => c.Create<SomeAggregateRoot>("doesNotExist"));
+                var commandThatShouldFail = new GenericCommand(c => c.Create<SomeAggregateRoot>(someAggregateRootId));
 
                 _commandProcessor.ProcessCommand(commandThatShouldFail);
             });
@@ -69,12 +70,14 @@ namespace d60.Cirqus.Tests.Integration
         [Test]
         public void TryLoadAggregateRootWhenItExists()
         {
-            _commandProcessor.ProcessCommand(new GenericCommand(c => c.Create<SomeAggregateRoot>("doesNotExist")));
+            const string aggregateRootId = "doesNotExist";
+
+            _commandProcessor.ProcessCommand(new GenericCommand(c => c.Create<SomeAggregateRoot>(aggregateRootId)));
             var gotAnInstance = false;
 
             _commandProcessor.ProcessCommand(new GenericCommand(c =>
             {
-                var instance = c.TryLoad<SomeAggregateRoot>("doesNotExist");
+                var instance = c.TryLoad<SomeAggregateRoot>(aggregateRootId);
 
                 gotAnInstance = instance != null;
             }));
@@ -98,6 +101,34 @@ namespace d60.Cirqus.Tests.Integration
             Assert.That(gotAnInstance, Is.False);
         }
 
+        [Test]
+        public void LoadAggregateRootWhenItExists()
+        {
+            const string aggregateRootId = "another/aggregate/root/id";
+
+            _commandProcessor.ProcessCommand(new GenericCommand(c => c.Create<SomeAggregateRoot>(aggregateRootId)));
+            var gotAnInstance = false;
+
+            _commandProcessor.ProcessCommand(new GenericCommand(c =>
+            {
+                var instance = c.Load<SomeAggregateRoot>(aggregateRootId);
+
+                gotAnInstance = instance != null;
+            }));
+
+            Assert.That(gotAnInstance, Is.True);
+        }
+
+        [Test]
+        public void LoadAggregateRootWhenItDoesNotExist()
+        {
+            var command = new GenericCommand(c => c.Load<SomeAggregateRoot>("doesNotExist"));
+
+            var exception = Assert.Throws<CommandProcessingException>(() => _commandProcessor.ProcessCommand(command));
+            var invalidOperationException = (ArgumentException)exception.InnerException;
+
+            Assert.That(invalidOperationException.Message, Contains.Substring("does not exist"));
+        }
 
         class GenericCommand : ExecutableCommand
         {

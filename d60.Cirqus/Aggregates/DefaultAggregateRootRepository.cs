@@ -60,7 +60,7 @@ namespace d60.Cirqus.Aggregates
                 }
                 else
                 {
-                    throw new ArgumentException(string.Format("Could not find aggregate root of type {0} with ID {1}", typeof(TAggregateRoot), aggregateRootId));
+                    throw new ArgumentException(string.Format("Aggregate root of type {0} with ID {1} does not exist", typeof(TAggregateRoot), aggregateRootId));
                 }
             }
 
