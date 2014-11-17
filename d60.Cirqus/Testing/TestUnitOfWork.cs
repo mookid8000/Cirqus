@@ -35,17 +35,16 @@ namespace d60.Cirqus.Testing
 
         public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
-            var aggregateRootInfo = _realUnitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true);
-            var aggregateRoot = aggregateRootInfo.AggregateRoot;
+            var aggregateRoot = _realUnitOfWork.Get(aggregateRootId, long.MaxValue, createIfNotExists: true);
 
             aggregateRoot.UnitOfWork = _realUnitOfWork;
 
-            if (aggregateRootInfo.IsNew)
+            if (aggregateRoot.CurrentSequenceNumber == AggregateRoot.InitialAggregateRootSequenceNumber)
             {
                 aggregateRoot.InvokeCreated();
             }
 
-            return aggregateRoot;
+            return (TAggregateRoot)aggregateRoot;
         }
 
         /// <summary>

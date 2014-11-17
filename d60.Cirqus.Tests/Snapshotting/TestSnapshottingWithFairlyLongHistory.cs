@@ -137,21 +137,21 @@ caching in use: {3}",
                 get { return _timeSpentSavingEvents; }
             }
 
-            public AggregateRootInfo<TAggregate> Get<TAggregate>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false) where TAggregate : AggregateRoot, new()
+            public AggregateRoot Get<TAggregateRoot>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false)
             {
                 var stopwatch = Stopwatch.StartNew();
                 
                 var aggregateRootInfo = InnerAggregateRootRepository
-                    .Get<TAggregate>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber, createIfNotExists);
+                    .Get<TAggregateRoot>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber, createIfNotExists);
                 
                 _timeSpentHydratingAggregateRoots += stopwatch.Elapsed;
 
                 return aggregateRootInfo;
             }
 
-            public bool Exists<TAggregate>(string aggregateRootId, long maxGlobalSequenceNumber = Int64.MaxValue, IUnitOfWork unitOfWork = null) where TAggregate : AggregateRoot
+            public bool Exists(string aggregateRootId, long maxGlobalSequenceNumber = Int64.MaxValue, IUnitOfWork unitOfWork = null)
             {
-                return InnerAggregateRootRepository.Exists<TAggregate>(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
+                return InnerAggregateRootRepository.Exists(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
             }
 
             public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)

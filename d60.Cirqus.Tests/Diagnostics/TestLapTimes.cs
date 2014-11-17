@@ -59,9 +59,9 @@ namespace d60.Cirqus.Tests.Diagnostics
                 });
 
                 var repo = new DefaultAggregateRootRepository(new MongoDbEventStore(database, "Events"), new JsonDomainEventSerializer(), new DefaultDomainTypeNameMapper());
-                var currentState = repo.Get<Root>("id", new ConsoleOutUnitOfWork(repo));
+                var currentState = (Root)repo.Get<Root>("id", new ConsoleOutUnitOfWork(repo));
 
-                Assert.That(currentState.AggregateRoot.HowManyThingsHaveHappened, Is.EqualTo(numberOfCommandsToProcess));
+                Assert.That(currentState.HowManyThingsHaveHappened, Is.EqualTo(numberOfCommandsToProcess));
             }
 
             Console.WriteLine(profiler);
@@ -110,9 +110,9 @@ namespace d60.Cirqus.Tests.Diagnostics
         long _millisecondsSpentSavingEvents = 0;
         long _millisecondsSpentGettingNextSequenceNumber = 0;
 
-        public void RecordAggregateRootGet(TimeSpan elapsed, Type type, string aggregateRootId)
+        public void RecordAggregateRootGet(TimeSpan elapsed, string aggregateRootId)
         {
-            _aggregateRootHydrationTimes.AddOrUpdate(type, id => elapsed, (id, total) => total + elapsed);
+            _aggregateRootHydrationTimes.AddOrUpdate(GetType(), id => elapsed, (id, total) => total + elapsed);
         }
 
         public void RecordAggregateRootExists(TimeSpan elapsed, string aggregateRootId)

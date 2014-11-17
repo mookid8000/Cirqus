@@ -14,20 +14,20 @@ namespace d60.Cirqus.Commands
 
         public TAggregateRoot Create<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
-            if (_unitOfWork.Exists<TAggregateRoot>(aggregateRootId, long.MaxValue))
+            if (_unitOfWork.Exists(aggregateRootId, long.MaxValue))
             {
                 throw new InvalidOperationException(string.Format("Cannot create aggregate root {0} with ID {1} because an instance with that ID already exists!",
                     typeof(TAggregateRoot), aggregateRootId));
             }
 
-            return _unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true).AggregateRoot;
+            return (TAggregateRoot)_unitOfWork.Get(aggregateRootId, long.MaxValue, createIfNotExists: true);
         }
 
         public TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
             try
             {
-                return _unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: false).AggregateRoot;
+                return (TAggregateRoot)_unitOfWork.Get(aggregateRootId, long.MaxValue, createIfNotExists: false);
             }
             catch
             {
@@ -37,8 +37,9 @@ namespace d60.Cirqus.Commands
 
         public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
-            var aggregateRootInfo = _unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: false);
-            return aggregateRootInfo.AggregateRoot;
+            var aggregateRoot = _unitOfWork.Get(aggregateRootId, long.MaxValue, createIfNotExists: false);
+
+            return (TAggregateRoot)aggregateRoot;
         }
     }
 }

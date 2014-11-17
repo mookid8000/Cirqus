@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Config;
 using d60.Cirqus.Events;
@@ -38,54 +37,56 @@ namespace d60.Cirqus.Commands
             Events.Add(e);
         }
 
-        public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+        public void AddToCache(AggregateRoot aggregateRoot, long globalSequenceNumberCutoff)
         {
             var cacheWithThisVersion = CachedAggregateRoots.GetOrAdd(globalSequenceNumberCutoff, cutoff => new Dictionary<string, AggregateRoot>());
 
             cacheWithThisVersion[aggregateRoot.Id] = aggregateRoot;
         }
 
-        public bool Exists<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+        public bool Exists(string aggregateRootId, long globalSequenceNumberCutoff)
         {
-            return _aggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
+            return _aggregateRootRepository.Exists(aggregateRootId, globalSequenceNumberCutoff);
         }
 
-        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
+        public AggregateRoot Get(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists = false)
         {
-            var aggregateRootInfoFromCache = GetAggregateRootFromCache<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
+            var aggregateRootInfoFromCache = GetAggregateRootFromCache(aggregateRootId, globalSequenceNumberCutoff);
 
             if (aggregateRootInfoFromCache != null)
             {
                 return aggregateRootInfoFromCache;
             }
 
-            var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff, createIfNotExists: createIfNotExists);
+            var aggregateRootInfo = _aggregateRootRepository.Get<AggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff, createIfNotExists: createIfNotExists);
 
             // make sure to cache under long.MaxValue if we're "unbounded"
             var lastGlobalSeqNoToCacheUnder = globalSequenceNumberCutoff == long.MaxValue
                 ? long.MaxValue
-                : aggregateRootInfo.LastGlobalSeqNo;
+                : aggregateRootInfo.GlobalSequenceNumberCutoff;
 
-            AddToCache(aggregateRootInfo.AggregateRoot, lastGlobalSeqNoToCacheUnder);
+            AddToCache(aggregateRootInfo, lastGlobalSeqNoToCacheUnder);
 
             return aggregateRootInfo;
         }
 
-        AggregateRootInfo<TAggregateRoot> GetAggregateRootFromCache<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+        AggregateRoot GetAggregateRootFromCache(string aggregateRootId, long globalSequenceNumberCutoff)
         {
             if (!CachedAggregateRoots.ContainsKey(globalSequenceNumberCutoff)) return null;
             if (!CachedAggregateRoots[globalSequenceNumberCutoff].ContainsKey(aggregateRootId)) return null;
 
             var aggregateRoot = CachedAggregateRoots[globalSequenceNumberCutoff][aggregateRootId];
 
-            if (!(aggregateRoot is TAggregateRoot))
-            {
-                throw new InvalidOperationException(
-                    string.Format("Attempted to load {0} with ID {1} as if it was a {2} - did you use the wrong ID?",
-                        aggregateRoot.GetType(), aggregateRootId, typeof(TAggregateRoot)));
-            }
+            return aggregateRoot;
 
-            return AggregateRootInfo<TAggregateRoot>.Create((TAggregateRoot)aggregateRoot);
+            //if (!(aggregateRoot is TAggregateRoot))
+            //{
+            //    throw new InvalidOperationException(
+            //        string.Format("Attempted to load {0} with ID {1} as if it was a {2} - did you use the wrong ID?",
+            //            aggregateRoot.GetType(), aggregateRootId, typeof(TAggregateRoot)));
+            //}
+
+            //return AggregateRootInfo<TAggregateRoot>.Create((TAggregateRoot)aggregateRoot);
         }
     }
 }

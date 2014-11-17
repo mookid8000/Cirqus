@@ -56,38 +56,38 @@ this time by using actual MongoDB underneath
         public void RunEntirePipelineAndProbePrivatesForMultipleAggregates()
         {
             // verify that fresh aggregates are delivered
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id1").AggregateRoot.GetCurrentState(), Is.EqualTo("Born"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id2").AggregateRoot.GetCurrentState(), Is.EqualTo("Born"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id1").GetCurrentState(), Is.EqualTo("Born"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id2").GetCurrentState(), Is.EqualTo("Born"));
 
             _cirqus.ProcessCommand(new TakeNextStepCommand("id1"));
 
             // verify that the command hit the first aggregate
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id1").AggregateRoot.GetCurrentState(), Is.EqualTo("Educated"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id2").AggregateRoot.GetCurrentState(), Is.EqualTo("Born"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id1").GetCurrentState(), Is.EqualTo("Educated"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id2").GetCurrentState(), Is.EqualTo("Born"));
 
             _cirqus.ProcessCommand(new TakeNextStepCommand("id2"));
 
             // verify that the command hit the other aggregate
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id1").AggregateRoot.GetCurrentState(), Is.EqualTo("Educated"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id2").AggregateRoot.GetCurrentState(), Is.EqualTo("Educated"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id1").GetCurrentState(), Is.EqualTo("Educated"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id2").GetCurrentState(), Is.EqualTo("Educated"));
 
             _cirqus.ProcessCommand(new TakeNextStepCommand("id2"));
 
             // verify that the command hit the other aggregate
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id1").AggregateRoot.GetCurrentState(), Is.EqualTo("Educated"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id2").AggregateRoot.GetCurrentState(), Is.EqualTo("Knowing"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id1").GetCurrentState(), Is.EqualTo("Educated"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id2").GetCurrentState(), Is.EqualTo("Knowing"));
 
             _cirqus.ProcessCommand(new TakeNextStepCommand("id1"));
 
             // verify that the command hit the first aggregate
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id1").AggregateRoot.GetCurrentState(), Is.EqualTo("Knowing"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id2").AggregateRoot.GetCurrentState(), Is.EqualTo("Knowing"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id1").GetCurrentState(), Is.EqualTo("Knowing"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id2").GetCurrentState(), Is.EqualTo("Knowing"));
 
             _cirqus.ProcessCommand(new TakeNextStepCommand("id1"));
 
             // verify that we have hit the end state
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id1").AggregateRoot.GetCurrentState(), Is.EqualTo("Knowing"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id2").AggregateRoot.GetCurrentState(), Is.EqualTo("Knowing"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id1").GetCurrentState(), Is.EqualTo("Knowing"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("id2").GetCurrentState(), Is.EqualTo("Knowing"));
         }
 
         public class TakeNextStepCommand : Command<ProgrammerAggregate>

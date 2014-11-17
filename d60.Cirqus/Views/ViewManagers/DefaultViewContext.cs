@@ -22,32 +22,32 @@ namespace d60.Cirqus.Views.ViewManagers
             _realUnitOfWork = new RealUnitOfWork(_aggregateRootRepository, domainTypeNameMapper);
         }
 
-        public bool Exists<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+        public bool Exists(string aggregateRootId, long globalSequenceNumberCutoff)
         {
-            return _aggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
+            return _aggregateRootRepository.Exists(aggregateRootId, globalSequenceNumberCutoff);
         }
 
-        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists) where TAggregateRoot : AggregateRoot, new()
+        public AggregateRoot Get(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists)
         {
-            return _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, _realUnitOfWork, globalSequenceNumberCutoff);
+            return _aggregateRootRepository.Get<AggregateRoot>(aggregateRootId, _realUnitOfWork, globalSequenceNumberCutoff);
         }
 
         public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
         {
-            if (!_aggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, maxGlobalSequenceNumber: globalSequenceNumber))
+            if (!_aggregateRootRepository.Exists(aggregateRootId, maxGlobalSequenceNumber: globalSequenceNumber))
             {
-                throw new ArgumentException(string.Format("Aggregate root {0} with ID {1} does not exist!", typeof(TAggregateRoot), aggregateRootId), "aggregateRootId");
+                throw new ArgumentException(string.Format("Aggregate root with ID {0} does not exist!", aggregateRootId), "aggregateRootId");
             }
 
             var aggregateRootInfo = _aggregateRootRepository
                 .Get<TAggregateRoot>(aggregateRootId, this, maxGlobalSequenceNumber: globalSequenceNumber);
 
-            var aggregateRoot = aggregateRootInfo.AggregateRoot;
+            var aggregateRoot = aggregateRootInfo;
 
-            var frozen = new FrozenAggregateRootService<TAggregateRoot>(aggregateRootInfo, _realUnitOfWork);
+            var frozen = new FrozenAggregateRootService(aggregateRootInfo, _realUnitOfWork);
             aggregateRoot.UnitOfWork = frozen;
 
-            return aggregateRoot;
+            return (TAggregateRoot)aggregateRoot;
         }
 
         public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
@@ -89,12 +89,12 @@ namespace d60.Cirqus.Views.ViewManagers
             }
         }
 
-        class FrozenAggregateRootService<TAggregateRoot> : IUnitOfWork where TAggregateRoot : AggregateRoot, new()
+        class FrozenAggregateRootService : IUnitOfWork
         {
-            readonly AggregateRootInfo<TAggregateRoot> _aggregateRootInfo;
+            readonly AggregateRoot _aggregateRootInfo;
             readonly RealUnitOfWork _realUnitOfWork;
 
-            public FrozenAggregateRootService(AggregateRootInfo<TAggregateRoot> aggregateRootInfo, RealUnitOfWork realUnitOfWork)
+            public FrozenAggregateRootService(AggregateRoot aggregateRootInfo, RealUnitOfWork realUnitOfWork)
             {
                 _aggregateRootInfo = aggregateRootInfo;
                 _realUnitOfWork = realUnitOfWork;
@@ -104,22 +104,22 @@ namespace d60.Cirqus.Views.ViewManagers
             {
                 throw new InvalidOperationException(
                     string.Format("Aggregate root {0} with ID {1} attempted to emit event {2}, but that cannot be done when the root instance is frozen! (global sequence number: {3})",
-                        typeof(TAggregateRoot), _aggregateRootInfo.AggregateRoot.Id, e, _aggregateRootInfo.LastGlobalSeqNo));
+                        typeof(TAggregateRoot), _aggregateRootInfo.Id, e, _aggregateRootInfo.GlobalSequenceNumberCutoff));
             }
 
-            public void AddToCache<TAggregateRootToAdd>(TAggregateRootToAdd aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRootToAdd : AggregateRoot
+            public void AddToCache(AggregateRoot aggregateRoot, long globalSequenceNumberCutoff)
             {
                 _realUnitOfWork.AddToCache(aggregateRoot, globalSequenceNumberCutoff);
             }
 
-            public bool Exists<TAggregateRootToCheck>(string aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRootToCheck : AggregateRoot
+            public bool Exists(string aggregateRootId, long globalSequenceNumberCutoff)
             {
-                return _realUnitOfWork.Exists<TAggregateRootToCheck>(aggregateRootId, globalSequenceNumberCutoff);
+                return _realUnitOfWork.Exists(aggregateRootId, globalSequenceNumberCutoff);
             }
 
-            public AggregateRootInfo<TAggregateRootToLoad> Get<TAggregateRootToLoad>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists) where TAggregateRootToLoad : AggregateRoot, new()
+            public AggregateRoot Get(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists)
             {
-                return _realUnitOfWork.Get<TAggregateRootToLoad>(aggregateRootId, globalSequenceNumberCutoff);
+                return _realUnitOfWork.Get(aggregateRootId, globalSequenceNumberCutoff);
             }
         }
 
@@ -130,7 +130,7 @@ namespace d60.Cirqus.Views.ViewManagers
             throw new NotImplementedException("A view context cannot be used as a unit of work when emitting events");
         }
 
-        public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
+        public void AddToCache(AggregateRoot aggregateRoot, long globalSequenceNumberCutoff)
         {
             _realUnitOfWork.AddToCache(aggregateRoot, globalSequenceNumberCutoff);
         }

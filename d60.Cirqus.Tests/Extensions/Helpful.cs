@@ -12,9 +12,10 @@ namespace d60.Cirqus.Tests.Extensions
 {
     public static class Helpful
     {
-        public static AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(this IAggregateRootRepository repo, string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        public static TAggregateRoot Get<TAggregateRoot>(this IAggregateRootRepository repo, string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
-            return repo.Get<TAggregateRoot>(aggregateRootId, new InMemoryUnitOfWork(repo, new DefaultDomainTypeNameMapper()), createIfNotExists: true);
+            var aggregateRoot = repo.Get<TAggregateRoot>(aggregateRootId, new InMemoryUnitOfWork(repo, new DefaultDomainTypeNameMapper()), createIfNotExists: true);
+            return (TAggregateRoot)aggregateRoot;
         }
 
         internal static Task<InMemoryEventStore> UseInMemoryEventStore(this EventStoreConfigurationBuilder builder)

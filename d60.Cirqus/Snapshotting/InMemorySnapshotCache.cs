@@ -51,10 +51,9 @@ namespace d60.Cirqus.Snapshotting
             {
             }
 
-            public static CacheEntry Create<TAggregateRoot>(AggregateRootInfo<TAggregateRoot> aggregateRootInfo)
-                where TAggregateRoot : AggregateRoot
+            public static CacheEntry Create(AggregateRoot aggregateRootInfo)
             {
-                var rootInstance = aggregateRootInfo.AggregateRoot;
+                var rootInstance = aggregateRootInfo;
                 var unitOfWork = rootInstance.UnitOfWork;
                 try
                 {
@@ -64,10 +63,10 @@ namespace d60.Cirqus.Snapshotting
 
                     return new CacheEntry
                     {
-                        SequenceNumber = aggregateRootInfo.LastSeqNo,
-                        GlobalSequenceNumber = aggregateRootInfo.LastGlobalSeqNo,
-                        AggregateRootId = aggregateRootInfo.AggregateRootId,
-                        AggregateRootType = typeof(TAggregateRoot),
+                        SequenceNumber = aggregateRootInfo.CurrentSequenceNumber,
+                        GlobalSequenceNumber = aggregateRootInfo.GlobalSequenceNumberCutoff,
+                        AggregateRootId = aggregateRootInfo.Id,
+                        AggregateRootType = rootInstance.GetType(),
                         Hits = 0,
                         TimeOfLastHit = DateTime.UtcNow,
                         Data = data
@@ -108,25 +107,25 @@ namespace d60.Cirqus.Snapshotting
                 return SequenceNumber * Hits / ensureAlwaysPositive;
             }
 
-            public AggregateRootInfo<TAggregateRoot> GetCloneAs<TAggregateRoot>() where TAggregateRoot : AggregateRoot
+            public AggregateRoot GetClone()
             {
                 try
                 {
                     var deserializedObject = Sturdylizer.DeserializeObject(Data);
 
-                    var instance = (TAggregateRoot)deserializedObject;
+                    var instance = (AggregateRoot)deserializedObject;
 
-                    return AggregateRootInfo<TAggregateRoot>.Create(instance);
+                    return instance;
                 }
                 catch(Exception exception)
                 {
-                    throw new SerializationException(string.Format("An error occured when attempting to deserialize {0} into object of type {1}",
-                        Data, typeof(TAggregateRoot)), exception);
+                    throw new SerializationException(string.Format("An error occured when attempting to deserialize {0} into an aggregate root",
+                        Data), exception);
                 }
             }
         }
 
-        public AggregateRootInfo<TAggregateRoot> GetCloneFromCache<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new()
+        public AggregateRoot GetCloneFromCache(string aggregateRootId, long globalSequenceNumber)
         {
             try
             {
@@ -147,7 +146,7 @@ namespace d60.Cirqus.Snapshotting
                 if (!entriesForThisRoot.TryGetValue(highestSequenceNumberAvailableForThisRoot, out entry))
                     return null;
 
-                var aggregateRootInfoToReturn = entry.GetCloneAs<TAggregateRoot>();
+                var aggregateRootInfoToReturn = entry.GetClone();
 
                 entry.IncrementHits();
 
@@ -161,15 +160,15 @@ namespace d60.Cirqus.Snapshotting
             }
         }
 
-        public void PutCloneToCache<TAggregateRoot>(AggregateRootInfo<TAggregateRoot> aggregateRootInfo) where TAggregateRoot : AggregateRoot, new()
+        public void PutCloneToCache(AggregateRoot aggregateRootInfo)
         {
             // don't waste cycles add/trimming
             if (IsEffectivelyDisabled) return;
 
-            var aggregateRootId = aggregateRootInfo.AggregateRootId;
+            var aggregateRootId = aggregateRootInfo.Id;
             var entriesForThisRoot = _cacheEntries.GetOrAdd(aggregateRootId, id => new ConcurrentDictionary<long, CacheEntry>());
 
-            var entrySuccessfullyAdded = entriesForThisRoot.TryAdd(aggregateRootInfo.LastGlobalSeqNo, CacheEntry.Create(aggregateRootInfo));
+            var entrySuccessfullyAdded = entriesForThisRoot.TryAdd(aggregateRootInfo.GlobalSequenceNumberCutoff, CacheEntry.Create(aggregateRootInfo));
 
             if (entrySuccessfullyAdded)
             {

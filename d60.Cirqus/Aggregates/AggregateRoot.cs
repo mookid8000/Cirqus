@@ -151,13 +151,13 @@ namespace d60.Cirqus.Aggregates
                     typeof(TAggregateRoot), aggregateRootId, ReplayState));
             }
 
-            if (UnitOfWork.Exists<TAggregateRoot>(aggregateRootId, long.MaxValue))
+            if (UnitOfWork.Exists(aggregateRootId, long.MaxValue))
             {
                 throw new InvalidOperationException(string.Format("Cannot create aggregate root {0} with ID {1} because an instance with that ID already exists!",
                     typeof(TAggregateRoot), aggregateRootId));
             }
 
-            return UnitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true).AggregateRoot;
+            return (TAggregateRoot)UnitOfWork.Get(aggregateRootId, long.MaxValue, createIfNotExists: true);
         }
 
         protected TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
@@ -177,9 +177,9 @@ namespace d60.Cirqus.Aggregates
             try
             {
                 var aggregateRootInfo = UnitOfWork
-                    .Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists: false);
+                    .Get(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists: false);
 
-                return aggregateRootInfo.AggregateRoot;
+                return (TAggregateRoot)aggregateRootInfo;
             }
             catch
             {
@@ -201,7 +201,7 @@ namespace d60.Cirqus.Aggregates
                 ? GlobalSequenceNumberCutoff
                 : long.MaxValue;
 
-            return UnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists: false).AggregateRoot;
+            return (TAggregateRoot)UnitOfWork.Get(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists: false);
         }
     }
 }

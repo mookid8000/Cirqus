@@ -27,8 +27,7 @@ namespace d60.Cirqus.Aggregates
         /// Checks whether one or more events exist for an aggregate root with the specified ID. If <seealso cref="maxGlobalSequenceNumber"/> is specified,
         /// it will check whether the root instance existed at that point in time
         /// </summary>
-        public bool Exists<TAggregateRoot>(string aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue, IUnitOfWork unitOfWork = null) 
-            where TAggregateRoot : AggregateRoot
+        public bool Exists(string aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue, IUnitOfWork unitOfWork = null)
         {
             var firstEvent = _eventStore.Load(aggregateRootId).FirstOrDefault();
 
@@ -40,40 +39,44 @@ namespace d60.Cirqus.Aggregates
         /// root will have events replayed until the specified <seealso cref="maxGlobalSequenceNumber"/> ceiling. If the root has
         /// no events (i.e. it doesn't exist yet), a newly initialized instance is returned.
         /// </summary>
-        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false) 
-            where TAggregateRoot : AggregateRoot, new()
+        public AggregateRoot Get<TAggregateRoot>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false)
         {
-            var aggregateRootInfo = CreateNewAggregateRootInstance<TAggregateRoot>(aggregateRootId);
             var domainEventsForThisAggregate = _eventStore.Load(aggregateRootId);
 
             var eventsToApply = domainEventsForThisAggregate
                 .Where(e => e.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber)
                 .Select(e => _domainEventSerializer.Deserialize(e));
 
-            aggregateRootInfo.Apply(eventsToApply, unitOfWork);
+            AggregateRoot aggregateRoot = null;
 
-            if (aggregateRootInfo.IsNew)
+            foreach (var e in eventsToApply)
             {
-                if (createIfNotExists)
+                if (aggregateRoot == null)
                 {
-                    aggregateRootInfo.AggregateRoot.InvokeCreated();
+                    var aggregateRootType = _domainTypeNameMapper.GetType(e.Meta[DomainEvent.MetadataKeys.Owner]);
+                    aggregateRoot = CreateNewAggregateRootInstance(aggregateRootType, aggregateRootId);
                 }
-                else
-                {
-                    throw new ArgumentException(string.Format("Aggregate root of type {0} with ID {1} does not exist", typeof(TAggregateRoot), aggregateRootId));
-                }
+
+                aggregateRoot.ApplyEvent(e);
             }
 
-            return aggregateRootInfo;
+            if (aggregateRoot == null)
+            {
+                aggregateRoot = CreateNewAggregateRootInstance(typeof (AggregateRoot), aggregateRootId);
+
+                aggregateRoot.InvokeCreated();
+            }
+
+            return aggregateRoot;
         }
 
-        AggregateRootInfo<TAggregateRoot> CreateNewAggregateRootInstance<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        AggregateRoot CreateNewAggregateRootInstance(Type aggregateRootType, string aggregateRootId)
         {
-            var aggregate = new TAggregateRoot();
+            var aggregateRoot = (AggregateRoot)Activator.CreateInstance(aggregateRootType);
             
-            aggregate.Initialize(aggregateRootId);
+            aggregateRoot.Initialize(aggregateRootId);
 
-            return AggregateRootInfo<TAggregateRoot>.Create(aggregate);
+            return aggregateRoot;
         }
     }
 }

@@ -28,15 +28,15 @@ namespace d60.Cirqus.Snapshotting
             _domainEventSerializer = domainEventSerializer;
         }
 
-        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
+        public AggregateRoot Get<TAggregateRoot>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false)
         {
-            var cloneFromCache = PrepareCloneFromCache<TAggregateRoot>(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
+            var cloneFromCache = PrepareCloneFromCache(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
 
             if (cloneFromCache != null) return cloneFromCache;
 
             var fromRepository = GetFromInnerRepository<TAggregateRoot>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber, createIfNotExists);
 
-            if (fromRepository.LastSeqNo > 0)
+            if (fromRepository.CurrentSequenceNumber > 0)
             {
                 _snapshotCache.PutCloneToCache(fromRepository);
             }
@@ -44,29 +44,32 @@ namespace d60.Cirqus.Snapshotting
             return fromRepository;
         }
 
-        public bool Exists<TAggregateRoot>(string aggregateRootId, long maxGlobalSequenceNumber = Int64.MaxValue, IUnitOfWork unitOfWork = null) where TAggregateRoot : AggregateRoot
+        public bool Exists(string aggregateRootId, long maxGlobalSequenceNumber = Int64.MaxValue, IUnitOfWork unitOfWork = null)
         {
-            return _innerAggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
+            return _innerAggregateRootRepository.Exists(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
         }
 
-        AggregateRootInfo<TAggregateRoot> PrepareCloneFromCache<TAggregateRoot>(string aggregateRootId, long maxGlobalSequenceNumber, IUnitOfWork unitOfWork) where TAggregateRoot : AggregateRoot, new()
+        AggregateRoot PrepareCloneFromCache(string aggregateRootId, long maxGlobalSequenceNumber, IUnitOfWork unitOfWork)
         {
-            var cloneInfo = _snapshotCache.GetCloneFromCache<TAggregateRoot>(aggregateRootId, maxGlobalSequenceNumber);
+            var cloneInfo = _snapshotCache.GetCloneFromCache(aggregateRootId, maxGlobalSequenceNumber);
 
             if (cloneInfo == null) return null;
 
-            var lastSeqNo = cloneInfo.LastSeqNo;
+            var lastSeqNo = cloneInfo.CurrentSequenceNumber;
             var stopwatch = Stopwatch.StartNew();
 
             var eventsToApply = _eventStore
-                .Load(cloneInfo.AggregateRootId, cloneInfo.LastSeqNo + 1)
+                .Load(cloneInfo.Id, cloneInfo.CurrentSequenceNumber + 1)
                 .Where(e => e.GetGlobalSequenceNumber() <= maxGlobalSequenceNumber)
                 .Select(e => _domainEventSerializer.Deserialize(e));
 
-            cloneInfo.Apply(eventsToApply, unitOfWork);
+            foreach (var e in eventsToApply)
+            {
+                cloneInfo.ApplyEvent(e);
+            }
 
             var timeElapsedFetchingAndApplyingEvents = stopwatch.Elapsed;
-            var numberOfEventsApplied = cloneInfo.LastSeqNo - lastSeqNo;
+            var numberOfEventsApplied = cloneInfo.CurrentSequenceNumber - lastSeqNo;
 
             if (timeElapsedFetchingAndApplyingEvents > TimeSpan.FromSeconds(0.1)
                 || numberOfEventsApplied > 10)
@@ -77,11 +80,11 @@ namespace d60.Cirqus.Snapshotting
             return cloneInfo;
         }
 
-        AggregateRootInfo<TAggregateRoot> GetFromInnerRepository<TAggregateRoot>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber, bool createIfNotExists) where TAggregateRoot : AggregateRoot, new()
+        AggregateRoot GetFromInnerRepository<TAggregateRoot>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber, bool createIfNotExists)
         {
-            var aggregateRootInfo = _innerAggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber, createIfNotExists);
+            var aggregateRoot = _innerAggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber, createIfNotExists);
 
-            return aggregateRootInfo;
+            return aggregateRoot;
         }
     }
 }

@@ -85,7 +85,7 @@ namespace d60.Cirqus.Tests.Integration
         List<AggregateRoot> GetAllRoots()
         {
             return _eventStore.Result.Select(e => e.GetAggregateRootId()).Distinct()
-                .Select(aggregateRootId => _aggregateRootRepository.Get<ProgrammerAggregate>(aggregateRootId).AggregateRoot)
+                .Select(aggregateRootId => _aggregateRootRepository.Get<ProgrammerAggregate>(aggregateRootId))
                 .Cast<AggregateRoot>()
                 .ToList();
         }

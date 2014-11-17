@@ -10,7 +10,7 @@ namespace d60.Cirqus.Diagnostics
         /// <summary>
         /// Called after getting each aggregate root instance from the repository, no matter if the instance was fully re-hydrated or served from a unit of work cache, etc.
         /// </summary>
-        void RecordAggregateRootGet(TimeSpan elapsed, Type type, string aggregateRootId);
+        void RecordAggregateRootGet(TimeSpan elapsed, string aggregateRootId);
 
         /// <summary>
         /// Called after checking for the existence of an aggregate root instance
@@ -25,7 +25,7 @@ namespace d60.Cirqus.Diagnostics
         /// <summary>
         /// Called after getting the next global sequence number from the event store
         /// </summary>
-        void RecordGlobalSequenceNumberGetNext  (TimeSpan elapsed);
+        void RecordGlobalSequenceNumberGetNext(TimeSpan elapsed);
 
         /// <summary>
         /// Called after dispatching a successfully saved event batch

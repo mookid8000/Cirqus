@@ -20,22 +20,19 @@ namespace d60.Cirqus.Tests.Stubs
             Console.WriteLine("Emitted: {0}", e);
         }
 
-        public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff)
-            where TAggregateRoot : AggregateRoot
+        public void AddToCache(AggregateRoot aggregateRoot, long globalSequenceNumberCutoff)
         {
             _cachedAggregateRoots[aggregateRoot.Id] = aggregateRoot;
         }
 
-        public bool Exists<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff)
-            where TAggregateRoot : AggregateRoot
+        public bool Exists(string aggregateRootId, long globalSequenceNumberCutoff)
         {
-            return _aggregateRootRepository.Exists<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
+            return _aggregateRootRepository.Exists(aggregateRootId, globalSequenceNumberCutoff);
         }
 
-        public AggregateRootInfo<TAggregateRoot> Get<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists)
-            where TAggregateRoot : AggregateRoot, new()
+        public AggregateRoot Get(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists)
         {
-            return _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff);
+            return _aggregateRootRepository.Get<AggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff);
         }
     }
 }

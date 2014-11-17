@@ -45,38 +45,38 @@ namespace d60.Cirqus.Tests.Integration
         public void RunEntirePipelineAndProbePrivatesForMultipleAggregates()
         {
             // verify that fresh aggregates are delivered
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid1").AggregateRoot.GetCurrentState(), Is.EqualTo("Born"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid2").AggregateRoot.GetCurrentState(), Is.EqualTo("Born"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid1").GetCurrentState(), Is.EqualTo("Born"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid2").GetCurrentState(), Is.EqualTo("Born"));
 
             _cirqus.ProcessCommand(new TakeNextStepCommand("rootid1"));
 
             // verify that the command hit the first aggregate
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid1").AggregateRoot.GetCurrentState(), Is.EqualTo("Educated"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid2").AggregateRoot.GetCurrentState(), Is.EqualTo("Born"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid1").GetCurrentState(), Is.EqualTo("Educated"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid2").GetCurrentState(), Is.EqualTo("Born"));
 
             _cirqus.ProcessCommand(new TakeNextStepCommand("rootid2"));
 
             // verify that the command hit the other aggregate
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid1").AggregateRoot.GetCurrentState(), Is.EqualTo("Educated"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid2").AggregateRoot.GetCurrentState(), Is.EqualTo("Educated"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid1").GetCurrentState(), Is.EqualTo("Educated"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid2").GetCurrentState(), Is.EqualTo("Educated"));
 
             _cirqus.ProcessCommand(new TakeNextStepCommand("rootid2"));
 
             // verify that the command hit the other aggregate
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid1").AggregateRoot.GetCurrentState(), Is.EqualTo("Educated"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid2").AggregateRoot.GetCurrentState(), Is.EqualTo("Knowing"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid1").GetCurrentState(), Is.EqualTo("Educated"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid2").GetCurrentState(), Is.EqualTo("Knowing"));
 
             _cirqus.ProcessCommand(new TakeNextStepCommand("rootid1"));
 
             // verify that the command hit the first aggregate
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid1").AggregateRoot.GetCurrentState(), Is.EqualTo("Knowing"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid2").AggregateRoot.GetCurrentState(), Is.EqualTo("Knowing"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid1").GetCurrentState(), Is.EqualTo("Knowing"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid2").GetCurrentState(), Is.EqualTo("Knowing"));
 
             _cirqus.ProcessCommand(new TakeNextStepCommand("rootid1"));
 
             // verify that we have hit the end state
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid1").AggregateRoot.GetCurrentState(), Is.EqualTo("Knowing"));
-            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid2").AggregateRoot.GetCurrentState(), Is.EqualTo("Knowing"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid1").GetCurrentState(), Is.EqualTo("Knowing"));
+            Assert.That(_aggregateRootRepository.Get<ProgrammerAggregate>("rootid2").GetCurrentState(), Is.EqualTo("Knowing"));
         }
 
         public class TakeNextStepCommand : Command<ProgrammerAggregate>

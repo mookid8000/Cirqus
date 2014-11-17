@@ -1,5 +1,4 @@
-﻿using System;
-using d60.Cirqus.Aggregates;
+﻿using d60.Cirqus.Aggregates;
 
 namespace d60.Cirqus.Snapshotting
 {
@@ -8,11 +7,11 @@ namespace d60.Cirqus.Snapshotting
         /// <summary>
         /// Will return a clone of the most recent entry in the cache whose global sequence number if below or equal to the requested sequence number.
         /// </summary>
-        AggregateRootInfo<TAggregateRoot> GetCloneFromCache<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : AggregateRoot, new();
+        AggregateRoot GetCloneFromCache(string aggregateRootId, long globalSequenceNumber);
 
         /// <summary>
         /// Saves a clone of the specified aggregate root to the cache
         /// </summary>
-        void PutCloneToCache<TAggregateRoot>(AggregateRootInfo<TAggregateRoot> aggregateRootInfo) where TAggregateRoot : AggregateRoot, new();
+        void PutCloneToCache(AggregateRoot aggregateRoot);
     }
 }

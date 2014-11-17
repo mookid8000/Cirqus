@@ -51,9 +51,9 @@ namespace d60.Cirqus.Diagnostics
                 _profiler = profiler;
             }
 
-            public void RecordAggregateRootGet(TimeSpan elapsed, Type type, string aggregateRootId)
+            public void RecordAggregateRootGet(TimeSpan elapsed, string aggregateRootId)
             {
-                _profiler.RecordAggregateRootGet(elapsed, type, aggregateRootId);
+                _profiler.RecordAggregateRootGet(elapsed, aggregateRootId);
             }
 
             public void RecordAggregateRootExists(TimeSpan elapsed, string aggregateRootId)
@@ -118,27 +118,27 @@ namespace d60.Cirqus.Diagnostics
                 _operationProfiler = operationProfiler;
             }
 
-            public AggregateRootInfo<TAggregate> Get<TAggregate>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false) where TAggregate : AggregateRoot, new()
+            public AggregateRoot Get<TAggregateRoot>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false)
             {
                 var stopwatch = Stopwatch.StartNew();
                 try
                 {
                     return _innnerAggregateRootRepository
-                        .Get<TAggregate>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber, createIfNotExists);
+                        .Get<TAggregateRoot>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber, createIfNotExists);
                 }
                 finally
                 {
-                    _operationProfiler.RecordAggregateRootGet(stopwatch.Elapsed, typeof(TAggregate), aggregateRootId);
+                    _operationProfiler.RecordAggregateRootGet(stopwatch.Elapsed, aggregateRootId);
                 }
             }
 
-            public bool Exists<TAggregate>(string aggregateRootId, long maxGlobalSequenceNumber = Int64.MaxValue, IUnitOfWork unitOfWork = null) where TAggregate : AggregateRoot
+            public bool Exists(string aggregateRootId, long maxGlobalSequenceNumber = Int64.MaxValue, IUnitOfWork unitOfWork = null)
             {
                 var stopwatch = Stopwatch.StartNew();
                 try
                 {
                     return _innnerAggregateRootRepository
-                        .Exists<TAggregate>(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
+                        .Exists(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
                 }
                 finally
                 {
