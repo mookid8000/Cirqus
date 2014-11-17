@@ -35,12 +35,10 @@ namespace d60.Cirqus.Commands
             }
         }
 
-        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId)
+        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
-            throw new NotImplementedException("not yet");
-            //var aggregateRootInfo = _unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: false);
-
-            //return aggregateRootInfo.AggregateRoot;
+            var aggregateRootInfo = _unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: false);
+            return aggregateRootInfo.AggregateRoot;
         }
     }
 }

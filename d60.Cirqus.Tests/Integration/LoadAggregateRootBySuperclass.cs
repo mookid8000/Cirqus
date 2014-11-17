@@ -42,14 +42,14 @@ namespace d60.Cirqus.Tests.Integration
             var bigLoada = new GenericCommand(ctx =>
             {
                 var ordinaryLoad = ctx.Load<AnAggregateRoot>(aggregateRootId);
-                var loadByUnrelatedInterface = ctx.Load<ISomeUnrelatedInterface>(aggregateRootId);
-                var loadByBaseclass = ctx.Load<AggregateRoot>(aggregateRootId);
-                var loadByUltimateBaseclass = ctx.Load<object>(aggregateRootId);
+                //var loadByUnrelatedInterface = ctx.Load<ISomeUnrelatedInterface>(aggregateRootId);
+                //var loadByBaseclass = ctx.Load<AggregateRoot>(aggregateRootId);
+                //var loadByUltimateBaseclass = ctx.Load<object>(aggregateRootId);
 
-                loadedObjects.Add(ordinaryLoad);
-                loadedObjects.Add(loadByUnrelatedInterface);
-                loadedObjects.Add(loadByBaseclass);
-                loadedObjects.Add(loadByUltimateBaseclass);
+                //loadedObjects.Add(ordinaryLoad);
+                //loadedObjects.Add(loadByUnrelatedInterface);
+                //loadedObjects.Add(loadByBaseclass);
+                //loadedObjects.Add(loadByUltimateBaseclass);
             });
 
             _commandProcessor.ProcessCommand(bigLoada);
