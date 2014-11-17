@@ -127,7 +127,7 @@ namespace d60.Cirqus.Tests.Integration
             var exception = Assert.Throws<CommandProcessingException>(() => _commandProcessor.ProcessCommand(command));
             var invalidOperationException = (ArgumentException)exception.InnerException;
 
-            Assert.That(invalidOperationException.Message, Contains.Substring("does not exist"));
+            Assert.That(invalidOperationException.Message, Contains.Substring("it didn't exist"));
         }
 
         class GenericCommand : ExecutableCommand
