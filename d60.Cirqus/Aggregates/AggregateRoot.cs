@@ -151,6 +151,12 @@ namespace d60.Cirqus.Aggregates
                     typeof(TAggregateRoot), aggregateRootId, ReplayState));
             }
 
+            if (UnitOfWork.Exists<TAggregateRoot>(aggregateRootId, long.MaxValue))
+            {
+                throw new InvalidOperationException(string.Format("Cannot create aggregate root {0} with ID {1} because an instance with that ID already exists!",
+                    typeof(TAggregateRoot), aggregateRootId));
+            }
+
             return UnitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true).AggregateRoot;
         }
 
@@ -196,30 +202,6 @@ namespace d60.Cirqus.Aggregates
                 : long.MaxValue;
 
             return UnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists: false).AggregateRoot;
-        }
-
-        [Obsolete]
-        protected TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, bool createIfNotExists = false) where TAggregateRoot : AggregateRoot, new()
-        {
-            if (UnitOfWork == null)
-            {
-                throw new InvalidOperationException(
-                    string.Format(
-                        "Attempted to Load {0} with ID {1} from {2}, but it has not been initialized with a unit of work! The unit of work must be attached to the aggregate root in order to cache hydrated aggregate roots within the current unit of work.",
-                        typeof(TAggregateRoot), aggregateRootId, GetType()));
-            }
-
-            if (createIfNotExists && ReplayState != ReplayState.None)
-            {
-                throw new InvalidOperationException(string.Format("Attempted to load new aggregate root of type {0} with ID {1}, but cannot specify createIfNotExists = true when replay state is {2}",
-                    typeof(TAggregateRoot), aggregateRootId, ReplayState));
-            }
-
-            var globalSequenceNumberCutoffToLookFor = ReplayState == ReplayState.ReplayApply
-                ? GlobalSequenceNumberCutoff
-                : long.MaxValue;
-
-            return UnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists).AggregateRoot;
         }
     }
 }

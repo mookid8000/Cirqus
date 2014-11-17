@@ -85,7 +85,7 @@ namespace d60.Cirqus.Tests.Diagnostics
             {
                 Emit(new SomethingHappenedInRoot { IdOfAnotherRoot = otherRootId });
 
-                Load<AnotherRoot>(otherRootId, createIfNotExists:true).DoStuff();
+                (TryLoad<AnotherRoot>(otherRootId) ?? Create<AnotherRoot>(otherRootId)).DoStuff();
             }
 
             public void Apply(SomethingHappenedInRoot e)

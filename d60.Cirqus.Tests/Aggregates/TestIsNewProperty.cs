@@ -85,12 +85,12 @@ namespace d60.Cirqus.Tests.Aggregates
 
             public void BamOnFriend(string friendId)
             {
-                Load<Root>(friendId, createIfNotExists: true).Bam();
+                (TryLoad<Root>(friendId) ?? Create<Root>(friendId)).Bam();
             }
 
             public void BamOnOtherRoot(string otherRootId)
             {
-                var otherRoot = Load<OtherRoot>(otherRootId, createIfNotExists: true);
+                var otherRoot = TryLoad<OtherRoot>(otherRootId) ?? Create<OtherRoot>(otherRootId);
             }
         }
 

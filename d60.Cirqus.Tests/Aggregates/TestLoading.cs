@@ -50,7 +50,7 @@ namespace d60.Cirqus.Tests.Aggregates
 
             public void LoadOtherBeetRootButOverrideBehavior()
             {
-                Load<BeetRoot>("id2", createIfNotExists: true);
+                var otherbeetRoot = TryLoad<BeetRoot>("id2") ?? Create<BeetRoot>("id2");
             }
         }
     }

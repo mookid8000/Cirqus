@@ -114,7 +114,7 @@ namespace d60.Cirqus.Tests.Integration
             {
                 foreach (var id in idsOfChildren)
                 {
-                    Load<ProgrammerAggregate>(id, createIfNotExists: true).GiveBirth();
+                    (TryLoad<ProgrammerAggregate>(id) ?? Create<ProgrammerAggregate>(id)).GiveBirth();
                 }
 
                 Emit(new HadChildren(idsOfChildren));

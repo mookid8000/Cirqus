@@ -431,6 +431,7 @@ This is a big update that completes the transition to the new, vastly improved v
 * Re-introduced the command mapper concept, making `Command` the ultimate base class of all commands (which must be explicitly mapped using the command mapper API) - use either `ExecutableCommand` or the generic `Command<TAggregateRoot>` to supply the command action as part of the command
 * Prettified some code - thanks [ssboisen]
 * Introduced `IDomainTypeNameMapper` that allows for customizing names of events and aggregate roots as they go into event metadata
+* Split `Load` up into `Create`, `TryLoad`, and `Load` - each with appropriate and more explicit behavior
 
 
 [asgerhallas]: https://github.com/asgerhallas

@@ -30,7 +30,7 @@ namespace d60.Cirqus.Tests.Bugs
         {
             public void DoIt()
             {
-                Load<SomeOtherRoot>("newid", createIfNotExists: true);
+                var instance = TryLoad<SomeOtherRoot>("newid") ?? Create<SomeOtherRoot>("newid");
             }
         }
 
