@@ -25,6 +25,6 @@ namespace d60.Cirqus.Events
         /// <summary>
         /// Gets from the cache or from another relevant place the aggregate root instance with the given ID
         /// </summary>
-        AggregateRoot Get(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists = false);
+        AggregateRoot Get<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists = false);
     }
 }

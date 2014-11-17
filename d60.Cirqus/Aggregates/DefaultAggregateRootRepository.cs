@@ -54,7 +54,7 @@ namespace d60.Cirqus.Aggregates
                 if (aggregateRoot == null)
                 {
                     var aggregateRootType = _domainTypeNameMapper.GetType(e.Meta[DomainEvent.MetadataKeys.Owner]);
-                    aggregateRoot = CreateNewAggregateRootInstance(aggregateRootType, aggregateRootId);
+                    aggregateRoot = CreateNewAggregateRootInstance(aggregateRootType, aggregateRootId, unitOfWork);
                 }
 
                 aggregateRoot.ApplyEvent(e);
@@ -62,7 +62,7 @@ namespace d60.Cirqus.Aggregates
 
             if (aggregateRoot == null)
             {
-                aggregateRoot = CreateNewAggregateRootInstance(typeof (AggregateRoot), aggregateRootId);
+                aggregateRoot = CreateNewAggregateRootInstance(typeof(TAggregateRoot), aggregateRootId, unitOfWork);
 
                 aggregateRoot.InvokeCreated();
             }
@@ -70,11 +70,12 @@ namespace d60.Cirqus.Aggregates
             return aggregateRoot;
         }
 
-        AggregateRoot CreateNewAggregateRootInstance(Type aggregateRootType, string aggregateRootId)
+        AggregateRoot CreateNewAggregateRootInstance(Type aggregateRootType, string aggregateRootId, IUnitOfWork unitOfWork)
         {
             var aggregateRoot = (AggregateRoot)Activator.CreateInstance(aggregateRootType);
             
             aggregateRoot.Initialize(aggregateRootId);
+            aggregateRoot.UnitOfWork = unitOfWork;
 
             return aggregateRoot;
         }

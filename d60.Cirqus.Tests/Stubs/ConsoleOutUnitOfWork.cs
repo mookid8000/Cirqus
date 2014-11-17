@@ -30,9 +30,9 @@ namespace d60.Cirqus.Tests.Stubs
             return _aggregateRootRepository.Exists(aggregateRootId, globalSequenceNumberCutoff);
         }
 
-        public AggregateRoot Get(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists)
+        public AggregateRoot Get<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists)
         {
-            return _aggregateRootRepository.Get<AggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff);
+            return _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff);
         }
     }
 }

@@ -157,7 +157,7 @@ namespace d60.Cirqus.Aggregates
                     typeof(TAggregateRoot), aggregateRootId));
             }
 
-            return (TAggregateRoot)UnitOfWork.Get(aggregateRootId, long.MaxValue, createIfNotExists: true);
+            return (TAggregateRoot)UnitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true);
         }
 
         protected TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
@@ -177,7 +177,7 @@ namespace d60.Cirqus.Aggregates
             try
             {
                 var aggregateRootInfo = UnitOfWork
-                    .Get(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists: false);
+                    .Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists: false);
 
                 return (TAggregateRoot)aggregateRootInfo;
             }
@@ -201,7 +201,7 @@ namespace d60.Cirqus.Aggregates
                 ? GlobalSequenceNumberCutoff
                 : long.MaxValue;
 
-            return (TAggregateRoot)UnitOfWork.Get(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists: false);
+            return (TAggregateRoot)UnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists: false);
         }
     }
 }

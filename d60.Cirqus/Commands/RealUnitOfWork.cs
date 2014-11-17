@@ -49,7 +49,7 @@ namespace d60.Cirqus.Commands
             return _aggregateRootRepository.Exists(aggregateRootId, globalSequenceNumberCutoff);
         }
 
-        public AggregateRoot Get(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists = false)
+        public AggregateRoot Get<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists = false)
         {
             var aggregateRootInfoFromCache = GetAggregateRootFromCache(aggregateRootId, globalSequenceNumberCutoff);
 
@@ -58,7 +58,7 @@ namespace d60.Cirqus.Commands
                 return aggregateRootInfoFromCache;
             }
 
-            var aggregateRootInfo = _aggregateRootRepository.Get<AggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff, createIfNotExists: createIfNotExists);
+            var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff, createIfNotExists: createIfNotExists);
 
             // make sure to cache under long.MaxValue if we're "unbounded"
             var lastGlobalSeqNoToCacheUnder = globalSequenceNumberCutoff == long.MaxValue

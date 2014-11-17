@@ -35,7 +35,7 @@ namespace d60.Cirqus.Testing
 
         public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
-            var aggregateRoot = _realUnitOfWork.Get(aggregateRootId, long.MaxValue, createIfNotExists: true);
+            var aggregateRoot = _realUnitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true);
 
             aggregateRoot.UnitOfWork = _realUnitOfWork;
 

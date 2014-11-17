@@ -12,7 +12,7 @@ namespace d60.Cirqus.Commands
             _unitOfWork = unitOfWork;
         }
 
-        public TAggregateRoot Create<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        public TAggregateRoot Create<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot
         {
             if (_unitOfWork.Exists(aggregateRootId, long.MaxValue))
             {
@@ -20,14 +20,14 @@ namespace d60.Cirqus.Commands
                     typeof(TAggregateRoot), aggregateRootId));
             }
 
-            return (TAggregateRoot)_unitOfWork.Get(aggregateRootId, long.MaxValue, createIfNotExists: true);
+            return (TAggregateRoot)_unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true);
         }
 
-        public TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        public TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : class
         {
             try
             {
-                return (TAggregateRoot)_unitOfWork.Get(aggregateRootId, long.MaxValue, createIfNotExists: false);
+                return _unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: false) as TAggregateRoot;
             }
             catch
             {
@@ -35,11 +35,11 @@ namespace d60.Cirqus.Commands
             }
         }
 
-        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : class
         {
-            var aggregateRoot = _unitOfWork.Get(aggregateRootId, long.MaxValue, createIfNotExists: false);
+            var aggregateRoot = _unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: false);
 
-            return (TAggregateRoot)aggregateRoot;
+            return aggregateRoot as TAggregateRoot;
         }
     }
 }
