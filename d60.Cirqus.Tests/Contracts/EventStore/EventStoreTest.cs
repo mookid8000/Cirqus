@@ -25,6 +25,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
     [TestFixture(typeof(NtfsEventStoreFactory))]
     [TestFixture(typeof(SQLiteEventStoreFactory))]
     [TestFixture(typeof(CachedEventStoreFactory))]
+    [TestFixture(typeof(RavenDBEventStoreFactory))]
     public class EventStoreTest<TEventStoreFactory> : FixtureBase where TEventStoreFactory : IEventStoreFactory, new()
     {
         TEventStoreFactory _eventStoreFactory;

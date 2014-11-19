@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.30723.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{756E55BA-35D2-4281-BE7E-05E23444136E}"
 	ProjectSection(SolutionItems) = preProject
@@ -80,6 +80,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sqlite", "sqlite", "{2D9717
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Cirqus.SQLite", "d60.Cirqus.SQLite\d60.Cirqus.SQLite.csproj", "{350726B9-0E33-46B3-99F0-031E0B5B0579}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ravendb", "ravendb", "{9AB980FC-DE40-4AA8-96DA-22DD5FB4EBC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Cirqus.RavenDB", "d60.Cirqus.RavenDB\d60.Cirqus.RavenDB.csproj", "{CB397F34-999A-4A65-A398-B31FF58A75B8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -130,6 +134,10 @@ Global
 		{350726B9-0E33-46B3-99F0-031E0B5B0579}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{350726B9-0E33-46B3-99F0-031E0B5B0579}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{350726B9-0E33-46B3-99F0-031E0B5B0579}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB397F34-999A-4A65-A398-B31FF58A75B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB397F34-999A-4A65-A398-B31FF58A75B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB397F34-999A-4A65-A398-B31FF58A75B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB397F34-999A-4A65-A398-B31FF58A75B8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -156,5 +164,7 @@ Global
 		{9FF2E2C5-2FF8-4E9E-B131-5DA2515890FC} = {87A98A37-1B2E-44A1-B6EE-53B75E80C816}
 		{2D9717F8-12A6-415B-8139-9578A5E8CDDC} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
 		{350726B9-0E33-46B3-99F0-031E0B5B0579} = {2D9717F8-12A6-415B-8139-9578A5E8CDDC}
+		{9AB980FC-DE40-4AA8-96DA-22DD5FB4EBC2} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
+		{CB397F34-999A-4A65-A398-B31FF58A75B8} = {9AB980FC-DE40-4AA8-96DA-22DD5FB4EBC2}
 	EndGlobalSection
 EndGlobal

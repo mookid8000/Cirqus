@@ -21,6 +21,7 @@ namespace d60.Cirqus.Tests.Contracts.Serialization
     [TestFixture(typeof(PostgreSqlEventStoreFactory), Category = TestCategories.PostgreSql)]
     [TestFixture(typeof(NtfsEventStoreFactory))]
     [TestFixture(typeof(SQLiteEventStoreFactory))]
+    [TestFixture(typeof(RavenDBEventStoreFactory))]
     public class CustomSerilization<TEventStoreFactory> : FixtureBase where TEventStoreFactory : IEventStoreFactory, new()
     {
         ICommandProcessor _commandProcessor;
