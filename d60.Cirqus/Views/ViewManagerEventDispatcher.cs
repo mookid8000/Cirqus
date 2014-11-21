@@ -41,7 +41,6 @@ namespace d60.Cirqus.Views
 
         volatile bool _keepWorking = true;
         int _maxDomainEventsPerBatch = 100;
-        TimeSpan _automaticCatchUpInterval = TimeSpan.FromSeconds(1);
         long _sequenceNumberToCatchUpTo = -1;
 
         public ViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IDomainEventSerializer domainEventSerializer, IDomainTypeNameMapper domainTypeNameMapper, params IViewManager[] viewManagers)
@@ -61,11 +60,12 @@ namespace d60.Cirqus.Views
 
             _worker = new Thread(DoWork) { IsBackground = true };
 
-            _automaticCatchUpTimer.Interval = _automaticCatchUpInterval.TotalMilliseconds;
             _automaticCatchUpTimer.Elapsed += delegate
             {
                 _work.Enqueue(PieceOfWork.FullCatchUp(false));
             };
+
+            AutomaticCatchUpInterval = TimeSpan.FromSeconds(1);
         }
 
         public void AddViewManager(IViewManager viewManager)
@@ -79,8 +79,10 @@ namespace d60.Cirqus.Views
         {
             _logger.Info("Initializing event dispatcher with view managers: {0}", string.Join(", ", _viewManagers));
 
+            _logger.Debug("Initiating immediate full catchup");
             _work.Enqueue(PieceOfWork.FullCatchUp(purgeExistingViews: purgeExistingViews));
 
+            _logger.Debug("Starting automatic catchup timer with {0} ms interval", _automaticCatchUpTimer.Interval);
             _automaticCatchUpTimer.Start();
             _worker.Start();
         }
@@ -95,7 +97,7 @@ namespace d60.Cirqus.Views
 
             Interlocked.Exchange(ref _sequenceNumberToCatchUpTo, maxSequenceNumberInBatch);
 
-            _work.Enqueue(PieceOfWork.JustCatchUp());
+            _work.Enqueue(PieceOfWork.JustCatchUp(list));
         }
 
         public async Task WaitUntilProcessed<TViewInstance>(CommandProcessingResult result, TimeSpan timeout) where TViewInstance : IViewInstance
@@ -128,15 +130,16 @@ namespace d60.Cirqus.Views
 
         public TimeSpan AutomaticCatchUpInterval
         {
-            get { return _automaticCatchUpInterval; }
+            get { return TimeSpan.FromMilliseconds(_automaticCatchUpTimer.Interval); }
             set
             {
                 if (value < TimeSpan.FromMilliseconds(1))
                 {
                     throw new ArgumentException(string.Format("Attempted to set automatic catch-up interval to {0}! Please set it to at least 1 millisecond", value));
                 }
-                _automaticCatchUpInterval = value;
                 _automaticCatchUpTimer.Interval = value.TotalMilliseconds;
+
+                _logger.Debug("Automatic catchup timer interval was set to {0} ms", _automaticCatchUpTimer.Interval);
             }
         }
 
@@ -159,7 +162,7 @@ namespace d60.Cirqus.Views
 
                 try
                 {
-                    CatchUpTo(sequenceNumberToCatchUpTo, _eventStore, pieceOfWork.CanUseCachedInformation, pieceOfWork.PurgeViewsFirst, _viewManagers.ToArray());
+                    CatchUpTo(sequenceNumberToCatchUpTo, _eventStore, pieceOfWork.CanUseCachedInformation, pieceOfWork.PurgeViewsFirst, _viewManagers.ToArray(), pieceOfWork.Events);
                 }
                 catch (Exception exception)
                 {
@@ -170,7 +173,7 @@ namespace d60.Cirqus.Views
             _logger.Info("View manager background thread stopped!");
         }
 
-        void CatchUpTo(long sequenceNumberToCatchUpTo, IEventStore eventStore, bool cachedInformationAllowed, bool purgeViewsFirst, IViewManager[] viewManagers)
+        void CatchUpTo(long sequenceNumberToCatchUpTo, IEventStore eventStore, bool cachedInformationAllowed, bool purgeViewsFirst, IViewManager[] viewManagers, List<DomainEvent> events)
         {
             // bail out now if there isn't any actual work to do
             if (!viewManagers.Any()) return;
@@ -190,20 +193,39 @@ namespace d60.Cirqus.Views
             // if we've already been there, don't do anything
             if (lowestSequenceNumberSuccessfullyProcessed >= sequenceNumberToCatchUpTo) return;
 
+            // if we can dispatch events directly, we do it now
+            if (events.Any() && lowestSequenceNumberSuccessfullyProcessed >= events.First().GetGlobalSequenceNumber() - 1)
+            {
+                var serializedEvents = events.Select(e => _domainEventSerializer.Serialize(e));
+
+                Console.WriteLine("DISPATCHING DIRECTLY: {0}", string.Join(",", events.Select(e => e.GetGlobalSequenceNumber())));
+                DispatchBatchToViewManagers(viewManagers, serializedEvents);
+
+                lowestSequenceNumberSuccessfullyProcessed = events.Last().GetGlobalSequenceNumber();
+
+                // if we've done enough, quit now
+                if (lowestSequenceNumberSuccessfullyProcessed >= sequenceNumberToCatchUpTo) return;
+            }
+
             // ok, we must replay - start from here:
             var sequenceNumberToReplayFrom = lowestSequenceNumberSuccessfullyProcessed + 1;
 
             foreach (var batch in eventStore.Stream(sequenceNumberToReplayFrom).Batch(MaxDomainEventsPerBatch))
             {
-                var context = new DefaultViewContext(_aggregateRootRepository, _domainTypeNameMapper);
-                var list = batch.ToList();
+                DispatchBatchToViewManagers(viewManagers, batch);
+            }
+        }
 
-                foreach (var viewManager in viewManagers)
-                {
-                    _logger.Debug("Dispatching batch of {0} events to {1}", list.Count, viewManager);
+        void DispatchBatchToViewManagers(IEnumerable<IViewManager> viewManagers, IEnumerable<EventData> batch)
+        {
+            var context = new DefaultViewContext(_aggregateRootRepository, _domainTypeNameMapper);
+            var list = batch.ToList();
 
-                    viewManager.Dispatch(context, list.Select(e => _domainEventSerializer.Deserialize(e)));
-                }
+            foreach (var viewManager in viewManagers)
+            {
+                _logger.Debug("Dispatching batch of {0} events to {1}", list.Count, viewManager);
+
+                viewManager.Dispatch(context, list.Select(e => _domainEventSerializer.Deserialize(e)));
             }
         }
 
@@ -211,6 +233,7 @@ namespace d60.Cirqus.Views
         {
             PieceOfWork()
             {                
+                Events = new List<DomainEvent>();
             }
 
             public static PieceOfWork FullCatchUp(bool purgeExistingViews)
@@ -223,15 +246,18 @@ namespace d60.Cirqus.Views
                 };
             }
 
-            public static PieceOfWork JustCatchUp()
+            public static PieceOfWork JustCatchUp(List<DomainEvent> recentlyEmittedEvents)
             {
                 return new PieceOfWork
                 {
                     CatchUpAsFarAsPossible = false,
                     CanUseCachedInformation = true,
-                    PurgeViewsFirst = false
+                    PurgeViewsFirst = false,
+                    Events = recentlyEmittedEvents
                 };
             }
+
+            public List<DomainEvent> Events { get; set; }
 
             public bool CatchUpAsFarAsPossible { get; private set; }
 
