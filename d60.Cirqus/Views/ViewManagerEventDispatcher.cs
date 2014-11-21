@@ -198,7 +198,6 @@ namespace d60.Cirqus.Views
             {
                 var serializedEvents = events.Select(e => _domainEventSerializer.Serialize(e));
 
-                Console.WriteLine("DISPATCHING DIRECTLY: {0}", string.Join(",", events.Select(e => e.GetGlobalSequenceNumber())));
                 DispatchBatchToViewManagers(viewManagers, serializedEvents);
 
                 lowestSequenceNumberSuccessfullyProcessed = events.Last().GetGlobalSequenceNumber();

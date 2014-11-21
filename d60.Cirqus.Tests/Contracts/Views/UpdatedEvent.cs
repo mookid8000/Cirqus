@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using d60.Cirqus.Tests.Contracts.Views.Factories;
 using d60.Cirqus.Tests.Contracts.Views.Models.UpdatedEvent;
 using NUnit.Framework;
