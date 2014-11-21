@@ -49,51 +49,46 @@ namespace d60.Cirqus.RavenDB
             using (var session = _docStore.OpenSession())
             {
                 session.Advanced.MaxNumberOfRequestsPerSession = int.MaxValue;
-                using (var tx = new TransactionScope())
+                var nextSequenceNumber = GetNextGlobalSequenceNumber(session);
+
+                foreach (var e in eventList)
                 {
-                    var nextSequenceNumber = GetNextGlobalSequenceNumber(session);
-
-                    foreach (var e in eventList)
-                    {
-                        e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (nextSequenceNumber++).ToString(Metadata.NumberCulture);
-                        e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
-                    }
-
-                    EventValidation.ValidateBatchIntegrity(batchId, eventList);
-
-                    var batchDoc = new Batch {Id = batchId};
-
-                    foreach (var e in eventList)
-                    {
-                        var ev = new RavenEvent
-                        {
-                            AggId = e.GetAggregateRootId(),
-                            SeqNo = Convert.ToInt64(e.Meta[DomainEvent.MetadataKeys.SequenceNumber]),
-                            GlobSeqNo = Convert.ToInt64(e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber]),
-                            Data = e.Data,
-                            Meta = Encoding.UTF8.GetBytes(_metadataSerializer.Serialize(e.Meta))
-                        };
-
-                        if (session.Load<RavenEvent>(ev.Id) != null)
-                        {
-                            throw new ConcurrencyException(batchId, eventList, null);
-                        }
-
-                        session.Store(ev);
-                        session.Store(new GlobalSequence
-                        {
-                            Id = string.Format("globalseq/{0}", e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber]),
-                            EventId = ev.Id
-                        });
-                        batchDoc.EventIds.Add(ev.Id);
-                    }
-                    SaveGlobalSequenceNumber(session, nextSequenceNumber - 1);
-                    session.Store(batchDoc);
-
-                    session.SaveChanges();
-
-                    tx.Complete();
+                    e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (nextSequenceNumber++).ToString(Metadata.NumberCulture);
+                    e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
                 }
+
+                EventValidation.ValidateBatchIntegrity(batchId, eventList);
+
+                var batchDoc = new Batch {Id = batchId};
+
+                foreach (var e in eventList)
+                {
+                    var ev = new RavenEvent
+                    {
+                        AggId = e.GetAggregateRootId(),
+                        SeqNo = Convert.ToInt64(e.Meta[DomainEvent.MetadataKeys.SequenceNumber]),
+                        GlobSeqNo = Convert.ToInt64(e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber]),
+                        Data = e.Data,
+                        Meta = Encoding.UTF8.GetBytes(_metadataSerializer.Serialize(e.Meta))
+                    };
+
+                    if (session.Load<RavenEvent>(ev.Id) != null)
+                    {
+                        throw new ConcurrencyException(batchId, eventList, null);
+                    }
+
+                    session.Store(ev);
+                    session.Store(new GlobalSequence
+                    {
+                        Id = string.Format("globalseq/{0}", e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber]),
+                        EventId = ev.Id
+                    });
+                    batchDoc.EventIds.Add(ev.Id);
+                }
+                SaveGlobalSequenceNumber(session, nextSequenceNumber - 1);
+                session.Store(batchDoc);
+
+                session.SaveChanges();
             }
         }
 
