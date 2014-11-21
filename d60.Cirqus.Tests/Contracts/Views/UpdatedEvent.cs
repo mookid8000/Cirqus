@@ -49,9 +49,10 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _context.Save("id2", new Event());
 
             // assert
+            Assert.That(registeredUpdates["id1"], Is.GreaterThanOrEqualTo(3));
+            Assert.That(registeredUpdates["id2"], Is.GreaterThanOrEqualTo(1));
+
             Assert.That(registeredUpdates.Count, Is.EqualTo(2));
-            Assert.That(registeredUpdates["id1"], Is.EqualTo(3));
-            Assert.That(registeredUpdates["id2"], Is.EqualTo(1));
         }
     }
 }
