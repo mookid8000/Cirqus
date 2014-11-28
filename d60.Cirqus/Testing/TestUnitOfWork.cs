@@ -13,12 +13,12 @@ namespace d60.Cirqus.Testing
     {
         readonly IEventStore _eventStore;
         readonly IEventDispatcher _eventDispatcher;
-        readonly JsonDomainEventSerializer _domainEventSerializer;
+        readonly IDomainEventSerializer _domainEventSerializer;
         readonly RealUnitOfWork _realUnitOfWork;
 
         bool _wasCommitted;
 
-        internal TestUnitOfWork(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IEventDispatcher eventDispatcher, JsonDomainEventSerializer domainEventSerializer, IDomainTypeNameMapper domainTypeNameMapper)
+        internal TestUnitOfWork(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IEventDispatcher eventDispatcher, IDomainEventSerializer domainEventSerializer, IDomainTypeNameMapper domainTypeNameMapper)
         {
             _eventStore = eventStore;
             _eventDispatcher = eventDispatcher;

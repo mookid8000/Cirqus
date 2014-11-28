@@ -20,7 +20,7 @@ namespace d60.Cirqus.Testing
     /// </summary>
     public class TestContext : IDisposable
     {
-        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer("<events>");
+        readonly IDomainEventSerializer _domainEventSerializer;
         readonly DefaultDomainTypeNameMapper _domainTypeNameMapper = new DefaultDomainTypeNameMapper();
         readonly DefaultAggregateRootRepository _aggregateRootRepository;
         readonly ViewManagerEventDispatcher _viewManagerEventDispatcher;
@@ -33,8 +33,12 @@ namespace d60.Cirqus.Testing
         DateTime _currentTime = DateTime.MinValue;
         bool _initialized;
 
-        public TestContext()
+        public TestContext() : this(new JsonDomainEventSerializer("<events>")) {}
+
+        public TestContext(IDomainEventSerializer domainEventSerializer)
         {
+            _domainEventSerializer = domainEventSerializer;
+            
             _eventStore = new InMemoryEventStore(_domainEventSerializer);
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer, _domainTypeNameMapper);
             _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore, _domainEventSerializer, _domainTypeNameMapper);
@@ -306,9 +310,30 @@ Current view positions:
             domainEvent.Meta.TakeFromAttributes(domainEvent.GetType());
             domainEvent.Meta.TakeFromAttributes(typeof(TAggregateRoot));
 
-            _domainEventSerializer.EnsureSerializability(domainEvent);
+            EnsureSerializability(domainEvent);
         }
 
+        void EnsureSerializability(DomainEvent domainEvent)
+        {
+            var firstSerialization = _domainEventSerializer.Serialize(domainEvent);
+
+            var secondSerialization = _domainEventSerializer.Serialize(
+                _domainEventSerializer.Deserialize(firstSerialization));
+
+            if (firstSerialization.IsSameAs(secondSerialization)) return;
+
+            throw new ArgumentException(string.Format(@"Could not properly roundtrip the following domain event: {0}
+
+Result after first serialization:
+
+{1}
+
+Result after roundtripping:
+
+{2}
+
+Headers: {3}", domainEvent, firstSerialization, secondSerialization, domainEvent.Meta));
+        }
 
         DateTime GetNow()
         {
