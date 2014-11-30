@@ -9,13 +9,19 @@ tying it all up in one simple and neat `CommandProcessor`.
 
 You do this:
 
-    var processor = new CommandProcessor(...);
+    var processor = CommandProcessor.With()
+        .(...)
+        .Create();
 
-(of course satisfying the processor's few dependencies), and then you can do this:
+and let the API guide you through selecting an event store, possibly configuring some more stuff as well, and then you can do this:
 
     processor.ProcessCommand(myCommand);
 
-and then everything will flow from there.
+and then everything will flow from there. The command processor is reentrant and is meant to be kept around for the duration of your application's lifetime. Remember to
+
+    processor.Dispose();
+    
+when the application shuts down.
 
 ### More docs
 
