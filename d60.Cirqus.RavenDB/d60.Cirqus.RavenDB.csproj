@@ -83,6 +83,7 @@
     <Compile Include="Batch.cs" />
     <Compile Include="GlobalSeqNumber.cs" />
     <Compile Include="GlobalSequence.cs" />
+    <Compile Include="ISyncAdvancedSessionOperationExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RavenDBEventStore.cs" />
     <Compile Include="RavenEvent.cs" />
