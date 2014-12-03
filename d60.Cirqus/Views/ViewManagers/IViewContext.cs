@@ -31,5 +31,10 @@ namespace d60.Cirqus.Views.ViewManagers
         /// Gets/sets the domain event currently being handled - should be set only from within a view manager
         /// </summary>
         DomainEvent CurrentEvent { get; set; }
+
+        /// <summary>
+        /// Marks this view instance for deletion
+        /// </summary>
+        void DeleteThisViewInstance();
     }
 }

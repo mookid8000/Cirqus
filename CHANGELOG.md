@@ -433,7 +433,11 @@ This is a big update that completes the transition to the new, vastly improved v
 * Introduced `IDomainTypeNameMapper` that allows for customizing names of events and aggregate roots as they go into event metadata
 * Split `Load` up into `Create`, `TryLoad`, and `Load` - each with appropriate and more explicit behavior
 * Relaxed type constraints on `Load` and `TryLoad` methods, allowing for loading as base classes and interfaces
+* Optimized `ViewManagerEventDispatcher` to do direct dispatch of events when possible
 
+## 0.46.0
+
+* Made TestContext's event serializer customizable
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
