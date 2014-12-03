@@ -5,6 +5,9 @@ using d60.Cirqus.Extensions;
 
 namespace d60.Cirqus.Events
 {
+    /// <summary>
+    /// WARNING: Not fully functional. Do not use yet! :)
+    /// </summary>
     public class EventCache : IEventStore 
     {
         readonly IEventStore store;

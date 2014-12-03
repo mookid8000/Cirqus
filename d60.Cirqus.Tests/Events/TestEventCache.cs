@@ -9,7 +9,7 @@ using NUnit.Framework;
 namespace d60.Cirqus.Tests.Events
 {
     [TestFixture]
-    public class TestCachingEventStoreDecorator
+    public class TestEventCache
     {
         TrackingEventStore store;
 
