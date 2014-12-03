@@ -145,6 +145,11 @@
     <Compile Include="Contracts\Views\Models\UpdatedEvent\Root.cs" />
     <Compile Include="Contracts\Views\Models\UpdatedEvent\Event.cs" />
     <Compile Include="Contracts\Views\Models\UpdatedEvent\View.cs" />
+    <Compile Include="Contracts\Views\Models\ViewInstanceDeletion\MakeStuffHappen.cs" />
+    <Compile Include="Contracts\Views\Models\ViewInstanceDeletion\Root.cs" />
+    <Compile Include="Contracts\Views\Models\ViewInstanceDeletion\SomethingHappened.cs" />
+    <Compile Include="Contracts\Views\Models\ViewInstanceDeletion\Undo.cs" />
+    <Compile Include="Contracts\Views\Models\ViewInstanceDeletion\Undone.cs" />
     <Compile Include="Contracts\Views\Models\ViewLocators\AnotherEvent.cs" />
     <Compile Include="Contracts\Views\Models\ViewLocators\JustAnEvent.cs" />
     <Compile Include="Contracts\Views\Models\ViewLocators\CustomizedViewLocator.cs" />
@@ -160,6 +165,7 @@
     <Compile Include="Contracts\Views\Models\ObjectGraph\Root.cs" />
     <Compile Include="Contracts\Views\UpdatedEvent.cs" />
     <Compile Include="Contracts\Views\Models\ObjectGraph\ViewChild.cs" />
+    <Compile Include="Contracts\Views\ViewInstanceDeletion.cs" />
     <Compile Include="Contracts\Views\ViewLocators.cs" />
     <Compile Include="Contracts\Views\Models\ObjectGraph\ViewRoot.cs" />
     <Compile Include="Diagnostics\TestLapTimes.cs" />

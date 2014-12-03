@@ -124,6 +124,11 @@ namespace d60.Cirqus.Views.ViewManagers
         }
 
         public DomainEvent CurrentEvent { get; set; }
+        
+        public void DeleteThisViewInstance()
+        {
+            
+        }
 
         public void AddEmittedEvent<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
         {

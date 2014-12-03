@@ -26,6 +26,11 @@ namespace d60.Cirqus.Tests.Stubs
             throw new NotImplementedException("This view context is a stub that throws when someone uses it");
         }
 
+        public void DeleteThisViewInstance()
+        {
+            throw new NotImplementedException("This view context is a stub that throws when someone uses it");
+        }
+
         /// <summary>
         /// We do allow for setting/getting the event currently being handled though
         /// </summary>
