@@ -120,6 +120,22 @@ namespace d60.Cirqus.Tests.Aggregates
             Assert.That(nextEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId], Is.EqualTo("root_id"));
         }
 
+        [Test]
+        public void FailsOnSequenceMismatch()
+        {
+            var someAggregate = new SomeAggregate();
+
+            var @eventWithTooLateSeqNumber = new SomeEvent("something");
+
+            // some global seq - not important
+            @eventWithTooLateSeqNumber.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = 10.ToString();
+            
+            // local seq that are too far ahead
+            @eventWithTooLateSeqNumber.Meta[DomainEvent.MetadataKeys.SequenceNumber] = 1.ToString();
+
+            Assert.Throws<ApplicationException>(() => someAggregate.ApplyEvent(@eventWithTooLateSeqNumber, ReplayState.ReplayApply));
+        }
+
         DefaultAggregateRootRepository CreateAggregateRootRepository()
         {
             var inMemoryEventStore = new InMemoryEventStore(_domainEventSerializer);
