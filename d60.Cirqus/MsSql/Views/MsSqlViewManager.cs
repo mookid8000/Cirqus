@@ -253,6 +253,11 @@ WHEN NOT MATCHED THEN
             }
         }
 
+        public override void Delete(string viewId)
+        {
+            
+        }
+
         public override void Purge()
         {
             _logger.Info("Purging SQL Server table {0}", _tableName);

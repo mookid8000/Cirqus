@@ -67,6 +67,11 @@ namespace d60.Cirqus.MongoDb.Views
             return _viewCollection.FindOneById(viewId);
         }
 
+        public override void Delete(string viewId)
+        {
+            
+        }
+
         public override long GetPosition(bool canGetFromCache = true)
         {
             if (canGetFromCache && false)

@@ -29,6 +29,13 @@ namespace d60.Cirqus.Views.ViewManagers
                 : null;
         }
 
+        public override void Delete(string viewId)
+        {
+            Console.WriteLine("Deleting view {0}", viewId);
+            TViewInstance dummy;
+            _views.TryRemove(viewId, out dummy);
+        }
+
         public override long GetPosition(bool canGetFromCache = true)
         {
             return InnerGetPosition();

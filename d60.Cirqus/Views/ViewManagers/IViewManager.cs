@@ -11,6 +11,11 @@
         TViewInstance Load(string viewId);
 
         /// <summary>
+        /// Deletes the view with the specified ID if it exists
+        /// </summary>
+        void Delete(string viewId);
+
+        /// <summary>
         /// Event that is raised whenever a view instance is created/updated
         /// </summary>
         event ViewInstanceUpdatedHandler<TViewInstance> Updated;
