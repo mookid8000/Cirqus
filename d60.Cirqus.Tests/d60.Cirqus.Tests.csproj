@@ -169,6 +169,7 @@
     <Compile Include="Events\Ntfs\TestCommitLog.cs" />
     <Compile Include="Events\Replicator\BasicReplication.cs" />
     <Compile Include="Events\Replicator\TestEventReplicator.cs" />
+    <Compile Include="Events\TestCachingEventStoreDecorator.cs" />
     <Compile Include="Events\TestInMemoryEventStore.cs" />
     <Compile Include="Events\Ntfs\TestNtfsEventStore.cs" />
     <Compile Include="Examples\ReadmeSnippet.cs" />

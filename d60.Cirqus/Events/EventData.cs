@@ -8,15 +8,13 @@ namespace d60.Cirqus.Events
     /// </summary>
     public class EventData
     {
-        readonly DomainEvent _innerDomainEvent;
-        readonly Metadata _innerMetadata;
+        readonly Metadata _meta;
         readonly byte[] _data;
 
-        protected EventData(DomainEvent domainEvent, byte[] data, Metadata meta)
+        protected EventData(byte[] data, Metadata meta)
         {
             _data = data;
-            _innerDomainEvent = domainEvent;
-            _innerMetadata = meta;
+            _meta = meta;
         }
 
         /// <summary>
@@ -24,7 +22,7 @@ namespace d60.Cirqus.Events
         /// </summary>
         public static EventData FromDomainEvent(DomainEvent domainEvent, byte[] data)
         {
-            return new EventData(domainEvent, data, null);
+            return new EventData(data, domainEvent.Meta);
         }
 
         /// <summary>
@@ -32,33 +30,24 @@ namespace d60.Cirqus.Events
         /// </summary>
         public static EventData FromMetadata(Metadata meta, byte[] data)
         {
-            return new EventData(null, data, meta);
-        }
-
-        /// <summary>
-        /// Gets the wrapped <see cref="DomainEvent"/> if one is included - throws <see cref="InvalidOperationException"/> otherwise
-        /// </summary>
-        public DomainEvent DomainEvent
-        {
-            get
-            {
-                if (_innerDomainEvent == null)
-                {
-                    throw new InvalidOperationException("Can't get inner domain event from this event because it contains only binary event data");
-                }
-                return _innerDomainEvent;
-            }
+            return new EventData(data, meta);
         }
 
         /// <summary>
         /// Gets the metadata that is included with this event, either from the wrapped <see cref="DomainEvent"/> or from the wrapped <see cref="Metadata"/>
         /// </summary>
-        public Metadata Meta { get { return _innerMetadata ?? _innerDomainEvent.Meta; } }
+        public Metadata Meta
+        {
+            get { return _meta; }
+        }
 
         /// <summary>
         /// Gets the raw serialized body of the event
         /// </summary>
-        public virtual byte[] Data { get { return _data; } }
+        public virtual byte[] Data
+        {
+            get { return _data; }
+        }
 
         public override string ToString()
         {
