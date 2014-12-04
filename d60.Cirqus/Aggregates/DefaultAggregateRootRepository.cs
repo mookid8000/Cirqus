@@ -82,6 +82,16 @@ namespace d60.Cirqus.Aggregates
             return aggregateRoot;
         }
 
+        /// <summary>
+        /// Inheritors should override this to create instances of the specified type.
+        /// </summary>
+        /// <param name="aggregateRootType">The type of the aggregate root to create - already validated to ensure it is a sub-type of <see cref="AggregateRoot"/>.</param>
+        /// <returns>An instance of <paramref name="aggregateRootType"/>.</returns>
+        protected virtual AggregateRoot CreateAggregateRootInstance(Type aggregateRootType)
+        {
+            return (AggregateRoot)Activator.CreateInstance(aggregateRootType);
+        }
+
         AggregateRoot CreateNewAggregateRootInstance(Type aggregateRootType, string aggregateRootId, IUnitOfWork unitOfWork)
         {
             if (!typeof (AggregateRoot).IsAssignableFrom(aggregateRootType))
@@ -90,7 +100,7 @@ namespace d60.Cirqus.Aggregates
                     aggregateRootId, aggregateRootType));
             }
 
-            var aggregateRoot = (AggregateRoot)Activator.CreateInstance(aggregateRootType);
+            var aggregateRoot = CreateAggregateRootInstance(aggregateRootType);
             
             aggregateRoot.Initialize(aggregateRootId);
             aggregateRoot.UnitOfWork = unitOfWork;
