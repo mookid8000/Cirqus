@@ -106,7 +106,8 @@ namespace d60.Cirqus
 
                     _eventStore.Save(batchId, eventData);
 
-                    emittedDomainEvents.AddRange(eventData.Select(d => d.DomainEvent));
+                    emittedDomainEvents.AddRange(eventsFromThisUnitOfWork);
+
                 }, maxRetries: Options.MaxRetries);
             }
             catch (Exception exception)

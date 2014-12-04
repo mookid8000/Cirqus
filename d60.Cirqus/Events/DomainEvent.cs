@@ -30,11 +30,6 @@ namespace d60.Cirqus.Events
 
         public Metadata Meta { get; internal set; }
 
-        internal void AssignSequenceNumber(int seq)
-        {
-            Meta[MetadataKeys.SequenceNumber] = seq.ToString(Metadata.NumberCulture);
-        }
-
         public override string ToString()
         {
             return string.Format("{0} ({1}/{2}/{3})", 

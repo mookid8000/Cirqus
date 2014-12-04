@@ -236,11 +236,9 @@ namespace d60.Cirqus.Testing
 
             _eventStore.Save(Guid.NewGuid(), eventData);
 
-            var domainEventsToDispatch = eventData.Select(e => e.DomainEvent).ToList();
+            _eventDispatcher.Dispatch(_eventStore, domainEvents);
 
-            _eventDispatcher.Dispatch(_eventStore, domainEventsToDispatch);
-
-            var result = new CommandProcessingResultWithEvents(domainEventsToDispatch);
+            var result = new CommandProcessingResultWithEvents(domainEvents);
 
             if (!Asynchronous)
             {
