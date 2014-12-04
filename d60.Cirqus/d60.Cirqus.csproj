@@ -46,6 +46,7 @@
     <Compile Include="Aggregates\AggregateRoot.cs" />
     <Compile Include="Aggregates\AggregateRootInfo.cs" />
     <Compile Include="Aggregates\DefaultAggregateRootRepository.cs" />
+    <Compile Include="Aggregates\FactoryBasedAggregateRootRepository.cs" />
     <Compile Include="Config\CustomizableDomainTypeNameMapper.cs" />
     <Compile Include="Config\DefaultDomainTypeNameMapper.cs" />
     <Compile Include="Aggregates\IAggregateRootRepository.cs" />
