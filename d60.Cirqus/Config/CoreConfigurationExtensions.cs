@@ -55,6 +55,22 @@ namespace d60.Cirqus.Config
         }
 
         /// <summary>
+        /// Registers a <see cref="FactoryBasedAggregateRootRepository"/> as the <see cref="IAggregateRootRepository"/> implementation. 
+        /// </summary>
+        public static void UseFactoryMethod(this AggregateRootRepositoryConfigurationBuilder builder, Func<Type, AggregateRoot> factoryMethod)
+        {
+            builder.Registrar
+                .Register<IAggregateRootRepository>(context =>
+                {
+                    var eventStore = context.Get<IEventStore>();
+                    var domainEventSerializer = context.Get<IDomainEventSerializer>();
+                    var domainTypeNameMapper = context.Get<IDomainTypeNameMapper>();
+
+                    return new FactoryBasedAggregateRootRepository(eventStore, domainEventSerializer, domainTypeNameMapper, factoryMethod);
+                });
+        }
+
+        /// <summary>
         /// Registers a <see cref="Views.ViewManagerEventDispatcher"/> to manage the given views. Can be called multiple times in order to register
         /// multiple "pools" of views (each will be managed by a dedicated worker thread).
         /// </summary>
