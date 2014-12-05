@@ -59,7 +59,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             public void Handle(IViewContext context, Undone domainEvent)
             {
-                context.DeleteThisViewInstance();
+                //context.DeleteThisViewInstance();
             }
         }
     }

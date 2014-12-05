@@ -7,7 +7,7 @@ namespace d60.Cirqus.Aggregates
 {
     public class FactoryBasedAggregateRootRepository : DefaultAggregateRootRepository
     {
-        readonly Func<Type, AggregateRoot> aggregateRootFactoryMethod;
+        readonly Func<Type, AggregateRoot> _aggregateRootFactoryMethod;
 
         public FactoryBasedAggregateRootRepository(IEventStore eventStore, IDomainEventSerializer domainEventSerializer, IDomainTypeNameMapper domainTypeNameMapper, Func<Type, AggregateRoot> aggregateRootFactoryMethod)
             : base(eventStore, domainEventSerializer, domainTypeNameMapper)
@@ -15,12 +15,12 @@ namespace d60.Cirqus.Aggregates
             if (aggregateRootFactoryMethod == null)
                 throw new ArgumentNullException("aggregateRootFactoryMethod");
 
-            this.aggregateRootFactoryMethod = aggregateRootFactoryMethod;
+            this._aggregateRootFactoryMethod = aggregateRootFactoryMethod;
         }
 
         protected override AggregateRoot CreateAggregateRootInstance(Type aggregateRootType)
         {
-            return aggregateRootFactoryMethod(aggregateRootType);
+            return _aggregateRootFactoryMethod(aggregateRootType);
         }
     }
 }
