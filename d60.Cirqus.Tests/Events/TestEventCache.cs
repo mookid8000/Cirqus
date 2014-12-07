@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Serialization;
@@ -12,13 +11,12 @@ namespace d60.Cirqus.Tests.Events
     [TestFixture]
     public class TestEventCache
     {
-        TrackingEventStore store;
+        TrackingEventStore _store;
 
         [SetUp]
         public void Setup()
         {
-            store = new TrackingEventStore(
-                new InMemoryEventStore(new JsonDomainEventSerializer()));
+            _store = new TrackingEventStore(new InMemoryEventStore(new JsonDomainEventSerializer()));
         }
 
         [Test]
@@ -26,11 +24,11 @@ namespace d60.Cirqus.Tests.Events
         {
             Save("(H)aggrid", 0);
             
-            var cache = new EventCache(store);
+            var cache = new EventCache(_store);
             var results = cache.Load("(H)aggrid").ToList();
 
             Assert.AreEqual(DataForSeq(0), results[0].Data);
-            Assert.AreEqual(results, store.CacheMisses);
+            Assert.AreEqual(results, _store.CacheMisses);
         }
 
         [Test]
@@ -40,16 +38,16 @@ namespace d60.Cirqus.Tests.Events
             Save("(H)aggrid", 1);
             Save("(H)aggrid", 2);
 
-            var cache = new EventCache(store);
+            var cache = new EventCache(_store);
             var _ = cache.Load("(H)aggrid").ToList();
-            store.CacheMisses.Clear();
+            _store.CacheMisses.Clear();
             
             var results = cache.Load("(H)aggrid").ToList();
 
             Assert.AreEqual(DataForSeq(0), results[0].Data);
             Assert.AreEqual(DataForSeq(1), results[1].Data);
             Assert.AreEqual(DataForSeq(2), results[2].Data);
-            Assert.AreEqual(0, store.CacheMisses.Count);
+            Assert.AreEqual(0, _store.CacheMisses.Count);
         }
 
         [Test]
@@ -59,17 +57,17 @@ namespace d60.Cirqus.Tests.Events
             Save("(H)aggrid", 1);
             Save("(H)aggrid", 2);
 
-            var cache = new EventCache(store);
+            var cache = new EventCache(_store);
             var _ = cache.Load("(H)aggrid", 1).ToList();
-            store.CacheMisses.Clear();
+            _store.CacheMisses.Clear();
             
             var results = cache.Load("(H)aggrid").ToList();
 
             Assert.AreEqual(DataForSeq(0), results[0].Data);
             Assert.AreEqual(DataForSeq(1), results[1].Data);
             Assert.AreEqual(DataForSeq(2), results[2].Data);
-            Assert.AreEqual(1, store.CacheMisses.Count);
-            Assert.AreEqual(DataForSeq(0), store.CacheMisses[0].Data);
+            Assert.AreEqual(1, _store.CacheMisses.Count);
+            Assert.AreEqual(DataForSeq(0), _store.CacheMisses[0].Data);
         }
 
         [Test]
@@ -77,9 +75,9 @@ namespace d60.Cirqus.Tests.Events
         {
             Save("(H)aggrid", 0);
 
-            var cache = new EventCache(store);
+            var cache = new EventCache(_store);
             var _ = cache.Load("(H)aggrid").ToList();
-            store.CacheMisses.Clear();
+            _store.CacheMisses.Clear();
 
             Save("(H)aggrid", 1);
             Save("(H)aggrid", 2);
@@ -89,9 +87,9 @@ namespace d60.Cirqus.Tests.Events
             Assert.AreEqual(DataForSeq(0), results[0].Data);
             Assert.AreEqual(DataForSeq(1), results[1].Data);
             Assert.AreEqual(DataForSeq(2), results[2].Data);
-            Assert.AreEqual(2, store.CacheMisses.Count);
-            Assert.AreEqual(DataForSeq(1), store.CacheMisses[0].Data);
-            Assert.AreEqual(DataForSeq(2), store.CacheMisses[1].Data);
+            Assert.AreEqual(2, _store.CacheMisses.Count);
+            Assert.AreEqual(DataForSeq(1), _store.CacheMisses[0].Data);
+            Assert.AreEqual(DataForSeq(2), _store.CacheMisses[1].Data);
         }
 
         void Save(string id, long seq)
@@ -100,7 +98,7 @@ namespace d60.Cirqus.Tests.Events
             domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id;
             domainEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber] = seq.ToString();
 
-            store.Save(Guid.NewGuid(), new[]
+            _store.Save(Guid.NewGuid(), new[]
             {
                 EventData.FromDomainEvent(domainEvent, DataForSeq(seq))
             });

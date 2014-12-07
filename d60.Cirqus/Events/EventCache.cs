@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,26 +11,26 @@ namespace d60.Cirqus.Events
     /// </summary>
     public class EventCache : IEventStore 
     {
-        readonly IEventStore store;
-        readonly int maxEntries;
-        readonly ConcurrentDictionary<string, ConcurrentQueue<EventData>> cache; 
+        readonly IEventStore _store;
+        readonly int _maxEntries;
+        readonly ConcurrentDictionary<string, ConcurrentQueue<EventData>> _cache; 
 
         public EventCache(IEventStore store, int maxEntries = 100000)
         {
-            this.store = store;
-            this.maxEntries = maxEntries;
+            _store = store;
+            _maxEntries = maxEntries;
 
-            cache = new ConcurrentDictionary<string, ConcurrentQueue<EventData>>();
+            _cache = new ConcurrentDictionary<string, ConcurrentQueue<EventData>>();
         }
 
         public void Save(Guid batchId, IEnumerable<EventData> batch)
         {
-            store.Save(batchId, batch);
+            _store.Save(batchId, batch);
         }
 
         public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
         {
-            var cacheForRoot = cache.GetOrAdd(aggregateRootId, id => new ConcurrentQueue<EventData>());
+            var cacheForRoot = _cache.GetOrAdd(aggregateRootId, id => new ConcurrentQueue<EventData>());
 
             foreach (var cachedEvent in cacheForRoot)
             {
@@ -46,7 +45,7 @@ namespace d60.Cirqus.Events
                 {
                     var missingFromCache = (int)(sequenceNumberOfCachedEvent - firstSeq);
                     
-                    foreach (var loadedEvent in store.Load(aggregateRootId, firstSeq).Take(missingFromCache))
+                    foreach (var loadedEvent in _store.Load(aggregateRootId, firstSeq).Take(missingFromCache))
                     {
                         yield return loadedEvent;
                         firstSeq++;
@@ -57,7 +56,7 @@ namespace d60.Cirqus.Events
                 firstSeq++;
             }
 
-            foreach (var loadedEvent in store.Load(aggregateRootId, firstSeq))
+            foreach (var loadedEvent in _store.Load(aggregateRootId, firstSeq))
             {
                 yield return loadedEvent;
                 cacheForRoot.Enqueue(loadedEvent);
@@ -66,12 +65,12 @@ namespace d60.Cirqus.Events
 
         public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
         {
-            return store.Stream(globalSequenceNumber);
+            return _store.Stream(globalSequenceNumber);
         }
 
         public long GetNextGlobalSequenceNumber()
         {
-            return store.GetNextGlobalSequenceNumber();
+            return _store.GetNextGlobalSequenceNumber();
         }
     }
 }

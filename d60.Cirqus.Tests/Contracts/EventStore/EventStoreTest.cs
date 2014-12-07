@@ -13,7 +13,6 @@ using d60.Cirqus.Numbers;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.Contracts.EventStore.Factories;
 using d60.Cirqus.Tests.Extensions;
-using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Contracts.EventStore
