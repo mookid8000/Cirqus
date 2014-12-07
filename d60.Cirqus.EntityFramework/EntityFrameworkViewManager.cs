@@ -181,6 +181,11 @@ namespace d60.Cirqus.EntityFramework
             }
         }
 
+        public override void Delete(string viewId)
+        {
+            
+        }
+
         GenericViewContext<TViewInstance> GetContext()
         {
             return new GenericViewContext<TViewInstance>(_connectionString);

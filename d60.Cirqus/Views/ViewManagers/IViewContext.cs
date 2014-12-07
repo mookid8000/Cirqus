@@ -32,9 +32,9 @@ namespace d60.Cirqus.Views.ViewManagers
         /// </summary>
         DomainEvent CurrentEvent { get; set; }
 
-        /// <summary>
-        /// Marks this view instance for deletion
-        /// </summary>
-        void DeleteThisViewInstance();
+        ///// <summary>
+        ///// Marks this view instance for deletion
+        ///// </summary>
+        //void DeleteThisViewInstance();
     }
 }

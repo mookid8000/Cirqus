@@ -439,6 +439,11 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Made TestContext's event serializer customizable
 
+## 0.46.1
+
+* Added `IAggregateRootRepository` implementation that allows for letting a factory method create the instance - thanks [kimbirkelund]
+
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
-
+[kimbirkelund]: https://github.com/kimbirkelund

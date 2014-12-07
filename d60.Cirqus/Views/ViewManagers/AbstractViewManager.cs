@@ -38,7 +38,9 @@ namespace d60.Cirqus.Views.ViewManagers
         public abstract void Purge();
 
         public abstract TViewInstance Load(string viewId);
-        
+
+        public abstract void Delete(string viewId);
+
         public event ViewInstanceUpdatedHandler<TViewInstance> Updated;
 
         protected void RaiseUpdatedEventFor(IEnumerable<TViewInstance> viewInstances)
