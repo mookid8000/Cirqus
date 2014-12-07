@@ -25,6 +25,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
     [TestFixture(typeof(PostgreSqlEventStoreFactory), Category = TestCategories.PostgreSql)]
     [TestFixture(typeof(NtfsEventStoreFactory))]
     [TestFixture(typeof(SQLiteEventStoreFactory))]
+    [TestFixture(typeof(CachedEventStoreFactory))]
     public class EventStoreTest<TEventStoreFactory> : FixtureBase where TEventStoreFactory : IEventStoreFactory, new()
     {
         TEventStoreFactory _eventStoreFactory;
@@ -419,6 +420,24 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
         [TestCase(1000)]
         [TestCase(10000, Ignore = TestCategories.IgnoreLongRunning)]
+        public void CompareLoadPerformance(int numberOfEvents)
+        {
+            CirqusLoggerFactory.Current = new NullLoggerFactory();
+
+            var seqNo = 0;
+            _eventStore.Save(Guid.NewGuid(), Enumerable.Range(0, numberOfEvents).Select(i => Event(seqNo++, "rootid")));
+
+            TakeTime(
+                string.Format("First time read stream of {0} events", numberOfEvents),
+                () => _eventStore.Load("rootid").ToList());
+
+            TakeTime(
+                string.Format("Second time read stream of {0} events", numberOfEvents),
+                () => _eventStore.Load("rootid").ToList());
+        }
+
+        [TestCase(1000)]
+        [TestCase(10000, Ignore = TestCategories.IgnoreLongRunning)]
         [TestCase(100000, Ignore = TestCategories.IgnoreLongRunning)]
         public void CompareStreamPerformance(int numberOfEvents)
         {
@@ -431,6 +450,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
                 string.Format("Read stream of {0} events", numberOfEvents),
                 () => _eventStore.Stream().ToList());
         }
+
 
         [Test]
         public void TimeStampsCanRoundtripAsTheyShould()

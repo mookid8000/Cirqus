@@ -97,6 +97,7 @@
     <Compile Include="Aggregates\TestEventApplication.cs" />
     <Compile Include="Commands\TestCustomMetadata.cs" />
     <Compile Include="Contracts\EventStore\EventStoreTest.cs" />
+    <Compile Include="Contracts\EventStore\Factories\CachedEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\Factories\SQLiteEventStoreFactory .cs" />
     <Compile Include="Contracts\EventStore\Factories\NtfsEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\Factories\PostgreSqlEventStoreFactory.cs" />

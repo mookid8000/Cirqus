@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Serialization;
@@ -64,12 +65,11 @@ namespace d60.Cirqus.Tests.Events
             
             var results = cache.Load("(H)aggrid").ToList();
 
-            //TODO
-            //Assert.AreEqual(DataForSeq(0), results[0].Data);
-            //Assert.AreEqual(DataForSeq(1), results[1].Data);
-            //Assert.AreEqual(DataForSeq(2), results[2].Data);
-            //Assert.AreEqual(1, store.CacheMisses.Count);
-            //Assert.AreEqual(DataForSeq(0), store.CacheMisses[0].Data);
+            Assert.AreEqual(DataForSeq(0), results[0].Data);
+            Assert.AreEqual(DataForSeq(1), results[1].Data);
+            Assert.AreEqual(DataForSeq(2), results[2].Data);
+            Assert.AreEqual(1, store.CacheMisses.Count);
+            Assert.AreEqual(DataForSeq(0), store.CacheMisses[0].Data);
         }
 
         [Test]
@@ -131,11 +131,11 @@ namespace d60.Cirqus.Tests.Events
 
             public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
             {
-                var events = store.Load(aggregateRootId, firstSeq).ToList();
-
-                CacheMisses.AddRange(events);
-                
-                return events;
+                foreach (var @event in store.Load(aggregateRootId, firstSeq))
+                {
+                    CacheMisses.Add(@event);
+                    yield return @event;
+                }
             }
 
             public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
