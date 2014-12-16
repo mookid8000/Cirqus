@@ -12,11 +12,8 @@ namespace d60.Cirqus.RavenDB
     {
         public static IEnumerator<StreamResult<T>> NonStaleResultStream<T>(this ISyncAdvancedSessionOperation op, IRavenQueryable<T> q, Expression<Func<T, bool>> where, Expression<Func<T, long>> order)
         {
-            var newQuery = q.Customize(c => c.WaitForNonStaleResults())
-                .Where(where)
-                .OrderBy(order);
-            newQuery.Count();
-            return op.Stream(newQuery);
+            q.Customize(c => c.WaitForNonStaleResults()).Where(where).OrderBy(order).Count();
+            return op.Stream(q.Where(where).OrderBy(order));
         }
     }
 }
