@@ -177,7 +177,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void UseConsole(this LoggingConfigurationBuilder builder, Logger.Level minLevel = Logger.Level.Info)
         {
-            CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel: minLevel);
+            builder.Use(new ConsoleLoggerFactory(minLevel: minLevel));
         }
 
         /// <summary>
@@ -185,7 +185,15 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void None(this LoggingConfigurationBuilder builder)
         {
-            CirqusLoggerFactory.Current = new NullLoggerFactory();
+            builder.Use(new NullLoggerFactory());
+        }
+
+        /// <summary>
+        /// Configures Cirqus get its logger using specified factory.
+        /// </summary>
+        public static void Use(this LoggingConfigurationBuilder builder, CirqusLoggerFactory factory)
+        {
+            CirqusLoggerFactory.Current = factory;
         }
     }
 }
