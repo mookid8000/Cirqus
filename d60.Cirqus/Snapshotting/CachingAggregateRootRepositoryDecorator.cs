@@ -44,9 +44,9 @@ namespace d60.Cirqus.Snapshotting
             return fromRepository;
         }
 
-        public bool Exists(string aggregateRootId, long maxGlobalSequenceNumber = Int64.MaxValue, IUnitOfWork unitOfWork = null)
+        public bool Exists(string aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue)
         {
-            return _innerAggregateRootRepository.Exists(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
+            return _innerAggregateRootRepository.Exists(aggregateRootId, maxGlobalSequenceNumber);
         }
 
         AggregateRoot PrepareCloneFromCache(string aggregateRootId, long maxGlobalSequenceNumber, IUnitOfWork unitOfWork)

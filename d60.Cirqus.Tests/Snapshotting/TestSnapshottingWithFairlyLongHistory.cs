@@ -149,9 +149,9 @@ caching in use: {3}",
                 return aggregateRootInfo;
             }
 
-            public bool Exists(string aggregateRootId, long maxGlobalSequenceNumber = Int64.MaxValue, IUnitOfWork unitOfWork = null)
+            public bool Exists(string aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue)
             {
-                return InnerAggregateRootRepository.Exists(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
+                return InnerAggregateRootRepository.Exists(aggregateRootId, maxGlobalSequenceNumber);
             }
 
             public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)

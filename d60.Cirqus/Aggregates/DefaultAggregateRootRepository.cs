@@ -27,7 +27,7 @@ namespace d60.Cirqus.Aggregates
         /// Checks whether one or more events exist for an aggregate root with the specified ID. If <seealso cref="maxGlobalSequenceNumber"/> is specified,
         /// it will check whether the root instance existed at that point in time
         /// </summary>
-        public bool Exists(string aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue, IUnitOfWork unitOfWork = null)
+        public bool Exists(string aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue)
         {
             var firstEvent = _eventStore.Load(aggregateRootId).FirstOrDefault();
 

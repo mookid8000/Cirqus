@@ -17,6 +17,6 @@ namespace d60.Cirqus.Aggregates
         /// Checks whether an aggregate root of the specified type with the specified ID exists. Optionally, if <seealso cref="maxGlobalSequenceNumber"/> is set,
         /// it is checked whether the root exists at the given point in time (including the specified sequence number)
         /// </summary>
-        bool Exists(string aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue, IUnitOfWork unitOfWork = null);
+        bool Exists(string aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue);
     }
 }

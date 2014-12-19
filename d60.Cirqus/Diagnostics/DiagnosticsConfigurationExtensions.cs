@@ -132,13 +132,13 @@ namespace d60.Cirqus.Diagnostics
                 }
             }
 
-            public bool Exists(string aggregateRootId, long maxGlobalSequenceNumber = Int64.MaxValue, IUnitOfWork unitOfWork = null)
+            public bool Exists(string aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue)
             {
                 var stopwatch = Stopwatch.StartNew();
                 try
                 {
                     return _innnerAggregateRootRepository
-                        .Exists(aggregateRootId, maxGlobalSequenceNumber, unitOfWork);
+                        .Exists(aggregateRootId, maxGlobalSequenceNumber);
                 }
                 finally
                 {

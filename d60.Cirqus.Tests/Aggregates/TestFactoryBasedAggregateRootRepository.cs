@@ -42,8 +42,10 @@ namespace d60.Cirqus.Tests.Aggregates
             SaveEvent("id2", 3, 0);
             SaveEvent("id2", 4, 1);
 
-            Assert.That(_repository.Exists("id1", globalSequenceNumberToCheck), Is.EqualTo(expectedExistenceOfRoot1), "Expected root1 existence to be {0} from global seq no {1}", expectedExistenceOfRoot1, globalSequenceNumberToCheck);
-            Assert.That(_repository.Exists("id2", globalSequenceNumberToCheck), Is.EqualTo(expectedExistenceOfRoot2), "Expected root2 existence to be {0} from global seq no {1}", expectedExistenceOfRoot2, globalSequenceNumberToCheck);
+            Assert.That(_repository.Exists("id1", globalSequenceNumberToCheck), Is.EqualTo(expectedExistenceOfRoot1), 
+                "Expected root1 existence to be {0} from global seq no {1}", expectedExistenceOfRoot1, globalSequenceNumberToCheck);
+            Assert.That(_repository.Exists("id2", globalSequenceNumberToCheck), Is.EqualTo(expectedExistenceOfRoot2), 
+                "Expected root2 existence to be {0} from global seq no {1}", expectedExistenceOfRoot2, globalSequenceNumberToCheck);
         }
 
         void SaveEvent(string aggregateRootId, long globalSeqNo, long seqNo)
