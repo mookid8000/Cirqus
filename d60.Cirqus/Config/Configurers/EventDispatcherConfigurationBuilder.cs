@@ -3,7 +3,7 @@ using d60.Cirqus.Views;
 
 namespace d60.Cirqus.Config.Configurers
 {
-    public class EventDispatcherConfigurationBuilder : ConfigurationBuilder
+    public class EventDispatcherConfigurationBuilder : ConfigurationBuilder<IEventDispatcher>
     {
         public EventDispatcherConfigurationBuilder(IRegistrar registrar) : base(registrar) { }
 
@@ -11,11 +11,15 @@ namespace d60.Cirqus.Config.Configurers
         {
             if (Registrar.HasService<IEventDispatcher>())
             {
-                Register<IEventDispatcher>(context => new CompositeEventDispatcher(context.Get<IEventDispatcher>(), eventDispatcherFunc(context)), decorator: true);
+                Registrar.Register<IEventDispatcher>(context =>
+                    new CompositeEventDispatcher(
+                        context.Get<IEventDispatcher>(),
+                        eventDispatcherFunc(context)),
+                    decorator: true);
             }
             else
             {
-                Register(eventDispatcherFunc);
+                Registrar.Register(eventDispatcherFunc);
             }
 
         }

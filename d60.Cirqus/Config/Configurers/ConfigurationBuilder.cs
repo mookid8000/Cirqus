@@ -17,19 +17,40 @@ namespace d60.Cirqus.Config.Configurers
         }
 
         /// <summary>
-        /// Registers a factory method for the given service
+        /// Registers a factory method for decorating the given type
         /// </summary>
-        public void Register<TService>(Func<ResolutionContext, TService> serviceFactory, bool decorator = false, bool multi = false)
+        public void Decorate<TService>(Func<TService, TService> serviceFactory)
         {
-            _registrar.Register(serviceFactory, decorator, multi);
+            Registrar.Register(context => serviceFactory(context.Get<TService>()), decorator: true, multi: false);
         }
 
         /// <summary>
-        /// Registers a specific instance (which by definition is not a decorator)
+        /// Registers a specific instance
         /// </summary>
         public void Use<TService>(TService instance, bool multi = false)
         {
-            _registrar.RegisterInstance(instance, multi);
+            Registrar.RegisterInstance(instance, multi);
+        }
+    }
+
+    public abstract class ConfigurationBuilder<TService> : ConfigurationBuilder
+    {
+        protected ConfigurationBuilder(IRegistrar registrar) : base(registrar) {}
+
+        /// <summary>
+        /// Registers a factory method for decorating the given type
+        /// </summary>
+        public void Decorate(Func<TService, TService> serviceFactory)
+        {
+            Decorate<TService>(serviceFactory);
+        }
+
+        /// <summary>
+        /// Registers a factory method for decorating the given type
+        /// </summary>
+        public void Use(TService instance, bool multi = false)
+        {
+            Use<TService>(instance, multi);
         }
     }
 }
