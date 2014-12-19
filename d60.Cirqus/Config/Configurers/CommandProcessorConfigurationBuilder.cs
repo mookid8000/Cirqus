@@ -10,10 +10,8 @@ using d60.Cirqus.Views;
 namespace d60.Cirqus.Config.Configurers
 {
     class CommandProcessorConfigurationBuilder :
-        ILoggingAndEventStoreConfigurationBuilderApi,
-        IAggregateRootRepositoryConfigurationBuilderApi,
-        IEventDispatcherConfigurationBuilderApi,
-        IFullConfiguration
+        ILoggingAndEventStoreConfiguration,
+        IOptionalConfiguration
     {
         static Logger _logger;
 
@@ -24,31 +22,31 @@ namespace d60.Cirqus.Config.Configurers
 
         readonly ConfigurationContainer _container = new ConfigurationContainer();
 
-        public IEventStoreConfigurationBuilderApi Logging(Action<LoggingConfigurationBuilder> configure)
+        public IEventStoreConfiguration Logging(Action<LoggingConfigurationBuilder> configure)
         {
             configure(new LoggingConfigurationBuilder(_container));
             return this;
         }
 
-        public IAggregateRootRepositoryConfigurationBuilderApi EventStore(Action<EventStoreConfigurationBuilder> configure)
+        public IOptionalConfiguration EventStore(Action<EventStoreConfigurationBuilder> configure)
         {
             configure(new EventStoreConfigurationBuilder(_container));
             return this;
         }
 
-        public IEventDispatcherConfigurationBuilderApi AggregateRootRepository(Action<AggregateRootRepositoryConfigurationBuilder> configure)
+        public IOptionalConfiguration AggregateRootRepository(Action<AggregateRootRepositoryConfigurationBuilder> configure)
         {
             configure(new AggregateRootRepositoryConfigurationBuilder(_container));
             return this;
         }
 
-        public IFullConfiguration EventDispatcher(Action<EventDispatcherConfigurationBuilder> configure)
+        public IOptionalConfiguration EventDispatcher(Action<EventDispatcherConfigurationBuilder> configure)
         {
             configure(new EventDispatcherConfigurationBuilder(_container));
             return this;
         }
 
-        public IFullConfiguration Options(Action<OptionsConfigurationBuilder> configure)
+        public IOptionalConfiguration Options(Action<OptionsConfigurationBuilder> configure)
         {
             configure(new OptionsConfigurationBuilder(_container));
             return this;
