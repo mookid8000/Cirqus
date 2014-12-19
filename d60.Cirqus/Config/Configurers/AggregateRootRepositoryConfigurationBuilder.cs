@@ -1,17 +1,7 @@
 namespace d60.Cirqus.Config.Configurers
 {
-    public class AggregateRootRepositoryConfigurationBuilder
+    public class AggregateRootRepositoryConfigurationBuilder : ConfigurationBuilder
     {
-        readonly IRegistrar _registrar;
-
-        public AggregateRootRepositoryConfigurationBuilder(IRegistrar registrar)
-        {
-            _registrar = registrar;
-        }
-
-        public IRegistrar Registrar
-        {
-            get { return _registrar; }
-        }
+        public AggregateRootRepositoryConfigurationBuilder(IRegistrar registrar) : base(registrar) { }
     }
 }

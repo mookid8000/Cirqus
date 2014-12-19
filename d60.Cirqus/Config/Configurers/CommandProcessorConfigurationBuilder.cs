@@ -24,15 +24,15 @@ namespace d60.Cirqus.Config.Configurers
 
         readonly ConfigurationContainer _container = new ConfigurationContainer();
 
-        public IAggregateRootRepositoryConfigurationBuilderApi EventStore(Action<EventStoreConfigurationBuilder> configure)
-        {
-            configure(new EventStoreConfigurationBuilder(_container));
-            return this;
-        }
-
         public IEventStoreConfigurationBuilderApi Logging(Action<LoggingConfigurationBuilder> configure)
         {
             configure(new LoggingConfigurationBuilder(_container));
+            return this;
+        }
+
+        public IAggregateRootRepositoryConfigurationBuilderApi EventStore(Action<EventStoreConfigurationBuilder> configure)
+        {
+            configure(new EventStoreConfigurationBuilder(_container));
             return this;
         }
 
