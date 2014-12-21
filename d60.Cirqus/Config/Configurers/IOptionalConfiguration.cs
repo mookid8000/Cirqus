@@ -2,11 +2,11 @@ using System;
 
 namespace d60.Cirqus.Config.Configurers
 {
-    public interface IOptionalConfiguration
+    public interface IOptionalConfiguration<T>
     {
-        IOptionalConfiguration AggregateRootRepository(Action<AggregateRootRepositoryConfigurationBuilder> configure);
-        IOptionalConfiguration EventDispatcher(Action<EventDispatcherConfigurationBuilder> configure); 
-        IOptionalConfiguration Options(Action<OptionsConfigurationBuilder> func);
-        ICommandProcessor Create();
+        IOptionalConfiguration<T> AggregateRootRepository(Action<AggregateRootRepositoryConfigurationBuilder> configure);
+        IOptionalConfiguration<T> EventDispatcher(Action<EventDispatcherConfigurationBuilder> configure); 
+        IOptionalConfiguration<T> Options(Action<OptionsConfigurationBuilder> func);
+        T Create();
     }
 }

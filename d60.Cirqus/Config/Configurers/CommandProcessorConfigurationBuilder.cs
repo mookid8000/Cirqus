@@ -5,20 +5,91 @@ using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Serialization;
+using d60.Cirqus.Testing;
 using d60.Cirqus.Views;
 
 namespace d60.Cirqus.Config.Configurers
 {
-    class CommandProcessorConfigurationBuilder :
-        ILoggingAndEventStoreConfiguration,
-        IOptionalConfiguration
+    class BaseConfigurationBuilder<T> : IOptionalConfiguration<T>
     {
         static Logger _logger;
 
-        static CommandProcessorConfigurationBuilder()
+        static BaseConfigurationBuilder()
         {
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
         }
+
+        readonly ConfigurationContainer _container = new ConfigurationContainer();
+
+        public IOptionalConfiguration<T> AggregateRootRepository(Action<AggregateRootRepositoryConfigurationBuilder> configure)
+        {
+            configure(new AggregateRootRepositoryConfigurationBuilder(_container));
+            return this;
+        }
+
+        public IOptionalConfiguration<T> EventDispatcher(Action<EventDispatcherConfigurationBuilder> configure)
+        {
+            configure(new EventDispatcherConfigurationBuilder(_container));
+            return this;
+        }
+
+        public IOptionalConfiguration<T> Options(Action<OptionsConfigurationBuilder> configure)
+        {
+            configure(new OptionsConfigurationBuilder(_container));
+            return this;
+        }
+
+        public T Create()
+        {
+            FillInDefaults();
+
+            var resolutionContext = _container.CreateContext();
+
+            var eventStore = resolutionContext.Get<IEventStore>();
+            var aggregateRootRepository = resolutionContext.Get<IAggregateRootRepository>();
+            var eventDispatcher = resolutionContext.Get<IEventDispatcher>();
+            var serializer = resolutionContext.Get<IDomainEventSerializer>();
+            var commandMapper = resolutionContext.Get<ICommandMapper>();
+            var domainTypeMapper = resolutionContext.Get<IDomainTypeNameMapper>();
+
+            var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher, serializer, commandMapper, domainTypeMapper);
+
+            commandProcessor.Disposed += () =>
+            {
+                var disposables = resolutionContext.GetDisposables();
+
+                foreach (var disposable in disposables)
+                {
+                    _logger.Debug("Disposing {0}", disposable);
+
+                    disposable.Dispose();
+                }
+            };
+
+            resolutionContext.GetAll<Action<Options>>()
+                .ToList()
+                .ForEach(action => action(commandProcessor.Options));
+
+            commandProcessor.Initialize();
+
+            return commandProcessor;
+        }
+
+
+    }
+
+    class TestContextConfigurationBuilder : IOptionalConfiguration<TestContext>
+    {
+        readonly ConfigurationContainer _container = new ConfigurationContainer();
+
+        public TestContext Create()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    class CommandProcessorConfigurationBuilder : ILoggingAndEventStoreConfiguration, IOptionalConfiguration<ICommandProcessor>
+    {
 
         readonly ConfigurationContainer _container = new ConfigurationContainer();
 
@@ -28,25 +99,25 @@ namespace d60.Cirqus.Config.Configurers
             return this;
         }
 
-        public IOptionalConfiguration EventStore(Action<EventStoreConfigurationBuilder> configure)
+        public IOptionalConfiguration<ICommandProcessor> EventStore(Action<EventStoreConfigurationBuilder> configure)
         {
             configure(new EventStoreConfigurationBuilder(_container));
             return this;
         }
 
-        public IOptionalConfiguration AggregateRootRepository(Action<AggregateRootRepositoryConfigurationBuilder> configure)
+        public IOptionalConfiguration<ICommandProcessor> AggregateRootRepository(Action<AggregateRootRepositoryConfigurationBuilder> configure)
         {
             configure(new AggregateRootRepositoryConfigurationBuilder(_container));
             return this;
         }
 
-        public IOptionalConfiguration EventDispatcher(Action<EventDispatcherConfigurationBuilder> configure)
+        public IOptionalConfiguration<ICommandProcessor> EventDispatcher(Action<EventDispatcherConfigurationBuilder> configure)
         {
             configure(new EventDispatcherConfigurationBuilder(_container));
             return this;
         }
 
-        public IOptionalConfiguration Options(Action<OptionsConfigurationBuilder> configure)
+        public IOptionalConfiguration<ICommandProcessor> Options(Action<OptionsConfigurationBuilder> configure)
         {
             configure(new OptionsConfigurationBuilder(_container));
             return this;
