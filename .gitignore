@@ -19,3 +19,4 @@ _ReSharper.*
 *.cache
 ~$*
 azure_service_bus_connection_string.txt
+*.ncrunchsolution.user
