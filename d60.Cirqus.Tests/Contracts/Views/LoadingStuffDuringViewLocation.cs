@@ -1,5 +1,4 @@
-﻿using System;
-using d60.Cirqus.Logging;
+﻿using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Tests.Contracts.Views.Factories;
 using d60.Cirqus.Tests.Contracts.Views.Models.LoadingStuffDuringViewLocation;
@@ -9,6 +8,7 @@ using TestContext = d60.Cirqus.Testing.TestContext;
 namespace d60.Cirqus.Tests.Contracts.Views
 {
     [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
+    [TestFixture(typeof(PostgreSqlViewManagerFactory), Category = TestCategories.PostgreSql)]
     [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
     [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql)]
     [TestFixture(typeof(InMemoryViewManagerFactory))]

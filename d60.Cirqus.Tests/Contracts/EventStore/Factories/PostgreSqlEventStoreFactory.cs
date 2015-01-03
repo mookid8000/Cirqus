@@ -1,5 +1,6 @@
 ﻿using d60.Cirqus.Events;
 using d60.Cirqus.PostgreSql;
+using d60.Cirqus.PostgreSql.Events;
 using d60.Cirqus.Tests.PostgreSql;
 
 namespace d60.Cirqus.Tests.Contracts.EventStore.Factories

@@ -107,6 +107,7 @@
     <Compile Include="Contracts\EventStore\Factories\MongoDbEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\Factories\MsSqlEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\InsertPerfOverTime.cs" />
+    <Compile Include="Contracts\Views\Factories\PostgreSqlViewManagerFactory.cs" />
     <Compile Include="Contracts\Views\Models\GeneralViewManagerTest\GeneratedIds.cs" />
     <Compile Include="Contracts\Views\Models\GeneralViewManagerTest\GenerateNewId.cs" />
     <Compile Include="Contracts\Views\Models\GeneralViewManagerTest\IdGenerated.cs" />
