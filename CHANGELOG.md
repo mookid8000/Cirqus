@@ -451,6 +451,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Brought back the aggregate root type in the `IProfiler` interface
 
+## 0.48.0
+
+* Slight change in profiler behavior - actuall aggregate root type is registered if possible, otherwise the queries type is used
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen

@@ -121,14 +121,20 @@ namespace d60.Cirqus.Diagnostics
             public AggregateRoot Get<TAggregateRoot>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false)
             {
                 var stopwatch = Stopwatch.StartNew();
+                Type actualAggregateRootType = null;
+
                 try
                 {
-                    return _innnerAggregateRootRepository
+                    var aggregateRoot = _innnerAggregateRootRepository
                         .Get<TAggregateRoot>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber, createIfNotExists);
+
+                    actualAggregateRootType = aggregateRoot.GetType();
+
+                    return aggregateRoot;
                 }
                 finally
                 {
-                    _operationProfiler.RecordAggregateRootGet(stopwatch.Elapsed, aggregateRootId, typeof(TAggregateRoot));
+                    _operationProfiler.RecordAggregateRootGet(stopwatch.Elapsed, aggregateRootId, actualAggregateRootType ?? typeof(TAggregateRoot));
                 }
             }
 
