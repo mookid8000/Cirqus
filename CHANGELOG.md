@@ -455,6 +455,11 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Slight change in profiler behavior - actuall aggregate root type is registered if possible, otherwise the queries type is used
 
+## 0.49.0
+
+* Fixed pretty subtle bug in `MongoDbEventStore` that surfaces when caching is introduced
+* Finished the simple caching event store, except the scavenging mechanism which is pretty crude for now
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen

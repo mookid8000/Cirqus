@@ -6,16 +6,16 @@ namespace d60.Cirqus.Tests.Contracts.EventStore.Factories
 {
     public class CachedEventStoreFactory : IEventStoreFactory
     {
-        readonly EventCache _eventStore;
+        readonly CachingEventStoreDecorator _cachingEventStore;
 
         public CachedEventStoreFactory()
         {
-            _eventStore = new EventCache(new MongoDbEventStore(MongoHelper.InitializeTestDatabase(), "events"));
+            _cachingEventStore = new CachingEventStoreDecorator(new MongoDbEventStore(MongoHelper.InitializeTestDatabase(), "events"));
         }
 
         public IEventStore GetEventStore()
         {
-            return _eventStore;
+            return _cachingEventStore;
         }
     }
 }

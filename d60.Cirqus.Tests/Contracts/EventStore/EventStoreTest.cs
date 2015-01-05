@@ -43,6 +43,30 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         }
 
         [Test]
+        public void CanLoadFromWithinEventBatch()
+        {
+            var events = new List<EventData>
+            {
+                Event(0, "id2"), 
+                Event(1, "id2"),
+                Event(2, "id2"),
+
+                Event(0, "id1"), 
+                Event(1, "id1"),
+                Event(2, "id1"),
+            };
+
+            _eventStore.Save(Guid.NewGuid(), events);
+
+            // assert
+            var loadedEvents = _eventStore.Load("id1", 1).ToList();
+
+            Assert.That(loadedEvents.Count, Is.EqualTo(2));
+            Assert.That(loadedEvents[0].GetSequenceNumber(), Is.EqualTo(1));
+            Assert.That(loadedEvents[1].GetSequenceNumber(), Is.EqualTo(2));
+        }
+
+        [Test]
         public void AssignsGlobalSequenceNumberToEvents()
         {
             var events = new List<EventData>

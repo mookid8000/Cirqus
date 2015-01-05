@@ -38,6 +38,17 @@ namespace d60.Cirqus.Config
         }
 
         /// <summary>
+        /// Enables an in-memory event cache that caches the most recently used events. <see cref="maxCacheEntries"/> specifies
+        /// the approximate number of events to be held in the cache
+        /// </summary>
+        public static void EnableCaching(this EventStoreConfigurationBuilder builder, int maxCacheEntries)
+        {
+            builder.Registrar
+                .Register<IEventStore>(context => new CachingEventStoreDecorator(context.Get<IEventStore>()),
+                    decorator: true);
+        }
+
+        /// <summary>
         /// Registers a <see cref="DefaultAggregateRootRepository"/> as the <see cref="IAggregateRootRepository"/> implementation. Since this is the
         /// default, there's no need to call this method explicitly.
         /// </summary>
