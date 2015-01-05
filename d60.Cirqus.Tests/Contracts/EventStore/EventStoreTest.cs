@@ -24,7 +24,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
     [TestFixture(typeof(PostgreSqlEventStoreFactory), Category = TestCategories.PostgreSql)]
     [TestFixture(typeof(NtfsEventStoreFactory))]
     [TestFixture(typeof(SQLiteEventStoreFactory))]
-    [TestFixture(typeof(CachedEventStoreFactory))]
+    [TestFixture(typeof(CachedEventStoreFactory), Category = TestCategories.MongoDb, Description = "Uses MongoDB behind the scenes")]
     public class EventStoreTest<TEventStoreFactory> : FixtureBase where TEventStoreFactory : IEventStoreFactory, new()
     {
         TEventStoreFactory _eventStoreFactory;
@@ -228,7 +228,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             var batchWithAlreadyUsedSequenceNumber = new[] { Event(2, "id") };
 
             var ex = Assert.Throws<ConcurrencyException>(() => _eventStore.Save(Guid.NewGuid(), batchWithAlreadyUsedSequenceNumber));
-            
+
             Console.WriteLine(ex);
         }
 

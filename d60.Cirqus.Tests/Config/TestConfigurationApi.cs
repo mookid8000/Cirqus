@@ -33,7 +33,7 @@ namespace d60.Cirqus.Tests.Config
                 .EventStore(e => e.UseMongoDb(database, "Events"))
                 .EventDispatcher(d =>
                 {
-                    d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view1"));
+                    d.UseViewManagerEventDispatcher(waiter, 200, new MongoDbViewManager<ConfigTestView>(database, "view1"));
                     d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view2"));
                     d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view3"));
                     d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view4"));

@@ -443,6 +443,9 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added `IAggregateRootRepository` implementation that allows for letting a factory method create the instance - thanks [kimbirkelund]
 
+## 0.46.2
+
+* Made number of domain events per batch configurable in the config API for `ViewManagerEventDispatcher`
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen

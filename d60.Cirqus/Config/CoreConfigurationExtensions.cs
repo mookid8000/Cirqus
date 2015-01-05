@@ -74,14 +74,28 @@ namespace d60.Cirqus.Config
         /// Registers a <see cref="Views.ViewManagerEventDispatcher"/> to manage the given views. Can be called multiple times in order to register
         /// multiple "pools" of views (each will be managed by a dedicated worker thread).
         /// </summary>
+        public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, int maxDomainEventsPerBatch, params IViewManager[] viewManagers)
+        {
+            InstallViewManagerEventDispatcherInternal(builder, viewManagers, maxDomainEventsPerBatch: maxDomainEventsPerBatch);
+        }
+
+        /// <summary>
+        /// Registers a <see cref="Views.ViewManagerEventDispatcher"/> to manage the given views. Can be called multiple times in order to register
+        /// multiple "pools" of views (each will be managed by a dedicated worker thread).
+        /// </summary>
         public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IViewManager[] viewManagers)
         {
-            AddEventDispatcherRegistration(builder, context => new ViewManagerEventDispatcher(
-                context.Get<IAggregateRootRepository>(), 
-                context.Get<IEventStore>(), 
-                context.Get<IDomainEventSerializer>(),
-                context.Get<IDomainTypeNameMapper>(),
-                viewManagers));
+            InstallViewManagerEventDispatcherInternal(builder, viewManagers);
+        }
+
+        /// <summary>
+        /// Registers a <see cref="ViewManagerEventDispatcher"/> to manage the given views. Can be called multiple times in order to register
+        /// multiple "pools" of views (each will be managed by a dedicated worker thread). The event dispatcher will register itself with the
+        /// given <seealso cref="waitHandle"/>, allowing for optionally blocking until views have been updated to a certain point.
+        /// </summary>
+        public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, ViewManagerWaitHandle waitHandle, int maxDomainEventsPerBatch, params IViewManager[] viewManagers)
+        {
+            InstallViewManagerEventDispatcherInternal(builder, viewManagers, waitHandle: waitHandle, maxDomainEventsPerBatch: maxDomainEventsPerBatch);
         }
 
         /// <summary>
@@ -90,6 +104,11 @@ namespace d60.Cirqus.Config
         /// given <seealso cref="waitHandle"/>, allowing for optionally blocking until views have been updated to a certain point.
         /// </summary>
         public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, ViewManagerWaitHandle waitHandle, params IViewManager[] viewManagers)
+        {
+            InstallViewManagerEventDispatcherInternal(builder, viewManagers, waitHandle: waitHandle);
+        }
+
+        static void InstallViewManagerEventDispatcherInternal(EventDispatcherConfigurationBuilder builder, IViewManager[] viewManagers, ViewManagerWaitHandle waitHandle = null, int maxDomainEventsPerBatch = 0)
         {
             AddEventDispatcherRegistration(builder, context =>
             {
@@ -100,7 +119,15 @@ namespace d60.Cirqus.Config
                     context.Get<IDomainTypeNameMapper>(),
                     viewManagers);
 
-                waitHandle.Register(eventDispatcher);
+                if (maxDomainEventsPerBatch != 0)
+                {
+                    eventDispatcher.MaxDomainEventsPerBatch = maxDomainEventsPerBatch;
+                }
+
+                if (waitHandle != null)
+                {
+                    waitHandle.Register(eventDispatcher);
+                }
 
                 return eventDispatcher;
             });
