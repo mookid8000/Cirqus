@@ -447,6 +447,11 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Made number of domain events per batch configurable in the config API for `ViewManagerEventDispatcher`
 
+## 0.47.0
+
+* Brought back the aggregate root type in the `IProfiler` interface
+
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund

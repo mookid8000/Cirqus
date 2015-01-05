@@ -114,7 +114,7 @@ namespace d60.Cirqus.Tests.Diagnostics
         long _millisecondsSpentSavingEvents = 0;
         long _millisecondsSpentGettingNextSequenceNumber = 0;
 
-        public void RecordAggregateRootGet(TimeSpan elapsed, string aggregateRootId)
+        public void RecordAggregateRootGet(TimeSpan elapsed, Type aggregateRootType, string aggregateRootId)
         {
             _aggregateRootHydrationTimes.AddOrUpdate(GetType(), id => elapsed, (id, total) => total + elapsed);
         }

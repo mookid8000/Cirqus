@@ -51,9 +51,9 @@ namespace d60.Cirqus.Diagnostics
                 _profiler = profiler;
             }
 
-            public void RecordAggregateRootGet(TimeSpan elapsed, string aggregateRootId)
+            public void RecordAggregateRootGet(TimeSpan elapsed, string aggregateRootId, Type aggregateRootType)
             {
-                _profiler.RecordAggregateRootGet(elapsed, aggregateRootId);
+                _profiler.RecordAggregateRootGet(elapsed, aggregateRootType, aggregateRootId);
             }
 
             public void RecordAggregateRootExists(TimeSpan elapsed, string aggregateRootId)
@@ -128,7 +128,7 @@ namespace d60.Cirqus.Diagnostics
                 }
                 finally
                 {
-                    _operationProfiler.RecordAggregateRootGet(stopwatch.Elapsed, aggregateRootId);
+                    _operationProfiler.RecordAggregateRootGet(stopwatch.Elapsed, aggregateRootId, typeof(TAggregateRoot));
                 }
             }
 
