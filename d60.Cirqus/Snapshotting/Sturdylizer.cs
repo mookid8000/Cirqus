@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using d60.Cirqus.Aggregates;
+using d60.Cirqus.Events;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -13,14 +15,30 @@ namespace d60.Cirqus.Snapshotting
     /// </summary>
     public class Sturdylizer
     {
-        public string SerializeObject(object rootInstance)
+        public string SerializeObject(AggregateRoot rootInstance)
         {
-            return JsonConvert.SerializeObject(rootInstance, SerializerSettings);
+            try
+            {
+                return JsonConvert.SerializeObject(rootInstance, SerializerSettings);
+            }
+            catch (Exception exception)
+            {
+                throw new JsonSerializationException(string.Format("Could not serialize aggregate root {0} with ID {1}", rootInstance.GetType(), rootInstance), exception);
+            }
         }
 
-        public object DeserializeObject(string data)
+        public AggregateRoot DeserializeObject(string data)
         {
-            return JsonConvert.DeserializeObject(data, SerializerSettings);
+            try
+            {
+                var deserializedObject = JsonConvert.DeserializeObject(data, SerializerSettings);
+
+                return (AggregateRoot) deserializedObject;
+            }
+            catch (Exception exception)
+            {
+                throw new JsonSerializationException(string.Format("Could not deserialize JSON text '{0}'", data), exception);
+            }
         }
 
         static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
@@ -50,7 +68,7 @@ namespace d60.Cirqus.Snapshotting
                     .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                     .Select(f =>
                     {
-                        var jsonProperty = base.CreateProperty(f, memberSerialization);
+                        var jsonProperty = CreateProperty(f, memberSerialization);
                         jsonProperty.Writable = jsonProperty.Readable = true;
                         return jsonProperty;
                     })
@@ -60,11 +78,11 @@ namespace d60.Cirqus.Snapshotting
                     .Concat(inheritedProperties)
                     .GroupBy(p => p.UnderlyingName)
                     .Select(g => g.First()) //< only keep first occurrency for each underlying name - weeds out dupes
+                    .Where(g => !(g.DeclaringType == typeof(AggregateRoot) && g.PropertyType == typeof(IUnitOfWork))) //< skip unit of work property
                     .ToList();
 
                 return jsonPropertiesToKeep;
             }
         }
- 
     }
 }

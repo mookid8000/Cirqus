@@ -460,6 +460,9 @@ This is a big update that completes the transition to the new, vastly improved v
 * Fixed pretty subtle bug in `MongoDbEventStore` that surfaces when caching is introduced
 * Finished the simple caching event store with a simple age-based eviction strategy
 
+## 0.50.0
+
+* Better way of skipping the unit of work property when generating aggregate root snapshots with the `Sturdylizer`
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen

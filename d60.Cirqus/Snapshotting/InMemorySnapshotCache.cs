@@ -22,7 +22,7 @@ namespace d60.Cirqus.Snapshotting
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
         }
 
-        readonly ConcurrentDictionary<string, ConcurrentDictionary<long, CacheEntry>> _cacheEntries = 
+        readonly ConcurrentDictionary<string, ConcurrentDictionary<long, CacheEntry>> _cacheEntries =
             new ConcurrentDictionary<string, ConcurrentDictionary<long, CacheEntry>>();
 
         long _currentNumberOfCacheEntries; //<long because of Interlocked.Read
@@ -54,28 +54,18 @@ namespace d60.Cirqus.Snapshotting
             public static CacheEntry Create(AggregateRoot aggregateRootInfo)
             {
                 var rootInstance = aggregateRootInfo;
-                var unitOfWork = rootInstance.UnitOfWork;
-                try
-                {
-                    rootInstance.UnitOfWork = null;
+                var data = Sturdylizer.SerializeObject(rootInstance);
 
-                    var data = Sturdylizer.SerializeObject(rootInstance);
-
-                    return new CacheEntry
-                    {
-                        SequenceNumber = aggregateRootInfo.CurrentSequenceNumber,
-                        GlobalSequenceNumber = aggregateRootInfo.GlobalSequenceNumberCutoff,
-                        AggregateRootId = aggregateRootInfo.Id,
-                        AggregateRootType = rootInstance.GetType(),
-                        Hits = 0,
-                        TimeOfLastHit = DateTime.UtcNow,
-                        Data = data
-                    };
-                }
-                finally
+                return new CacheEntry
                 {
-                    rootInstance.UnitOfWork = unitOfWork;
-                }
+                    SequenceNumber = aggregateRootInfo.CurrentSequenceNumber,
+                    GlobalSequenceNumber = aggregateRootInfo.GlobalSequenceNumberCutoff,
+                    AggregateRootId = aggregateRootInfo.Id,
+                    AggregateRootType = rootInstance.GetType(),
+                    Hits = 0,
+                    TimeOfLastHit = DateTime.UtcNow,
+                    Data = data
+                };
             }
 
             public string Data { get; set; }
@@ -117,7 +107,7 @@ namespace d60.Cirqus.Snapshotting
 
                     return instance;
                 }
-                catch(Exception exception)
+                catch (Exception exception)
                 {
                     throw new SerializationException(string.Format("An error occured when attempting to deserialize {0} into an aggregate root",
                         Data), exception);
@@ -142,7 +132,7 @@ namespace d60.Cirqus.Snapshotting
                 if (!availableSequenceNumbersForThisRoot.Any()) return null;
 
                 var highestSequenceNumberAvailableForThisRoot = availableSequenceNumbersForThisRoot.Max();
-             
+
                 if (!entriesForThisRoot.TryGetValue(highestSequenceNumberAvailableForThisRoot, out entry))
                     return null;
 
