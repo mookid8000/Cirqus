@@ -7,7 +7,7 @@ using d60.Cirqus.Extensions;
 namespace d60.Cirqus.Events
 {
     /// <summary>
-    /// Should work now....
+    /// Simple caching event store decorator that caches all event that it comes by
     /// </summary>
     public class CachingEventStoreDecorator : IEventStore 
     {
