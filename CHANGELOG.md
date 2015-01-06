@@ -458,7 +458,7 @@ This is a big update that completes the transition to the new, vastly improved v
 ## 0.49.0
 
 * Fixed pretty subtle bug in `MongoDbEventStore` that surfaces when caching is introduced
-* Finished the simple caching event store, except the scavenging mechanism which is pretty crude for now
+* Finished the simple caching event store with a simple age-based eviction strategy
 
 
 [asgerhallas]: https://github.com/asgerhallas

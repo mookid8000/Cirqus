@@ -11,8 +11,8 @@ namespace d60.Cirqus.Events
     /// </summary>
     public class CachingEventStoreDecorator : IEventStore 
     {
-        readonly ConcurrentDictionary<string, ConcurrentDictionary<long, EventData>> _eventsPerAggregateRoot = new ConcurrentDictionary<string, ConcurrentDictionary<long, EventData>>();
-        readonly ConcurrentDictionary<long, EventData> _eventsPerGlobalSequenceNumber = new ConcurrentDictionary<long, EventData>();
+        readonly ConcurrentDictionary<string, ConcurrentDictionary<long, CacheEntry>> _eventsPerAggregateRoot = new ConcurrentDictionary<string, ConcurrentDictionary<long, CacheEntry>>();
+        readonly ConcurrentDictionary<long, CacheEntry> _eventsPerGlobalSequenceNumber = new ConcurrentDictionary<long, CacheEntry>();
 
         readonly IEventStore _innerEventStore;
         int _maxCacheEntries;
@@ -45,6 +45,8 @@ namespace d60.Cirqus.Events
             {
                 AddToCache(e);
             }
+
+            PossiblyTrimCache();
         }
 
         public long GetNextGlobalSequenceNumber()
@@ -54,61 +56,112 @@ namespace d60.Cirqus.Events
 
         public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
         {
-            var eventsForThisAggregateRoot = _eventsPerAggregateRoot.GetOrAdd(aggregateRootId, id => new ConcurrentDictionary<long, EventData>());
+            var eventsForThisAggregateRoot = _eventsPerAggregateRoot.GetOrAdd(aggregateRootId, id => new ConcurrentDictionary<long, CacheEntry>());
             var nextSequenceNumberToGet = firstSeq;
 
-            EventData cachedEvent;
-            while (eventsForThisAggregateRoot.TryGetValue(nextSequenceNumberToGet, out cachedEvent))
+            CacheEntry cacheEntry;
+            while (eventsForThisAggregateRoot.TryGetValue(nextSequenceNumberToGet, out cacheEntry))
             {
                 nextSequenceNumberToGet++;
-
-                yield return cachedEvent;
+                cacheEntry.MarkAsAccessed();
+                yield return cacheEntry.EventData;
             }
 
             foreach (var loadedEvent in _innerEventStore.Load(aggregateRootId, nextSequenceNumberToGet))
-            {
-                // WTF=!=!=!!??
-                if (loadedEvent.GetSequenceNumber() < nextSequenceNumberToGet)
-                {
-                    continue;
-                }
+            {            
                 AddToCache(loadedEvent, eventsForThisAggregateRoot);
+                
                 yield return loadedEvent;
             }
+
+            PossiblyTrimCache();
         }
 
         public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
         {
-            EventData cachedEvent;
-            while (_eventsPerGlobalSequenceNumber.TryGetValue(globalSequenceNumber++, out cachedEvent))
+            CacheEntry cacheEntry;
+            var nextGlobalSequenceNumberToGet = globalSequenceNumber;
+
+            while (_eventsPerGlobalSequenceNumber.TryGetValue(nextGlobalSequenceNumberToGet, out cacheEntry))
             {
-                yield return cachedEvent;
+                nextGlobalSequenceNumberToGet++;
+                cacheEntry.MarkAsAccessed();
+                yield return cacheEntry.EventData;
             }
 
-            foreach (var loadedEvent in _innerEventStore.Stream(globalSequenceNumber))
+            foreach (var loadedEvent in _innerEventStore.Stream(nextGlobalSequenceNumberToGet))
             {
                 AddToCache(loadedEvent);
                 yield return loadedEvent;
             }
+            
+            PossiblyTrimCache();
         }
 
-        void AddToCache(EventData eventData, ConcurrentDictionary<long, EventData> eventsForThisAggregateRoot = null)
+        void PossiblyTrimCache()
+        {
+            if (_eventsPerGlobalSequenceNumber.Count <= _maxCacheEntries) return;
+
+            var entriesOldestFirst = _eventsPerGlobalSequenceNumber.Values
+                .OrderByDescending(e => e.Age)
+                .ToList();
+
+            foreach (var entryToRemove in entriesOldestFirst)
+            {
+                if (_eventsPerGlobalSequenceNumber.Count <= _maxCacheEntries) break;
+
+                CacheEntry removedCacheEntry;
+
+                _eventsPerGlobalSequenceNumber.TryRemove(entryToRemove.EventData.GetGlobalSequenceNumber(), out removedCacheEntry);
+                var eventsForThisAggregateRoot = GetEventsForThisAggregateRoot(entryToRemove.EventData.GetAggregateRootId());
+                eventsForThisAggregateRoot.TryRemove(entryToRemove.EventData.GetSequenceNumber(), out removedCacheEntry);
+            }
+        }
+
+        void AddToCache(EventData eventData, ConcurrentDictionary<long, CacheEntry> eventsForThisAggregateRoot = null)
         {
             var aggregateRootId = eventData.GetAggregateRootId();
 
             if (eventsForThisAggregateRoot == null)
             {
-                eventsForThisAggregateRoot = _eventsPerAggregateRoot.GetOrAdd(aggregateRootId, id => new ConcurrentDictionary<long, EventData>());
+                eventsForThisAggregateRoot = GetEventsForThisAggregateRoot(aggregateRootId);
             }
 
-            eventsForThisAggregateRoot[eventData.GetSequenceNumber()] = eventData;
-            _eventsPerGlobalSequenceNumber[eventData.GetGlobalSequenceNumber()] = eventData;
+            eventsForThisAggregateRoot.AddOrUpdate(eventData.GetSequenceNumber(),
+                seqNo => new CacheEntry(eventData),
+                (seqNo, existing) => existing.MarkAsAccessed());
 
-            // pretty primitive for now...
-            if (_eventsPerGlobalSequenceNumber.Count > _maxCacheEntries)
+            _eventsPerGlobalSequenceNumber.AddOrUpdate(eventData.GetGlobalSequenceNumber(),
+                globSeqNo => new CacheEntry(eventData),
+                (globSeqNo, existing) => existing.MarkAsAccessed());
+        }
+
+        ConcurrentDictionary<long, CacheEntry> GetEventsForThisAggregateRoot(string aggregateRootId)
+        {
+            return _eventsPerAggregateRoot.GetOrAdd(aggregateRootId, id => new ConcurrentDictionary<long, CacheEntry>());
+        }
+
+        class CacheEntry
+        {
+            public CacheEntry(EventData eventData)
             {
-                _eventsPerGlobalSequenceNumber.Clear();
-                _eventsPerAggregateRoot.Clear();
+                EventData = eventData;
+                MarkAsAccessed();
+            }
+
+            public DateTime LastAccess { get; private set; }
+            
+            public EventData EventData { get; private set; }
+
+            public CacheEntry MarkAsAccessed()
+            {
+                LastAccess = DateTime.UtcNow;
+                return this;
+            }
+
+            public TimeSpan Age
+            {
+                get { return DateTime.UtcNow - LastAccess; }
             }
         }
     }
