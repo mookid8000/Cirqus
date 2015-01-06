@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace d60.Cirqus.Serialization
 {
@@ -28,12 +29,41 @@ namespace d60.Cirqus.Serialization
         {
             try
             {
-                return JsonConvert.DeserializeObject(json, _settings);
+                var deserializedObject = JsonConvert.DeserializeObject(json, _settings);
+
+                if (deserializedObject is JObject)
+                {
+                    deserializedObject = DeserializeJObject((JObject)deserializedObject);
+                }
+
+                return deserializedObject;
             }
             catch (Exception exception)
             {
                 throw new SerializationException(string.Format("Could not deserialize {0}!", json), exception);
             }
+        }
+
+        object DeserializeJObject(JObject jObject)
+        {
+            const string propertyName = "$type";
+
+            var typeProperty = jObject[propertyName];
+
+            if (typeProperty == null)
+            {
+                throw new FormatException(string.Format("Could not find '$type' property when attempting to deserialize JSON object {0}", jObject));    
+            }
+
+            var typeName = typeProperty.ToString();
+            var objectType = Type.GetType(typeName);
+
+            if (objectType == null)
+            {
+                throw new FormatException(string.Format("Could not find .NET type {0} when attempting to deserialize JSON object {1}", typeName, jObject));
+            }
+
+            return jObject.ToObject(objectType);
         }
     }
 }

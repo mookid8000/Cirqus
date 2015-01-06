@@ -4,6 +4,7 @@ using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using Npgsql;
@@ -15,13 +16,14 @@ namespace d60.Cirqus.PostgreSql.Views
     {
         readonly string _tableName;
         readonly string _positionTableName;
-        const int PrimaryKeySize = 100;
+        const int PrimaryKeySize = 255;
         const int DefaultPosition = -1;
 
         readonly ViewDispatcherHelper<TViewInstance> _dispatcher = new ViewDispatcherHelper<TViewInstance>();
         readonly ViewLocator _viewLocator = ViewLocator.GetLocatorFor<TViewInstance>();
         readonly Logger _logger = CirqusLoggerFactory.Current.GetCurrentClassLogger();
         readonly string _connectionString;
+        readonly GenericSerializer _serializer = new GenericSerializer();
 
         public PostgreSqlViewManager(string connectionStringOrConnectionStringName, string tableName, string positionTableName = null, bool automaticallyCreateSchema = true)
         {
@@ -40,18 +42,18 @@ namespace d60.Cirqus.PostgreSql.Views
             var sql = string.Format(@"
 
 CREATE TABLE IF NOT EXISTS ""{0}"" (
-	""id"" VARCHAR(255) NOT NULL,
+	""id"" VARCHAR({2}) NOT NULL,
 	""data"" JSONB NOT NULL,
 	PRIMARY KEY (""id"")
 );
 
 CREATE TABLE IF NOT EXISTS ""{1}"" (
-	""id"" VARCHAR(255) NOT NULL,
+	""id"" VARCHAR({2}) NOT NULL,
 	""position"" BIGINT NOT NULL,
 	PRIMARY KEY (""id"")
 );
 
-", _tableName, _positionTableName);
+", _tableName, _positionTableName, PrimaryKeySize);
 
             using (var connection = GetConnection())
             using (var command = connection.CreateCommand())
@@ -72,13 +74,24 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
 
         public override long GetPosition(bool canGetFromCache = true)
         {
+            return GetPositionFromPositionTable()
+                   ?? DefaultPosition;
+        }
+
+        long? GetPositionFromPositionTable()
+        {
             using (var connection = GetConnection())
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = string.Format(@"select ""position"" from ""{0}"" where ""id"" = @id", _positionTableName);
-                command.Parameters.Add("id", NpgsqlDbType.Varchar, 255).Value = _tableName;
+                command.Parameters.Add("id", NpgsqlDbType.Varchar, PrimaryKeySize).Value = _tableName;
 
                 var result = command.ExecuteScalar();
+
+                if (DBNull.Value == result)
+                {
+                    return null;
+                }
 
                 return Convert.ToInt64(result);
             }
@@ -96,7 +109,7 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
             {
                 using (var transaction = connection.BeginTransaction())
                 {
-                    var activeViewsById = new Dictionary<string, TViewInstance>();
+                    var activeViewsById = new Dictionary<string, ActiveViewInstance>();
 
                     foreach (var e in eventList)
                     {
@@ -107,16 +120,22 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
                         foreach (var viewId in viewIds)
                         {
                             var view = activeViewsById
-                                .GetOrAdd(viewId, id => FindOneById(id, transaction, connection)
-                                                        ?? _dispatcher.CreateNewInstance(viewId));
+                                .GetOrAdd(viewId, id =>
+                                {
+                                    var existing = FindOneById(id, connection, transaction);
 
-                            _dispatcher.DispatchToView(viewContext, e, view);
+                                    return existing != null 
+                                        ? ActiveViewInstance.Existing(existing) 
+                                        : ActiveViewInstance.New(_dispatcher.CreateNewInstance(id));
+                                });
+
+                            _dispatcher.DispatchToView(viewContext, e, view.ViewInstance);
                         }
                     }
 
                     Save(activeViewsById, connection, transaction);
 
-                    RaiseUpdatedEventFor(activeViewsById.Values);
+                    RaiseUpdatedEventFor(activeViewsById.Values.Select(a => a.ViewInstance));
 
                     UpdatePosition(connection, transaction, newPosition);
 
@@ -127,17 +146,66 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
 
         void UpdatePosition(NpgsqlConnection connection, NpgsqlTransaction transaction, long newPosition)
         {
+            using (var command = connection.CreateCommand())
+            {
+                command.Transaction = transaction;
+                command.CommandText = string.Format(@"update ""{0}"" set ""position"" = @position where ""id"" = @id;", _positionTableName);
                 
+                command.Parameters.Add("id", NpgsqlDbType.Varchar, PrimaryKeySize).Value = _tableName;
+                command.Parameters.Add("position", NpgsqlDbType.Bigint).Value = newPosition;
+
+                var result = command.ExecuteNonQuery();
+
+                if (result == 1) return;
+
+                using (var insertCommand = connection.CreateCommand())
+                {
+                    insertCommand.Transaction = transaction;
+                    insertCommand.CommandText = string.Format(@"insert into ""{0}"" (id, position) values (@id, @position);", _positionTableName);
+
+                    insertCommand.Parameters.Add("id", NpgsqlDbType.Varchar, PrimaryKeySize).Value = _tableName;
+                    insertCommand.Parameters.Add("position", NpgsqlDbType.Bigint).Value = newPosition;
+
+                    var insertResult = insertCommand.ExecuteNonQuery();
+
+                    if (insertResult != 1)
+                    {
+                        throw new ApplicationException(string.Format("Something went wrong when attempting to update the current position in {0}", _positionTableName));
+                    }
+                }
+            }   
         }
 
+        class ActiveViewInstance
+        {
+            ActiveViewInstance(TViewInstance viewInstance, bool isNew)
+            {
+                ViewInstance = viewInstance;
+                IsNew = isNew;
+            }
 
-        void Save(Dictionary<string, TViewInstance> activeViewsById, NpgsqlConnection connection, NpgsqlTransaction transaction)
+            public static ActiveViewInstance New(TViewInstance instance)
+            {
+                return new ActiveViewInstance(instance, true);
+            }
+
+            public static ActiveViewInstance Existing(TViewInstance instance)
+            {
+                return new ActiveViewInstance(instance, false);
+            }
+
+            public TViewInstance ViewInstance { get; private set; }
+            public bool IsNew { get; private set; }
+        }
+
+        void Save(Dictionary<string, ActiveViewInstance> activeViewsById, NpgsqlConnection connection, NpgsqlTransaction transaction)
         {
             var parametersAndData = activeViewsById
                 .Select((kvp, index) => new
                 {
                     Id = kvp.Key,
-                    ViewInstance = kvp.Value,
+                    IsNew = kvp.Value.IsNew,
+                    ViewInstance = kvp.Value.ViewInstance,
                     IdParameterName = "id" + index,
                     DataParameterName = "data" + index,
                 })
@@ -147,16 +215,50 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
             {
                 command.Transaction = transaction;
 
+                var sqlCommands = parametersAndData
+                    .Select(a => a.IsNew
+                        ? string.Format(@"insert into ""{0}"" (id, data) values (@{1}, @{2});", _tableName,
+                            a.IdParameterName, a.DataParameterName)
+                        : string.Format(@"update ""{0}"" set data = @{2} where id = @{1};", _tableName,
+                            a.IdParameterName, a.DataParameterName))
+                    .ToList();
 
+                foreach (var a in parametersAndData)
+                {
+                    command.Parameters.Add(a.IdParameterName, NpgsqlDbType.Varchar, PrimaryKeySize).Value = a.Id;
+                    command.Parameters.AddWithValue(a.DataParameterName, _serializer.Serialize(a.ViewInstance));
+                }
+
+                command.CommandText = string.Join(Environment.NewLine, sqlCommands);
+
+                try
+                {
+                    var affectedRows = command.ExecuteNonQuery();
+
+                    if (affectedRows != sqlCommands.Count)
+                    {
+                        throw new ApplicationException(
+                            string.Format("Number of affected rows ({0}) did not match the expected number: {1}",
+                                affectedRows, sqlCommands.Count));
+                    }
+                }
+                catch (Exception exception)
+                {
+                    throw new ApplicationException(string.Format("Could not execute the following SQL: {0}", command.CommandText), exception);
+                }
             }
         }
 
-        TViewInstance FindOneById(string id, NpgsqlTransaction transaction, NpgsqlConnection connection)
+        TViewInstance FindOneById(string id, NpgsqlConnection connection, NpgsqlTransaction transaction)
         {
             using (var command = connection.CreateCommand())
             {
-                command.Transaction = transaction;
-                command.Parameters.Add("id", NpgsqlDbType.Varchar, 255).Value = id;
+                if (transaction != null)
+                {
+                    command.Transaction = transaction;
+                }
+
+                command.Parameters.Add("id", NpgsqlDbType.Varchar, PrimaryKeySize).Value = id;
                 command.CommandText = string.Format(@"select ""data"" from ""{0}"" where ""id"" = @id", _tableName);
 
                 using (var reader = command.ExecuteReader())
@@ -167,10 +269,9 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
                     }
 
                     var data = reader["data"];
+                    var jsonText = data.ToString();
 
-                    data.ToString();
-
-                    return null;
+                    return (TViewInstance)_serializer.Deserialize(jsonText);
                 }
             }
         }
@@ -192,7 +293,7 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
                     {
                         command.Transaction = transaction;
                         command.CommandText = string.Format(@"delete from ""{0}"" where ""id"" = @id", _positionTableName);
-                        command.Parameters.Add("id", NpgsqlDbType.Varchar, 255).Value = _tableName;
+                        command.Parameters.Add("id", NpgsqlDbType.Varchar, PrimaryKeySize).Value = _tableName;
                         command.ExecuteNonQuery();
                     }
 
@@ -203,7 +304,10 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
 
         public override TViewInstance Load(string viewId)
         {
-            throw new NotImplementedException();
+            using (var connection = GetConnection())
+            {
+                return FindOneById(viewId, connection, null);
+            }
         }
 
         public override void Delete(string viewId)
