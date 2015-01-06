@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections;
 using d60.Cirqus.Numbers;
 
 namespace d60.Cirqus.Events
@@ -79,8 +79,7 @@ namespace d60.Cirqus.Events
 
             for (var index = 0; index < data.Length; index++)
             {
-                if (data[index] != otherData[index])
-                    return false;
+                if (data[index] != otherData[index]) return false;
             }
 
             return true;

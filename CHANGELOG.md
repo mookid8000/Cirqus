@@ -443,6 +443,23 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added `IAggregateRootRepository` implementation that allows for letting a factory method create the instance - thanks [kimbirkelund]
 
+## 0.46.2
+
+* Made number of domain events per batch configurable in the config API for `ViewManagerEventDispatcher`
+
+## 0.47.0
+
+* Brought back the aggregate root type in the `IProfiler` interface
+
+## 0.48.0
+
+* Slight change in profiler behavior - actuall aggregate root type is registered if possible, otherwise the queries type is used
+
+## 0.49.0
+
+* Fixed pretty subtle bug in `MongoDbEventStore` that surfaces when caching is introduced
+* Finished the simple caching event store with a simple age-based eviction strategy
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen

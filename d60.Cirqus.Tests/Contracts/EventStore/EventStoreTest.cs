@@ -24,7 +24,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
     [TestFixture(typeof(PostgreSqlEventStoreFactory), Category = TestCategories.PostgreSql)]
     [TestFixture(typeof(NtfsEventStoreFactory))]
     [TestFixture(typeof(SQLiteEventStoreFactory))]
-    [TestFixture(typeof(CachedEventStoreFactory))]
+    [TestFixture(typeof(CachedEventStoreFactory), Category = TestCategories.MongoDb, Description = "Uses MongoDB behind the scenes")]
     public class EventStoreTest<TEventStoreFactory> : FixtureBase where TEventStoreFactory : IEventStoreFactory, new()
     {
         TEventStoreFactory _eventStoreFactory;
@@ -40,6 +40,30 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             {
                 RegisterForDisposal((IDisposable)_eventStore);
             }
+        }
+
+        [Test]
+        public void CanLoadFromWithinEventBatch()
+        {
+            var events = new List<EventData>
+            {
+                Event(0, "id2"), 
+                Event(1, "id2"),
+                Event(2, "id2"),
+
+                Event(0, "id1"), 
+                Event(1, "id1"),
+                Event(2, "id1"),
+            };
+
+            _eventStore.Save(Guid.NewGuid(), events);
+
+            // assert
+            var loadedEvents = _eventStore.Load("id1", 1).ToList();
+
+            Assert.That(loadedEvents.Count, Is.EqualTo(2));
+            Assert.That(loadedEvents[0].GetSequenceNumber(), Is.EqualTo(1));
+            Assert.That(loadedEvents[1].GetSequenceNumber(), Is.EqualTo(2));
         }
 
         [Test]
@@ -228,7 +252,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             var batchWithAlreadyUsedSequenceNumber = new[] { Event(2, "id") };
 
             var ex = Assert.Throws<ConcurrencyException>(() => _eventStore.Save(Guid.NewGuid(), batchWithAlreadyUsedSequenceNumber));
-            
+
             Console.WriteLine(ex);
         }
 

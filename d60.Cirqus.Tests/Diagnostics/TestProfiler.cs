@@ -130,7 +130,7 @@ namespace d60.Cirqus.Tests.Diagnostics
                 _calls.Add("");
             }
 
-            public void RecordAggregateRootGet(TimeSpan elapsed, string aggregateRootId)
+            public void RecordAggregateRootGet(TimeSpan elapsed, Type aggregateRootType, string aggregateRootId)
             {
                 _calls.Add(string.Format("RecordAggregateRootGet {0}, {1}", elapsed, aggregateRootId));
             }

@@ -10,7 +10,7 @@ namespace d60.Cirqus.Diagnostics
         /// <summary>
         /// Called after getting each aggregate root instance from the repository, no matter if the instance was fully re-hydrated or served from a unit of work cache, etc.
         /// </summary>
-        void RecordAggregateRootGet(TimeSpan elapsed, string aggregateRootId);
+        void RecordAggregateRootGet(TimeSpan elapsed, Type aggregateRootType, string aggregateRootId);
 
         /// <summary>
         /// Called after checking for the existence of an aggregate root instance
