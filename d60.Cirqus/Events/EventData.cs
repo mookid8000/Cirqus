@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using d60.Cirqus.Numbers;
+﻿using d60.Cirqus.Numbers;
 
 namespace d60.Cirqus.Events
 {

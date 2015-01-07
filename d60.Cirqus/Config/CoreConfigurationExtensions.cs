@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq.Expressions;
 using d60.Cirqus.Aggregates;
+using d60.Cirqus.Caching;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Config.Configurers;
 using d60.Cirqus.Events;
@@ -43,9 +45,22 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void EnableCaching(this EventStoreConfigurationBuilder builder, int maxCacheEntries)
         {
-            builder.Registrar
-                .Register<IEventStore>(context => new CachingEventStoreDecorator(context.Get<IEventStore>()),
+            if (builder.Registrar.HasService<EventCache>(checkForPrimary: true))
+            {
+                throw new InvalidOperationException("Caching has already been configured!");
+            }
+
+            builder
+                .Registrar
+                .Register<IEventStore>(context => new CachingEventStoreDecorator(context.Get<IEventStore>(), context.Get<EventCache>()),
                     decorator: true);
+
+            builder
+                .Registrar
+                .Register<IDomainEventSerializer>(context => new CachingDomainEventSerializerDecorator(context.Get<IDomainEventSerializer>(), context.Get<EventCache>()),
+                    decorator: true);
+
+            builder.Registrar.Register(c => new EventCache());
         }
 
         /// <summary>

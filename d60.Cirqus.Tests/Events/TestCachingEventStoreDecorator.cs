@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using d60.Cirqus.Caching;
 using d60.Cirqus.Events;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
@@ -24,7 +25,7 @@ namespace d60.Cirqus.Tests.Events
         {
             Save("(H)aggrid", 0);
             
-            var cache = new CachingEventStoreDecorator(_store);
+            var cache = new CachingEventStoreDecorator(_store, new EventCache());
             var results = cache.Load("(H)aggrid").ToList();
 
             Assert.AreEqual(DataForSeq(0), results[0].Data);
@@ -38,7 +39,7 @@ namespace d60.Cirqus.Tests.Events
             Save("(H)aggrid", 1);
             Save("(H)aggrid", 2);
 
-            var cache = new CachingEventStoreDecorator(_store);
+            var cache = new CachingEventStoreDecorator(_store, new EventCache());
             var _ = cache.Load("(H)aggrid").ToList();
             _store.CacheMisses.Clear();
             
@@ -57,7 +58,7 @@ namespace d60.Cirqus.Tests.Events
             Save("(H)aggrid", 1);
             Save("(H)aggrid", 2);
 
-            var cache = new CachingEventStoreDecorator(_store);
+            var cache = new CachingEventStoreDecorator(_store, new EventCache());
             var _ = cache.Load("(H)aggrid", 1).ToList();
             _store.CacheMisses.Clear();
             
@@ -75,7 +76,7 @@ namespace d60.Cirqus.Tests.Events
         {
             Save("(H)aggrid", 0);
 
-            var cache = new CachingEventStoreDecorator(_store);
+            var cache = new CachingEventStoreDecorator(_store, new EventCache());
             var _ = cache.Load("(H)aggrid").ToList();
             _store.CacheMisses.Clear();
 

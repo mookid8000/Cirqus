@@ -78,7 +78,9 @@
     <Compile Include="Config\Configurers\OptionsConfigurationBuilder.cs" />
     <Compile Include="Diagnostics\DiagnosticsConfigurationExtensions.cs" />
     <Compile Include="Diagnostics\IProfiler.cs" />
-    <Compile Include="Events\CachingEventStoreDecorator.cs" />
+    <Compile Include="Caching\CachingDomainEventSerializerDecorator.cs" />
+    <Compile Include="Caching\CachingEventStoreDecorator.cs" />
+    <Compile Include="Caching\EventCache.cs" />
     <Compile Include="Events\EventData.cs" />
     <Compile Include="Events\EventReplicator.cs" />
     <Compile Include="Extensions\EventExtensions.cs" />
