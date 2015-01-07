@@ -47,6 +47,7 @@
     <Compile Include="Aggregates\AggregateRootInfo.cs" />
     <Compile Include="Aggregates\DefaultAggregateRootRepository.cs" />
     <Compile Include="Aggregates\FactoryBasedAggregateRootRepository.cs" />
+    <Compile Include="Config\Configurers\ConfigurationBuilder.cs" />
     <Compile Include="Config\CustomizableDomainTypeNameMapper.cs" />
     <Compile Include="Config\DefaultDomainTypeNameMapper.cs" />
     <Compile Include="Aggregates\IAggregateRootRepository.cs" />
@@ -62,16 +63,13 @@
     <Compile Include="CommandProcessor.cs" />
     <Compile Include="Commands\DefaultCommandContext.cs" />
     <Compile Include="Config\Configurers\ConfigurationContainer.cs" />
-    <Compile Include="Config\Configurers\ILoggingAndEventStoreConfigurationBuilderApi.cs" />
+    <Compile Include="Config\Configurers\ILoggingAndEventStoreConfiguration.cs" />
     <Compile Include="Config\Configurers\LoggingConfigurationBuilder.cs" />
     <Compile Include="Config\Configurers\ResolutionContext.cs" />
     <Compile Include="Config\Configurers\ResolutionException.cs" />
     <Compile Include="Config\CoreConfigurationExtensions.cs" />
-    <Compile Include="Config\Configurers\IAggregateRootRepositoryConfigurationBuilderApi.cs" />
-    <Compile Include="Config\Configurers\IEventDispatcherConfigurationBuilderApi.cs" />
-    <Compile Include="Config\Configurers\IEventStoreConfigurationBuilderApi.cs" />
-    <Compile Include="Config\Configurers\IFullConfiguration.cs" />
-    <Compile Include="Config\Configurers\IFullConfigurationConfigurationBuilderApi.cs" />
+    <Compile Include="Config\Configurers\IEventStoreConfiguration.cs" />
+    <Compile Include="Config\Configurers\IOptionalConfiguration.cs" />
     <Compile Include="Config\Configurers\EventDispatcherConfigurationBuilder.cs" />
     <Compile Include="Config\Configurers\EventStoreConfigurationBuilder.cs" />
     <Compile Include="Config\Configurers\IRegistrar.cs" />

@@ -1,17 +1,7 @@
 ﻿namespace d60.Cirqus.Config.Configurers
 {
-    public class LoggingConfigurationBuilder
+    public class LoggingConfigurationBuilder : ConfigurationBuilder
     {
-        readonly IRegistrar _registrar;
-
-        public LoggingConfigurationBuilder(IRegistrar registrar)
-        {
-            _registrar = registrar;
-        }
-
-        public IRegistrar Registrar
-        {
-            get { return _registrar; }
-        }
+        public LoggingConfigurationBuilder(IRegistrar registrar) : base(registrar) { }
     }
 }

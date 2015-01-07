@@ -4,6 +4,7 @@ using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Config;
+using d60.Cirqus.Config.Configurers;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
@@ -22,7 +23,7 @@ namespace d60.Cirqus.Testing
     {
         readonly IDomainEventSerializer _domainEventSerializer;
         readonly DefaultDomainTypeNameMapper _domainTypeNameMapper = new DefaultDomainTypeNameMapper();
-        readonly DefaultAggregateRootRepository _aggregateRootRepository;
+        readonly IAggregateRootRepository _aggregateRootRepository;
         readonly ViewManagerEventDispatcher _viewManagerEventDispatcher;
         readonly CompositeEventDispatcher _eventDispatcher;
         readonly ViewManagerWaitHandle _waitHandle = new ViewManagerWaitHandle();
@@ -33,17 +34,31 @@ namespace d60.Cirqus.Testing
         DateTime _currentTime = DateTime.MinValue;
         bool _initialized;
 
-        public TestContext() : this(new JsonDomainEventSerializer("<events>")) {}
-
-        public TestContext(IDomainEventSerializer domainEventSerializer)
+        public TestContext()
         {
-            _domainEventSerializer = domainEventSerializer;
-            
-            _eventStore = new InMemoryEventStore(_domainEventSerializer);
+            _domainEventSerializer = new JsonDomainEventSerializer("<events>");
             _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer, _domainTypeNameMapper);
+
+            _eventStore = new InMemoryEventStore(_domainEventSerializer);
             _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore, _domainEventSerializer, _domainTypeNameMapper);
             _waitHandle.Register(_viewManagerEventDispatcher);
             _eventDispatcher = new CompositeEventDispatcher(_viewManagerEventDispatcher);
+        }
+
+        public TestContext(IAggregateRootRepository aggregateRootRepository, IDomainEventSerializer domainEventSerializer)
+        {
+            _aggregateRootRepository = aggregateRootRepository;
+            _domainEventSerializer = domainEventSerializer;
+
+            _eventStore = new InMemoryEventStore(_domainEventSerializer);
+            _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore, _domainEventSerializer, _domainTypeNameMapper);
+            _waitHandle.Register(_viewManagerEventDispatcher);
+            _eventDispatcher = new CompositeEventDispatcher(_viewManagerEventDispatcher);
+        }
+
+        public static ILoggingAndEventStoreConfiguration With()
+        {
+            return new CommandProcessorConfigurationBuilder();
         }
 
         public int MaxDomainEventsPerBatch
