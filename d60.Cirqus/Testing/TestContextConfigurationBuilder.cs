@@ -15,6 +15,7 @@ namespace d60.Cirqus.Testing
     class TestContextConfigurationBuilder : IOptionalConfiguration<TestContext>
     {
         static Logger _logger;
+
         readonly ConfigurationContainer _container = new ConfigurationContainer();
 
         static TestContextConfigurationBuilder()
@@ -54,6 +55,8 @@ namespace d60.Cirqus.Testing
             var domainTypeMapper = resolutionContext.Get<IDomainTypeNameMapper>();
 
             var testContext = new TestContext(eventStore, aggregateRootRepository, eventDispatcher, serializer, commandMapper, domainTypeMapper);
+
+            testContext.Disposed += resolutionContext.Dispose;
 
             resolutionContext
                 .GetAll<Action<TestContext>>().ToList()

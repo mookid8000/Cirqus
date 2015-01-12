@@ -61,6 +61,7 @@ namespace d60.Cirqus.Testing
             return With().Create();
         }
 
+        internal event Action Disposed = delegate { };
         internal bool Asynchronous { get; set; }
 
         public TestContext AddViewManager(IViewManager viewManager)
@@ -368,13 +369,17 @@ Headers: {3}", domainEvent, firstSerialization, secondSerialization, domainEvent
         {
             if (_disposed) return;
 
-            if (disposing && _viewManagerEventDispatcher != null)
+            if (disposing)
             {
-                _viewManagerEventDispatcher.Dispose();
+                if (_viewManagerEventDispatcher != null)
+                {
+                    _viewManagerEventDispatcher.Dispose();
+                }
+
+                Disposed();
             }
 
             _disposed = true;
         }
-
     }
 }

@@ -81,6 +81,8 @@ namespace d60.Cirqus.Config
             {
                 var viewManagerContext = viewManagerConfigurationContainer.CreateContext();
 
+                context.AddChildContext(viewManagerContext);
+
                 var eventDispatcher = new ViewManagerEventDispatcher(
                     context.Get<IAggregateRootRepository>(),
                     context.Get<IEventStore>(),
@@ -99,8 +101,6 @@ namespace d60.Cirqus.Config
                 {
                     eventDispatcher.MaxDomainEventsPerBatch = maxDomainEventsPerBatch;
                 }
-
-                //context.Track(viewManagerContext);
 
                 return eventDispatcher;
             });

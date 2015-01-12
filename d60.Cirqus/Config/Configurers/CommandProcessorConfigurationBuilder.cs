@@ -9,72 +9,6 @@ using d60.Cirqus.Views;
 
 namespace d60.Cirqus.Config.Configurers
 {
-    //class BaseConfigurationBuilder<T> : IOptionalConfiguration<T>
-    //{
-    //    static Logger _logger;
-
-    //    static BaseConfigurationBuilder()
-    //    {
-    //        CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
-    //    }
-
-    //    readonly ConfigurationContainer _container = new ConfigurationContainer();
-
-    //    public IOptionalConfiguration<T> AggregateRootRepository(Action<AggregateRootRepositoryConfigurationBuilder> configure)
-    //    {
-    //        configure(new AggregateRootRepositoryConfigurationBuilder(_container));
-    //        return this;
-    //    }
-
-    //    public IOptionalConfiguration<T> EventDispatcher(Action<EventDispatcherConfigurationBuilder> configure)
-    //    {
-    //        configure(new EventDispatcherConfigurationBuilder(_container));
-    //        return this;
-    //    }
-
-    //    public IOptionalConfiguration<T> Options(Action<OptionsConfigurationBuilder> configure)
-    //    {
-    //        configure(new OptionsConfigurationBuilder(_container));
-    //        return this;
-    //    }
-
-    //    public T Create()
-    //    {
-    //        FillInDefaults();
-
-    //        var resolutionContext = _container.CreateContext();
-
-    //        var eventStore = resolutionContext.Get<IEventStore>();
-    //        var aggregateRootRepository = resolutionContext.Get<IAggregateRootRepository>();
-    //        var eventDispatcher = resolutionContext.Get<IEventDispatcher>();
-    //        var serializer = resolutionContext.Get<IDomainEventSerializer>();
-    //        var commandMapper = resolutionContext.Get<ICommandMapper>();
-    //        var domainTypeMapper = resolutionContext.Get<IDomainTypeNameMapper>();
-
-    //        var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher, serializer, commandMapper, domainTypeMapper);
-
-    //        commandProcessor.Disposed += () =>
-    //        {
-    //            var disposables = resolutionContext.GetDisposables();
-
-    //            foreach (var disposable in disposables)
-    //            {
-    //                _logger.Debug("Disposing {0}", disposable);
-
-    //                disposable.Dispose();
-    //            }
-    //        };
-
-    //        resolutionContext.GetAll<Action<Options>>()
-    //            .ToList()
-    //            .ForEach(action => action(commandProcessor.Options));
-
-    //        commandProcessor.Initialize();
-
-    //        return commandProcessor;
-    //    }
-    //}
-
     class CommandProcessorConfigurationBuilder : ILoggingAndEventStoreConfiguration, IOptionalConfiguration<ICommandProcessor>
     {
         static Logger _logger;
@@ -131,17 +65,8 @@ namespace d60.Cirqus.Config.Configurers
 
             var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher, serializer, commandMapper, domainTypeMapper);
 
-            commandProcessor.Disposed += () =>
-            {
-                var disposables = resolutionContext.GetDisposables();
-
-                foreach (var disposable in disposables)
-                {
-                    _logger.Debug("Disposing {0}", disposable);
-
-                    disposable.Dispose();
-                }
-            };
+            // end the resolution context and dispose burdens when command processor is disposed
+            commandProcessor.Disposed += resolutionContext.Dispose;
 
             resolutionContext.GetAll<Action<Options>>()
                 .ToList()
@@ -157,15 +82,10 @@ namespace d60.Cirqus.Config.Configurers
             if (!_container.HasService<IAggregateRootRepository>(checkForPrimary: true))
             {
                 _container.Register<IAggregateRootRepository>(context =>
-                {
-                    var eventStore = context.Get<IEventStore>();
-                    var domainEventSerializer = context.Get<IDomainEventSerializer>();
-                    var domainTypeNameMapper = context.Get<IDomainTypeNameMapper>();
-
-                    var aggregateRootRepository = new DefaultAggregateRootRepository(eventStore, domainEventSerializer, domainTypeNameMapper);
-
-                    return aggregateRootRepository;
-                });
+                    new DefaultAggregateRootRepository(
+                        context.Get<IEventStore>(),
+                        context.Get<IDomainEventSerializer>(),
+                        context.Get<IDomainTypeNameMapper>()));
             }
 
             if (!_container.HasService<IDomainEventSerializer>(checkForPrimary: true))
