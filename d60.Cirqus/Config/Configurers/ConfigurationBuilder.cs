@@ -25,6 +25,14 @@ namespace d60.Cirqus.Config.Configurers
         }
 
         /// <summary>
+        /// Registers a factory method for decorating the given type
+        /// </summary>
+        public void Decorate<TService>(Func<ResolutionContext, TService> serviceFactory)
+        {
+            Registrar.Register(serviceFactory, decorator: true, multi: false);
+        }
+
+        /// <summary>
         /// Registers a specific instance
         /// </summary>
         public void Use<TService>(TService instance, bool multi = false)

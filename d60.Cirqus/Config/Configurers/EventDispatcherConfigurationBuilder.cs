@@ -21,7 +21,6 @@ namespace d60.Cirqus.Config.Configurers
             {
                 Registrar.Register(eventDispatcherFunc);
             }
-
         }
     }
 }

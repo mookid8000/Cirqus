@@ -18,6 +18,18 @@ namespace d60.Cirqus.Config.Configurers
 
         public TService Get<TService>()
         {
+            var result = GetOrDefault<TService>();
+
+            if (Equals(result, default(TService)))
+            {
+                throw new ResolutionException(typeof(TService), "No appropriate factory method has been registered!");
+            }
+
+            return result;
+        }
+
+        public TService GetOrDefault<TService>()
+        {
             if (_cache.ContainsKey(typeof(TService)))
             {
                 var cachedResult = (TService)_cache[typeof(TService)];
@@ -32,9 +44,9 @@ namespace d60.Cirqus.Config.Configurers
 
             if (resolver == null)
             {
-                throw new ResolutionException(typeof(TService), "No appropriate factory method has been registered!");
+                return default(TService);
             }
-
+            
             AddToLevel<TService>(1);
 
             var result = resolver.InvokeFactory(this);
@@ -56,6 +68,11 @@ namespace d60.Cirqus.Config.Configurers
                 .Select(r => r.InvokeFactory(this));
         }
 
+        public IEnumerable<IDisposable> GetDisposables()
+        {
+            return _resolvedObjects.OfType<IDisposable>();
+        }
+
         void AddToLevel<TService>(int addend)
         {
             var serviceType = typeof(TService);
@@ -64,11 +81,6 @@ namespace d60.Cirqus.Config.Configurers
                 _levels[serviceType] = 0;
 
             _levels[serviceType] += addend;
-        }
-
-        public IEnumerable<IDisposable> GetDisposables()
-        {
-            return _resolvedObjects.OfType<IDisposable>();
         }
 
         int GetLevelFor<TService>()
