@@ -1,6 +1,7 @@
 ﻿using System;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
+using d60.Cirqus.Testing;
 using d60.Cirqus.Tests.Contracts.Views.Factories;
 using d60.Cirqus.Tests.Contracts.Views.Models.LoadingStuffDuringViewLocation;
 using NUnit.Framework;
@@ -23,7 +24,10 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             _factory = RegisterForDisposal(new TFactory());
 
-            _context = RegisterForDisposal(new TestContext { Asynchronous = true });
+            _context = RegisterForDisposal(
+                TestContext.With()
+                    .Options(x => x.Asynchronous())
+                    .Create());
         }
 
         [Test]

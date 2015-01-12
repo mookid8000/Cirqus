@@ -36,10 +36,18 @@ namespace d60.Cirqus.Tests.Config
                 })
                 .EventDispatcher(d =>
                 {
-                    d.UseViewManagerEventDispatcher(waiter, 200, new MongoDbViewManager<ConfigTestView>(database, "view1"));
-                    d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view2"));
-                    d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view3"));
-                    d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view4"));
+                    d.UseViewManagerEventDispatcher(new MongoDbViewManager<ConfigTestView>(database, "view1"))
+                        .WithWaitHandle(waiter)
+                        .WithMaxDomainEventsPerBatch(200);
+
+                    d.UseViewManagerEventDispatcher(new MongoDbViewManager<ConfigTestView>(database, "view2"))
+                        .WithWaitHandle(waiter);
+                    
+                    d.UseViewManagerEventDispatcher(new MongoDbViewManager<ConfigTestView>(database, "view3"))
+                        .WithWaitHandle(waiter);
+
+                    d.UseViewManagerEventDispatcher(new MongoDbViewManager<ConfigTestView>(database, "view4"))
+                        .WithWaitHandle(waiter);
                 })
                 .Options(e => e.EnableEventCaching(10))
                 .Create();

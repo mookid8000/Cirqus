@@ -29,7 +29,7 @@ namespace d60.Cirqus
         /// <summary>
         /// Creates a configuration builder that can help you build a fully functional command processor
         /// </summary>
-        public static ILoggingAndEventStoreConfigurationBuilderApi With()
+        public static ILoggingAndEventStoreConfiguration With()
         {
             return new CommandProcessorConfigurationBuilder();
         }

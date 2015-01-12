@@ -29,7 +29,7 @@ namespace d60.Cirqus.Tests.Integration
         {
             _cirqus = CommandProcessor.With()
                 .EventStore(e => e.UseInMemoryEventStore())
-                .AggregateRootRepository(e => e.Registrar.Register<IAggregateRootRepository>(c =>
+                .AggregateRootRepository(e => e.Register<IAggregateRootRepository>(c =>
                 {
                     _aggregateRootRepository = new DefaultAggregateRootRepository(c.Get<IEventStore>(), c.Get<IDomainEventSerializer>(), c.Get<IDomainTypeNameMapper>());
 

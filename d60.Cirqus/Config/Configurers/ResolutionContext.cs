@@ -1,15 +1,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using d60.Cirqus.Logging;
 
 namespace d60.Cirqus.Config.Configurers
 {
-    public class ResolutionContext
+    public class ResolutionContext : IDisposable
     {
+        static Logger _logger;
+
+        static ResolutionContext()
+        {
+            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+        }
+
         readonly IEnumerable<Resolver> _resolvers;
         readonly Dictionary<Type, int> _levels = new Dictionary<Type, int>();
         readonly Dictionary<Type, object> _cache = new Dictionary<Type, object>();
         readonly HashSet<object> _resolvedObjects = new HashSet<object>();
+        readonly List<ResolutionContext> _childContexts = new List<ResolutionContext>();
 
         public ResolutionContext(IEnumerable<Resolver> resolvers)
         {
@@ -17,6 +26,18 @@ namespace d60.Cirqus.Config.Configurers
         }
 
         public TService Get<TService>()
+        {
+            var result = GetOrDefault<TService>();
+
+            if (Equals(result, default(TService)))
+            {
+                throw new ResolutionException(typeof(TService), "No appropriate factory method has been registered!");
+            }
+
+            return result;
+        }
+
+        public TService GetOrDefault<TService>()
         {
             if (_cache.ContainsKey(typeof(TService)))
             {
@@ -32,9 +53,9 @@ namespace d60.Cirqus.Config.Configurers
 
             if (resolver == null)
             {
-                throw new ResolutionException(typeof(TService), "No appropriate factory method has been registered!");
+                return default(TService);
             }
-
+            
             AddToLevel<TService>(1);
 
             var result = resolver.InvokeFactory(this);
@@ -56,6 +77,26 @@ namespace d60.Cirqus.Config.Configurers
                 .Select(r => r.InvokeFactory(this));
         }
 
+        public void AddChildContext(ResolutionContext context)
+        {
+            _childContexts.Add(context);
+        }
+
+        public void Dispose()
+        {
+            foreach (var disposable in _resolvedObjects.OfType<IDisposable>())
+            {
+                _logger.Debug("Disposing {0}", disposable);
+
+                disposable.Dispose();
+            }
+
+            foreach (var context in _childContexts)
+            {
+                context.Dispose();
+            }
+        }
+
         void AddToLevel<TService>(int addend)
         {
             var serviceType = typeof(TService);
@@ -64,11 +105,6 @@ namespace d60.Cirqus.Config.Configurers
                 _levels[serviceType] = 0;
 
             _levels[serviceType] += addend;
-        }
-
-        public IEnumerable<IDisposable> GetDisposables()
-        {
-            return _resolvedObjects.OfType<IDisposable>();
         }
 
         int GetLevelFor<TService>()

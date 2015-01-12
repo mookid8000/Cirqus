@@ -14,7 +14,7 @@ namespace d60.Cirqus.SQLite.Config
             if (builder == null) throw new ArgumentNullException("builder");
             if (databasePath == null) throw new ArgumentNullException("databasePath");
 
-            builder.Registrar.Register<IEventStore>(context => new SQLiteEventStore(databasePath));
+            builder.Register<IEventStore>(context => new SQLiteEventStore(databasePath));
         }
     }
 }

@@ -35,7 +35,7 @@ namespace d60.Cirqus.Tests.Config
         public void CanGetDecoratedInstance()
         {
             _container.Register(c => "hej");
-            _container.Register(c => c.Get<string>() + " med dig", decorator: true);
+            _container.Decorate(c => c.Get<string>() + " med dig");
 
             var resolvedString = _container.CreateContext().Get<string>();
 
@@ -49,7 +49,7 @@ namespace d60.Cirqus.Tests.Config
 
             Enumerable.Range(1, 7)
                 .ToList()
-                .ForEach(tal => _container.Register(c => c.Get<string>() + " " + tal, decorator: true));
+                .ForEach(tal => _container.Decorate(c => c.Get<string>() + " " + tal));
 
             var resolvedString = _container.CreateContext().Get<string>();
 
@@ -62,8 +62,8 @@ namespace d60.Cirqus.Tests.Config
             _container.Register(c => "1");
             _container.Register(c => int.Parse(c.Get<string>()) + 1);
 
-            _container.Register(c => c.Get<int>().ToString() + "2", decorator: true);
-            _container.Register(c => int.Parse(c.Get<string>()) + 2, decorator: true);
+            _container.Decorate(c => c.Get<int>().ToString() + "2");
+            _container.Decorate(c => int.Parse(c.Get<string>()) + 2);
 
             var resolvedString = _container.CreateContext().Get<int>();
 

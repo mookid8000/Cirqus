@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq.Expressions;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Caching;
@@ -25,18 +25,15 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void EnableInMemorySnapshotCaching(this AggregateRootRepositoryConfigurationBuilder builder, int approximateMaxNumberOfCacheEntries)
         {
-            builder.Registrar
-                .Register<IAggregateRootRepository>(
-                    context => new CachingAggregateRootRepositoryDecorator(
-                        context.Get<IAggregateRootRepository>(),
-                        new InMemorySnapshotCache
-                        {
-                            ApproximateMaxNumberOfCacheEntries = approximateMaxNumberOfCacheEntries
-                        },
-                        context.Get<IEventStore>(),
-                        context.Get<IDomainEventSerializer>()),
-                    decorator: true
-                );
+            builder.Decorate<IAggregateRootRepository>(
+                context => new CachingAggregateRootRepositoryDecorator(
+                    context.Get<IAggregateRootRepository>(),
+                    new InMemorySnapshotCache
+                    {
+                        ApproximateMaxNumberOfCacheEntries = approximateMaxNumberOfCacheEntries
+                    },
+                    context.Get<IEventStore>(),
+                    context.Get<IDomainEventSerializer>()));
         }
 
         /// <summary>
@@ -45,22 +42,26 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void EnableEventCaching(this OptionsConfigurationBuilder builder, int maxCacheEntries)
         {
-            if (builder.Registrar.HasService<EventCache>(checkForPrimary: true))
+            if (builder.HasService<EventCache>(checkForPrimary: true))
             {
                 throw new InvalidOperationException("Caching has already been configured!");
             }
 
-            builder
-                .Registrar
-                .Register<IEventStore>(context => new CachingEventStoreDecorator(context.Get<IEventStore>(), context.Get<EventCache>()),
-                    decorator: true);
+            builder.Decorate<IEventStore>(context =>
+            {
+                var eventStore = context.Get<IEventStore>();
+                var eventCache = context.Get<EventCache>();
+                return new CachingEventStoreDecorator(eventStore, eventCache);
+            });
 
-            builder
-                .Registrar
-                .Register<IDomainEventSerializer>(context => new CachingDomainEventSerializerDecorator(context.Get<IDomainEventSerializer>(), context.Get<EventCache>()),
-                    decorator: true);
+            builder.Decorate<IDomainEventSerializer>(context =>
+            {
+                var domainEventSerializer = context.Get<IDomainEventSerializer>();
+                var eventCache = context.Get<EventCache>();
+                return new CachingDomainEventSerializerDecorator(domainEventSerializer, eventCache);
+            });
 
-            builder.Registrar.Register(c => new EventCache());
+            builder.Register(c => new EventCache());
         }
 
         /// <summary>
@@ -69,15 +70,11 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void UseDefault(this AggregateRootRepositoryConfigurationBuilder builder)
         {
-            builder.Registrar
-                .Register<IAggregateRootRepository>(context =>
-                {
-                    var eventStore = context.Get<IEventStore>();
-                    var domainEventSerializer = context.Get<IDomainEventSerializer>();
-                    var domainTypeNameMapper = context.Get<IDomainTypeNameMapper>();
-
-                    return new DefaultAggregateRootRepository(eventStore, domainEventSerializer, domainTypeNameMapper);
-                });
+            builder.Register<IAggregateRootRepository>(context => 
+                new DefaultAggregateRootRepository(
+                    context.Get<IEventStore>(), 
+                    context.Get<IDomainEventSerializer>(), 
+                    context.Get<IDomainTypeNameMapper>()));
         }
 
         /// <summary>
@@ -85,78 +82,51 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void UseFactoryMethod(this AggregateRootRepositoryConfigurationBuilder builder, Func<Type, AggregateRoot> factoryMethod)
         {
-            builder.Registrar
-                .Register<IAggregateRootRepository>(context =>
-                {
-                    var eventStore = context.Get<IEventStore>();
-                    var domainEventSerializer = context.Get<IDomainEventSerializer>();
-                    var domainTypeNameMapper = context.Get<IDomainTypeNameMapper>();
-
-                    return new FactoryBasedAggregateRootRepository(eventStore, domainEventSerializer, domainTypeNameMapper, factoryMethod);
-                });
+            builder.Register<IAggregateRootRepository>(context =>
+                new FactoryBasedAggregateRootRepository(
+                    context.Get<IEventStore>(),
+                    context.Get<IDomainEventSerializer>(),
+                    context.Get<IDomainTypeNameMapper>(),
+                    factoryMethod));
         }
 
         /// <summary>
         /// Registers a <see cref="Views.ViewManagerEventDispatcher"/> to manage the given views. Can be called multiple times in order to register
         /// multiple "pools" of views (each will be managed by a dedicated worker thread).
         /// </summary>
-        public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, int maxDomainEventsPerBatch, params IViewManager[] viewManagers)
+        public static ViewManagerEventDispatcherConfiguationBuilder UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IViewManager[] viewManagers)
         {
-            InstallViewManagerEventDispatcherInternal(builder, viewManagers, maxDomainEventsPerBatch: maxDomainEventsPerBatch);
-        }
+            var viewManagerConfigurationContainer = new ConfigurationContainer();
 
-        /// <summary>
-        /// Registers a <see cref="Views.ViewManagerEventDispatcher"/> to manage the given views. Can be called multiple times in order to register
-        /// multiple "pools" of views (each will be managed by a dedicated worker thread).
-        /// </summary>
-        public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, params IViewManager[] viewManagers)
-        {
-            InstallViewManagerEventDispatcherInternal(builder, viewManagers);
-        }
-
-        /// <summary>
-        /// Registers a <see cref="ViewManagerEventDispatcher"/> to manage the given views. Can be called multiple times in order to register
-        /// multiple "pools" of views (each will be managed by a dedicated worker thread). The event dispatcher will register itself with the
-        /// given <seealso cref="waitHandle"/>, allowing for optionally blocking until views have been updated to a certain point.
-        /// </summary>
-        public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, ViewManagerWaitHandle waitHandle, int maxDomainEventsPerBatch, params IViewManager[] viewManagers)
-        {
-            InstallViewManagerEventDispatcherInternal(builder, viewManagers, waitHandle: waitHandle, maxDomainEventsPerBatch: maxDomainEventsPerBatch);
-        }
-
-        /// <summary>
-        /// Registers a <see cref="ViewManagerEventDispatcher"/> to manage the given views. Can be called multiple times in order to register
-        /// multiple "pools" of views (each will be managed by a dedicated worker thread). The event dispatcher will register itself with the
-        /// given <seealso cref="waitHandle"/>, allowing for optionally blocking until views have been updated to a certain point.
-        /// </summary>
-        public static void UseViewManagerEventDispatcher(this EventDispatcherConfigurationBuilder builder, ViewManagerWaitHandle waitHandle, params IViewManager[] viewManagers)
-        {
-            InstallViewManagerEventDispatcherInternal(builder, viewManagers, waitHandle: waitHandle);
-        }
-
-        static void InstallViewManagerEventDispatcherInternal(EventDispatcherConfigurationBuilder builder, IViewManager[] viewManagers, ViewManagerWaitHandle waitHandle = null, int maxDomainEventsPerBatch = 0)
-        {
             AddEventDispatcherRegistration(builder, context =>
             {
+                var viewManagerContext = viewManagerConfigurationContainer.CreateContext();
+
+                context.AddChildContext(viewManagerContext);
+
                 var eventDispatcher = new ViewManagerEventDispatcher(
                     context.Get<IAggregateRootRepository>(),
                     context.Get<IEventStore>(),
                     context.Get<IDomainEventSerializer>(),
                     context.Get<IDomainTypeNameMapper>(),
                     viewManagers);
-
-                if (maxDomainEventsPerBatch != 0)
-                {
-                    eventDispatcher.MaxDomainEventsPerBatch = maxDomainEventsPerBatch;
-                }
-
+                
+                var waitHandle = viewManagerContext.GetOrDefault<ViewManagerWaitHandle>();
                 if (waitHandle != null)
                 {
                     waitHandle.Register(eventDispatcher);
                 }
 
+                var maxDomainEventsPerBatch = viewManagerContext.GetOrDefault<int>();
+                if (maxDomainEventsPerBatch > 0)
+                {
+                    eventDispatcher.MaxDomainEventsPerBatch = maxDomainEventsPerBatch;
+                }
+
                 return eventDispatcher;
             });
+
+            return new ViewManagerEventDispatcherConfiguationBuilder(viewManagerConfigurationContainer);
         }
 
         /// <summary>
@@ -181,7 +151,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void PurgeExistingViews(this OptionsConfigurationBuilder builder, bool purgeViewsAtStartup = false)
         {
-            builder.Registrar.RegisterInstance<Action<Options>>(o => o.PurgeExistingViews = purgeViewsAtStartup, multi: true);
+            builder.RegisterInstance<Action<Options>>(o => o.PurgeExistingViews = purgeViewsAtStartup, multi: true);
         }
 
         /// <summary>
@@ -190,7 +160,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void AddDomainExceptionType<TException>(this OptionsConfigurationBuilder builder) where TException : Exception
         {
-            builder.Registrar.RegisterInstance<Action<Options>>(o => o.AddDomainExceptionType<TException>(), multi: true);
+            builder.RegisterInstance<Action<Options>>(o => o.AddDomainExceptionType<TException>(), multi: true);
         }
 
         /// <summary>
@@ -198,7 +168,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void UseCustomDomainEventSerializer(this OptionsConfigurationBuilder builder, IDomainEventSerializer domainEventSerializer)
         {
-            builder.Registrar.RegisterInstance(domainEventSerializer);
+            builder.RegisterInstance(domainEventSerializer);
         }
 
         /// <summary>
@@ -206,7 +176,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void UseCustomDomainTypeNameMapper(this OptionsConfigurationBuilder builder, IDomainTypeNameMapper domainTypeNameMapper)
         {
-            builder.Registrar.RegisterInstance(domainTypeNameMapper);
+            builder.RegisterInstance(domainTypeNameMapper);
         }
 
         /// <summary>
@@ -214,7 +184,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void SetMaxRetries(this OptionsConfigurationBuilder builder, int maxRetries)
         {
-            builder.Registrar.RegisterInstance<Action<Options>>(o => o.MaxRetries = maxRetries, multi: true);
+            builder.RegisterInstance<Action<Options>>(o => o.MaxRetries = maxRetries, multi: true);
         }
 
         /// <summary>
@@ -222,7 +192,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void AddCommandMappings(this OptionsConfigurationBuilder builder, CommandMappings mappings)
         {
-            builder.Registrar.Register(c => mappings.CreateCommandMapperDecorator(c.Get<ICommandMapper>()), decorator: true);
+            builder.Decorate(c => mappings.CreateCommandMapperDecorator(c.Get<ICommandMapper>()));
         }
 
         /// <summary>

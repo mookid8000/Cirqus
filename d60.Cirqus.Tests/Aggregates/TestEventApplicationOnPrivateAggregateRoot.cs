@@ -13,13 +13,12 @@ namespace d60.Cirqus.Tests.Aggregates
         [Test]
         public void CanDoItPrivately()
         {
-            using (var context = new TestContext())
+            TestContext.With().Create();
+            using (var context = TestContext.Create())
             {
                 context.ProcessCommand(new Commando("hej"));
                 context.ProcessCommand(new Commando("hej"));
                 context.ProcessCommand(new Commando("hej"));
-
-                
             }
         }
 

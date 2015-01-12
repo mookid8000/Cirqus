@@ -12,7 +12,7 @@ namespace d60.Cirqus.Ntfs.Config
             if (builder == null) throw new ArgumentNullException("builder");
             if (string.IsNullOrEmpty(path)) throw new ArgumentNullException("path");
             
-            builder.Registrar.Register<IEventStore>(context => new NtfsEventStore(path));
+            builder.Register<IEventStore>(context => new NtfsEventStore(path));
         }
     }
 }

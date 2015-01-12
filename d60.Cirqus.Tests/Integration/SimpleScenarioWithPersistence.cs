@@ -37,7 +37,7 @@ this time by using actual MongoDB underneath
 
             _cirqus = CommandProcessor.With()
                 .EventStore(e => e.UseMongoDb(mongoDatabase, "events"))
-                .AggregateRootRepository(r => r.Registrar.Register(c =>
+                .AggregateRootRepository(r => r.Register(c =>
                 {
                     _aggregateRootRepository = new DefaultAggregateRootRepository(
                         c.Get<IEventStore>(),

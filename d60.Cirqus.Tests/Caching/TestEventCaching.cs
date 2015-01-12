@@ -151,7 +151,7 @@ namespace d60.Cirqus.Tests.Caching
                     throw new ArgumentOutOfRangeException("persistenceOption", string.Format("Unknown value: {0}", persistenceOption));
             }
 
-            e.UseViewManagerEventDispatcher(waitHandle, viewManager);
+            e.UseViewManagerEventDispatcher(viewManager).WithWaitHandle(waitHandle);
         }
 
         static void ConfigureOptions(CachingOption cachingOption, OptionsConfigurationBuilder x)

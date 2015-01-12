@@ -37,7 +37,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             _commandProcessor = CommandProcessor.With()
                 .Logging(l => l.UseConsole(minLevel: Logger.Level.Warn))
                 .EventStore(e => e.UseMongoDb(_mongoDatabase, "Events"))
-                .EventDispatcher(e => e.Registrar.Register<IEventDispatcher>(r =>
+                .EventDispatcher(e => e.Register<IEventDispatcher>(r =>
                 {
                     var repository = r.Get<IAggregateRootRepository>();
                     var serializer = r.Get<IDomainEventSerializer>();
