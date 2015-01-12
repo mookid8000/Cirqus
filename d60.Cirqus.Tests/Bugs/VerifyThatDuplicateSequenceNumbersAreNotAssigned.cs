@@ -47,7 +47,7 @@ namespace d60.Cirqus.Tests.Bugs
         public void NoProblemoWithTestContext()
         {
             // arrange
-            var context = RegisterForDisposal(new TestContext());
+            var context = RegisterForDisposal(TestContext.Create());
 
             try
             {

@@ -21,7 +21,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
         {
             _factory = RegisterForDisposal(new TFactory());
 
-            _context = RegisterForDisposal(new TestContext());
+            _context = RegisterForDisposal(TestContext.Create());
         }
 
         [Test, Ignore("hmmmm...")]

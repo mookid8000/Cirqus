@@ -14,7 +14,7 @@ namespace d60.Cirqus.Tests.Aggregates
 
         protected override void DoSetUp()
         {
-            _context = RegisterForDisposal(new TestContext());
+            _context = RegisterForDisposal(TestContext.Create());
         }
 
         [Test]

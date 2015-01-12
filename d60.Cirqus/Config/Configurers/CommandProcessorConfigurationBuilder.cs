@@ -5,93 +5,86 @@ using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Serialization;
-using d60.Cirqus.Testing;
 using d60.Cirqus.Views;
 
 namespace d60.Cirqus.Config.Configurers
 {
-    class BaseConfigurationBuilder<T> : IOptionalConfiguration<T>
-    {
-        static Logger _logger;
+    //class BaseConfigurationBuilder<T> : IOptionalConfiguration<T>
+    //{
+    //    static Logger _logger;
 
-        static BaseConfigurationBuilder()
-        {
-            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
-        }
+    //    static BaseConfigurationBuilder()
+    //    {
+    //        CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+    //    }
 
-        readonly ConfigurationContainer _container = new ConfigurationContainer();
+    //    readonly ConfigurationContainer _container = new ConfigurationContainer();
 
-        public IOptionalConfiguration<T> AggregateRootRepository(Action<AggregateRootRepositoryConfigurationBuilder> configure)
-        {
-            configure(new AggregateRootRepositoryConfigurationBuilder(_container));
-            return this;
-        }
+    //    public IOptionalConfiguration<T> AggregateRootRepository(Action<AggregateRootRepositoryConfigurationBuilder> configure)
+    //    {
+    //        configure(new AggregateRootRepositoryConfigurationBuilder(_container));
+    //        return this;
+    //    }
 
-        public IOptionalConfiguration<T> EventDispatcher(Action<EventDispatcherConfigurationBuilder> configure)
-        {
-            configure(new EventDispatcherConfigurationBuilder(_container));
-            return this;
-        }
+    //    public IOptionalConfiguration<T> EventDispatcher(Action<EventDispatcherConfigurationBuilder> configure)
+    //    {
+    //        configure(new EventDispatcherConfigurationBuilder(_container));
+    //        return this;
+    //    }
 
-        public IOptionalConfiguration<T> Options(Action<OptionsConfigurationBuilder> configure)
-        {
-            configure(new OptionsConfigurationBuilder(_container));
-            return this;
-        }
+    //    public IOptionalConfiguration<T> Options(Action<OptionsConfigurationBuilder> configure)
+    //    {
+    //        configure(new OptionsConfigurationBuilder(_container));
+    //        return this;
+    //    }
 
-        public T Create()
-        {
-            FillInDefaults();
+    //    public T Create()
+    //    {
+    //        FillInDefaults();
 
-            var resolutionContext = _container.CreateContext();
+    //        var resolutionContext = _container.CreateContext();
 
-            var eventStore = resolutionContext.Get<IEventStore>();
-            var aggregateRootRepository = resolutionContext.Get<IAggregateRootRepository>();
-            var eventDispatcher = resolutionContext.Get<IEventDispatcher>();
-            var serializer = resolutionContext.Get<IDomainEventSerializer>();
-            var commandMapper = resolutionContext.Get<ICommandMapper>();
-            var domainTypeMapper = resolutionContext.Get<IDomainTypeNameMapper>();
+    //        var eventStore = resolutionContext.Get<IEventStore>();
+    //        var aggregateRootRepository = resolutionContext.Get<IAggregateRootRepository>();
+    //        var eventDispatcher = resolutionContext.Get<IEventDispatcher>();
+    //        var serializer = resolutionContext.Get<IDomainEventSerializer>();
+    //        var commandMapper = resolutionContext.Get<ICommandMapper>();
+    //        var domainTypeMapper = resolutionContext.Get<IDomainTypeNameMapper>();
 
-            var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher, serializer, commandMapper, domainTypeMapper);
+    //        var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher, serializer, commandMapper, domainTypeMapper);
 
-            commandProcessor.Disposed += () =>
-            {
-                var disposables = resolutionContext.GetDisposables();
+    //        commandProcessor.Disposed += () =>
+    //        {
+    //            var disposables = resolutionContext.GetDisposables();
 
-                foreach (var disposable in disposables)
-                {
-                    _logger.Debug("Disposing {0}", disposable);
+    //            foreach (var disposable in disposables)
+    //            {
+    //                _logger.Debug("Disposing {0}", disposable);
 
-                    disposable.Dispose();
-                }
-            };
+    //                disposable.Dispose();
+    //            }
+    //        };
 
-            resolutionContext.GetAll<Action<Options>>()
-                .ToList()
-                .ForEach(action => action(commandProcessor.Options));
+    //        resolutionContext.GetAll<Action<Options>>()
+    //            .ToList()
+    //            .ForEach(action => action(commandProcessor.Options));
 
-            commandProcessor.Initialize();
+    //        commandProcessor.Initialize();
 
-            return commandProcessor;
-        }
-
-
-    }
-
-    class TestContextConfigurationBuilder : IOptionalConfiguration<TestContext>
-    {
-        readonly ConfigurationContainer _container = new ConfigurationContainer();
-
-        public TestContext Create()
-        {
-            throw new NotImplementedException();
-        }
-    }
+    //        return commandProcessor;
+    //    }
+    //}
 
     class CommandProcessorConfigurationBuilder : ILoggingAndEventStoreConfiguration, IOptionalConfiguration<ICommandProcessor>
     {
+        static Logger _logger;
 
         readonly ConfigurationContainer _container = new ConfigurationContainer();
+
+        static CommandProcessorConfigurationBuilder()
+        {
+            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+        }
 
         public IEventStoreConfiguration Logging(Action<LoggingConfigurationBuilder> configure)
         {

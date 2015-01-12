@@ -27,7 +27,10 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _globalInstanceViewManager = _factory.GetViewManager<GlobalInstanceViewInstance>();
             _instancePerAggregateRootViewManager = _factory.GetViewManager<InstancePerAggregateRootView>();
 
-            _context = RegisterForDisposal(new TestContext { Asynchronous = true });
+            var context = TestContext.Create();
+            context.Asynchronous = true;
+
+            _context = RegisterForDisposal(context);
         }
 
 

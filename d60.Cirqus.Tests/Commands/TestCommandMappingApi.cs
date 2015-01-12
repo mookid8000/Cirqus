@@ -51,8 +51,9 @@ namespace d60.Cirqus.Tests.Commands
 
             RegisterForDisposal(_realCommandProcessor);
 
-            _fakeCommandProcessor = new TestContext()
-                .AddCommandMappings(commandMappings);
+            _fakeCommandProcessor = TestContext.With()
+                .Options(x => x.AddCommandMappings(commandMappings))
+                .Create();
         }
 
         [Test]

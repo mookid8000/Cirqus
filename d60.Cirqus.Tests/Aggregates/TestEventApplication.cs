@@ -29,7 +29,7 @@ namespace d60.Cirqus.Tests.Aggregates
         {
             const string aggregateRootId = "bim";
 
-            using (var context = new TestContext())
+            using (var context = TestContext.Create())
             {
                 context.Asynchronous = true;
 

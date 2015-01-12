@@ -48,6 +48,7 @@
     <Compile Include="Aggregates\DefaultAggregateRootRepository.cs" />
     <Compile Include="Aggregates\FactoryBasedAggregateRootRepository.cs" />
     <Compile Include="Config\Configurers\ConfigurationBuilder.cs" />
+    <Compile Include="Testing\TestContextConfigurationBuilder.cs" />
     <Compile Include="Config\CustomizableDomainTypeNameMapper.cs" />
     <Compile Include="Config\DefaultDomainTypeNameMapper.cs" />
     <Compile Include="Aggregates\IAggregateRootRepository.cs" />
@@ -130,6 +131,7 @@
     <Compile Include="Testing\Internals\InMemoryUnitOfWork.cs" />
     <Compile Include="Testing\TestCommandMapper.cs" />
     <Compile Include="Testing\TestContext.cs" />
+    <Compile Include="Testing\TestContextConfigurationExtensions.cs" />
     <Compile Include="Testing\TestUnitOfWork.cs" />
     <Compile Include="Views\InMemoryViewEventDispatcher.cs" />
     <Compile Include="Views\NullEventDispatcher.cs" />

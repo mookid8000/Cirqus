@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
+using d60.Cirqus.Testing;
 using d60.Cirqus.Tests.Contracts.Views.Factories;
 using d60.Cirqus.Tests.Contracts.Views.Models.RecoveryTest;
 using d60.Cirqus.Views.ViewManagers;
@@ -29,11 +30,14 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             _factory = RegisterForDisposal(new TFactory());
 
-            _context = RegisterForDisposal(new TestContext
-            {
-                Asynchronous = true,
-                MaxDomainEventsPerBatch = 10
-            });
+            _context = RegisterForDisposal(
+                TestContext.With()
+                    .Options(x =>
+                    {
+                        x.Asynchronous();
+                        x.MaxDomainEventsPerBatch(10);
+                    })
+                    .Create());
 
             _viewManager = _factory.GetViewManager<View>();
         }

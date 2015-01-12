@@ -28,7 +28,10 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             _factory = RegisterForDisposal(new TFactory());
 
-            _context = RegisterForDisposal(new TestContext { Asynchronous = true });
+            var context = TestContext.Create();
+            context.Asynchronous = true;
+
+            _context = RegisterForDisposal(context);
 
             _viewManager1 = _factory.GetViewManager<ViewThatSubscribesToEvents>();
             _viewManager2 = _factory.GetViewManager<ViewThatSubscribesToAggregateRootEvent>();
