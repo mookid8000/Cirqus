@@ -11,11 +11,6 @@ namespace d60.Cirqus.Config.Configurers
             _registrar = registrar;
         }
 
-        //public IRegistrar Registrar
-        //{
-        //    get { return _registrar; }
-        //}
-
         /// <summary>
         /// Registers a factory method for the given service
         /// </summary>
