@@ -33,7 +33,6 @@ namespace d60.Cirqus.Tests.Config
                 .EventStore(e =>
                 {
                     e.UseMongoDb(database, "Events");
-                    e.EnableCaching(10);
                 })
                 .EventDispatcher(d =>
                 {
@@ -42,6 +41,7 @@ namespace d60.Cirqus.Tests.Config
                     d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view3"));
                     d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view4"));
                 })
+                .Options(e => e.EnableEventCaching(10))
                 .Create();
 
             RegisterForDisposal(commandProcessor);
@@ -65,7 +65,7 @@ namespace d60.Cirqus.Tests.Config
                 .OrderBy(n => n)
                 .Where(c => c.StartsWith("view") && !c.EndsWith("Position"))
                 .ToArray();
-            
+
             Assert.That(viewCollectionNames, Is.EqualTo(expectedViewCollectionNames));
 
             expectedViewCollectionNames.ToList()

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization.Formatters;
 using System.Text;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
@@ -40,11 +41,35 @@ namespace d60.Cirqus.MongoDb.Events
         {
             var criteria = Query.GTE(GlobalSeqNoDocPath, globalSequenceNumber);
 
-            return _eventBatches.Find(criteria)
-                .SelectMany(b => b.Events)
-                .OrderBy(e => e.GlobalSequenceNumber)
-                .Where(e => e.GlobalSequenceNumber >= globalSequenceNumber)
-                .Select(MongoEventToEvent);
+            foreach (var batch in _eventBatches.Find(criteria))
+            {
+                foreach (var e in batch.Events
+                       .OrderBy(e => e.GlobalSequenceNumber)
+                       .Where(e => e.GlobalSequenceNumber >= globalSequenceNumber)
+                       .Select(MongoEventToEvent))
+                {
+                    yield return e;
+                }
+            }
+        }
+
+        public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
+        {
+            var criteria = Query.And(
+                Query.EQ(AggregateRootIdDocPath, aggregateRootId),
+                Query.GTE(SeqNoDocPath, firstSeq));
+
+            foreach (var batch in _eventBatches.Find(criteria))
+            {
+                foreach (var eventToYield in batch.Events
+                    .OrderBy(e => e.GlobalSequenceNumber)
+                    .Where(e => e.SequenceNumber >= firstSeq && e.AggregateRootId == aggregateRootId)
+                    .Select(MongoEventToEvent))
+                {
+
+                    yield return eventToYield;
+                }
+            }
         }
 
         public long GetNextGlobalSequenceNumber()
@@ -166,19 +191,6 @@ namespace d60.Cirqus.MongoDb.Events
                 metadata[kvp.Key] = kvp.Value;
             }
             return metadata;
-        }
-
-        public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
-        {
-            var criteria = Query.And(
-                Query.EQ(AggregateRootIdDocPath, aggregateRootId),
-                Query.GTE(SeqNoDocPath, firstSeq));
-
-            return _eventBatches.Find(criteria)
-                .SelectMany(b => b.Events)
-                .OrderBy(e => e.GlobalSequenceNumber)
-                .Where(e => e.SequenceNumber >= firstSeq && e.AggregateRootId == aggregateRootId)
-                .Select(MongoEventToEvent);
         }
 
         EventData MongoEventToEvent(MongoEvent e)

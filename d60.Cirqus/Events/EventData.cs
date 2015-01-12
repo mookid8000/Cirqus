@@ -1,4 +1,5 @@
-﻿using d60.Cirqus.Numbers;
+﻿using System;
+using d60.Cirqus.Numbers;
 
 namespace d60.Cirqus.Events
 {
@@ -9,11 +10,13 @@ namespace d60.Cirqus.Events
     {
         readonly Metadata _meta;
         readonly byte[] _data;
+        readonly DomainEvent _domainEventOrNull;
 
-        protected EventData(byte[] data, Metadata meta)
+        protected EventData(byte[] data, Metadata meta, DomainEvent domainEventOrNull)
         {
             _data = data;
             _meta = meta;
+            _domainEventOrNull = domainEventOrNull;
         }
 
         /// <summary>
@@ -21,7 +24,7 @@ namespace d60.Cirqus.Events
         /// </summary>
         public static EventData FromDomainEvent(DomainEvent domainEvent, byte[] data)
         {
-            return new EventData(data, domainEvent.Meta);
+            return new EventData(data, domainEvent.Meta, domainEvent);
         }
 
         /// <summary>
@@ -29,7 +32,7 @@ namespace d60.Cirqus.Events
         /// </summary>
         public static EventData FromMetadata(Metadata meta, byte[] data)
         {
-            return new EventData(data, meta);
+            return new EventData(data, meta, null);
         }
 
         /// <summary>
@@ -46,6 +49,20 @@ namespace d60.Cirqus.Events
         public virtual byte[] Data
         {
             get { return _data; }
+        }
+
+        public bool HasDomainEvent
+        {
+            get { return _domainEventOrNull != null; }
+        }
+
+        public DomainEvent GetDomainEvent()
+        {
+            if (!HasDomainEvent)
+            {
+                throw new InvalidOperationException(string.Format("Attempted to get domain event out of {0}, but it's only in serialized form", this));
+            }
+            return _domainEventOrNull;
         }
 
         public override string ToString()

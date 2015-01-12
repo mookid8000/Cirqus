@@ -19,7 +19,7 @@ namespace d60.Cirqus.Caching
         {
             var eventData = _innerDomainEventSerializer.Serialize(e);
 
-            _eventCache.AddToCache(e);
+            //_eventCache.AddToCache(e);
 
             return eventData;
         }

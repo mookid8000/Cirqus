@@ -43,7 +43,7 @@ namespace d60.Cirqus.Config
         /// Enables an in-memory event cache that caches the most recently used events. <see cref="maxCacheEntries"/> specifies
         /// the approximate number of events to be held in the cache
         /// </summary>
-        public static void EnableCaching(this EventStoreConfigurationBuilder builder, int maxCacheEntries)
+        public static void EnableEventCaching(this OptionsConfigurationBuilder builder, int maxCacheEntries)
         {
             if (builder.Registrar.HasService<EventCache>(checkForPrimary: true))
             {

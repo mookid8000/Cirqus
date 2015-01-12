@@ -534,7 +534,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
         class ThrowingEvent : EventData
         {
             public ThrowingEvent()
-                : base(null, null)
+                : base(null, null, null)
             {
             }
 

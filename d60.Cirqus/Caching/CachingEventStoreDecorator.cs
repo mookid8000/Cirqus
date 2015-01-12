@@ -37,9 +37,10 @@ namespace d60.Cirqus.Caching
         {
             EventData eventData;
 
-            while ((eventData = _eventCache.GetCachedEvent(aggregateRootId, firstSeq++)) != null)
+            while ((eventData = _eventCache.GetCachedEvent(aggregateRootId, firstSeq)) != null)
             {
                 yield return eventData;
+                firstSeq++;
             }
 
             foreach (var loadedEvent in _innerEventStore.Load(aggregateRootId, firstSeq))
@@ -54,9 +55,10 @@ namespace d60.Cirqus.Caching
         {
             EventData eventData;
 
-            while ((eventData = _eventCache.GetCachedEvent(globalSequenceNumber++)) != null)
+            while ((eventData = _eventCache.GetCachedEvent(globalSequenceNumber)) != null)
             {
                 yield return eventData;
+                globalSequenceNumber++;
             }
 
             foreach (var loadedEvent in _innerEventStore.Stream(globalSequenceNumber))
