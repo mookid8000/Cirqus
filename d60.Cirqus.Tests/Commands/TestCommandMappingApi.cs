@@ -45,7 +45,7 @@ namespace d60.Cirqus.Tests.Commands
                 });
 
             _realCommandProcessor = CommandProcessor.With()
-                .EventStore(e => e.Registrar.Register<IEventStore>(c => new InMemoryEventStore(_serializer)))
+                .EventStore(e => e.Register<IEventStore>(c => new InMemoryEventStore(_serializer)))
                 .Options(o => o.AddCommandMappings(commandMappings))
                 .Create();
 

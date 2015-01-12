@@ -10,13 +10,13 @@ namespace d60.Cirqus.Config.Configurers
 
         public ViewManagerEventDispatcherConfiguationBuilder WithWaitHandle(ViewManagerWaitHandle handle)
         {
-            Use(handle);
+            RegisterInstance(handle);
             return this;
         }
 
         public ViewManagerEventDispatcherConfiguationBuilder WithMaxDomainEventsPerBatch(int max)
         {
-            Use(max);
+            RegisterInstance(max);
             return this;
         }
     }

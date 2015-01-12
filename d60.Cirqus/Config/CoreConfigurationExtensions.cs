@@ -23,18 +23,15 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void EnableInMemorySnapshotCaching(this AggregateRootRepositoryConfigurationBuilder builder, int approximateMaxNumberOfCacheEntries)
         {
-            builder.Registrar
-                .Register<IAggregateRootRepository>(
-                    context => new CachingAggregateRootRepositoryDecorator(
-                        context.Get<IAggregateRootRepository>(),
-                        new InMemorySnapshotCache
-                        {
-                            ApproximateMaxNumberOfCacheEntries = approximateMaxNumberOfCacheEntries
-                        },
-                        context.Get<IEventStore>(),
-                        context.Get<IDomainEventSerializer>()),
-                    decorator: true
-                );
+            builder.Decorate<IAggregateRootRepository>(
+                context => new CachingAggregateRootRepositoryDecorator(
+                    context.Get<IAggregateRootRepository>(),
+                    new InMemorySnapshotCache
+                    {
+                        ApproximateMaxNumberOfCacheEntries = approximateMaxNumberOfCacheEntries
+                    },
+                    context.Get<IEventStore>(),
+                    context.Get<IDomainEventSerializer>()));
         }
 
         /// <summary>
@@ -43,9 +40,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void EnableCaching(this EventStoreConfigurationBuilder builder, int maxCacheEntries)
         {
-            builder.Registrar
-                .Register<IEventStore>(context => new CachingEventStoreDecorator(context.Get<IEventStore>()),
-                    decorator: true);
+            builder.Decorate<IEventStore>(context => new CachingEventStoreDecorator(context.Get<IEventStore>()));
         }
 
         /// <summary>
@@ -54,15 +49,11 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void UseDefault(this AggregateRootRepositoryConfigurationBuilder builder)
         {
-            builder.Registrar
-                .Register<IAggregateRootRepository>(context =>
-                {
-                    var eventStore = context.Get<IEventStore>();
-                    var domainEventSerializer = context.Get<IDomainEventSerializer>();
-                    var domainTypeNameMapper = context.Get<IDomainTypeNameMapper>();
-
-                    return new DefaultAggregateRootRepository(eventStore, domainEventSerializer, domainTypeNameMapper);
-                });
+            builder.Register<IAggregateRootRepository>(context => 
+                new DefaultAggregateRootRepository(
+                    context.Get<IEventStore>(), 
+                    context.Get<IDomainEventSerializer>(), 
+                    context.Get<IDomainTypeNameMapper>()));
         }
 
         /// <summary>
@@ -70,15 +61,12 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void UseFactoryMethod(this AggregateRootRepositoryConfigurationBuilder builder, Func<Type, AggregateRoot> factoryMethod)
         {
-            builder.Registrar
-                .Register<IAggregateRootRepository>(context =>
-                {
-                    var eventStore = context.Get<IEventStore>();
-                    var domainEventSerializer = context.Get<IDomainEventSerializer>();
-                    var domainTypeNameMapper = context.Get<IDomainTypeNameMapper>();
-
-                    return new FactoryBasedAggregateRootRepository(eventStore, domainEventSerializer, domainTypeNameMapper, factoryMethod);
-                });
+            builder.Register<IAggregateRootRepository>(context =>
+                new FactoryBasedAggregateRootRepository(
+                    context.Get<IEventStore>(),
+                    context.Get<IDomainEventSerializer>(),
+                    context.Get<IDomainTypeNameMapper>(),
+                    factoryMethod));
         }
 
         /// <summary>
@@ -91,14 +79,14 @@ namespace d60.Cirqus.Config
 
             AddEventDispatcherRegistration(builder, context =>
             {
+                var viewManagerContext = viewManagerConfigurationContainer.CreateContext();
+
                 var eventDispatcher = new ViewManagerEventDispatcher(
                     context.Get<IAggregateRootRepository>(),
                     context.Get<IEventStore>(),
                     context.Get<IDomainEventSerializer>(),
                     context.Get<IDomainTypeNameMapper>(),
                     viewManagers);
-
-                var viewManagerContext = viewManagerConfigurationContainer.CreateContext();
                 
                 var waitHandle = viewManagerContext.GetOrDefault<ViewManagerWaitHandle>();
                 if (waitHandle != null)
@@ -111,6 +99,8 @@ namespace d60.Cirqus.Config
                 {
                     eventDispatcher.MaxDomainEventsPerBatch = maxDomainEventsPerBatch;
                 }
+
+                //context.Track(viewManagerContext);
 
                 return eventDispatcher;
             });
@@ -140,7 +130,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void PurgeExistingViews(this OptionsConfigurationBuilder builder, bool purgeViewsAtStartup = false)
         {
-            builder.Registrar.RegisterInstance<Action<Options>>(o => o.PurgeExistingViews = purgeViewsAtStartup, multi: true);
+            builder.RegisterInstance<Action<Options>>(o => o.PurgeExistingViews = purgeViewsAtStartup, multi: true);
         }
 
         /// <summary>
@@ -149,7 +139,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void AddDomainExceptionType<TException>(this OptionsConfigurationBuilder builder) where TException : Exception
         {
-            builder.Registrar.RegisterInstance<Action<Options>>(o => o.AddDomainExceptionType<TException>(), multi: true);
+            builder.RegisterInstance<Action<Options>>(o => o.AddDomainExceptionType<TException>(), multi: true);
         }
 
         /// <summary>
@@ -157,7 +147,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void UseCustomDomainEventSerializer(this OptionsConfigurationBuilder builder, IDomainEventSerializer domainEventSerializer)
         {
-            builder.Registrar.RegisterInstance(domainEventSerializer);
+            builder.RegisterInstance(domainEventSerializer);
         }
 
         /// <summary>
@@ -165,7 +155,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void UseCustomDomainTypeNameMapper(this OptionsConfigurationBuilder builder, IDomainTypeNameMapper domainTypeNameMapper)
         {
-            builder.Registrar.RegisterInstance(domainTypeNameMapper);
+            builder.RegisterInstance(domainTypeNameMapper);
         }
 
         /// <summary>
@@ -173,7 +163,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void SetMaxRetries(this OptionsConfigurationBuilder builder, int maxRetries)
         {
-            builder.Registrar.RegisterInstance<Action<Options>>(o => o.MaxRetries = maxRetries, multi: true);
+            builder.RegisterInstance<Action<Options>>(o => o.MaxRetries = maxRetries, multi: true);
         }
 
         /// <summary>
@@ -181,7 +171,7 @@ namespace d60.Cirqus.Config
         /// </summary>
         public static void AddCommandMappings(this OptionsConfigurationBuilder builder, CommandMappings mappings)
         {
-            builder.Registrar.Register(c => mappings.CreateCommandMapperDecorator(c.Get<ICommandMapper>()), decorator: true);
+            builder.Decorate(c => mappings.CreateCommandMapperDecorator(c.Get<ICommandMapper>()));
         }
 
         /// <summary>

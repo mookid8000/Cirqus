@@ -39,7 +39,7 @@ namespace d60.Cirqus.Tests.Views
 
             _cirqus = CommandProcessor.With()
                 .EventStore(e => e.UseInMemoryEventStore())
-                .EventDispatcher(e => e.Registrar.Register<IEventDispatcher>(c =>
+                .EventDispatcher(e => e.Register<IEventDispatcher>(c =>
                 {
                     var repository = c.Get<IAggregateRootRepository>();
                     var store = c.Get<IEventStore>();

@@ -17,29 +17,9 @@ namespace d60.Cirqus.Diagnostics
         {
             var operationProfiler = new OperationProfiler(profiler);
 
-            builder
-                .Registrar
-                .Register<IEventStore>(c =>
-                {
-                    var innerEventStore = c.Get<IEventStore>();
-                    return new EventStoreDecorator(innerEventStore, operationProfiler);
-                }, decorator: true);
-
-            builder
-                .Registrar
-                .Register<IAggregateRootRepository>(c =>
-                {
-                    var innnerAggregateRootRepository = c.Get<IAggregateRootRepository>();
-                    return new AggregateRootRepositoryDecorator(innnerAggregateRootRepository, operationProfiler);
-                }, decorator: true);
-
-            builder
-                .Registrar
-                .Register<IEventDispatcher>(c =>
-                {
-                    var innerEventDispatcher = c.Get<IEventDispatcher>();
-                    return new EventDispatcherDecorator(innerEventDispatcher, operationProfiler);
-                }, decorator: true);
+            builder.Decorate<IEventStore>(c => new EventStoreDecorator(c.Get<IEventStore>(), operationProfiler));
+            builder.Decorate<IAggregateRootRepository>(c => new AggregateRootRepositoryDecorator(c.Get<IAggregateRootRepository>(), operationProfiler));
+            builder.Decorate<IEventDispatcher>(c => new EventDispatcherDecorator(c.Get<IEventDispatcher>(), operationProfiler));
         }
 
         class OperationProfiler

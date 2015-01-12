@@ -2,7 +2,7 @@ using System;
 
 namespace d60.Cirqus.Config.Configurers
 {
-    public abstract class ConfigurationBuilder
+    public abstract class ConfigurationBuilder : IRegistrar
     {
         readonly IRegistrar _registrar;
 
@@ -11,17 +11,25 @@ namespace d60.Cirqus.Config.Configurers
             _registrar = registrar;
         }
 
-        public IRegistrar Registrar
+        //public IRegistrar Registrar
+        //{
+        //    get { return _registrar; }
+        //}
+
+        /// <summary>
+        /// Registers a factory method for the given service
+        /// </summary>
+        public void Register<TService>(Func<ResolutionContext, TService> serviceFactory)
         {
-            get { return _registrar; }
+            _registrar.Register(serviceFactory);
         }
 
         /// <summary>
-        /// Registers a factory method for decorating the given type
+        /// Registers a specific instance (which by definition is not a decorator)
         /// </summary>
-        public void Decorate<TService>(Func<TService, TService> serviceFactory)
+        public void RegisterInstance<TService>(TService instance, bool multi = false)
         {
-            Registrar.Register(context => serviceFactory(context.Get<TService>()), decorator: true, multi: false);
+            _registrar.RegisterInstance(instance, multi);
         }
 
         /// <summary>
@@ -29,36 +37,20 @@ namespace d60.Cirqus.Config.Configurers
         /// </summary>
         public void Decorate<TService>(Func<ResolutionContext, TService> serviceFactory)
         {
-            Registrar.Register(serviceFactory, decorator: true, multi: false);
+            _registrar.Decorate(serviceFactory);
         }
 
         /// <summary>
-        /// Registers a specific instance
+        /// Checks whether the given service type has a registration. Optionally checks whether a primary (i.e. non-decorator) is present.
         /// </summary>
-        public void Use<TService>(TService instance, bool multi = false)
+        public bool HasService<TService>(bool checkForPrimary = false)
         {
-            Registrar.RegisterInstance(instance, multi);
+            return _registrar.HasService<TService>(checkForPrimary);
         }
     }
 
     public abstract class ConfigurationBuilder<TService> : ConfigurationBuilder
     {
         protected ConfigurationBuilder(IRegistrar registrar) : base(registrar) {}
-
-        /// <summary>
-        /// Registers a factory method for decorating the given type
-        /// </summary>
-        public void Decorate(Func<TService, TService> serviceFactory)
-        {
-            Decorate<TService>(serviceFactory);
-        }
-
-        /// <summary>
-        /// Registers a factory method for decorating the given type
-        /// </summary>
-        public void Use(TService instance, bool multi = false)
-        {
-            Use<TService>(instance, multi);
-        }
     }
 }

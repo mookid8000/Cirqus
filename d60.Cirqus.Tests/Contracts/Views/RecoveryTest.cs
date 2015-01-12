@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using d60.Cirqus.Config;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Testing;
@@ -29,17 +30,13 @@ namespace d60.Cirqus.Tests.Contracts.Views
             CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel: Logger.Level.Warn);
 
             _factory = RegisterForDisposal(new TFactory());
+            _viewManager = _factory.GetViewManager<View>();
 
             _context = RegisterForDisposal(
                 TestContext.With()
-                    .Options(x =>
-                    {
-                        x.Asynchronous();
-                        x.MaxDomainEventsPerBatch(10);
-                    })
+                    .EventDispatcher(x => x.UseViewManagerEventDispatcher(_viewManager).WithMaxDomainEventsPerBatch(10))
+                    .Options(x => x.Asynchronous())
                     .Create());
-
-            _viewManager = _factory.GetViewManager<View>();
         }
 
         [TestCase(100, 1.2, 0.1)]
