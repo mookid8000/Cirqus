@@ -19,6 +19,7 @@ namespace d60.Cirqus.Caching
         {
             var eventData = _innerDomainEventSerializer.Serialize(e);
 
+            // can't do this because there's no global sequence number on the event
             //_eventCache.AddToCache(e);
 
             return eventData;

@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 
 namespace d60.Cirqus.Caching
 {
+    /// <summary>
+    /// Holds a number of cached events.
+    /// </summary>
     public class EventCache
     {
         readonly ConcurrentDictionary<long, CacheEntry<DomainEvent>> _domainEventsBySequenceNumber
@@ -71,10 +75,98 @@ namespace d60.Cirqus.Caching
                 AddToCache(domainEvent);
             }
 
-            if (_entriesByGlobalSequenceNumber.Count > MaxEntries)
+
+            if (!MaxEntriesExceeded()) return;
+            
+            Scavenge();
+        }
+
+        bool MaxEntriesExceeded()
+        {
+            return _entriesByGlobalSequenceNumber.Count > MaxEntries;
+        }
+
+        volatile bool _scavenging;
+
+        void Scavenge()
+        {
+            if (_scavenging) return;
+
+            lock (this)
             {
-                
+                if (_scavenging) return;
+
+                _scavenging = true;
+
+                try
+                {
+                    while (MaxEntriesExceeded())
+                    {
+                        RemoveLeastUsedCacheEntry();
+                    }
+
+                    AdjustAggregateRootCache();
+
+                    AdjustDomainEventCache();
+                }
+                finally
+                {
+                    _scavenging = false;
+                }
             }
+        }
+
+        void AdjustDomainEventCache()
+        {
+            foreach (var domainEvent in _domainEventsBySequenceNumber.Values.ToList())
+            {
+                if (_entriesByGlobalSequenceNumber.ContainsKey(domainEvent.Data.GetGlobalSequenceNumber())) continue;
+
+                CacheEntry<DomainEvent> dummy;
+
+                _domainEventsBySequenceNumber.TryRemove(domainEvent.Data.GetGlobalSequenceNumber(), out dummy);
+            }
+        }
+
+        void AdjustAggregateRootCache()
+        {
+            // first, remove events in the aggregate root index if it's not present in the global index
+            foreach (var eventsForAnAggregateRoot in _entriesByAggregateRoot.Values)
+            {
+                foreach (var e in eventsForAnAggregateRoot.Values.ToList())
+                {
+                    if (_entriesByGlobalSequenceNumber.ContainsKey(e.Data.GetGlobalSequenceNumber())) continue;
+
+                    CacheEntry<EventData> dummy;
+
+                    eventsForAnAggregateRoot.TryRemove(e.Data.GetSequenceNumber(), out dummy);
+                }
+            }
+
+            // remove empty dictionaries
+            var keysToRemove = _entriesByAggregateRoot
+                .Where(d => d.Value.Count == 0)
+                .Select(d => d.Key)
+                .ToList();
+
+            foreach (var key in keysToRemove)
+            {
+                ConcurrentDictionary<long, CacheEntry<EventData>> dummy;
+                _entriesByAggregateRoot.TryRemove(key, out dummy);
+            }
+        }
+
+        void RemoveLeastUsedCacheEntry()
+        {
+            var entryToRemove = _entriesByGlobalSequenceNumber.Values.ToList()
+                .OrderByDescending(e => e.Age)
+                .FirstOrDefault();
+
+            if (entryToRemove == null) return;
+
+            CacheEntry<EventData> dummy;
+
+            _entriesByGlobalSequenceNumber.TryRemove(entryToRemove.Data.GetGlobalSequenceNumber(), out dummy);
         }
 
         public void AddToCache(DomainEvent domainEvent)
