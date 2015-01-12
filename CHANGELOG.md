@@ -464,6 +464,12 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Better way of skipping the unit of work property when generating aggregate root snapshots with the `Sturdylizer`
 
+## 0.51.0
+
+* Added fluent configuration api for TestContext so all dependencies can be switched out or decorated
+* Made shortcuts to registration of services in the configuration api and removed the Registrar-property
+* Changed the configuration of view managers to a fluent one instead of the plethora of overloads
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund
