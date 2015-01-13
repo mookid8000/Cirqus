@@ -3,22 +3,14 @@ using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
-using d60.Cirqus.Logging;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Views;
 
 namespace d60.Cirqus.Config.Configurers
 {
-    class CommandProcessorConfigurationBuilder : ILoggingAndEventStoreConfiguration, IOptionalConfiguration<ICommandProcessor>
+    internal class CommandProcessorConfigurationBuilder : ILoggingAndEventStoreConfiguration, IOptionalConfiguration<ICommandProcessor>
     {
-        static Logger _logger;
-
         readonly ConfigurationContainer _container = new ConfigurationContainer();
-
-        static CommandProcessorConfigurationBuilder()
-        {
-            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
-        }
 
         public IEventStoreConfiguration Logging(Action<LoggingConfigurationBuilder> configure)
         {

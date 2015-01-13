@@ -2,9 +2,9 @@ using System;
 
 namespace d60.Cirqus.Config.Configurers
 {
-    public abstract class ConfigurationBuilder : IRegistrar
+    public abstract class ConfigurationBuilder
     {
-        readonly IRegistrar _registrar;
+        protected IRegistrar _registrar;
 
         protected ConfigurationBuilder(IRegistrar registrar)
         {
@@ -12,7 +12,7 @@ namespace d60.Cirqus.Config.Configurers
         }
 
         /// <summary>
-        /// Registers a factory method for the given service
+        /// Registers a factory method for <typeparamref name="TService"/>
         /// </summary>
         public void Register<TService>(Func<ResolutionContext, TService> serviceFactory)
         {
@@ -20,7 +20,7 @@ namespace d60.Cirqus.Config.Configurers
         }
 
         /// <summary>
-        /// Registers a specific instance (which by definition is not a decorator)
+        /// Registers a specific instance (which by definition is not a decorator) for <typeparamref name="TService"/>
         /// </summary>
         public void RegisterInstance<TService>(TService instance, bool multi = false)
         {
@@ -28,7 +28,7 @@ namespace d60.Cirqus.Config.Configurers
         }
 
         /// <summary>
-        /// Registers a factory method for decorating the given type
+        /// Registers a factory method for decorating <typeparamref name="TService"/>
         /// </summary>
         public void Decorate<TService>(Func<ResolutionContext, TService> serviceFactory)
         {
@@ -47,5 +47,29 @@ namespace d60.Cirqus.Config.Configurers
     public abstract class ConfigurationBuilder<TService> : ConfigurationBuilder
     {
         protected ConfigurationBuilder(IRegistrar registrar) : base(registrar) {}
+
+        /// <summary>
+        /// Registers a factory method for <typeparamref name="TService"/>
+        /// </summary>
+        public void Register(Func<ResolutionContext, TService> serviceFactory)
+        {
+            _registrar.Register(serviceFactory);
+        }
+
+        /// <summary>
+        /// Registers a specific instance (which by definition is not a decorator) for <typeparamref name="TService"/>
+        /// </summary>
+        public void RegisterInstance(TService instance, bool multi = false)
+        {
+            _registrar.RegisterInstance(instance, multi);
+        }
+
+        /// <summary>
+        /// Registers a factory method for decorating <typeparamref name="TService"/>
+        /// </summary>
+        public void Decorate(Func<ResolutionContext, TService> serviceFactory)
+        {
+            _registrar.Decorate(serviceFactory);
+        }
     }
 }

@@ -69,7 +69,6 @@
     <Compile Include="Config\Configurers\LoggingConfigurationBuilder.cs" />
     <Compile Include="Config\Configurers\ResolutionContext.cs" />
     <Compile Include="Config\Configurers\ResolutionException.cs" />
-    <Compile Include="Config\CoreConfigurationExtensions.cs" />
     <Compile Include="Config\Configurers\IEventStoreConfiguration.cs" />
     <Compile Include="Config\Configurers\IOptionalConfiguration.cs" />
     <Compile Include="Config\Configurers\EventDispatcherConfigurationBuilder.cs" />

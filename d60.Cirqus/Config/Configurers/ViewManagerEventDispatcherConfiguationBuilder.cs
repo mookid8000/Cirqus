@@ -1,4 +1,3 @@
-using System.Threading;
 using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
 

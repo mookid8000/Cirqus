@@ -15,6 +15,7 @@ using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using MongoDB.Driver.Builders;
 using NUnit.Framework;
+using TestContext = d60.Cirqus.Testing.TestContext;
 
 namespace d60.Cirqus.Tests.Config
 {
@@ -166,6 +167,21 @@ namespace d60.Cirqus.Tests.Config
             processor.ProcessCommand(someCommand);
 
             Assert.That(someCommand.WasProcessed, Is.EqualTo(true));
+        }
+
+        [Test]
+        public void CanDecorateAggregateRootRepositoryForTestContext()
+        {
+            var decorated = true;
+            TestContext.With()
+                .AggregateRootRepository(x => x.Decorate(c =>
+                {
+                    decorated = true;
+                    return c.Get<IAggregateRootRepository>();
+                }))
+                .Create();
+
+            Assert.True(decorated);
         }
 
         public class SomeCommand : ExecutableCommand

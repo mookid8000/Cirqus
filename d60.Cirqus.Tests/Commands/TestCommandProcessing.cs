@@ -29,7 +29,7 @@ namespace d60.Cirqus.Tests.Commands
 
             _cirqus = CommandProcessor.With()
                 .EventStore(e => _eventStore = e.UseInMemoryEventStore())
-                .EventDispatcher(e => e.AddEventDispatcher(c => new ConsoleOutEventDispatcher()))
+                .EventDispatcher(e => e.UseEventDispatcher(c => new ConsoleOutEventDispatcher()))
                 .Options(o =>
                 {
                     o.AddDomainExceptionType<InvalidOperationException>();
