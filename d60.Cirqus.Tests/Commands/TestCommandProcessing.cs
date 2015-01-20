@@ -44,7 +44,7 @@ namespace d60.Cirqus.Tests.Commands
         public void CanProcessBaseCommand()
         {
             var aggregateRootIds = Enumerable.Range(0, 5).Select(i => i.ToString()).ToArray();
-            var command = new MyCommand{AggregateRootIds = aggregateRootIds};
+            var command = new MyCommand { AggregateRootIds = aggregateRootIds };
 
             _cirqus.ProcessCommand(command);
 
@@ -61,7 +61,7 @@ namespace d60.Cirqus.Tests.Commands
 
             public void Apply(MyEvent e)
             {
-                
+
             }
         }
 
@@ -183,7 +183,7 @@ namespace d60.Cirqus.Tests.Commands
         [Test]
         public void ThrowsNiceExceptionForCommandThatHasNotBeenMapped()
         {
-            Assert.Throws<CommandProcessingException>(() => 
+            Assert.Throws<CommandProcessingException>(() =>
                 _cirqus.ProcessCommand(new AnotherCommand("rootid")));
         }
 
@@ -211,6 +211,98 @@ namespace d60.Cirqus.Tests.Commands
 
         public class AnEvent : DomainEvent<Root>
         {
+        }
+
+        [Test]
+        public void AddsCommandTypeNameToAllEmittedEventsOnOrdinaryCommand()
+        {
+            //arrange
+            var rootId = Guid.NewGuid().ToString();
+            var ordinaryCommand = new AnotherOrdinaryCommand(rootId);
+            //act
+            _cirqus.ProcessCommand(ordinaryCommand);
+
+            //assert
+            var events = _eventStore.Result.ToList();
+            var baseType = ordinaryCommand.GetType().BaseType;
+            var expected = baseType.FullName;
+            Assert.That(events.All(e =>
+                            e.Meta.ContainsKey(DomainEvent.MetadataKeys.CommandTypeName) &&
+                            e.Meta[DomainEvent.MetadataKeys.CommandTypeName] == expected), String.Format("Expected {0} but not all had it", expected));
+
+        }
+
+
+        [Test]
+        public void AddCommandTypeNameToAllEmittedEventOnExecutableCommands()
+        {
+
+            var executableCommand = new ExecutableCommandTest();
+
+            executableCommand.AggregateRootIds = Enumerable.Range(0, 4).Select(i => i.ToString()).ToArray();
+
+            //act
+            _cirqus.ProcessCommand(executableCommand);
+
+            //assert
+            var events = _eventStore.Result.ToList();
+            var baseType = executableCommand.GetType().BaseType;
+            var expected = baseType.FullName;
+            Assert.That(events.All(e => 
+                            e.Meta.ContainsKey(DomainEvent.MetadataKeys.CommandTypeName) && 
+                            e.Meta[DomainEvent.MetadataKeys.CommandTypeName] == expected)   , String.Format("Expected {0} but not all had it", expected));
+
+
+        }
+        public class AnotherEvent : DomainEvent<AnotherRoot>
+        {
+
+        }
+        public class SomeEvent : DomainEvent<AnotherRoot>
+        {
+
+        }
+        public class AnotherRoot : AggregateRoot, IEmit<SomeEvent>, IEmit<AnotherEvent>
+        {
+
+            public void EmitBothEvents()
+            {
+                Emit(new SomeEvent());
+                Emit(new AnotherEvent());
+            }
+            public void Apply(SomeEvent e)
+            {
+
+            }
+
+            public void Apply(AnotherEvent e)
+            {
+
+            }
+        }
+        public class AnotherOrdinaryCommand : Command<AnotherRoot>
+        {
+            public AnotherOrdinaryCommand(string aggregateRootId)
+                : base(aggregateRootId)
+            {
+            }
+
+            public override void Execute(AnotherRoot aggregateRoot)
+            {
+                aggregateRoot.EmitBothEvents();
+            }
+        }
+
+
+        public class ExecutableCommandTest : ExecutableCommand
+        {
+            public string[] AggregateRootIds { get; set; }
+
+            public override void Execute(ICommandContext context)
+            {
+                AggregateRootIds.Select(x => (context.TryLoad<AnotherRoot>(x) ?? context.Create<AnotherRoot>(x))).ToList().ForEach(r => r.EmitBothEvents());
+                AggregateRootIds.Select(x => (context.TryLoad<AnotherRoot>(x) ?? context.Create<AnotherRoot>(x))).ToList().ForEach(r => r.EmitBothEvents());
+            }
         }
     }
 }
