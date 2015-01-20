@@ -21,6 +21,7 @@ namespace d60.Cirqus.Events
             public const string Type = "type";
             public const string RootVersion = "root_ver";
             public const string EventVersion = "evt_ver";
+            public const string CommandTypeName = "command_type";
         }
 
         protected DomainEvent()
