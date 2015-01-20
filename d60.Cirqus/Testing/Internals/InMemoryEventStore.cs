@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
@@ -14,7 +13,7 @@ namespace d60.Cirqus.Testing.Internals
     class InMemoryEventStore : IEventStore, IEnumerable<DomainEvent>
     {
         readonly IDomainEventSerializer _domainEventSerializer;
-        readonly Dictionary<string, object> _idAndSeqNoTuples = new Dictionary<string, object>();
+        readonly HashSet<string> _idAndSeqNoTuples = new HashSet<string>();
         readonly List<EventBatch> _savedEventBatches = new List<EventBatch>();
         readonly object _lock = new object();
 
@@ -35,15 +34,27 @@ namespace d60.Cirqus.Testing.Internals
 
             lock (_lock)
             {
+                var globalSequenceNumberToAssign = _globalSequenceNumber;
+
+                foreach (var e in batch)
+                {
+                    e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = globalSequenceNumberToAssign.ToString(Metadata.NumberCulture);
+                    e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
+
+                    globalSequenceNumberToAssign++;
+                }
+
                 try
                 {
                     foreach (var tuple in tuplesInBatch)
                     {
-                        if (_idAndSeqNoTuples.ContainsKey(tuple))
+                        if (_idAndSeqNoTuples.Contains(tuple))
                         {
-                            throw new InvalidOperationException(string.Format("Found duplicate: {0}", tuple));
+                            throw new InvalidOperationException(string.Format("Found duplicate event: {0}", tuple));
                         }
                     }
+
+                    _globalSequenceNumber += batch.Count;
                 }
                 catch (Exception exception)
                 {
@@ -52,19 +63,7 @@ namespace d60.Cirqus.Testing.Internals
 
                 foreach (var tuple in tuplesInBatch)
                 {
-                    _idAndSeqNoTuples.Add(tuple, null);
-                }
-
-                var sequenceNumbersToAllocate = batch.Count;
-
-                var result = Interlocked.Add(ref _globalSequenceNumber, sequenceNumbersToAllocate);
-
-                result -= sequenceNumbersToAllocate;
-
-                foreach (var e in batch)
-                {
-                    e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = (result++).ToString(Metadata.NumberCulture);
-                    e.Meta[DomainEvent.MetadataKeys.BatchId] = batchId.ToString();
+                    _idAndSeqNoTuples.Add(tuple);
                 }
 
                 EventValidation.ValidateBatchIntegrity(batchId, batch);

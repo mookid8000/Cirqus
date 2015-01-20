@@ -158,18 +158,19 @@ namespace d60.Cirqus
             var emittedEvents = unitOfWork.EmittedEvents.ToList();
 
             if (!emittedEvents.Any()) return emittedEvents;
+            
             var commandTypeName = ExtractCommandTypeName(command);
+            
             foreach (var e in emittedEvents)
             {
                 e.Meta.Merge(command.Meta);
                 e.Meta[DomainEvent.MetadataKeys.CommandTypeName] = commandTypeName;
-
             }
 
             return emittedEvents;
         }
 
-        private static string ExtractCommandTypeName(Command command)
+        static string ExtractCommandTypeName(Command command)
         {
             var baseType = command.GetType().BaseType;
             var baseTypeName = baseType != null ? baseType.FullName : "";

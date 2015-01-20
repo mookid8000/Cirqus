@@ -11,11 +11,24 @@ namespace d60.Cirqus.Config
 
         public void RetryOn<TException>(Action action, int maxRetries = 10) where TException : Exception
         {
+            if (maxRetries == 0)
+            {
+                try
+                {
+                    action();
+                    return;
+                }
+                catch (Exception exception)
+                {
+                    throw new AggregateException("Could not complete the call (no retries)", new[] {exception});
+                }
+            }
+
             bool retry;
-            var caughtExceptions = new List<Exception>();
 
             do
             {
+                var caughtExceptions = new List<Exception>();
                 try
                 {
                     action();
@@ -27,7 +40,7 @@ namespace d60.Cirqus.Config
 
                     if (caughtExceptions.Count >= maxRetries)
                     {
-                        throw new AggregateException(string.Format("Could not complete the call, even after {0} attempts", maxRetries), caughtExceptions);
+                        throw new AggregateException(string.Format("Could not complete the call (retried {0} times)", maxRetries), caughtExceptions);
                     }
 
                     retry = true;

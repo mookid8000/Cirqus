@@ -49,7 +49,7 @@ namespace d60.Cirqus.Commands
             return _aggregateRootRepository.Exists(aggregateRootId, globalSequenceNumberCutoff);
         }
 
-        public AggregateRoot Get<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists = false)
+        public AggregateRoot Get<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists)
         {
             var aggregateRootInfoFromCache = GetAggregateRootFromCache(aggregateRootId, globalSequenceNumberCutoff);
 
@@ -58,24 +58,28 @@ namespace d60.Cirqus.Commands
                 return aggregateRootInfoFromCache;
             }
 
-            var aggregateRootInfo = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff, createIfNotExists: createIfNotExists);
+            var aggregateRoot = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff, createIfNotExists: createIfNotExists);
 
-            // make sure to cache under long.MaxValue if we're "unbounded"
-            var lastGlobalSeqNoToCacheUnder = globalSequenceNumberCutoff == long.MaxValue
-                ? long.MaxValue
-                : aggregateRootInfo.GlobalSequenceNumberCutoff;
+            AddToCache(aggregateRoot, globalSequenceNumberCutoff);
 
-            AddToCache(aggregateRootInfo, lastGlobalSeqNoToCacheUnder);
+            // it's safe to cache the root under its sequence number cutoff too
+            if (aggregateRoot.GlobalSequenceNumberCutoff != globalSequenceNumberCutoff)
+            {
+                AddToCache(aggregateRoot, aggregateRoot.GlobalSequenceNumberCutoff);
+            }
 
-            return aggregateRootInfo;
+            return aggregateRoot;
         }
 
         AggregateRoot GetAggregateRootFromCache(string aggregateRootId, long globalSequenceNumberCutoff)
         {
             if (!CachedAggregateRoots.ContainsKey(globalSequenceNumberCutoff)) return null;
-            if (!CachedAggregateRoots[globalSequenceNumberCutoff].ContainsKey(aggregateRootId)) return null;
+            
+            var cachedEntriesForThisInstant = CachedAggregateRoots[globalSequenceNumberCutoff];
 
-            var aggregateRoot = CachedAggregateRoots[globalSequenceNumberCutoff][aggregateRootId];
+            if (!cachedEntriesForThisInstant.ContainsKey(aggregateRootId)) return null;
+
+            var aggregateRoot = cachedEntriesForThisInstant[aggregateRootId];
 
             return aggregateRoot;
         }
