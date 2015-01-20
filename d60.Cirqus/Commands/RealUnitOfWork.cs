@@ -62,12 +62,6 @@ namespace d60.Cirqus.Commands
 
             AddToCache(aggregateRoot, globalSequenceNumberCutoff);
 
-            // it's safe to cache the root under its sequence number cutoff too
-            if (aggregateRoot.GlobalSequenceNumberCutoff != globalSequenceNumberCutoff)
-            {
-                AddToCache(aggregateRoot, aggregateRoot.GlobalSequenceNumberCutoff);
-            }
-
             return aggregateRoot;
         }
 
