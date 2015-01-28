@@ -224,8 +224,10 @@ namespace d60.Cirqus.Tests.Commands
 
             //assert
             var events = _eventStore.Result.ToList();
-            var baseType = ordinaryCommand.GetType().BaseType;
-            var expected = baseType.FullName;
+
+            var expected = "d60.Cirqus.Tests.Commands.TestCommandProcessing+AnotherOrdinaryCommand, d60.Cirqus.Tests";
+
+            Assert.AreEqual(expected,events.First().Meta[DomainEvent.MetadataKeys.CommandTypeName]);
             Assert.That(events.All(e =>
                             e.Meta.ContainsKey(DomainEvent.MetadataKeys.CommandTypeName) &&
                             e.Meta[DomainEvent.MetadataKeys.CommandTypeName] == expected), String.Format("Expected {0} but not all had it", expected));
@@ -246,8 +248,8 @@ namespace d60.Cirqus.Tests.Commands
 
             //assert
             var events = _eventStore.Result.ToList();
-            var baseType = executableCommand.GetType().BaseType;
-            var expected = baseType.FullName;
+
+            var expected = "d60.Cirqus.Tests.Commands.TestCommandProcessing+ExecutableCommandTest, d60.Cirqus.Tests";
             Assert.That(events.All(e => 
                             e.Meta.ContainsKey(DomainEvent.MetadataKeys.CommandTypeName) && 
                             e.Meta[DomainEvent.MetadataKeys.CommandTypeName] == expected)   , String.Format("Expected {0} but not all had it", expected));

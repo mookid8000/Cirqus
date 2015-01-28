@@ -170,11 +170,10 @@ namespace d60.Cirqus
             return emittedEvents;
         }
 
-        static string ExtractCommandTypeName(Command command)
+         string ExtractCommandTypeName(Command command)
         {
-            var baseType = command.GetType().BaseType;
-            var baseTypeName = baseType != null ? baseType.FullName : "";
-            return baseTypeName;
+
+            return _domainTypeNameMapper.GetName(command.GetType());
         }
 
         internal event Action Disposed = delegate { };
