@@ -47,6 +47,7 @@
     <Compile Include="Aggregates\AggregateRootInfo.cs" />
     <Compile Include="Aggregates\DefaultAggregateRootRepository.cs" />
     <Compile Include="Aggregates\FactoryBasedAggregateRootRepository.cs" />
+    <Compile Include="Config\Decorators\CommandTypeNameCommandProcessorDecorator.cs" />
     <Compile Include="Config\Configurers\ConfigurationBuilder.cs" />
     <Compile Include="Config\Configurers\ViewManagerEventDispatcherConfiguationBuilder.cs" />
     <Compile Include="Testing\TestContextConfigurationBuilder.cs" />
