@@ -105,7 +105,7 @@ caching in use: {3}",
 
             var eventDispatcher = new ViewManagerEventDispatcher(_timeTaker, eventStore, serializer, _domainTypeNameMapper);
 
-            var commandProcessor = new CommandProcessor(_timeTaker, _timeTaker, eventDispatcher, serializer, _commandMapper, _domainTypeNameMapper);
+            var commandProcessor = new CommandProcessor(_timeTaker, _timeTaker, eventDispatcher, serializer, _commandMapper, _domainTypeNameMapper, new Options());
 
             RegisterForDisposal(commandProcessor);
 

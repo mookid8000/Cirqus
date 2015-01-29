@@ -1,5 +1,6 @@
 using System;
 using d60.Cirqus.Commands;
+using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Serialization;
 
@@ -56,6 +57,39 @@ namespace d60.Cirqus.Config.Configurers
         public void AddCommandMappings(CommandMappings mappings)
         {
             Decorate(c => mappings.CreateCommandMapperDecorator(c.Get<ICommandMapper>()));
+        }
+
+        public void AddCommandTypeNameToMetadata()
+        {
+            Decorate<ICommandProcessor>(c => new Bimse(c.Get<ICommandProcessor>(), c.Get<IDomainTypeNameMapper>()));
+        }
+
+        class Bimse : ICommandProcessor
+        {
+            readonly ICommandProcessor _innerCommandProcessor;
+            readonly IDomainTypeNameMapper _domainTypeNameMapper;
+
+            public Bimse(ICommandProcessor innerCommandProcessor, IDomainTypeNameMapper domainTypeNameMapper)
+            {
+                _innerCommandProcessor = innerCommandProcessor;
+                _domainTypeNameMapper = domainTypeNameMapper;
+            }
+
+            public CommandProcessingResult ProcessCommand(Command command)
+            {
+                if (!command.Meta.ContainsKey(DomainEvent.MetadataKeys.CommandTypeName))
+                {
+                    var commandTypeName = _domainTypeNameMapper.GetName(command.GetType());
+                    command.Meta[DomainEvent.MetadataKeys.CommandTypeName] = commandTypeName;
+                }
+
+                return _innerCommandProcessor.ProcessCommand(command);
+            }
+
+            public void Dispose()
+            {
+                _innerCommandProcessor.Dispose();
+            }
         }
     }
 }

@@ -91,6 +91,7 @@
     <Compile Include="Bugs\VerifyLoadedAggregateRootVersionIsCorrect.cs" />
     <Compile Include="Commands\TestCommandMappingApi.cs" />
     <Compile Include="Commands\TestCommandProcessing.cs" />
+    <Compile Include="Commands\TestCommandTypeNames.cs" />
     <Compile Include="Config\TestConfigurationApi.cs" />
     <Compile Include="Config\TestConfigurationContainer.cs" />
     <Compile Include="Contracts\AggregateRootRepository\Factories\DefaultAggregateRootRepositoryFactory.cs" />

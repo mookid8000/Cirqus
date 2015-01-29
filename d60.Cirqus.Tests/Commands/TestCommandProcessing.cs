@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
-using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Testing.Internals;
@@ -213,49 +212,6 @@ namespace d60.Cirqus.Tests.Commands
         {
         }
 
-        [Test]
-        public void AddsCommandTypeNameToAllEmittedEventsOnOrdinaryCommand()
-        {
-            //arrange
-            var rootId = Guid.NewGuid().ToString();
-            var ordinaryCommand = new AnotherOrdinaryCommand(rootId);
-            //act
-            _cirqus.ProcessCommand(ordinaryCommand);
-
-            //assert
-            var events = _eventStore.Result.ToList();
-
-            var expected = "d60.Cirqus.Tests.Commands.TestCommandProcessing+AnotherOrdinaryCommand, d60.Cirqus.Tests";
-
-            Assert.AreEqual(expected,events.First().Meta[DomainEvent.MetadataKeys.CommandTypeName]);
-            Assert.That(events.All(e =>
-                            e.Meta.ContainsKey(DomainEvent.MetadataKeys.CommandTypeName) &&
-                            e.Meta[DomainEvent.MetadataKeys.CommandTypeName] == expected), String.Format("Expected {0} but not all had it", expected));
-
-        }
-
-
-        [Test]
-        public void AddCommandTypeNameToAllEmittedEventOnExecutableCommands()
-        {
-
-            var executableCommand = new ExecutableCommandTest();
-
-            executableCommand.AggregateRootIds = Enumerable.Range(0, 4).Select(i => i.ToString()).ToArray();
-
-            //act
-            _cirqus.ProcessCommand(executableCommand);
-
-            //assert
-            var events = _eventStore.Result.ToList();
-
-            var expected = "d60.Cirqus.Tests.Commands.TestCommandProcessing+ExecutableCommandTest, d60.Cirqus.Tests";
-            Assert.That(events.All(e => 
-                            e.Meta.ContainsKey(DomainEvent.MetadataKeys.CommandTypeName) && 
-                            e.Meta[DomainEvent.MetadataKeys.CommandTypeName] == expected)   , String.Format("Expected {0} but not all had it", expected));
-
-
-        }
         public class AnotherEvent : DomainEvent<AnotherRoot>
         {
 
