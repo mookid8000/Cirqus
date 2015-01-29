@@ -1,6 +1,7 @@
 using System;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Config.Decorators;
+using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Serialization;
 
@@ -59,6 +60,11 @@ namespace d60.Cirqus.Config.Configurers
             Decorate(c => mappings.CreateCommandMapperDecorator(c.Get<ICommandMapper>()));
         }
 
+        /// <summary>
+        /// Decorates <see cref="ICommandProcessor"/> with one that automatically inserts the name of the executed command as a metadata
+        /// element with the key <see cref="DomainEvent.MetadataKeys.CommandTypeName"/>, using the current <see cref="IDomainTypeNameMapper"/>
+        /// to deliver the name.
+        /// </summary>
         public void AddCommandTypeNameToMetadata()
         {
             Decorate<ICommandProcessor>(c => new CommandTypeNameCommandProcessorDecorator(c.Get<ICommandProcessor>(), c.Get<IDomainTypeNameMapper>()));
