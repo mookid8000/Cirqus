@@ -55,6 +55,8 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
 
 ", _tableName, _positionTableName, PrimaryKeySize);
 
+            _logger.Info("Ensuring that schema for '{0}' is created...", typeof(TViewInstance));
+
             using (var connection = GetConnection())
             using (var command = connection.CreateCommand())
             {
@@ -202,6 +204,8 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
         {
             if (!activeViewsById.Any()) return;
 
+            _logger.Debug("Flushing {0} view instances to '{1}'", activeViewsById.Count, _tableName);
+
             var parametersAndData = activeViewsById
                 .Select((kvp, index) => new
                 {
@@ -280,6 +284,8 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
 
         public override void Purge()
         {
+            _logger.Info("Purging PostgreSQL table {0}", _tableName);
+
             using (var connection = GetConnection())
             {
                 using (var transaction = connection.BeginTransaction())
