@@ -26,8 +26,8 @@ namespace d60.Cirqus.Tests.Diagnostics
 
             var commandProcessor = CommandProcessor.With()
                 .Logging(l => l.UseConsole(minLevel:Logger.Level.Warn))
-                .EventStore(e => e.Registrar.Register<IEventStore>(c => new SlowWrapper(new InMemoryEventStore(c.Get<IDomainEventSerializer>()))))
-                .EventDispatcher(e => e.UseViewManagerEventDispatcher(waitHandle))
+                .EventStore(e => e.Register<IEventStore>(c => new SlowWrapper(new InMemoryEventStore(c.Get<IDomainEventSerializer>()))))
+                .EventDispatcher(e => e.UseViewManagerEventDispatcher().WithWaitHandle(waitHandle))
                 .Options(o => o.AddProfiler(profilero))
                 .Create();
 

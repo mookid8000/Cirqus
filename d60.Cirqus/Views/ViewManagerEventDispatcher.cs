@@ -43,7 +43,8 @@ namespace d60.Cirqus.Views
         int _maxDomainEventsPerBatch = 100;
         long _sequenceNumberToCatchUpTo = -1;
 
-        public ViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, IDomainEventSerializer domainEventSerializer, IDomainTypeNameMapper domainTypeNameMapper, params IViewManager[] viewManagers)
+        public ViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, 
+            IDomainEventSerializer domainEventSerializer, IDomainTypeNameMapper domainTypeNameMapper, params IViewManager[] viewManagers)
         {
             if (aggregateRootRepository == null) throw new ArgumentNullException("aggregateRootRepository");
             if (eventStore == null) throw new ArgumentNullException("eventStore");

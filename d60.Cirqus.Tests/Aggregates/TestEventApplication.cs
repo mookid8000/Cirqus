@@ -8,6 +8,7 @@ using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Numbers;
 using d60.Cirqus.Serialization;
+using d60.Cirqus.Testing;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Stubs;
 using NUnit.Framework;
@@ -29,10 +30,8 @@ namespace d60.Cirqus.Tests.Aggregates
         {
             const string aggregateRootId = "bim";
 
-            using (var context = new TestContext())
+            using (var context = TestContext.With().Options(x => x.Asynchronous()).Create())
             {
-                context.Asynchronous = true;
-
                 Console.WriteLine("Saving {0} to history of '{1}'", numberOfEvents, aggregateRootId);
 
                 using (var printer = new Timer(2000))

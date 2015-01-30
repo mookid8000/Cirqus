@@ -485,9 +485,9 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             var serializer = new JsonDomainEventSerializer();
 
             var processor = CommandProcessor.With()
-                .EventStore(e => e.Registrar.RegisterInstance(_eventStore))
+                .EventStore(e => e.RegisterInstance(_eventStore))
                 .EventDispatcher(e => e.UseConsoleOutEventDispatcher())
-                .Options(o => o.Registrar.RegisterInstance<IDomainEventSerializer>(serializer))
+                .Options(o => o.RegisterInstance<IDomainEventSerializer>(serializer))
                 .Create();
 
             RegisterForDisposal(processor);

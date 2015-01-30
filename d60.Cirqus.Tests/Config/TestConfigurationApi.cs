@@ -15,6 +15,7 @@ using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using MongoDB.Driver.Builders;
 using NUnit.Framework;
+using TestContext = d60.Cirqus.Testing.TestContext;
 
 namespace d60.Cirqus.Tests.Config
 {
@@ -37,10 +38,18 @@ namespace d60.Cirqus.Tests.Config
                 })
                 .EventDispatcher(d =>
                 {
-                    d.UseViewManagerEventDispatcher(waiter, 200, new MongoDbViewManager<ConfigTestView>(database, "view1"));
-                    d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view2"));
-                    d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view3"));
-                    d.UseViewManagerEventDispatcher(waiter, new MongoDbViewManager<ConfigTestView>(database, "view4"));
+                    d.UseViewManagerEventDispatcher(new MongoDbViewManager<ConfigTestView>(database, "view1"))
+                        .WithWaitHandle(waiter)
+                        .WithMaxDomainEventsPerBatch(200);
+
+                    d.UseViewManagerEventDispatcher(new MongoDbViewManager<ConfigTestView>(database, "view2"))
+                        .WithWaitHandle(waiter);
+                    
+                    d.UseViewManagerEventDispatcher(new MongoDbViewManager<ConfigTestView>(database, "view3"))
+                        .WithWaitHandle(waiter);
+
+                    d.UseViewManagerEventDispatcher(new MongoDbViewManager<ConfigTestView>(database, "view4"))
+                        .WithWaitHandle(waiter);
                 })
                 .Create();
 
@@ -158,6 +167,21 @@ namespace d60.Cirqus.Tests.Config
             processor.ProcessCommand(someCommand);
 
             Assert.That(someCommand.WasProcessed, Is.EqualTo(true));
+        }
+
+        [Test]
+        public void CanDecorateAggregateRootRepositoryForTestContext()
+        {
+            var decorated = true;
+            TestContext.With()
+                .AggregateRootRepository(x => x.Decorate(c =>
+                {
+                    decorated = true;
+                    return c.Get<IAggregateRootRepository>();
+                }))
+                .Create();
+
+            Assert.True(decorated);
         }
 
         public class SomeCommand : ExecutableCommand

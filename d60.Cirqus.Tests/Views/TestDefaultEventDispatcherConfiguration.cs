@@ -16,7 +16,7 @@ namespace d60.Cirqus.Tests.Views
         public void WorkWhenSpecifyingMinimalConfiguration()
         {
             using (var commandProcessor = CommandProcessor.With()
-                .EventStore(e => e.Registrar.Register<IEventStore>(c => new InMemoryEventStore(c.Get<IDomainEventSerializer>())))
+                .EventStore(e => e.Register<IEventStore>(c => new InMemoryEventStore(c.Get<IDomainEventSerializer>())))
                 .Create())
             {
                 commandProcessor.ProcessCommand(new Commando("id"));
@@ -27,7 +27,7 @@ namespace d60.Cirqus.Tests.Views
         public void WorkWhenSpecifyingAggregateRootRepository()
         {
             using (var commandProcessor = CommandProcessor.With()
-                .EventStore(e => e.Registrar.Register<IEventStore>(c => new InMemoryEventStore(c.Get<IDomainEventSerializer>())))
+                .EventStore(e => e.Register<IEventStore>(c => new InMemoryEventStore(c.Get<IDomainEventSerializer>())))
                 .AggregateRootRepository(a => a.UseDefault())
                 .Create())
             {

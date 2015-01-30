@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
-using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Testing.Internals;
@@ -29,7 +28,7 @@ namespace d60.Cirqus.Tests.Commands
 
             _cirqus = CommandProcessor.With()
                 .EventStore(e => _eventStore = e.UseInMemoryEventStore())
-                .EventDispatcher(e => e.AddEventDispatcher(c => new ConsoleOutEventDispatcher()))
+                .EventDispatcher(e => e.UseEventDispatcher(c => new ConsoleOutEventDispatcher()))
                 .Options(o =>
                 {
                     o.AddDomainExceptionType<InvalidOperationException>();
@@ -44,7 +43,7 @@ namespace d60.Cirqus.Tests.Commands
         public void CanProcessBaseCommand()
         {
             var aggregateRootIds = Enumerable.Range(0, 5).Select(i => i.ToString()).ToArray();
-            var command = new MyCommand{AggregateRootIds = aggregateRootIds};
+            var command = new MyCommand { AggregateRootIds = aggregateRootIds };
 
             _cirqus.ProcessCommand(command);
 
@@ -61,7 +60,7 @@ namespace d60.Cirqus.Tests.Commands
 
             public void Apply(MyEvent e)
             {
-                
+
             }
         }
 
@@ -183,7 +182,7 @@ namespace d60.Cirqus.Tests.Commands
         [Test]
         public void ThrowsNiceExceptionForCommandThatHasNotBeenMapped()
         {
-            Assert.Throws<CommandProcessingException>(() => 
+            Assert.Throws<CommandProcessingException>(() =>
                 _cirqus.ProcessCommand(new AnotherCommand("rootid")));
         }
 
@@ -211,6 +210,57 @@ namespace d60.Cirqus.Tests.Commands
 
         public class AnEvent : DomainEvent<Root>
         {
+        }
+
+        public class AnotherEvent : DomainEvent<AnotherRoot>
+        {
+
+        }
+        public class SomeEvent : DomainEvent<AnotherRoot>
+        {
+
+        }
+        public class AnotherRoot : AggregateRoot, IEmit<SomeEvent>, IEmit<AnotherEvent>
+        {
+
+            public void EmitBothEvents()
+            {
+                Emit(new SomeEvent());
+                Emit(new AnotherEvent());
+            }
+            public void Apply(SomeEvent e)
+            {
+
+            }
+
+            public void Apply(AnotherEvent e)
+            {
+
+            }
+        }
+        public class AnotherOrdinaryCommand : Command<AnotherRoot>
+        {
+            public AnotherOrdinaryCommand(string aggregateRootId)
+                : base(aggregateRootId)
+            {
+            }
+
+            public override void Execute(AnotherRoot aggregateRoot)
+            {
+                aggregateRoot.EmitBothEvents();
+            }
+        }
+
+
+        public class ExecutableCommandTest : ExecutableCommand
+        {
+            public string[] AggregateRootIds { get; set; }
+
+            public override void Execute(ICommandContext context)
+            {
+                AggregateRootIds.Select(x => (context.TryLoad<AnotherRoot>(x) ?? context.Create<AnotherRoot>(x))).ToList().ForEach(r => r.EmitBothEvents());
+                AggregateRootIds.Select(x => (context.TryLoad<AnotherRoot>(x) ?? context.Create<AnotherRoot>(x))).ToList().ForEach(r => r.EmitBothEvents());
+            }
         }
     }
 }

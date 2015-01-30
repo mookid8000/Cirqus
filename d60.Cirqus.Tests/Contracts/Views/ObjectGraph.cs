@@ -23,7 +23,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel: Logger.Level.Warn);
 
             _factory = RegisterForDisposal(new TFactory());
-            _context = RegisterForDisposal(new TestContext());
+            _context = RegisterForDisposal(TestContext.Create());
 
             _context.AddViewManager(_factory.GetViewManager<ViewRoot>());
         }

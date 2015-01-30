@@ -1,17 +1,35 @@
-﻿namespace d60.Cirqus.Config.Configurers
-{
-    public class LoggingConfigurationBuilder
-    {
-        readonly IRegistrar _registrar;
+﻿using d60.Cirqus.Logging;
+using d60.Cirqus.Logging.Console;
+using d60.Cirqus.Logging.Null;
 
-        public LoggingConfigurationBuilder(IRegistrar registrar)
+namespace d60.Cirqus.Config.Configurers
+{
+    public class LoggingConfigurationBuilder : ConfigurationBuilder
+    {
+        public LoggingConfigurationBuilder(IRegistrar registrar) : base(registrar) { }
+
+        /// <summary>
+        /// Configures Cirqus to log using the console.
+        /// </summary>
+        public void UseConsole(Logger.Level minLevel = Logger.Level.Info)
         {
-            _registrar = registrar;
+            Use(new ConsoleLoggerFactory(minLevel: minLevel));
         }
 
-        public IRegistrar Registrar
+        /// <summary>
+        /// Configures Cirqus to not log anything at all.
+        /// </summary>
+        public void None()
         {
-            get { return _registrar; }
+            Use(new NullLoggerFactory());
+        }
+
+        /// <summary>
+        /// Configures Cirqus get its logger using specified factory.
+        /// </summary>
+        public void Use(CirqusLoggerFactory factory)
+        {
+            CirqusLoggerFactory.Current = factory;
         }
     }
 }

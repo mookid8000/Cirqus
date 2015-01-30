@@ -1,4 +1,4 @@
-﻿using d60.Cirqus.Tests.Contracts.Views.Factories;
+using d60.Cirqus.Tests.Contracts.Views.Factories;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
@@ -22,7 +22,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
         {
             _factory = RegisterForDisposal(new TFactory());
 
-            _context = RegisterForDisposal(new TestContext());
+            _context = RegisterForDisposal(TestContext.Create());
         }
 
         [Test, Ignore("hmmmm...")]

@@ -25,8 +25,8 @@ namespace d60.Cirqus.Tests.Bugs
             var eventStore = new MongoDbEventStore(MongoHelper.InitializeTestDatabase(), "events");
 
             var commandProcessor = CommandProcessor.With()
-                .EventStore(e => e.Registrar.Register<IEventStore>(c => eventStore))
-                .EventDispatcher(e => e.Registrar.Register<IEventDispatcher>(c => new ConsoleOutEventDispatcher()))
+                .EventStore(e => e.Register<IEventStore>(c => eventStore))
+                .EventDispatcher(e => e.Register<IEventDispatcher>(c => new ConsoleOutEventDispatcher()))
                 .Create();
 
             RegisterForDisposal(commandProcessor);
@@ -47,7 +47,7 @@ namespace d60.Cirqus.Tests.Bugs
         public void NoProblemoWithTestContext()
         {
             // arrange
-            var context = RegisterForDisposal(new TestContext());
+            var context = RegisterForDisposal(TestContext.Create());
 
             try
             {

@@ -38,7 +38,7 @@ namespace d60.Cirqus.MongoDb.Config
         {
             var configBuilder = new MongoDbConfigBuilder();
 
-            builder.Registrar.Register<IEventStore>(context => new MongoDbEventStore(database, eventCollectionName, automaticallyCreateIndexes: automaticallyCreateIndexes));
+            builder.Register<IEventStore>(context => new MongoDbEventStore(database, eventCollectionName, automaticallyCreateIndexes: automaticallyCreateIndexes));
 
             return configBuilder;
         }

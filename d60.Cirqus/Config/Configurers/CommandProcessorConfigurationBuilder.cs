@@ -1,54 +1,43 @@
 ﻿using System;
+using System.Configuration;
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
-using d60.Cirqus.Logging;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Views;
 
 namespace d60.Cirqus.Config.Configurers
 {
-    class CommandProcessorConfigurationBuilder :
-        ILoggingAndEventStoreConfigurationBuilderApi,
-        IAggregateRootRepositoryConfigurationBuilderApi,
-        IEventDispatcherConfigurationBuilderApi,
-        IFullConfiguration
+    internal class CommandProcessorConfigurationBuilder : ILoggingAndEventStoreConfiguration, IOptionalConfiguration<ICommandProcessor>
     {
-        static Logger _logger;
-
-        static CommandProcessorConfigurationBuilder()
-        {
-            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
-        }
-
         readonly ConfigurationContainer _container = new ConfigurationContainer();
 
-        public IAggregateRootRepositoryConfigurationBuilderApi EventStore(Action<EventStoreConfigurationBuilder> configure)
-        {
-            configure(new EventStoreConfigurationBuilder(_container));
-            return this;
-        }
-
-        public IEventStoreConfigurationBuilderApi Logging(Action<LoggingConfigurationBuilder> configure)
+        public IEventStoreConfiguration Logging(Action<LoggingConfigurationBuilder> configure)
         {
             configure(new LoggingConfigurationBuilder(_container));
             return this;
         }
 
-        public IEventDispatcherConfigurationBuilderApi AggregateRootRepository(Action<AggregateRootRepositoryConfigurationBuilder> configure)
+        public IOptionalConfiguration<ICommandProcessor> EventStore(Action<EventStoreConfigurationBuilder> configure)
+        {
+            configure(new EventStoreConfigurationBuilder(_container));
+            return this;
+        }
+
+        public IOptionalConfiguration<ICommandProcessor> AggregateRootRepository(Action<AggregateRootRepositoryConfigurationBuilder> configure)
         {
             configure(new AggregateRootRepositoryConfigurationBuilder(_container));
             return this;
         }
 
-        public IFullConfiguration EventDispatcher(Action<EventDispatcherConfigurationBuilder> configure)
+        public IOptionalConfiguration<ICommandProcessor> EventDispatcher(Action<EventDispatcherConfigurationBuilder> configure)
         {
             configure(new EventDispatcherConfigurationBuilder(_container));
             return this;
         }
 
-        public IFullConfiguration Options(Action<OptionsConfigurationBuilder> configure)
+        public IOptionalConfiguration<ICommandProcessor> Options(Action<OptionsConfigurationBuilder> configure)
         {
             configure(new OptionsConfigurationBuilder(_container));
             return this;
@@ -59,51 +48,50 @@ namespace d60.Cirqus.Config.Configurers
             FillInDefaults();
 
             var resolutionContext = _container.CreateContext();
-
-            var eventStore = resolutionContext.Get<IEventStore>();
-            var aggregateRootRepository = resolutionContext.Get<IAggregateRootRepository>();
-            var eventDispatcher = resolutionContext.Get<IEventDispatcher>();
-            var serializer = resolutionContext.Get<IDomainEventSerializer>();
-            var commandMapper = resolutionContext.Get<ICommandMapper>();
-            var domainTypeMapper = resolutionContext.Get<IDomainTypeNameMapper>();
-
-            var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher, serializer, commandMapper, domainTypeMapper);
-
-            commandProcessor.Disposed += () =>
-            {
-                var disposables = resolutionContext.GetDisposables();
-
-                foreach (var disposable in disposables)
-                {
-                    _logger.Debug("Disposing {0}", disposable);
-
-                    disposable.Dispose();
-                }
-            };
-
-            resolutionContext.GetAll<Action<Options>>()
-                .ToList()
-                .ForEach(action => action(commandProcessor.Options));
-
-            commandProcessor.Initialize();
+            var commandProcessor = resolutionContext.Get<ICommandProcessor>();
 
             return commandProcessor;
         }
 
         void FillInDefaults()
         {
+            if (_container.HasService<ICommandProcessor>(checkForPrimary: true))
+            {
+                throw new ConfigurationErrorsException("Cannot register the real CommandProcessor because the configuration container already contains a primary registration for ICommandProcessor");
+            }
+
+            _container.Register<ICommandProcessor>(context =>
+            {
+                var eventStore = context.Get<IEventStore>();
+                var aggregateRootRepository = context.Get<IAggregateRootRepository>();
+                var eventDispatcher = context.Get<IEventDispatcher>();
+                var serializer = context.Get<IDomainEventSerializer>();
+                var commandMapper = context.Get<ICommandMapper>();
+                var domainTypeMapper = context.Get<IDomainTypeNameMapper>();
+
+                var options = new Options();
+
+                context.GetAll<Action<Options>>()
+                    .ToList()
+                    .ForEach(action => action(options));
+
+                var commandProcessor = new CommandProcessor(eventStore, aggregateRootRepository, eventDispatcher, serializer, commandMapper, domainTypeMapper, options);
+
+                // end the resolution context and dispose burdens when command processor is disposed
+                commandProcessor.Disposed += context.Dispose;
+
+                commandProcessor.Initialize();
+
+                return commandProcessor;
+            });
+
             if (!_container.HasService<IAggregateRootRepository>(checkForPrimary: true))
             {
                 _container.Register<IAggregateRootRepository>(context =>
-                {
-                    var eventStore = context.Get<IEventStore>();
-                    var domainEventSerializer = context.Get<IDomainEventSerializer>();
-                    var domainTypeNameMapper = context.Get<IDomainTypeNameMapper>();
-
-                    var aggregateRootRepository = new DefaultAggregateRootRepository(eventStore, domainEventSerializer, domainTypeNameMapper);
-
-                    return aggregateRootRepository;
-                });
+                    new DefaultAggregateRootRepository(
+                        context.Get<IEventStore>(),
+                        context.Get<IDomainEventSerializer>(),
+                        context.Get<IDomainTypeNameMapper>()));
             }
 
             if (!_container.HasService<IDomainEventSerializer>(checkForPrimary: true))

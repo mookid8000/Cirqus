@@ -10,7 +10,7 @@ namespace d60.Cirqus.AzureServiceBus.Config
     {
         public static void UseAzureServiceBusEventDispatcher(this EventDispatcherConfigurationBuilder builder, string connectionString, string topicName)
         {
-            builder.AddEventDispatcher(context => new AzureServiceBusEventDispatcherSender(connectionString, topicName));
+            builder.UseEventDispatcher(context => new AzureServiceBusEventDispatcherSender(connectionString, topicName));
         }
 
         /// <summary>
@@ -18,7 +18,7 @@ namespace d60.Cirqus.AzureServiceBus.Config
         /// </summary>
         public static void UseAzureServiceBusRelayEventDispatcher(this EventDispatcherConfigurationBuilder builder, string serviceNamespace, string servicePath, string keyName, string sharesAccessKey, NetTcpRelayBinding netTcpRelayBinding = null)
         {
-            builder.AddEventDispatcher(context =>
+            builder.UseEventDispatcher(context =>
             {
                 var eventStore = context.Get<IEventStore>();
 

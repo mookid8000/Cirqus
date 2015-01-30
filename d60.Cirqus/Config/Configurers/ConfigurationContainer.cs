@@ -22,10 +22,20 @@ namespace d60.Cirqus.Config.Configurers
 
         public void RegisterInstance<TService>(TService instance, bool multi = false)
         {
-            Register(c => instance, multi: multi);
+            Register(c => instance, decorator: false, multi: multi);
         }
 
-        public void Register<TService>(Func<ResolutionContext, TService> serviceFactory, bool decorator = false, bool multi = false)
+        public void Register<TService>(Func<ResolutionContext, TService> serviceFactory)
+        {
+            Register(serviceFactory, decorator: false, multi: false);
+        }
+
+        public void Decorate<TService>(Func<ResolutionContext, TService> serviceFactory)
+        {
+            Register(serviceFactory, decorator: true, multi: false);
+        }
+
+        void Register<TService>(Func<ResolutionContext, TService> serviceFactory, bool decorator, bool multi)
         {
             var havePrimaryResolverAlready = HasService<TService>(checkForPrimary: true);
 

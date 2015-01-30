@@ -1,4 +1,6 @@
-﻿using d60.Cirqus.Tests.Contracts.Views.Factories;
+﻿using System;
+using d60.Cirqus.Testing;
+using d60.Cirqus.Tests.Contracts.Views.Factories;
 using d60.Cirqus.Tests.Contracts.Views.Models.ViewLocators;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
@@ -27,7 +29,10 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _globalInstanceViewManager = _factory.GetViewManager<GlobalInstanceViewInstance>();
             _instancePerAggregateRootViewManager = _factory.GetViewManager<InstancePerAggregateRootView>();
 
-            _context = RegisterForDisposal(new TestContext { Asynchronous = true });
+            _context = RegisterForDisposal(
+                TestContext.With()
+                    .Options(x => x.Asynchronous())
+                    .Create());
         }
 
         [Test]

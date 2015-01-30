@@ -33,7 +33,7 @@ namespace d60.Cirqus.Tests.Contracts.Serialization
             _viewManager = new InMemoryViewManager<LeView>();
 
             _commandProcessor = CommandProcessor.With()
-                .EventStore(e => e.Registrar.Register(c => factory.GetEventStore()))
+                .EventStore(e => e.Register(c => factory.GetEventStore()))
                 .EventDispatcher(e => e.UseViewManagerEventDispatcher(_viewManager))
                 .Options(o => o.UseCustomDomainEventSerializer(new BinaryDomainEventSerializer()))
                 .Create();

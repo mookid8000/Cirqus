@@ -131,8 +131,8 @@ namespace d60.Cirqus.MsSql.Views
                         foreach (var viewId in viewIds)
                         {
                             var view = activeViewsById
-                                .GetOrAdd(viewId, id => FindOneById(id, tx, conn)
-                                                        ?? _dispatcher.CreateNewInstance(viewId));
+                                .GetOrAdd(viewId, id =>
+                                    FindOneById(id, tx, conn) ?? _dispatcher.CreateNewInstance(viewId));
 
                             _dispatcher.DispatchToView(viewContext, e, view);
                         }
@@ -352,7 +352,7 @@ WHEN NOT MATCHED THEN
 ;
 ", _tableName, FormatAssignments(_viewTableSchema.Where(prop => !prop.IsPrimaryKey)), FormatColumnNames(_viewTableSchema), FormatParameterNames(_viewTableSchema));
 
-                    cmd.Parameters.Add("Id", SqlDbType.NChar, PrimaryKeySize).Value = id;
+                    cmd.Parameters.Add("Id", SqlDbType.NVarChar, PrimaryKeySize).Value = id;
 
                     foreach (var prop in _viewTableSchema.Where(p => !p.IsPrimaryKey))
                     {

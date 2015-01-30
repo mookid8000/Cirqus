@@ -1,7 +1,9 @@
 ﻿using System;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
+using d60.Cirqus.Testing;
 using d60.Cirqus.Tests.Contracts.Views.Factories;
 using d60.Cirqus.Tests.Contracts.Views.Models.GeneralViewManagerTest;
 using d60.Cirqus.Views.ViewManagers;
@@ -29,7 +31,11 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             _factory = RegisterForDisposal(new TFactory());
 
-            _context = RegisterForDisposal(new TestContext{Asynchronous = true});
+            var context = TestContext.With()
+                .Options(x => x.Asynchronous())
+                .Create();
+
+            _context = RegisterForDisposal(context);
         }
 
         [Test]

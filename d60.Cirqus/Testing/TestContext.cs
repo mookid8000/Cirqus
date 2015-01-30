@@ -4,6 +4,7 @@ using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Config;
+using d60.Cirqus.Config.Configurers;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
@@ -21,52 +22,55 @@ namespace d60.Cirqus.Testing
     public class TestContext : IDisposable
     {
         readonly IDomainEventSerializer _domainEventSerializer;
-        readonly DefaultDomainTypeNameMapper _domainTypeNameMapper = new DefaultDomainTypeNameMapper();
-        readonly DefaultAggregateRootRepository _aggregateRootRepository;
+        readonly IDomainTypeNameMapper _domainTypeNameMapper;
+        readonly IAggregateRootRepository _aggregateRootRepository;
         readonly ViewManagerEventDispatcher _viewManagerEventDispatcher;
-        readonly CompositeEventDispatcher _eventDispatcher;
+        readonly IEventDispatcher _eventDispatcher;
         readonly ViewManagerWaitHandle _waitHandle = new ViewManagerWaitHandle();
         readonly List<IViewManager> _addedViews = new List<IViewManager>();
-        readonly TestCommandMapper _testCommandMapper = new TestCommandMapper();
+        readonly ICommandMapper _testCommandMapper;
         readonly InMemoryEventStore _eventStore;
 
         DateTime _currentTime = DateTime.MinValue;
         bool _initialized;
 
-        public TestContext() : this(new JsonDomainEventSerializer("<events>")) {}
-
-        public TestContext(IDomainEventSerializer domainEventSerializer)
+        internal TestContext(InMemoryEventStore eventStore, IAggregateRootRepository aggregateRootRepository, IEventDispatcher eventDispatcher,
+            IDomainEventSerializer domainEventSerializer, ICommandMapper commandMapper, IDomainTypeNameMapper domainTypeNameMapper)
         {
+            _eventStore = eventStore;
+            _aggregateRootRepository = aggregateRootRepository;
+            _eventDispatcher = eventDispatcher;
             _domainEventSerializer = domainEventSerializer;
-            
-            _eventStore = new InMemoryEventStore(_domainEventSerializer);
-            _aggregateRootRepository = new DefaultAggregateRootRepository(_eventStore, _domainEventSerializer, _domainTypeNameMapper);
-            _viewManagerEventDispatcher = new ViewManagerEventDispatcher(_aggregateRootRepository, _eventStore, _domainEventSerializer, _domainTypeNameMapper);
-            _waitHandle.Register(_viewManagerEventDispatcher);
-            _eventDispatcher = new CompositeEventDispatcher(_viewManagerEventDispatcher);
+            _testCommandMapper = commandMapper;
+            _domainTypeNameMapper = domainTypeNameMapper;
+
+            _viewManagerEventDispatcher = eventDispatcher as ViewManagerEventDispatcher;
+            if (_viewManagerEventDispatcher != null)
+            {
+                _waitHandle.Register(_viewManagerEventDispatcher);
+            }
         }
 
-        public int MaxDomainEventsPerBatch
+        public static IOptionalConfiguration<TestContext> With()
         {
-            get { return _viewManagerEventDispatcher.MaxDomainEventsPerBatch; }
-            set { _viewManagerEventDispatcher.MaxDomainEventsPerBatch = value; }
+            return new TestContextConfigurationBuilder();
         }
 
-        /// <summary>
-        /// Can be used to specify whether this test context will block & wait for views to catch up after each and every processed command
-        /// </summary>
-        public bool Asynchronous { get; set; }
+        public static TestContext Create()
+        {
+            return With().Create();
+        }
+
+        internal event Action Disposed = delegate { };
+        internal bool Asynchronous { get; set; }
 
         public TestContext AddViewManager(IViewManager viewManager)
         {
+            if (_viewManagerEventDispatcher == null) return this;
+
             _addedViews.Add(viewManager);
             _viewManagerEventDispatcher.AddViewManager(viewManager);
-            return this;
-        }
 
-        public TestContext AddCommandMappings(CommandMappings commandMappings)
-        {
-            _testCommandMapper.AddMappings(commandMappings);
             return this;
         }
 
@@ -106,8 +110,6 @@ namespace d60.Cirqus.Testing
         /// </summary>
         public TestUnitOfWork BeginUnitOfWork()
         {
-            EnsureInitialized();
-
             var unitOfWork = new TestUnitOfWork(_aggregateRootRepository, _eventStore, _eventDispatcher, _domainEventSerializer, _domainTypeNameMapper);
 
             unitOfWork.Committed += () =>
@@ -225,8 +227,6 @@ namespace d60.Cirqus.Testing
         /// </summary>
         public CommandProcessingResultWithEvents Save<TAggregateRoot>(string aggregateRootId, params DomainEvent<TAggregateRoot>[] domainEvents) where TAggregateRoot : AggregateRoot
         {
-            EnsureInitialized();
-
             foreach (var domainEvent in domainEvents)
             {
                 SetMetadata(aggregateRootId, domainEvent);
@@ -286,11 +286,15 @@ Current view positions:
             _waitHandle.WaitFor<TViewInstance>(result, TimeSpan.FromSeconds(timeoutSeconds)).Wait();
         }
 
-        void EnsureInitialized()
+        public void Initialize()
         {
             if (!_initialized)
             {
-                _viewManagerEventDispatcher.Initialize(_eventStore, purgeExistingViews: true);
+                if (_viewManagerEventDispatcher != null)
+                {
+                    _viewManagerEventDispatcher.Initialize(_eventStore, purgeExistingViews: true);
+                }
+
                 _initialized = true;
             }
         }
@@ -367,7 +371,12 @@ Headers: {3}", domainEvent, firstSerialization, secondSerialization, domainEvent
 
             if (disposing)
             {
-                _viewManagerEventDispatcher.Dispose();
+                if (_viewManagerEventDispatcher != null)
+                {
+                    _viewManagerEventDispatcher.Dispose();
+                }
+
+                Disposed();
             }
 
             _disposed = true;

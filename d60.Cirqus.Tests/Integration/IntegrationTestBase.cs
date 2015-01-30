@@ -28,7 +28,7 @@ namespace d60.Cirqus.Tests.Integration
             var eventStore = GetEventStore(eventStoreOption);
 
             var commandProcessor = CommandProcessor.With()
-                .EventStore(e => e.Registrar.RegisterInstance(eventStore))
+                .EventStore(e => e.RegisterInstance(eventStore))
                 .EventDispatcher(e => e.UseConsoleOutEventDispatcher())
                 .Create();
 

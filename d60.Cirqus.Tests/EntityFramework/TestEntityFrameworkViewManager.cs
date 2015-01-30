@@ -33,7 +33,7 @@ namespace d60.Cirqus.Tests.EntityFramework
 
             _viewManager = new EntityFrameworkViewManager<SomeParent>(MsSqlTestHelper.ConnectionString);
 
-            _context = new TestContext()
+            _context = TestContext.Create()
                 .AddViewManager(_viewManager);
 
             RegisterForDisposal(_context);

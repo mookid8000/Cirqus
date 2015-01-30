@@ -22,7 +22,7 @@ namespace d60.Cirqus.Tests.Extensions
         {
             var taskCompletionSource = new TaskCompletionSource<InMemoryEventStore>();
             
-            builder.Registrar.Register<IEventStore>(c =>
+            builder.Register<IEventStore>(c =>
             {
                 var inMemoryEventStore = new InMemoryEventStore(c.Get<IDomainEventSerializer>());
                 taskCompletionSource.SetResult(inMemoryEventStore);
@@ -34,7 +34,7 @@ namespace d60.Cirqus.Tests.Extensions
 
         internal static void UseConsoleOutEventDispatcher(this EventDispatcherConfigurationBuilder builder)
         {
-            builder.Registrar.RegisterInstance<IEventDispatcher>(new ConsoleOutEventDispatcher());
+            builder.RegisterInstance<IEventDispatcher>(new ConsoleOutEventDispatcher());
         }
     }
 }

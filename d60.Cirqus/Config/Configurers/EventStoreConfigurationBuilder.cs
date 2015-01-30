@@ -1,17 +1,18 @@
+using d60.Cirqus.Events;
+
 namespace d60.Cirqus.Config.Configurers
 {
-    public class EventStoreConfigurationBuilder
+    public class EventStoreConfigurationBuilder : ConfigurationBuilder<IEventStore>
     {
-        readonly IRegistrar _registrar;
+        public EventStoreConfigurationBuilder(IRegistrar registrar) : base(registrar) { }
 
-        public EventStoreConfigurationBuilder(IRegistrar registrar)
+        /// <summary>
+        /// Enables an in-memory event cache that caches the most recently used events. <see cref="maxCacheEntries"/> specifies
+        /// the approximate number of events to be held in the cache
+        /// </summary>
+        public void EnableCaching(int maxCacheEntries)
         {
-            _registrar = registrar;
-        }
-
-        public IRegistrar Registrar
-        {
-            get { return _registrar; }
+            Decorate(context => new CachingEventStoreDecorator(context.Get<IEventStore>()));
         }
     }
 }

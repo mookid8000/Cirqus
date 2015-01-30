@@ -29,13 +29,13 @@ namespace d60.Cirqus
         /// <summary>
         /// Creates a configuration builder that can help you build a fully functional command processor
         /// </summary>
-        public static ILoggingAndEventStoreConfigurationBuilderApi With()
+        public static ILoggingAndEventStoreConfiguration With()
         {
             return new CommandProcessorConfigurationBuilder();
         }
 
-        readonly Options _options = new Options();
         readonly Retryer _retryer = new Retryer();
+        readonly Options _options;
         readonly IEventStore _eventStore;
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventDispatcher _eventDispatcher;
@@ -44,8 +44,9 @@ namespace d60.Cirqus
         readonly IDomainTypeNameMapper _domainTypeNameMapper;
 
         public CommandProcessor(
-            IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, IEventDispatcher eventDispatcher, 
-            IDomainEventSerializer domainEventSerializer, ICommandMapper commandMapper, IDomainTypeNameMapper domainTypeNameMapper)
+            IEventStore eventStore, IAggregateRootRepository aggregateRootRepository, IEventDispatcher eventDispatcher,
+            IDomainEventSerializer domainEventSerializer, ICommandMapper commandMapper, IDomainTypeNameMapper domainTypeNameMapper,
+            Options options)
         {
             if (eventStore == null) throw new ArgumentNullException("eventStore");
             if (aggregateRootRepository == null) throw new ArgumentNullException("aggregateRootRepository");
@@ -53,6 +54,7 @@ namespace d60.Cirqus
             if (domainEventSerializer == null) throw new ArgumentNullException("domainEventSerializer");
             if (commandMapper == null) throw new ArgumentNullException("commandMapper");
             if (domainTypeNameMapper == null) throw new ArgumentNullException("domainTypeNameMapper");
+            if (options == null) throw new ArgumentNullException("options");
 
             _eventStore = eventStore;
             _aggregateRootRepository = aggregateRootRepository;
@@ -60,6 +62,7 @@ namespace d60.Cirqus
             _domainEventSerializer = domainEventSerializer;
             _commandMapper = commandMapper;
             _domainTypeNameMapper = domainTypeNameMapper;
+            _options = options;
         }
 
         /// <summary>
@@ -100,6 +103,12 @@ namespace d60.Cirqus
 
                     // if command processing yielded no events, there's no more work to do
                     if (!eventsFromThisUnitOfWork.Any()) return;
+
+                    // transfer command metadata to emitted events
+                    foreach (var e in eventsFromThisUnitOfWork)
+                    {
+                        e.Meta.Merge(command.Meta);
+                    }
 
                     // first: save the events
                     _logger.Debug("Saving batch {0} with {1} events", batchId, eventsFromThisUnitOfWork.Count);
@@ -152,17 +161,12 @@ namespace d60.Cirqus
             var unitOfWork = new RealUnitOfWork(_aggregateRootRepository, _domainTypeNameMapper);
 
             var handler = _commandMapper.GetCommandAction(command);
-            
+
             handler(new DefaultCommandContext(unitOfWork), command);
 
             var emittedEvents = unitOfWork.EmittedEvents.ToList();
 
             if (!emittedEvents.Any()) return emittedEvents;
-
-            foreach (var e in emittedEvents)
-            {
-                e.Meta.Merge(command.Meta);
-            }
 
             return emittedEvents;
         }
@@ -190,10 +194,10 @@ namespace d60.Cirqus
             {
                 _logger.Info("Disposing command processor");
 
+                _disposed = true;
+
                 Disposed();
             }
-
-            _disposed = true;
         }
     }
 }
