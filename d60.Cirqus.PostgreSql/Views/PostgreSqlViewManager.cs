@@ -315,5 +315,10 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
         public override void Delete(string viewId)
         {
         }
+
+        public IQueryable<TViewInstance> AsQueryable()
+        {
+            return new PostgreSqlLinqProvider<TViewInstance>();
+        }
     }
 }

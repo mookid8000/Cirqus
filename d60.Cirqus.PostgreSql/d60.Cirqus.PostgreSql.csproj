@@ -46,6 +46,7 @@
     <Compile Include="Events\PostgreSqlEventStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlHelper.cs" />
+    <Compile Include="Views\PostgreSqlLinqProvider.cs" />
     <Compile Include="Views\PostgreSqlViewManager.cs" />
   </ItemGroup>
   <ItemGroup>
