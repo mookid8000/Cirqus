@@ -479,6 +479,11 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Moved the auto-added command type name option to a decorator that can be optionally enabled
 
+## 0.54.0
+
+* Added PostgreSQL view manager
+
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund
