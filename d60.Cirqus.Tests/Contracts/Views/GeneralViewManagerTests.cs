@@ -1,5 +1,5 @@
 ﻿using System;
-using d60.Cirqus.Config;
+using System.Threading.Tasks;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
@@ -99,7 +99,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
         }
 
         [Test]
-        public void AutomaticallyCatchesUpAfterPurging()
+        public async Task AutomaticallyCatchesUpAfterPurging()
         {
             // arrange
             Console.WriteLine("Adding view manager for GeneratedIds");
@@ -118,7 +118,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _factory.PurgeView<GeneratedIds>();
 
             // assert
-            view.WaitUntilProcessed(last, _defaultTimeout).Wait();
+            await view.WaitUntilProcessed(last, _defaultTimeout);
 
             var idsView = _factory
                 .Load<GeneratedIds>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));

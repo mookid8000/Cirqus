@@ -200,6 +200,8 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
 
         void Save(Dictionary<string, ActiveViewInstance> activeViewsById, NpgsqlConnection connection, NpgsqlTransaction transaction)
         {
+            if (!activeViewsById.Any()) return;
+
             var parametersAndData = activeViewsById
                 .Select((kvp, index) => new
                 {
@@ -289,13 +291,7 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
                         command.ExecuteNonQuery();
                     }
 
-                    using (var command = connection.CreateCommand())
-                    {
-                        command.Transaction = transaction;
-                        command.CommandText = string.Format(@"delete from ""{0}"" where ""id"" = @id", _positionTableName);
-                        command.Parameters.Add("id", NpgsqlDbType.Varchar, PrimaryKeySize).Value = _tableName;
-                        command.ExecuteNonQuery();
-                    }
+                    UpdatePosition(connection, transaction, DefaultPosition);
 
                     transaction.Commit();
                 }
@@ -312,7 +308,6 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
 
         public override void Delete(string viewId)
         {
-            throw new NotImplementedException();
         }
     }
 }
