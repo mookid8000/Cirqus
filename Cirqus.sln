@@ -11,15 +11,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".solution items", ".solutio
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspec", "nuspec", "{407E215D-36B1-46F9-A39F-39465ADC4F2D}"
 	ProjectSection(SolutionItems) = preProject
-		nuspec\d60.Circus.AzureServiceBus.nuspec = nuspec\d60.Circus.AzureServiceBus.nuspec
-		nuspec\d60.Circus.EntityFramework.nuspec = nuspec\d60.Circus.EntityFramework.nuspec
-		nuspec\d60.Circus.MongoDb.nuspec = nuspec\d60.Circus.MongoDb.nuspec
-		nuspec\d60.Circus.NLog.nuspec = nuspec\d60.Circus.NLog.nuspec
-		nuspec\d60.Circus.nuspec = nuspec\d60.Circus.nuspec
-		nuspec\d60.Circus.PostgreSql.nuspec = nuspec\d60.Circus.PostgreSql.nuspec
-		nuspec\d60.Circus.SQLite.nuspec = nuspec\d60.Circus.SQLite.nuspec
-		nuspec\d60.Circus.TsClient.nuspec = nuspec\d60.Circus.TsClient.nuspec
+		nuspec\d60.Cirqus.AzureServiceBus.nuspec = nuspec\d60.Cirqus.AzureServiceBus.nuspec
+		nuspec\d60.Cirqus.EntityFramework.nuspec = nuspec\d60.Cirqus.EntityFramework.nuspec
+		nuspec\d60.Cirqus.MongoDb.nuspec = nuspec\d60.Cirqus.MongoDb.nuspec
+		nuspec\d60.Cirqus.NLog.nuspec = nuspec\d60.Cirqus.NLog.nuspec
+		nuspec\d60.Cirqus.nuspec = nuspec\d60.Cirqus.nuspec
+		nuspec\d60.Cirqus.PostgreSql.nuspec = nuspec\d60.Cirqus.PostgreSql.nuspec
 		nuspec\d60.Cirqus.Serilog.nuspec = nuspec\d60.Cirqus.Serilog.nuspec
+		nuspec\d60.Cirqus.SQLite.nuspec = nuspec\d60.Cirqus.SQLite.nuspec
+		nuspec\d60.Cirqus.TsClient.nuspec = nuspec\d60.Cirqus.TsClient.nuspec
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B7EFFA50-A51B-4D7D-A264-07151A10F9D8}"

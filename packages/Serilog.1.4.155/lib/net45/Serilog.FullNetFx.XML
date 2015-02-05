@@ -95,7 +95,7 @@
             be converted to scalars, which are generally stored as strings.</param>
             <returns>A token that must be disposed, in order, to pop properties back off the stack.</returns>
         </member>
-        <member name="M:Serilog.Context.LogContext.PushProperties(Serilog.Core.Enrichers.PropertyEnricher[])">
+        <member name="M:Serilog.Context.LogContext.PushProperties(Serilog.Core.ILogEventEnricher[])">
             <summary>
             Push multiple properties onto the context, returning an <see cref="T:System.IDisposable"/>
             that can later be used to remove the properties. The properties must
@@ -115,6 +115,14 @@
             <remarks>The <see cref="T:Serilog.Context.LogContext"/> should not be manipulated further
             until the return value from this method has been disposed.</remarks>
             <returns></returns>
+        </member>
+        <member name="P:Serilog.Context.LogContext.PermitCrossAppDomainCalls">
+            <summary>
+            When calling into appdomains without Serilog loaded, e.g. via remoting or during unit testing,
+            it may be necesary to set this value to true so that serialization exceptions are avoided. When possible,
+            using the <see cref="M:Serilog.Context.LogContext.Suspend"/> method in a using block around the call has a lower overhead and
+            should be preferred.
+            </summary>
         </member>
         <member name="T:Serilog.LoggerConfigurationFullNetFxExtensions">
             <summary>
@@ -242,14 +250,16 @@
             Write log events to a disk file.
             </summary>
         </member>
-        <member name="M:Serilog.Sinks.IOFile.FileSink.#ctor(System.String,Serilog.Formatting.ITextFormatter,System.Nullable{System.Int64})">
+        <member name="M:Serilog.Sinks.IOFile.FileSink.#ctor(System.String,Serilog.Formatting.ITextFormatter,System.Nullable{System.Int64},System.Text.Encoding)">
             <summary>Construct a <see cref="T:Serilog.Sinks.IOFile.FileSink"/>.</summary>
             <param name="path">Path to the file.</param>
             <param name="textFormatter">Formatter used to convert log events to text.</param>
             <param name="fileSizeLimitBytes">The maximum size, in bytes, to which a log file will be allowed to grow.
             For unrestricted growth, pass null. The default is 1 GB.</param>
+            <param name="encoding">Character encoding used to write the text file. The default is UTF-8.</param>
             <returns>Configuration object allowing method chaining.</returns>
             <remarks>The file will be written using the UTF-8 character set.</remarks>
+            <exception cref="T:System.IO.IOException"></exception>
         </member>
         <member name="M:Serilog.Sinks.IOFile.FileSink.Emit(Serilog.Events.LogEvent)">
             <summary>
@@ -262,6 +272,30 @@
             Performs application-defined tasks associated with freeing, releasing, or 
             resetting unmanaged resources.
             </summary>
+        </member>
+        <member name="T:Serilog.Sinks.IOFile.NullSink">
+            <summary>
+            An instance of this sink may be substituted when an instance of the
+            <see cref="T:Serilog.Sinks.IOFile.FileSink"/> is unable to be constructed.
+            </summary>
+        </member>
+        <member name="T:Serilog.Sinks.PeriodicBatching.BatchedConnectionStatus">
+            <summary>
+            Manages reconnection period and transient fault response for <see cref="T:Serilog.Sinks.PeriodicBatching.PeriodicBatchingSink"/>.
+            During normal operation an object of this type will simply echo the configured batch transmission
+            period. When availabilty fluctuates, the class tracks the number of failed attempts, each time
+            increasing the interval before reconnection is attempted (up to a set maximum) and at predefined
+            points indicating that either the current batch, or entire waiting queue, should be dropped. This
+            Serves two purposes - first, a loaded receiver may need a temporary reduction in traffic while coming
+            back online. Second, the sender needs to account for both bad batches (the first fault response) and
+            also overproduction (the second, queue-dropping response). In combination these should provide a
+            reasonable delivery effort but ultimately protect the sender from memory exhaustion.
+            </summary>
+            <remarks>
+            Currently used only by <see cref="T:Serilog.Sinks.PeriodicBatching.PeriodicBatchingSink"/>, but may
+            provide the basis for a "smart" exponential backoff timer. There are other factors to consider
+            including the desire to send batches "when full" rather than continuing to buffer, and so-on.
+            </remarks>
         </member>
         <member name="T:Serilog.Sinks.PeriodicBatching.PeriodicBatchingSink">
             <summary>
@@ -324,6 +358,14 @@
             depending on app domain state).
             </remarks>
         </member>
+        <member name="M:Serilog.Sinks.PeriodicBatching.PeriodicBatchingSink.CanInclude(Serilog.Events.LogEvent)">
+            <summary>
+            Determine whether a queued log event should be included in the batch. If
+            an override returns false, the event will be dropped.
+            </summary>
+            <param name="evt"></param>
+            <returns></returns>
+        </member>
         <member name="T:Serilog.Sinks.RollingFile.RollingFileSink">
             <summary>
             Write log events to a series of files. Each file will be named according to
@@ -331,7 +373,7 @@
             currently supported.
             </summary>
         </member>
-        <member name="M:Serilog.Sinks.RollingFile.RollingFileSink.#ctor(System.String,Serilog.Formatting.ITextFormatter,System.Nullable{System.Int64},System.Nullable{System.Int32})">
+        <member name="M:Serilog.Sinks.RollingFile.RollingFileSink.#ctor(System.String,Serilog.Formatting.ITextFormatter,System.Nullable{System.Int64},System.Nullable{System.Int32},System.Text.Encoding)">
             <summary>Construct a <see cref="T:Serilog.Sinks.RollingFile.RollingFileSink"/>.</summary>
             <param name="pathFormat">String describing the location of the log files,
             with {Date} in the place of the file date. E.g. "Logs\myapp-{Date}.log" will result in log
@@ -341,6 +383,7 @@
             For unrestricted growth, pass null. The default is 1 GB.</param>
             <param name="retainedFileCountLimit">The maximum number of log files that will be retained,
             including the current log file. For unlimited retention, pass null. The default is 31.</param>
+            <param name="encoding">Character encoding used to write the text file. The default is UTF-8.</param>
             <returns>Configuration object allowing method chaining.</returns>
             <remarks>The file will be written using the UTF-8 character set.</remarks>
         </member>
