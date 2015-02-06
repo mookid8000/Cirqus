@@ -80,7 +80,9 @@ namespace d60.Cirqus.Tests.PostgreSql
 
         static string GetMasterConnectionString()
         {
-            return GetConnectionStringForAnotherDatabase(PostgreSqlConnectionString, GetDatabaseName(SqlHelper.GetConnectionString("postgresqltestdb")), "postgres");
+            var connectionString = SqlHelper.GetConnectionString("postgresqltestdb");
+
+            return GetConnectionStringForAnotherDatabase(connectionString, GetDatabaseName(connectionString), "postgres");
         }
 
         public static string PostgreSqlConnectionString
