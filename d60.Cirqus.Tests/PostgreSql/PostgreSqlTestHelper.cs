@@ -8,14 +8,11 @@ namespace d60.Cirqus.Tests.PostgreSql
 {
     class PostgreSqlTestHelper : SqlTestHelperBase
     {
-        public static void InitializeTestDb()
+        static PostgreSqlTestHelper()
         {
             Console.WriteLine("Ensuring that Postgres test database exists");
 
             var namesOfExistingDatabases = GetExistingDatabaseNames();
-
-            Console.WriteLine("The following databases exist: {0}", string.Join(", ", namesOfExistingDatabases));
-
             var nameOfTestDatabase = GetDatabaseName();
 
             if (!namesOfExistingDatabases.Contains(nameOfTestDatabase))
