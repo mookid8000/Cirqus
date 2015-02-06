@@ -13,6 +13,7 @@ using d60.Cirqus.Numbers;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.Contracts.EventStore.Factories;
 using d60.Cirqus.Tests.Extensions;
+using d60.Cirqus.Tests.PostgreSql;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Contracts.EventStore
@@ -32,6 +33,8 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
 
         protected override void DoSetUp()
         {
+            PostgreSqlTestHelper.InitializeTestDb();
+
             _eventStoreFactory = new TEventStoreFactory();
 
             _eventStore = _eventStoreFactory.GetEventStore();

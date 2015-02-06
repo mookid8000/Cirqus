@@ -8,9 +8,14 @@ namespace d60.Cirqus.Tests.PostgreSql
 {
     class PostgreSqlTestHelper : SqlTestHelperBase
     {
-        static PostgreSqlTestHelper()
+        public static void InitializeTestDb()
         {
+            Console.WriteLine("Ensuring that Postgres test database exists");
+
             var namesOfExistingDatabases = GetExistingDatabaseNames();
+
+            Console.WriteLine("The following databases exist: {0}", string.Join(", ", namesOfExistingDatabases));
+
             var nameOfTestDatabase = GetDatabaseName();
 
             if (!namesOfExistingDatabases.Contains(nameOfTestDatabase))
@@ -41,6 +46,8 @@ namespace d60.Cirqus.Tests.PostgreSql
             Console.WriteLine("Creating Postgres database '{0}'", databaseName);
 
             var connectionString = GetMasterConnectionString();
+
+            Console.WriteLine("Using conn string to create db: {0}", connectionString);
 
             using (var connection = new NpgsqlConnection(connectionString))
             {
@@ -80,7 +87,7 @@ namespace d60.Cirqus.Tests.PostgreSql
 
         static string GetMasterConnectionString()
         {
-            var connectionString = SqlHelper.GetConnectionString("postgresqltestdb");
+            var connectionString = GetConnectionString();
 
             return GetConnectionStringForAnotherDatabase(connectionString, GetDatabaseName(connectionString), "postgres");
         }
@@ -89,7 +96,7 @@ namespace d60.Cirqus.Tests.PostgreSql
         {
             get
             {
-                var connectionString = SqlHelper.GetConnectionString("postgresqltestdb");
+                var connectionString = GetConnectionString();
 
                 var databaseName = GetDatabaseName();
 
@@ -106,13 +113,18 @@ namespace d60.Cirqus.Tests.PostgreSql
 
         static string GetDatabaseName()
         {
-            var connectionString = SqlHelper.GetConnectionString("postgresqltestdb");
+            var connectionString = GetConnectionString();
 
             var databaseName = GetDatabaseName(connectionString);
 
             var databaseNameToUse = PossiblyAppendTeamcityAgentNumber(databaseName);
 
             return databaseNameToUse;
+        }
+
+        static string GetConnectionString()
+        {
+            return SqlHelper.GetConnectionString("postgresqltestdb");
         }
     }
 }
