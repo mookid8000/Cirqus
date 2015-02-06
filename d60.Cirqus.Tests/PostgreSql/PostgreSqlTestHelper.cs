@@ -102,7 +102,7 @@ namespace d60.Cirqus.Tests.PostgreSql
 
                 Console.WriteLine("Using test POSTGRESQL database '{0}'", databaseName);
 
-                return GetConnectionStringForAnotherDatabase(connectionString, databaseName, databaseName);
+                return GetConnectionStringForAnotherDatabase(connectionString, GetDatabaseName(connectionString), databaseName);
             }
         }
 
