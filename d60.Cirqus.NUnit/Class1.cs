@@ -4,9 +4,9 @@ using NUnit.Framework;
 
 namespace d60.Cirqus.NUnit
 {
-    public class NUnitCirqusTests : CirqusTestsHarness
+    public class CirqusTests : CirqusTestsHarness
     {
-        public NUnitCirqusTests() : base(() => new ConsoleWriter()) { }
+        public CirqusTests() : base(() => new ConsoleWriter()) { }
 
         [SetUp]
         public void SetupInternal()

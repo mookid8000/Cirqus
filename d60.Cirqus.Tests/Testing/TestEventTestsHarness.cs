@@ -1,10 +1,6 @@
-using System;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.NUnit;
-using d60.Cirqus.Testing;
-using EnergyProjects.Domain.Utilities;
-using EnergyProjects.Tests;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Testing
@@ -80,7 +76,7 @@ namespace d60.Cirqus.Tests.Testing
 
     public class SomeRoot : AggregateRoot {}
 
-    public class MyCirqusTests : NUnitCirqusTests
+    public class MyCirqusTests : CirqusTests
     {
         [Test]
         public void Test()

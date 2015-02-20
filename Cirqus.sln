@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".solution items", ".solution items", "{53C890A9-D587-4BD6-B69C-5B01F64B39F1}"
 	ProjectSection(SolutionItems) = preProject
@@ -81,7 +81,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Cirqus.xUnit", "d60.Cir
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nunit", "nunit", "{CF7F9A7E-60AF-4D4D-B7C6-3F0F72A54441}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Cirqus.NUnit", "d60.Cirqus.NUnit\d60.Cirqus.NUnit.csproj", "{FCB2E574-8278-44F7-9974-18050B79A5FC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Cirqus.NUnit", "d60.Cirqus.NUnit\d60.Cirqus.NUnit.csproj", "{0362FDDA-7D8F-482F-9E36-AFD3A0859AF7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -141,10 +141,10 @@ Global
 		{786F22B7-C500-4EB5-93E8-F100D5DA5B11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{786F22B7-C500-4EB5-93E8-F100D5DA5B11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{786F22B7-C500-4EB5-93E8-F100D5DA5B11}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FCB2E574-8278-44F7-9974-18050B79A5FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FCB2E574-8278-44F7-9974-18050B79A5FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FCB2E574-8278-44F7-9974-18050B79A5FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FCB2E574-8278-44F7-9974-18050B79A5FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0362FDDA-7D8F-482F-9E36-AFD3A0859AF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0362FDDA-7D8F-482F-9E36-AFD3A0859AF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0362FDDA-7D8F-482F-9E36-AFD3A0859AF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0362FDDA-7D8F-482F-9E36-AFD3A0859AF7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -175,6 +175,6 @@ Global
 		{3B354EFB-77A3-4302-92B4-BF69693B15E7} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
 		{786F22B7-C500-4EB5-93E8-F100D5DA5B11} = {3B354EFB-77A3-4302-92B4-BF69693B15E7}
 		{CF7F9A7E-60AF-4D4D-B7C6-3F0F72A54441} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
-		{FCB2E574-8278-44F7-9974-18050B79A5FC} = {CF7F9A7E-60AF-4D4D-B7C6-3F0F72A54441}
+		{0362FDDA-7D8F-482F-9E36-AFD3A0859AF7} = {CF7F9A7E-60AF-4D4D-B7C6-3F0F72A54441}
 	EndGlobalSection
 EndGlobal
