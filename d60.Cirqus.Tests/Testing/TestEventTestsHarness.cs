@@ -1,6 +1,7 @@
 using System;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
+using d60.Cirqus.NUnit;
 using d60.Cirqus.Testing;
 using EnergyProjects.Domain.Utilities;
 using EnergyProjects.Tests;
@@ -81,11 +82,6 @@ namespace d60.Cirqus.Tests.Testing
 
     public class MyCirqusTests : NUnitCirqusTests
     {
-        public MyCirqusTests() : base(() => new ConsoleWriter())
-        {
-            
-        }
-
         [Test]
         public void Test()
         {
@@ -104,19 +100,4 @@ namespace d60.Cirqus.Tests.Testing
         }
     }
 
-    public class NUnitCirqusTests : CirqusTestsHarness
-    {
-        public NUnitCirqusTests(Func<IWriter> newWriter) : base(newWriter) {}
-
-        [SetUp]
-        public void SetupInternal()
-        {
-            Begin();
-            Setup();
-        }
-
-        protected virtual void Setup()
-        {
-        }
-    }
 }

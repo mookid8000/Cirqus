@@ -1,27 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Serialization;
 using EnergyProjects.Domain.Utilities;
-using EnergyProjects.Tests;
 
 namespace d60.Cirqus.Testing
 {
-    public abstract class CirqusTestsHarness
+    public class CirqusTestsHarness
     {
+        readonly Func<IWriter> newWriter;
         protected const string checkmark = "\u221A";
         protected const string cross = "\u2717";
 
         Stack<TempId> ids;
+        IWriter writer;
+        TestContext context;
 
-        readonly Func<IWriter> newWriter;
-
-        protected IDomainEventSerializer eventSerializer;
-        protected TestContext context;
-        protected IWriter writer;
+        JsonDomainEventSerializer eventSerializer;
 
         protected CirqusTestsHarness(Func<IWriter> newWriter)
         {
@@ -31,12 +28,10 @@ namespace d60.Cirqus.Testing
         protected void Begin()
         {
             ids = new Stack<TempId>();
-
             eventSerializer = new JsonDomainEventSerializer();
             context = TestContext.With()
                 .Options(x => x.UseCustomDomainEventSerializer(eventSerializer))
                 .Create();
-
             writer = newWriter();
         }
 
@@ -56,7 +51,9 @@ namespace d60.Cirqus.Testing
         void Emit<T>(string id, DomainEvent<T> @event) where T : AggregateRoot
         {
             @event.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id;
-            ids.Push(new TempId<T>(id));
+
+            //SetupAuthenticationMetadata(@event.Meta);
+
             context.Save(@event);
 
             writer
@@ -66,10 +63,10 @@ namespace d60.Cirqus.Testing
                 .NewLine();
         }
 
-        protected string NewId<T>()
+        protected string NewId<T>(params object[] args)
         {
             var id = Guid.NewGuid().ToString();
-            ids.Push(new TempId<T>(id));
+            ids.Push(new TypedId<T>(id));
             return id;
         }
 
@@ -80,7 +77,7 @@ namespace d60.Cirqus.Testing
 
         protected string Id<T>(int index) where T : class
         {
-            var array = ids.OfType<TempId<T>>().Reverse().ToArray();
+            var array = ids.OfType<TypedId<T>>().Reverse().ToArray();
             if (array.Length < index)
             {
                 throw new IndexOutOfRangeException(String.Format("Could not find Id<{0}> with index {1}", typeof(T).Name, index));
@@ -91,19 +88,49 @@ namespace d60.Cirqus.Testing
 
         protected string Latest<T>() where T : AggregateRoot
         {
-            return ids.OfType<TempId<T>>().First().ToString();
+            string id;
+            if (!TryGetLatest<T>(out id))
+                throw new InvalidOperationException(string.Format("Can not get latest {0} id, since none exists.", typeof(T).Name));
+
+            return id;
         }
 
-        interface TempId
+        protected bool TryGetLatest<T>(out string latest) where T : AggregateRoot
+        {
+            latest = null;
+
+            var lastestOfType = ids.OfType<TypedId<T>>().ToList();
+            if (lastestOfType.Any())
+            {
+                latest = lastestOfType.First().ToString();
+                return true;
+            }
+
+            return false;
+        }
+
+        //protected void SetupAuthenticationMetadata(Metadata meta)
+        //{
+        //    Id<Company> latestCompanyId;
+        //    if (TryGetLatest(out latestCompanyId))
+        //        meta[MetadataEx.CompanyIdMetadataKey] = latestCompanyId.ToString();
+
+        //    Id<User> latestUserId;
+        //    if (TryGetLatest(out latestUserId))
+        //        meta[MetadataEx.UserIdMetadataKey] = latestUserId.ToString();
+        //}
+
+
+        protected interface TempId
         {
              
         }
 
-        class TempId<T> : TempId
+        class TypedId<T> : TempId
         {
             readonly string id;
 
-            public TempId(string id)
+            public TypedId(string id)
             {
                 this.id = id;
             }
@@ -113,6 +140,6 @@ namespace d60.Cirqus.Testing
                 return id;
             }
         }
-    }
 
+    }
 }

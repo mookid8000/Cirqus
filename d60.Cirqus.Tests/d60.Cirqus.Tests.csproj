@@ -250,6 +250,10 @@
       <Project>{1ECCDCD5-DD78-4F9C-B0C3-BC083742CE99}</Project>
       <Name>d60.Cirqus.MongoDb</Name>
     </ProjectReference>
+    <ProjectReference Include="..\d60.Cirqus.NUnit\d60.Cirqus.NUnit.csproj">
+      <Project>{FCB2E574-8278-44F7-9974-18050B79A5FC}</Project>
+      <Name>d60.Cirqus.NUnit</Name>
+    </ProjectReference>
     <ProjectReference Include="..\d60.Cirqus.PostgreSql\d60.Cirqus.PostgreSql.csproj">
       <Project>{1DCEE03D-8316-443B-92D5-DD89D368837C}</Project>
       <Name>d60.Cirqus.PostgreSql</Name>

@@ -106,7 +106,7 @@ namespace d60.Cirqus.Tests.Bugs
 
         static void Assert(string[] grabbedNames, string[] expectedNames)
         {
-            NUnit.Framework.Assert.That(grabbedNames, Is.EqualTo(expectedNames), @"
+            global::NUnit.Framework.Assert.That(grabbedNames, Is.EqualTo(expectedNames), @"
 Expected:
 
     {0}
