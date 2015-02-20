@@ -1,6 +1,7 @@
 ﻿using System;
 using d60.Cirqus.Config.Configurers;
 using d60.Cirqus.Events;
+using d60.Cirqus.PostgreSql.Events;
 
 namespace d60.Cirqus.PostgreSql.Config
 {

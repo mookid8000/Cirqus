@@ -119,15 +119,15 @@ namespace d60.Cirqus.Views.ViewManagers
 
             public AggregateRoot Get<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists)
             {
-                return _realUnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
+                return _realUnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff, createIfNotExists: false);
             }
         }
 
         public DomainEvent CurrentEvent { get; set; }
-        
+
         public void DeleteThisViewInstance()
         {
-            
+
         }
 
         public void AddEmittedEvent<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot

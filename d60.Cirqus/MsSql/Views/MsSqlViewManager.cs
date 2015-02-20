@@ -58,12 +58,11 @@ namespace d60.Cirqus.MsSql.Views
             if (canGetFromCache && false)
             {
                 return GetPositionFromMemory()
-                       ?? GetPositionFromViews()
+                       ?? GetPositionFromPositionTable()
                        ?? DefaultPosition;
             }
 
             return GetPositionFromPositionTable()
-                   ?? GetPositionFromViews()
                    ?? DefaultPosition;
         }
 
@@ -97,32 +96,6 @@ namespace d60.Cirqus.MsSql.Views
                         var result = cmd.ExecuteScalar();
 
                         if (result != null && result != DBNull.Value)
-                        {
-                            return (long)result;
-                        }
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        long? GetPositionFromViews()
-        {
-            using (var conn = new SqlConnection(_connectionString))
-            {
-                conn.Open();
-
-                using (var tx = conn.BeginTransaction())
-                {
-                    using (var cmd = conn.CreateCommand())
-                    {
-                        cmd.Transaction = tx;
-                        cmd.CommandText = string.Format("SELECT MAX([LastGlobalSequenceNumber]) FROM [{0}]", _tableName);
-
-                        var result = cmd.ExecuteScalar();
-
-                        if (result != DBNull.Value)
                         {
                             return (long)result;
                         }

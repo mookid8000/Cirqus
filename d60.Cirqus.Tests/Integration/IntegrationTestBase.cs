@@ -3,6 +3,7 @@ using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.MsSql.Events;
 using d60.Cirqus.PostgreSql;
+using d60.Cirqus.PostgreSql.Events;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Extensions;

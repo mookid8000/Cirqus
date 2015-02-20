@@ -22,13 +22,13 @@ namespace d60.Cirqus.Testing
     public class TestContext : IDisposable
     {
         readonly IDomainEventSerializer _domainEventSerializer;
-        readonly IDomainTypeNameMapper _domainTypeNameMapper = new DefaultDomainTypeNameMapper();
+        readonly IDomainTypeNameMapper _domainTypeNameMapper;
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly ViewManagerEventDispatcher _viewManagerEventDispatcher;
         readonly IEventDispatcher _eventDispatcher;
         readonly ViewManagerWaitHandle _waitHandle = new ViewManagerWaitHandle();
         readonly List<IViewManager> _addedViews = new List<IViewManager>();
-        readonly ICommandMapper _testCommandMapper = new TestCommandMapper();
+        readonly ICommandMapper _testCommandMapper;
         readonly InMemoryEventStore _eventStore;
 
         DateTime _currentTime = DateTime.MinValue;

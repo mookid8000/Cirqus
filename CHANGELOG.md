@@ -470,6 +470,20 @@ This is a big update that completes the transition to the new, vastly improved v
 * Made shortcuts to registration of services in the configuration api and removed the Registrar-property
 * Changed the configuration of view managers to a fluent one instead of the plethora of overloads
 
+## 0.52.0
+
+* Automagically add command type name to emitted events
+* Fixed bug where unit of work in some circumstances did not cache aggregate roots under their correct global sequence number, thus leading to bad stuff
+
+## 0.53.0
+
+* Moved the auto-added command type name option to a decorator that can be optionally enabled
+
+## 0.54.0
+
+* Added PostgreSQL view manager
+
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund

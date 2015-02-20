@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Root>.</Root>
     <BuildOutputFolder>$(Root)\deploy</BuildOutputFolder>
-    <NuGetFolder>$(Root)\.nuget</NuGetFolder>
+    <NuGetFolder>$(ToolsFolder)\NuGet</NuGetFolder>
     <NuSpecFolder>$(Root)\nuspec</NuSpecFolder>
     <ToolsFolder>$(Root)\tools</ToolsFolder>
     <DefaultNuSpecVersion>VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT</DefaultNuSpecVersion>

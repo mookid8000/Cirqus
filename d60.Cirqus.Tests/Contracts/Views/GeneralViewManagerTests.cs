@@ -1,5 +1,5 @@
 ﻿using System;
-using d60.Cirqus.Config;
+using System.Threading.Tasks;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
@@ -14,6 +14,7 @@ using TestContext = d60.Cirqus.Testing.TestContext;
 namespace d60.Cirqus.Tests.Contracts.Views
 {
     [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
+    [TestFixture(typeof(PostgreSqlViewManagerFactory), Category = TestCategories.PostgreSql)]
     [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
     [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql, Ignore = true, IgnoreReason = "The contained HashSet<string> cannot be persisted by EF")]
     [TestFixture(typeof(InMemoryViewManagerFactory))]
@@ -98,7 +99,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
         }
 
         [Test]
-        public void AutomaticallyCatchesUpAfterPurging()
+        public async Task AutomaticallyCatchesUpAfterPurging()
         {
             // arrange
             Console.WriteLine("Adding view manager for GeneratedIds");
@@ -117,7 +118,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
             _factory.PurgeView<GeneratedIds>();
 
             // assert
-            view.WaitUntilProcessed(last, _defaultTimeout).Wait();
+            await view.WaitUntilProcessed(last, _defaultTimeout);
 
             var idsView = _factory
                 .Load<GeneratedIds>(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId(IdGenerator.InstanceId));
