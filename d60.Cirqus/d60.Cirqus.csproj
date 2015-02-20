@@ -49,6 +49,7 @@
     <Compile Include="Aggregates\FactoryBasedAggregateRootRepository.cs" />
     <Compile Include="Config\Configurers\ConfigurationBuilder.cs" />
     <Compile Include="Config\Configurers\ViewManagerEventDispatcherConfiguationBuilder.cs" />
+    <Compile Include="Events\DisplayAttribute.cs" />
     <Compile Include="Testing\TestContextConfigurationBuilder.cs" />
     <Compile Include="Config\CustomizableDomainTypeNameMapper.cs" />
     <Compile Include="Config\DefaultDomainTypeNameMapper.cs" />
