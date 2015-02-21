@@ -4,9 +4,9 @@
   <PropertyGroup>
     <Root>.</Root>
     <BuildOutputFolder>$(Root)\deploy</BuildOutputFolder>
-    <NuGetFolder>$(ToolsFolder)\NuGet</NuGetFolder>
     <NuSpecFolder>$(Root)\nuspec</NuSpecFolder>
     <ToolsFolder>$(Root)\tools</ToolsFolder>
+    <NuGetFolder>$(ToolsFolder)\NuGet</NuGetFolder>
     <DefaultNuSpecVersion>VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT</DefaultNuSpecVersion>
     <ReleaseMaster>$(ToolsFolder)\ReleaseMaster\ReleaseMaster.exe</ReleaseMaster>
     <IlMerge>$(ToolsFolder)\IlMerge\ilmerge.exe</IlMerge>
