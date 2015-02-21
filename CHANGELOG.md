@@ -493,6 +493,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Fixed internal serializer issue in testing harness
 
+## x
+
+* Added implicit ids to Emit/Then methods og the test harness
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
