@@ -483,9 +483,6 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added PostgreSQL view manager
 * Added testing tools including xUnit and NUnit integration
-
-## 0.55.0
-
 * Fixed nuget package for NUnit
 
 [asgerhallas]: https://github.com/asgerhallas
