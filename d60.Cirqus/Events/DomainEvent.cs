@@ -1,6 +1,5 @@
 ﻿using System;
 using d60.Cirqus.Aggregates;
-using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
 
 namespace d60.Cirqus.Events
@@ -39,25 +38,6 @@ namespace d60.Cirqus.Events
                 Meta.ContainsKey(MetadataKeys.AggregateRootId) ? Meta[MetadataKeys.AggregateRootId] : "?",
                 Meta.ContainsKey(MetadataKeys.SequenceNumber) ? Meta[MetadataKeys.SequenceNumber] : "?",
                 Meta.ContainsKey(MetadataKeys.GlobalSequenceNumber) ? Meta[MetadataKeys.GlobalSequenceNumber] : "?");
-        }
-
-        public string ToString(DisplayStyle style)
-        {
-            switch (style)
-            {
-                case DisplayStyle.Short:
-                    return ToString();
-                case DisplayStyle.Long:
-                    return new EventFormatter().Render(this);
-                default:
-                    throw new ArgumentOutOfRangeException("style");
-            }
-        }
-
-        public enum DisplayStyle
-        {
-            Short,
-            Long
         }
     }
 

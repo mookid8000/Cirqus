@@ -1,30 +1,36 @@
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
-using d60.Cirqus.NUnit;
+using d60.Cirqus.Testing;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Testing
 {
     [TestFixture]
-    public class TestTrinityFormatter
+    public class TestEventFormatter
     {
-        readonly EventFormatter eventFormatter;
+        EventFormatter eventFormatter;
+        TestWriter writer;
 
-        public TestTrinityFormatter()
+        [SetUp]
+        public void Setup()
         {
-            eventFormatter = new EventFormatter();
+            writer = new TestWriter();
+            eventFormatter =
+                new EventFormatter(
+                    new TextFormatter(
+                        writer));
         }
 
         [Test]
         public void RenderDefault()
         {
             var @event = new SomeEventWithNoProps();
-            Assert.AreEqual(
-                "SomeEvent",
-                eventFormatter.Render(@event, null));
+            eventFormatter.Format(null, @event);
+            Assert.AreEqual("SomeEventWithNoProps", writer.Buffer);
         }
 
         [Test]
+        [Ignore]
         public void RenderDefaultsWithMetadata()
         {
             var @event = new SomeEventWithNoProps();
@@ -33,18 +39,29 @@ namespace d60.Cirqus.Tests.Testing
             @event.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber] = "10";
             @event.Meta[DomainEvent.MetadataKeys.Type] = "I'm the silent type";
 
+            eventFormatter.Format(null, @event);
+
             Assert.AreEqual(
-                "SomeEvent : root_id(theid), seq(1), gl_seq(10), type(I'm the silent type)",
-                eventFormatter.Render(@event, null));
+                "SomeEventWithNoProps : root_id(theid), seq(1), gl_seq(10), type(I'm the silent type)",
+                writer.Buffer);
         }
 
         [Test]
+        [Ignore]
         public void RenderFixedTemplate()
         {
             var @event = new SomeEventWithNoProps();
+            
+            eventFormatter.Format("Template", @event);
+            
             Assert.AreEqual(
                 "Template [ root_id: ? / seq: ? / gl_seq: ? ]",
-                eventFormatter.Render(@event, "Template"));
+                writer.Buffer);
+        }
+
+        public class SomeRoot : AggregateRoot
+        {
+            
         }
 
         public class SomeEventWithNoProps : DomainEvent<SomeRoot>
@@ -58,42 +75,4 @@ namespace d60.Cirqus.Tests.Testing
             public int OleOgLone { get; set; }
         }
     }
-
-    [TestFixture]
-    public class TestCirqusTestsHarness : MyCirqusTests
-    {
-        [Test]
-        public void DoSomething()
-        {
-            Emit("theid", new SomeEvent());
-        }
-    }
-
-    public class SomeEvent : DomainEvent<SomeRoot>
-    {
-        
-    }
-
-    public class SomeRoot : AggregateRoot {}
-
-    public class MyCirqusTests : CirqusTests
-    {
-        [Test]
-        public void Test()
-        {
-            Emit(NewId<RootA>(), new EventA());
-
-        }
-
-        public class RootA : AggregateRoot
-        {
-            
-        }
-
-        public class EventA : DomainEvent<RootA>
-        {
-            
-        }
-    }
-
 }

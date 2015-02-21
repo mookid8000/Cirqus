@@ -221,8 +221,10 @@
     <Compile Include="MongoDb\TestMongoDbEventStoreIndexPerf.cs" />
     <Compile Include="Events\TestSerialization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Testing\TestEventTestsHarness.cs" />
+    <Compile Include="Testing\TestCirqusTests.cs" />
     <Compile Include="Testing\TestTestContext.cs" />
+    <Compile Include="Testing\TestEventFormatter.cs" />
+    <Compile Include="Testing\TestWriter.cs" />
     <Compile Include="Views\NewViewManager\TestViewManagerEventDispatcher - Copy.cs" />
     <Compile Include="Views\NewViewManager\Views\AllPotatoesView.cs" />
     <Compile Include="Views\NewViewManager\Events\BaptizedSomeone.cs" />

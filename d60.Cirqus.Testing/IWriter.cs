@@ -1,13 +1,7 @@
-namespace EnergyProjects.Domain.Utilities
+namespace d60.Cirqus.Testing
 {
     public interface IWriter
     {
-        IWriter Indent();
-        IWriter Unindent();
-        IWriter NewLine();
-        IWriter Block(string header);
-        IWriter EndBlock();
-        IWriter Write(object obj);
-        IWriter Write(string str);
+        void Write(string text);
     }
 }
