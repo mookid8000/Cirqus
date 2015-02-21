@@ -15,6 +15,7 @@
     </dependencies>
   </metadata>
   <files>
+    <file src="..\d60.Cirqus.Testing\bin\Release\d60.Cirqus.Testing.dll" target="lib\NET45" />
     <file src="..\d60.Cirqus.NUnit\bin\Release\d60.Cirqus.NUnit.dll" target="lib\NET45" />
   </files>
 </package>

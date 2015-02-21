@@ -485,6 +485,10 @@ This is a big update that completes the transition to the new, vastly improved v
 * Added testing tools including xUnit and NUnit integration
 * Fixed nuget package for NUnit
 
+## 0.55.0
+
+* Fixed missing file dependency in nuget for xunit and nunit
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund
