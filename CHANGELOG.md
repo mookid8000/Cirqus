@@ -489,6 +489,11 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Fixed missing file dependency in nuget for xunit and nunit
 
+## 0.55.1
+
+* Fixed internal serializer issue in testing harness
+
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund

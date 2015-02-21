@@ -10,6 +10,7 @@ using d60.Cirqus.Serialization;
 using EnergyProjects.Tests.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace d60.Cirqus.Testing
 {
@@ -26,18 +27,24 @@ namespace d60.Cirqus.Testing
         TextFormatter formatter;
 
         IEnumerable<DomainEvent> results;
+        JsonSerializerSettings settings;
 
         protected void Begin()
         {
             ids = new Stack<TypedId>();
-            
-            eventSerializer = new JsonDomainEventSerializer();
-            context = TestContext.With()
-                .Options(x => x.UseCustomDomainEventSerializer(eventSerializer))
-                .Create();
+
+            settings = new JsonSerializerSettings
+            {
+                ContractResolver = new ContractResolver(),
+                TypeNameHandling = TypeNameHandling.Objects,
+                Formatting = Formatting.Indented,
+            };
+
+            context = TestContext.With().Create();
 
             formatter = new TextFormatter(Writer());
         }
+
 
         public void End(bool isInExceptionalState)
         {
@@ -188,8 +195,8 @@ namespace d60.Cirqus.Testing
                 var actual = pair.actual;
                 var expected = pair.expected;
 
-                var jActual = JObject.FromObject(actual, JsonSerializer.Create(eventSerializer.Settings));
-                var jExpected = JObject.FromObject(expected, JsonSerializer.Create(eventSerializer.Settings));
+                var jActual = JObject.FromObject(actual, JsonSerializer.Create(settings));
+                var jExpected = JObject.FromObject(expected, JsonSerializer.Create(settings));
 
                 Assert(
                     actual.GetAggregateRootId().Equals(id) && JToken.DeepEquals(jActual, jExpected),
@@ -368,5 +375,16 @@ namespace d60.Cirqus.Testing
             }
         }
 
+        class ContractResolver : DefaultContractResolver
+        {
+            protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+            {
+                var jsonProperties = base.CreateProperties(type, memberSerialization)
+                    .Where(property => property.DeclaringType != typeof(DomainEvent) && property.PropertyName != "Meta")
+                    .ToList();
+
+                return jsonProperties;
+            }
+        }
     }
 }
