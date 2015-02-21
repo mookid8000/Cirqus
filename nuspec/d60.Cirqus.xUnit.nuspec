@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>d60.Cirqus.xUnit</id>
+    <version>VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT</version>
+    <title>d60.Cirqus.xUnit</title>
+    <authors>Mogens Heller Grabe</authors>
+    <owners>mookid8000</owners>
+    <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>xUnit integration for Cirqus testing tools</description>
+    <dependencies>
+      <dependency id="d60.Cirqus" version="VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT" />
+      <dependency id="xUnit" version="1.9.2" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\d60.Cirqus.xUnit\bin\Release\d60.Cirqus.xUnit.dll" target="lib\NET45" />
+  </files>
+</package>
