@@ -482,6 +482,7 @@ This is a big update that completes the transition to the new, vastly improved v
 ## 0.54.0
 
 * Added PostgreSQL view manager
+* Added testing tools including xUnit and NUnit integration
 
 
 [asgerhallas]: https://github.com/asgerhallas
