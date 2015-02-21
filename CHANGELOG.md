@@ -493,9 +493,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Fixed internal serializer issue in testing harness
 
-## x
+## 0.55.2
 
 * Added implicit ids to Emit/Then methods og the test harness
+* Added possibility to configure the test context in the test harness
 
 
 [asgerhallas]: https://github.com/asgerhallas

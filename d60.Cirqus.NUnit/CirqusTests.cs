@@ -9,8 +9,13 @@ namespace d60.Cirqus.NUnit
         [SetUp]
         public void SetupInternal()
         {
-            Begin();
+            Begin(CreateContext());
             Setup();
+        }
+
+        protected virtual Testing.TestContext CreateContext()
+        {
+            return Testing.TestContext.Create();
         }
 
         protected virtual void Setup()

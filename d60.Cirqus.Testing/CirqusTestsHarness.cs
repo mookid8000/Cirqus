@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
-using d60.Cirqus.Serialization;
 using EnergyProjects.Tests.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -29,7 +27,7 @@ namespace d60.Cirqus.Testing
 
         protected TestContext Context { get; private set; }
 
-        protected void Begin()
+        protected void Begin(TestContext context)
         {
             ids = new Stack<TypedId>();
 
@@ -40,7 +38,7 @@ namespace d60.Cirqus.Testing
                 Formatting = Formatting.Indented,
             };
 
-            Context = TestContext.With().Create();
+            Context = context;
 
             formatter = new TextFormatter(Writer());
         }
