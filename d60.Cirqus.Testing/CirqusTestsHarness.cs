@@ -22,12 +22,12 @@ namespace d60.Cirqus.Testing
         protected const string cross = "\u2717";
 
         Stack<TypedId> ids;
-        JsonDomainEventSerializer eventSerializer;
-        TestContext context;
         TextFormatter formatter;
 
         IEnumerable<DomainEvent> results;
         JsonSerializerSettings settings;
+
+        protected TestContext Context { get; private set; }
 
         protected void Begin()
         {
@@ -40,7 +40,7 @@ namespace d60.Cirqus.Testing
                 Formatting = Formatting.Indented,
             };
 
-            context = TestContext.With().Create();
+            Context = TestContext.With().Create();
 
             formatter = new TextFormatter(Writer());
         }
@@ -57,9 +57,9 @@ namespace d60.Cirqus.Testing
 
         protected abstract void Fail();
 
-        protected void Emit<T>(DomainEvent<T> @event) where T : AggregateRoot
+        protected void Emit<T>(params DomainEvent<T>[] events) where T : AggregateRoot
         {
-            Emit(Latest<T>(), @event);
+            Emit(Latest<T>(), events);
         }
 
         protected void Emit<T>(string id, params DomainEvent<T>[] events) where T : AggregateRoot
@@ -76,7 +76,7 @@ namespace d60.Cirqus.Testing
 
             //SetupAuthenticationMetadata(@event.Meta);
 
-            context.Save(@event);
+            Context.Save(@event);
 
             formatter
                 .Block("Given that:")
@@ -94,7 +94,7 @@ namespace d60.Cirqus.Testing
                 .Block("When users:")
                 .Write(command, new EventFormatter(formatter));
 
-            results = context.ProcessCommand(command);
+            results = Context.ProcessCommand(command);
         }
 
         // ReSharper disable once InconsistentNaming
@@ -184,7 +184,12 @@ namespace d60.Cirqus.Testing
             results = results.Skip(1);
         }
 
-        protected void Then(string id, params DomainEvent[] events)
+        protected void Then<T>(params DomainEvent<T>[] events) where T : AggregateRoot
+        {
+            Then(Latest<T>(), events);
+        }
+
+        protected void Then<T>(string id, params DomainEvent<T>[] events) where T : AggregateRoot
         {
             if (events.Length == 0) return;
 

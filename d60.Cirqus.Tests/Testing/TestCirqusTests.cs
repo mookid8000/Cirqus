@@ -1,6 +1,8 @@
-﻿using d60.Cirqus.Aggregates;
+﻿using System.Linq;
+using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
+using d60.Cirqus.Extensions;
 using d60.Cirqus.NUnit;
 using NUnit.Framework;
 
@@ -65,6 +67,27 @@ Then:
             When(new CommandA { Id = Id<RootA>() });
 
             Assert.Throws<AssertionException>(() => Then(NewId<RootA>(), new EventA2()));
+        }
+
+        [Test]
+        public void GivenWithImplicitId()
+        {
+            Emit(NewId<RootA>(), new EventA1());
+            Emit(new EventA2());
+
+            var history = Context.History.ToList();
+            Assert.AreEqual(Id<RootA>(), history[0].GetAggregateRootId());
+            Assert.AreEqual(Id<RootA>(), history[1].GetAggregateRootId());
+        }
+
+        [Test]
+        public void ThenWithImplicitId()
+        {
+            Emit(NewId<RootA>(), new EventA1());
+
+            When(new CommandA { Id = Id<RootA>() });
+
+            Then(new EventA2());
         }
 
         public class RootA : AggregateRoot, IEmit<EventA1>, IEmit<EventA2>
