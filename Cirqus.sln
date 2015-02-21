@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".solution items", ".solution items", "{53C890A9-D587-4BD6-B69C-5B01F64B39F1}"
 	ProjectSection(SolutionItems) = preProject
@@ -15,11 +15,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspec", "nuspec", "{407E21
 		nuspec\d60.Cirqus.EntityFramework.nuspec = nuspec\d60.Cirqus.EntityFramework.nuspec
 		nuspec\d60.Cirqus.MongoDb.nuspec = nuspec\d60.Cirqus.MongoDb.nuspec
 		nuspec\d60.Cirqus.NLog.nuspec = nuspec\d60.Cirqus.NLog.nuspec
+		nuspec\d60.Cirqus.NUnit.nuspec = nuspec\d60.Cirqus.NUnit.nuspec
 		nuspec\d60.Cirqus.nuspec = nuspec\d60.Cirqus.nuspec
 		nuspec\d60.Cirqus.PostgreSql.nuspec = nuspec\d60.Cirqus.PostgreSql.nuspec
 		nuspec\d60.Cirqus.Serilog.nuspec = nuspec\d60.Cirqus.Serilog.nuspec
 		nuspec\d60.Cirqus.SQLite.nuspec = nuspec\d60.Cirqus.SQLite.nuspec
 		nuspec\d60.Cirqus.TsClient.nuspec = nuspec\d60.Cirqus.TsClient.nuspec
+		nuspec\d60.Cirqus.xUnit.nuspec = nuspec\d60.Cirqus.xUnit.nuspec
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B7EFFA50-A51B-4D7D-A264-07151A10F9D8}"
