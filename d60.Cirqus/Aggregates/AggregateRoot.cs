@@ -86,7 +86,7 @@ namespace d60.Cirqus.Aggregates
             var now = Time.UtcNow();
             var sequenceNumber = CurrentSequenceNumber + 1;
 
-            e.Meta.Merge(CurrentCommandMetadata);
+            e.Meta.Merge(CurrentCommandMetadata ?? new Metadata());
             e.Meta[DomainEvent.MetadataKeys.AggregateRootId] = Id;
             e.Meta[DomainEvent.MetadataKeys.TimeUtc] = now.ToString("u");
             e.Meta[DomainEvent.MetadataKeys.SequenceNumber] = sequenceNumber.ToString(Metadata.NumberCulture);
