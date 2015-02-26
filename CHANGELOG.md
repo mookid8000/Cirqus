@@ -498,6 +498,9 @@ This is a big update that completes the transition to the new, vastly improved v
 * Added implicit ids to Emit/Then methods og the test harness
 * Added possibility to configure the test context in the test harness
 
+## 0.56.0
+
+* Metadata from commands now flow to emitted events before they are applied to the aggregate root
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
