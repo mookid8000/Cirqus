@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
+using d60.Cirqus.Numbers;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Extensions;
 using NUnit.Framework;
@@ -51,6 +52,45 @@ namespace d60.Cirqus.Tests.Commands
             Assert.That(allEvents.Count, Is.EqualTo(3));
             Assert.That(allEvents.Count(e => int.Parse(e.Meta[tenantId].ToString()) == 1), Is.EqualTo(1));
             Assert.That(allEvents.Count(e => int.Parse(e.Meta[tenantId].ToString()) == 2), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void CopiesCustomHeadersToEmittedEventsBeforeEmit()
+        {
+            _cirqus.ProcessCommand(new CommandWithMetaData("id")
+            {
+                Meta = {{"key", "1"}}
+            });
+        }
+
+        public class CommandWithMetaData : Command<SomeAggregate>
+        {
+            public CommandWithMetaData(string aggregateRootId) : base(aggregateRootId) { }
+
+            public override void Execute(SomeAggregate aggregateRoot)
+            {
+                aggregateRoot.Do();
+            }
+        }
+
+        public class SomeAggregate : AggregateRoot, IEmit<SomeEvent>
+        {
+            public Metadata Meta { get; set; }
+
+            public void Do()
+            {
+                Emit(new SomeEvent());
+            }
+
+            public void Apply(SomeEvent e)
+            {
+                Assert.AreEqual(e.Meta["key"], "1");
+            }
+        }
+
+        public class SomeEvent : DomainEvent<SomeAggregate>
+        {
+            
         }
 
         public class TakeNextStepCommand : Command<ProgrammerAggregate>
@@ -122,4 +162,5 @@ namespace d60.Cirqus.Tests.Commands
 
         }
     }
+
 }

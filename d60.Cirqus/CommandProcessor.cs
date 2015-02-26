@@ -104,12 +104,6 @@ namespace d60.Cirqus
                     // if command processing yielded no events, there's no more work to do
                     if (!eventsFromThisUnitOfWork.Any()) return;
 
-                    // transfer command metadata to emitted events
-                    foreach (var e in eventsFromThisUnitOfWork)
-                    {
-                        e.Meta.Merge(command.Meta);
-                    }
-
                     // first: save the events
                     _logger.Debug("Saving batch {0} with {1} events", batchId, eventsFromThisUnitOfWork.Count);
 
@@ -162,7 +156,7 @@ namespace d60.Cirqus
 
             var handler = _commandMapper.GetCommandAction(command);
 
-            handler(new DefaultCommandContext(unitOfWork), command);
+            handler(new DefaultCommandContext(unitOfWork, command.Meta), command);
 
             var emittedEvents = unitOfWork.EmittedEvents.ToList();
 

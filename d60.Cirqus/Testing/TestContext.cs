@@ -83,7 +83,7 @@ namespace d60.Cirqus.Testing
             {
                 var handler = _testCommandMapper.GetCommandAction(command);
 
-                handler(new DefaultCommandContext(unitOfWork.RealUnitOfWork), command);
+                handler(new DefaultCommandContext(unitOfWork.RealUnitOfWork, command.Meta), command);
 
                 var eventsToReturn = unitOfWork.EmittedEvents.ToList();
 

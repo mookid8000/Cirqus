@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
@@ -10,7 +11,12 @@ namespace d60.Cirqus.Aggregates
     {
         internal const int InitialAggregateRootSequenceNumber = -1;
 
+        public string Id { get; internal set; }
+
         internal IUnitOfWork UnitOfWork { get; set; }
+        
+        internal ICommandContext CurrentCommandContext { get; set; }
+        internal Metadata CurrentCommandMetadata { get; set; }
 
         internal void Initialize(string id)
         {
@@ -23,8 +29,6 @@ namespace d60.Cirqus.Aggregates
         }
 
         internal protected virtual void EventEmitted(DomainEvent e) { }
-
-        public string Id { get; internal set; }
 
         internal long CurrentSequenceNumber = InitialAggregateRootSequenceNumber;
 
@@ -82,6 +86,7 @@ namespace d60.Cirqus.Aggregates
             var now = Time.UtcNow();
             var sequenceNumber = CurrentSequenceNumber + 1;
 
+            e.Meta.Merge(CurrentCommandMetadata);
             e.Meta[DomainEvent.MetadataKeys.AggregateRootId] = Id;
             e.Meta[DomainEvent.MetadataKeys.TimeUtc] = now.ToString("u");
             e.Meta[DomainEvent.MetadataKeys.SequenceNumber] = sequenceNumber.ToString(Metadata.NumberCulture);

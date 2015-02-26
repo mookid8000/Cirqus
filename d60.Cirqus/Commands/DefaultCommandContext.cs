@@ -1,16 +1,20 @@
 using System;
 using d60.Cirqus.Aggregates;
+using d60.Cirqus.Numbers;
 
 namespace d60.Cirqus.Commands
 {
     class DefaultCommandContext : ICommandContext
     {
         readonly RealUnitOfWork _unitOfWork;
+        readonly Metadata _metadata;
 
-        public DefaultCommandContext(RealUnitOfWork unitOfWork)
+        public DefaultCommandContext(RealUnitOfWork unitOfWork, Metadata metadata)
         {
             _unitOfWork = unitOfWork;
+            _metadata = metadata;
         }
+
 
         public TAggregateRoot Create<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot
         {
@@ -20,14 +24,22 @@ namespace d60.Cirqus.Commands
                     typeof(TAggregateRoot), aggregateRootId));
             }
 
-            return (TAggregateRoot)_unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true);
+            var root = (TAggregateRoot)_unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true);
+            root.CurrentCommandContext = this;
+            root.CurrentCommandMetadata = _metadata;
+
+            return root;
         }
 
         public TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : class
         {
             try
             {
-                return _unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: false) as TAggregateRoot;
+                var root = _unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: false);
+                root.CurrentCommandContext = this;
+                root.CurrentCommandMetadata = _metadata;
+
+                return root as TAggregateRoot;
             }
             catch
             {
@@ -37,9 +49,11 @@ namespace d60.Cirqus.Commands
 
         public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : class
         {
-            var aggregateRoot = _unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: false);
+            var root = _unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: false);
+            root.CurrentCommandContext = this;
+            root.CurrentCommandMetadata = _metadata;
 
-            return aggregateRoot as TAggregateRoot;
+            return root as TAggregateRoot;
         }
     }
 }

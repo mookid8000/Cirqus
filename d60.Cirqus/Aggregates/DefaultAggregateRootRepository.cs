@@ -104,7 +104,7 @@ namespace d60.Cirqus.Aggregates
             
             aggregateRoot.Initialize(aggregateRootId);
             aggregateRoot.UnitOfWork = unitOfWork;
-
+            
             return aggregateRoot;
         }
     }
