@@ -204,6 +204,7 @@
     <Compile Include="PostgreSql\PostgreSqlTestHelper.cs" />
     <Compile Include="Contracts\Serialization\TestCustomSerialization.cs" />
     <Compile Include="Serialization\TestJsonDomainEventSerializer.cs" />
+    <Compile Include="Snapshotting\TestCachingAggregateRootRepositoryDecorator.cs" />
     <Compile Include="SqlTestHelperBase.cs" />
     <Compile Include="MsSql\MsSqlTestHelper.cs" />
     <Compile Include="Playground\TestTypeHashCodes.cs" />
