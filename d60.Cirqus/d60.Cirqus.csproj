@@ -137,6 +137,7 @@
     <Compile Include="Testing\TestUnitOfWork.cs" />
     <Compile Include="Views\InMemoryViewEventDispatcher.cs" />
     <Compile Include="Views\NullEventDispatcher.cs" />
+    <Compile Include="Views\NullProfiler.cs" />
     <Compile Include="Views\ViewManagers\AbstractViewManager.cs" />
     <Compile Include="Views\ViewManagers\IViewManager.cs" />
     <Compile Include="Serialization\JsonDomainEventSerializer.cs" />
@@ -148,6 +149,7 @@
     <Compile Include="Snapshotting\ISnapshotCache.cs" />
     <Compile Include="Snapshotting\Sturdylizer.cs" />
     <Compile Include="Views\CompositeEventDispatcher.cs" />
+    <Compile Include="Views\ViewManagers\IViewManagerProfiler.cs" />
     <Compile Include="Views\ViewManagers\Locators\HandlerViewLocator.cs" />
     <Compile Include="Views\ViewManagers\IGetViewIdsFor.cs" />
     <Compile Include="Views\ViewManagers\DefaultViewContext.cs" />

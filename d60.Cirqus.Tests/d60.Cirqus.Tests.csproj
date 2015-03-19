@@ -175,6 +175,7 @@
     <Compile Include="Contracts\Views\Models\ObjectGraph\ViewRoot.cs" />
     <Compile Include="Diagnostics\TestLapTimes.cs" />
     <Compile Include="Diagnostics\TestProfiler.cs" />
+    <Compile Include="Diagnostics\TestViewManagerProfiler.cs" />
     <Compile Include="EntityFramework\TestEntityFrameworkViewManager.cs" />
     <Compile Include="Events\Replicator\ErrorHandling.cs" />
     <Compile Include="Events\Ntfs\TestCommitLog.cs" />

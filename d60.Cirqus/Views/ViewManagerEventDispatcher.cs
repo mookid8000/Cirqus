@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,8 +41,12 @@ namespace d60.Cirqus.Views
         readonly Thread _worker;
 
         volatile bool _keepWorking = true;
+
         int _maxDomainEventsPerBatch = 100;
+
         long _sequenceNumberToCatchUpTo = -1;
+
+        IViewManagerProfiler _viewManagerProfiler = new NullProfiler();
 
         public ViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, 
             IDomainEventSerializer domainEventSerializer, IDomainTypeNameMapper domainTypeNameMapper, params IViewManager[] viewManagers)
@@ -69,15 +74,23 @@ namespace d60.Cirqus.Views
             AutomaticCatchUpInterval = TimeSpan.FromSeconds(1);
         }
 
+        public void SetProfiler(IViewManagerProfiler viewManagerProfiler)
+        {
+            if (viewManagerProfiler == null) throw new ArgumentNullException("viewManagerProfiler");
+            _logger.Info("Setting profiler: {0}", viewManagerProfiler);
+            _viewManagerProfiler = viewManagerProfiler;
+        }
+
         public void AddViewManager(IViewManager viewManager)
         {
+            if (viewManager == null) throw new ArgumentNullException("viewManager");
             _logger.Info("Adding view manager: {0}", viewManager);
-
             _viewManagers.Enqueue(viewManager);
         }
 
         public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
         {
+            if (eventStore == null) throw new ArgumentNullException("eventStore");
             _logger.Info("Initializing event dispatcher with view managers: {0}", string.Join(", ", _viewManagers));
 
             _logger.Debug("Initiating immediate full catchup");
@@ -90,6 +103,8 @@ namespace d60.Cirqus.Views
 
         public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
+            if (eventStore == null) throw new ArgumentNullException("eventStore");
+            if (events == null) throw new ArgumentNullException("events");
             var list = events.ToList();
 
             if (!list.Any()) return;
@@ -103,6 +118,7 @@ namespace d60.Cirqus.Views
 
         public async Task WaitUntilProcessed<TViewInstance>(CommandProcessingResult result, TimeSpan timeout) where TViewInstance : IViewInstance
         {
+            if (result == null) throw new ArgumentNullException("result");
             await Task.WhenAll(_viewManagers
                 .OfType<IViewManager<TViewInstance>>()
                 .Select(v => v.WaitUntilProcessed(result, timeout))
@@ -111,6 +127,7 @@ namespace d60.Cirqus.Views
 
         public async Task WaitUntilProcessed(CommandProcessingResult result, TimeSpan timeout)
         {
+            if (result == null) throw new ArgumentNullException("result");
             await Task.WhenAll(_viewManagers
                 .Select(v => v.WaitUntilProcessed(result, timeout))
                 .ToArray());
@@ -219,13 +236,19 @@ namespace d60.Cirqus.Views
         void DispatchBatchToViewManagers(IEnumerable<IViewManager> viewManagers, IEnumerable<EventData> batch)
         {
             var context = new DefaultViewContext(_aggregateRootRepository, _domainTypeNameMapper);
-            var list = batch.ToList();
+            var eventList = batch
+                .Select(e => _domainEventSerializer.Deserialize(e))
+                .ToList();
 
             foreach (var viewManager in viewManagers)
             {
-                _logger.Debug("Dispatching batch of {0} events to {1}", list.Count, viewManager);
+                _logger.Debug("Dispatching batch of {0} events to {1}", eventList.Count, viewManager);
 
-                viewManager.Dispatch(context, list.Select(e => _domainEventSerializer.Deserialize(e)));
+                var stopwatch = Stopwatch.StartNew();
+                
+                viewManager.Dispatch(context, eventList);
+                
+                _viewManagerProfiler.RegisterTimeSpent(viewManager, stopwatch.Elapsed);
             }
         }
 

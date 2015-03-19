@@ -18,5 +18,11 @@ namespace d60.Cirqus.Config.Configurers
             RegisterInstance(max);
             return this;
         }
+
+        public ViewManagerEventDispatcherConfiguationBuilder WithProfiler(IViewManagerProfiler profiler)
+        {
+            RegisterInstance(profiler);
+            return this;
+        }
     }
 }

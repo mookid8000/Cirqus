@@ -44,6 +44,12 @@ namespace d60.Cirqus.Config.Configurers
                     eventDispatcher.MaxDomainEventsPerBatch = maxDomainEventsPerBatch;
                 }
 
+                var viewManagerProfiler = viewManagerContext.GetOrDefault<IViewManagerProfiler>();
+                if (viewManagerProfiler != null)
+                {
+                    eventDispatcher.SetProfiler(viewManagerProfiler);
+                }
+
                 return eventDispatcher;
             });
 
