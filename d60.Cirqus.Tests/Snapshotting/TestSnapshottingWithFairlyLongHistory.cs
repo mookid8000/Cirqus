@@ -29,7 +29,7 @@ namespace d60.Cirqus.Tests.Snapshotting
 
         protected override void DoSetUp()
         {
-            _database = MongoHelper.InitializeTestDatabase(dropExistingDatabase:false);
+            _database = MongoHelper.InitializeTestDatabase(dropExistingDatabase: true);
 
             CirqusLoggerFactory.Current = new ConsoleLoggerFactory(Logger.Level.Warn);
         }
@@ -38,7 +38,7 @@ namespace d60.Cirqus.Tests.Snapshotting
         public void ProcessOneMoreCommand()
         {
             var commandProcessor = GetCommandProcessor(true);
-            
+
             commandProcessor.ProcessCommand(new CrushItRealGood("id", 0.1m));
             commandProcessor.ProcessCommand(new CrushItRealGood("id", 0.1m));
         }
@@ -98,7 +98,7 @@ caching in use: {3}",
 
             if (useCaching)
             {
-                aggregateRootRepository = new CachingAggregateRootRepositoryDecorator(aggregateRootRepository, new InMemorySnapshotCache{ApproximateMaxNumberOfCacheEntries = 100}, eventStore, serializer);
+                aggregateRootRepository = new CachingAggregateRootRepositoryDecorator(aggregateRootRepository, new InMemorySnapshotCache { ApproximateMaxNumberOfCacheEntries = 100 }, eventStore, serializer);
             }
 
             _timeTaker.InnerAggregateRootRepository = aggregateRootRepository;
@@ -140,10 +140,10 @@ caching in use: {3}",
             public AggregateRoot Get<TAggregateRoot>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false)
             {
                 var stopwatch = Stopwatch.StartNew();
-                
+
                 var aggregateRootInfo = InnerAggregateRootRepository
                     .Get<TAggregateRoot>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber, createIfNotExists);
-                
+
                 _timeSpentHydratingAggregateRoots += stopwatch.Elapsed;
 
                 return aggregateRootInfo;
