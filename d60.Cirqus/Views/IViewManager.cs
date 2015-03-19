@@ -15,7 +15,7 @@ namespace d60.Cirqus.Views
         /// <summary>
         /// Must return the global sequence number that this view knows for sure has been successfully processed
         /// </summary>
-        long GetPosition(bool canGetFromCache = true);
+        Task<long> GetPosition(bool canGetFromCache = true);
 
         /// <summary>
         /// Must update the view with the specified events

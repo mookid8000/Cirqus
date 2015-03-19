@@ -206,7 +206,7 @@ namespace d60.Cirqus.Views
 
             // get the lowest position among all the view managers
             var lowestSequenceNumberSuccessfullyProcessed = viewManagers
-                .Min(v => v.GetPosition(canGetFromCache: cachedInformationAllowed));
+                .Min(v => v.GetPosition(canGetFromCache: cachedInformationAllowed).Result);
 
             // if we've already been there, don't do anything
             if (lowestSequenceNumberSuccessfullyProcessed >= sequenceNumberToCatchUpTo) return;
@@ -244,11 +244,7 @@ namespace d60.Cirqus.Views
             {
                 _logger.Debug("Dispatching batch of {0} events to {1}", eventList.Count, viewManager);
 
-                var stopwatch = Stopwatch.StartNew();
-                
                 viewManager.Dispatch(context, eventList);
-                
-                _viewManagerProfiler.RegisterTimeSpent(viewManager, stopwatch.Elapsed);
             }
         }
 

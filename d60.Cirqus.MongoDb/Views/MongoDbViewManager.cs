@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
@@ -72,7 +73,7 @@ namespace d60.Cirqus.MongoDb.Views
             
         }
 
-        public override long GetPosition(bool canGetFromCache = true)
+        public override async Task<long> GetPosition(bool canGetFromCache = true)
         {
             if (canGetFromCache && false)
             {

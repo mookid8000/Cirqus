@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Views.ViewManagers;
@@ -86,7 +87,7 @@ namespace d60.Cirqus.EntityFramework
             }
         }
 
-        public override long GetPosition(bool canGetFromCache = true)
+        public override async Task<long> GetPosition(bool canGetFromCache = true)
         {
             using (var context = GetContext())
             {

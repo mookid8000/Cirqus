@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,16 +52,16 @@ namespace d60.Cirqus.MsSql.Views
         {
         }
 
-        public override long GetPosition(bool canGetFromCache = true)
+        public override async Task<long> GetPosition(bool canGetFromCache = true)
         {
             if (canGetFromCache && false)
             {
                 return GetPositionFromMemory()
-                       ?? GetPositionFromPositionTable()
+                       ?? await GetPositionFromPositionTable()
                        ?? DefaultPosition;
             }
 
-            return GetPositionFromPositionTable()
+            return await GetPositionFromPositionTable()
                    ?? DefaultPosition;
         }
 
@@ -78,11 +77,11 @@ namespace d60.Cirqus.MsSql.Views
             return null;
         }
 
-        long? GetPositionFromPositionTable()
+        async Task<long?> GetPositionFromPositionTable()
         {
             using (var conn = new SqlConnection(_connectionString))
             {
-                conn.Open();
+                await conn.OpenAsync();
 
                 using (var tx = conn.BeginTransaction())
                 {
@@ -93,7 +92,7 @@ namespace d60.Cirqus.MsSql.Views
 
                         cmd.Parameters.Add("id", SqlDbType.NVarChar, PrimaryKeySize).Value = _tableName;
 
-                        var result = cmd.ExecuteScalar();
+                        var result = await cmd.ExecuteScalarAsync();
 
                         if (result != null && result != DBNull.Value)
                         {
@@ -191,26 +190,6 @@ WHEN NOT MATCHED THEN
                 cmd.ExecuteNonQuery();
             }
 
-        }
-
-        public async Task WaitUntilProcessed(CommandProcessingResult result, TimeSpan timeout)
-        {
-            if (!result.EventsWereEmitted) return;
-
-            var mostRecentGlobalSequenceNumber = result.GetNewPosition();
-
-            var stopwatch = Stopwatch.StartNew();
-
-            while (GetPosition(canGetFromCache: false) < mostRecentGlobalSequenceNumber)
-            {
-                if (stopwatch.Elapsed > timeout)
-                {
-                    throw new TimeoutException(string.Format("View for {0} did not catch up to {1} within {2} timeout!",
-                        typeof(TViewInstance), mostRecentGlobalSequenceNumber, timeout));
-                }
-
-                await Task.Delay(TimeSpan.FromMilliseconds(10));
-            }
         }
 
         public override TViewInstance Load(string viewId)

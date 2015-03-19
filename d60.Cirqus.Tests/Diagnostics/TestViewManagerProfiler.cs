@@ -60,7 +60,7 @@ namespace d60.Cirqus.Tests.Diagnostics
         {
             readonly ConcurrentDictionary<IViewManager, TimeSpan> _timeSpent = new ConcurrentDictionary<IViewManager, TimeSpan>();
 
-            public void RegisterTimeSpent(IViewManager viewManager, TimeSpan duration)
+            public void RegisterTimeSpent(IViewManager viewManager, DomainEvent domainEvent, TimeSpan duration)
             {
                 _timeSpent.AddOrUpdate(viewManager, _ => duration, (_, value) => value + duration);
             }

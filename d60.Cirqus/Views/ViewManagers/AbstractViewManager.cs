@@ -19,7 +19,9 @@ namespace d60.Cirqus.Views.ViewManagers
 
             var stopwatch = Stopwatch.StartNew();
 
-            while (GetPosition(canGetFromCache: false) < mostRecentGlobalSequenceNumber)
+            var currentPosition = await GetPosition(canGetFromCache: true);
+
+            while (currentPosition < mostRecentGlobalSequenceNumber)
             {
                 if (stopwatch.Elapsed > timeout)
                 {
@@ -27,11 +29,13 @@ namespace d60.Cirqus.Views.ViewManagers
                         typeof(TViewInstance), mostRecentGlobalSequenceNumber, timeout));
                 }
 
-                await Task.Delay(TimeSpan.FromMilliseconds(10));
+                await Task.Delay(TimeSpan.FromMilliseconds(20));
+
+                currentPosition = await GetPosition(canGetFromCache: false);
             }
         }
 
-        public abstract long GetPosition(bool canGetFromCache = true);
+        public abstract Task<long> GetPosition(bool canGetFromCache = true);
 
         public abstract void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch);
 

@@ -1,9 +1,13 @@
 ﻿using System;
+using d60.Cirqus.Events;
 
 namespace d60.Cirqus.Views.ViewManagers
 {
     public interface IViewManagerProfiler
     {
-        void RegisterTimeSpent(IViewManager viewManager, TimeSpan duration);
+        /// <summary>
+        /// Will be called by the view manager for each domain event that is dispatched.
+        /// </summary>
+        void RegisterTimeSpent(IViewManager viewManager, DomainEvent domainEvent, TimeSpan duration);
     }
 }

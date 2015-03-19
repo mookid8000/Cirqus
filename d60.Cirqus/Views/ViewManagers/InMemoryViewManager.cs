@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Views.ViewManagers.Locators;
@@ -36,7 +37,7 @@ namespace d60.Cirqus.Views.ViewManagers
             _views.TryRemove(viewId, out dummy);
         }
 
-        public override long GetPosition(bool canGetFromCache = true)
+        public override async Task<long> GetPosition(bool canGetFromCache = true)
         {
             return InnerGetPosition();
         }

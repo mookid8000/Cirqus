@@ -49,9 +49,9 @@ namespace d60.Cirqus.Numbers
         internal Metadata Clone()
         {
             var clone = new Metadata();
-            foreach (var kvp in this)
+            foreach (var key in Keys.ToArray())
             {
-                clone.Add(kvp.Key, kvp.Value);
+                clone.Add(key, this[key]);
             }
             return clone;
         }

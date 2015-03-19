@@ -200,7 +200,7 @@ namespace d60.Cirqus.Tests.Testing
             
             public List<DomainEvent> ReceivedDomainEvents { get; set; }
             
-            public long GetPosition(bool canGetFromCache = true)
+            public async Task<long> GetPosition(bool canGetFromCache = true)
             {
                 return _position;
             }

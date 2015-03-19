@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
-using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
@@ -23,7 +23,7 @@ namespace d60.Cirqus.Tests.Config
     public class TestConfigurationApi : FixtureBase
     {
         [Test, Category(TestCategories.MongoDb)]
-        public void CanInstallMultipleEventDispatchers()
+        public async Task CanInstallMultipleEventDispatchers()
         {
             var database = MongoHelper.InitializeTestDatabase();
 
@@ -65,7 +65,7 @@ namespace d60.Cirqus.Tests.Config
             var lastResult = commandProcessor.ProcessCommand(new ConfigTestCommand("id2"));
 
             Console.WriteLine("Waiting until views have been updated");
-            waiter.WaitForAll(lastResult, TimeSpan.FromSeconds(5)).Wait();
+            await waiter.WaitForAll(lastResult, TimeSpan.FromSeconds(5));
 
             Console.WriteLine("Done - checking collections");
             var expectedViewCollectionNames = new[] { "view1", "view2", "view3", "view4" };

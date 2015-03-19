@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
@@ -74,21 +75,31 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
             return connection;
         }
 
-        public override long GetPosition(bool canGetFromCache = true)
+        async Task<NpgsqlConnection> GetConnectionAsync()
         {
-            return GetPositionFromPositionTable()
+            var connection = new NpgsqlConnection(_connectionString);
+
+            await connection.OpenAsync();
+
+            return connection;
+        }
+
+                
+        public override async Task<long> GetPosition(bool canGetFromCache = true)
+        {
+            return await GetPositionFromPositionTable()
                    ?? DefaultPosition;
         }
 
-        long? GetPositionFromPositionTable()
+        async Task<long?> GetPositionFromPositionTable()
         {
-            using (var connection = GetConnection())
+            using (var connection = await GetConnectionAsync())
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = string.Format(@"select ""position"" from ""{0}"" where ""id"" = @id", _positionTableName);
                 command.Parameters.Add("id", NpgsqlDbType.Varchar, PrimaryKeySize).Value = _tableName;
 
-                var result = command.ExecuteScalar();
+                var result = await command.ExecuteScalarAsync();
 
                 if (DBNull.Value == result)
                 {

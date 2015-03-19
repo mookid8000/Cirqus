@@ -99,7 +99,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
         class TestViewManager : IViewManager
         {
             long _position = -1;
-            public long GetPosition(bool canGetFromCache = true)
+            public async Task<long> GetPosition(bool canGetFromCache = true)
             {
                 return _position;
             }
