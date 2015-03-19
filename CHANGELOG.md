@@ -502,6 +502,11 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Metadata from commands now flow to emitted events before they are applied to the aggregate root
 
+## 0.57.0
+
+* Added simple profiler hook to `ViewManagerEventDispatcher` - let's see if it turns out to be useful
+
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund
