@@ -53,7 +53,7 @@ namespace d60.Cirqus.Tests.Diagnostics
             Assert.That(accumulatedTimes.ContainsKey(view2), "Could not find {0} among the keys!", view2);
 
             Assert.That(accumulatedTimes[view1], Is.GreaterThan(TimeSpan.FromSeconds(1)));
-            Assert.That(accumulatedTimes[view2], Is.GreaterThan(TimeSpan.FromSeconds(.1)).And.LessThan(TimeSpan.FromSeconds(0.11)));
+            Assert.That(accumulatedTimes[view2], Is.GreaterThan(TimeSpan.FromSeconds(.1)).And.LessThan(TimeSpan.FromSeconds(0.15)));
         }
 
         class MyProfiler : IViewManagerProfiler
