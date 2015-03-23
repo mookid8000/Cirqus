@@ -1,141 +1,59 @@
-﻿using System;
-using System.Collections.Generic;
-using d60.Cirqus.Events;
-using d60.Cirqus.Extensions;
+﻿using d60.Cirqus.Events;
 
 namespace d60.Cirqus.Aggregates
 {
-    ///// <summary>
-    ///// Encapsulates information about an aggregate root instance
-    ///// </summary>
-    //public abstract class AggregateRootInfo
-    //{
-    //    public abstract long LastSeqNo { get; }
+    /// <summary>
+    /// Opens up <see cref="AggregateRoot"/> for getting sequence number information
+    /// </summary>
+    public class AggregateRootInfo
+    {
+        public AggregateRoot Instance { get; private set; }
 
-    //    public abstract long LastGlobalSeqNo { get; }
+        public AggregateRootInfo(AggregateRoot instance)
+        {
+            Instance = instance;
+        }
 
-    //    public bool IsNew
-    //    {
-    //        get { return LastSeqNo == AggregateRoot.InitialAggregateRootSequenceNumber; }
-    //    }
+        /// <summary>
+        /// Gets the ID of the instance (just for convenience)
+        /// </summary>
+        public string Id
+        {
+            get { return Instance.Id; }
+        }
 
-    //    public abstract Type AggregateRootType { get; }
+        /// <summary>
+        /// Gets the current sequence number of the aggregate root - this number will be equal to the <see cref="DomainEvent.MetadataKeys.SequenceNumber"/> of
+        /// the most recent event applied to the root, or <see cref="AggregateRoot.InitialAggregateRootSequenceNumber"/> if it has not yet had any events applied
+        /// </summary>
+        public long SequenceNumber
+        {
+            get { return Instance.CurrentSequenceNumber; }
+        }
 
-    //    public abstract string AggregateRootId { get; }
-    //}
+        /// <summary>
+        /// Gets whether the instance is new, i.e. whether it has not yet had any events applied
+        /// </summary>
+        public bool IsNew
+        {
+            get { return Instance.CurrentSequenceNumber == AggregateRoot.InitialAggregateRootSequenceNumber; }
+        }
 
-    //public class AggregateRootInfo<TAggregateRoot> : AggregateRootInfo where TAggregateRoot : AggregateRoot
-    //{
-    //    public static AggregateRootInfo<TAggregateRoot> Create(TAggregateRoot aggregateRoot)
-    //    {
-    //        return new AggregateRootInfo<TAggregateRoot>(aggregateRoot);
-    //    }
-
-    //    AggregateRootInfo(TAggregateRoot aggregateRoot)
-    //    {
-    //        AggregateRoot = aggregateRoot;
-    //    }
-
-    //    public TAggregateRoot AggregateRoot { get; private set; }
-
-    //    public override long LastSeqNo
-    //    {
-    //        get { return AggregateRoot.CurrentSequenceNumber; }
-    //    }
-
-    //    public override long LastGlobalSeqNo
-    //    {
-    //        get { return AggregateRoot.GlobalSequenceNumberCutoff; }
-    //    }
-
-    //    public override Type AggregateRootType
-    //    {
-    //        get { return typeof(TAggregateRoot); }
-    //    }
-
-    //    public override string AggregateRootId
-    //    {
-    //        get { return AggregateRoot.Id; }
-    //    }
-
-    //    public void Apply(IEnumerable<DomainEvent> eventsToApply, IUnitOfWork unitOfWork)
-    //    {
-    //        AggregateRoot.UnitOfWork = unitOfWork;
-
-    //        using (new ThrowingUnitOfWork(AggregateRoot))
-    //        {
-    //            AggregateRoot.ReplayState = ReplayState.ReplayApply;
-
-    //            foreach (var e in eventsToApply)
-    //            {
-    //                // ensure that other aggregates loaded during event application are historic if that's required
-    //                AggregateRoot.GlobalSequenceNumberCutoff = e.GetGlobalSequenceNumber();
-
-    //                try
-    //                {
-    //                    var expectedNextSequenceNumber = AggregateRoot.CurrentSequenceNumber + 1;
-
-    //                    if (expectedNextSequenceNumber != e.GetSequenceNumber())
-    //                    {
-    //                        throw new InvalidOperationException(string.Format("Attempted to apply event {0} to root {1} with ID {2}, but the expected next seq no is {3}!!!",
-    //                            e.GetSequenceNumber(), typeof(TAggregateRoot), AggregateRoot.Id, expectedNextSequenceNumber));
-    //                    }
-
-    //                    AggregateRoot.ApplyEvent(e);
-    //                }
-    //                catch (Exception exception)
-    //                {
-    //                    throw new ApplicationException(string.Format("Could not apply event {0} to {1}", e, AggregateRoot), exception);
-    //                }
-    //            }
-    //        }
-
-    //        // restore the cutoff so we don't hinder the root's ability to load other aggregate roots from its emitter methods
-    //        //AggregateRoot.GlobalSequenceNumberCutoff = previousCutoff;
-    //        AggregateRoot.ReplayState = ReplayState.None;
-    //    }
-
-    //    /// <summary>
-    //    /// Sensitive <see cref="IUnitOfWork"/> stub that can be mounted on an aggregate root when it is in a state
-    //    /// where it is NOT allowed to emit events.
-    //    /// </summary>
-    //    class ThrowingUnitOfWork : IUnitOfWork, IDisposable
-    //    {
-    //        readonly AggregateRoot _root;
-    //        readonly IUnitOfWork _originalUnitOfWork;
-
-    //        public ThrowingUnitOfWork(AggregateRoot root)
-    //        {
-    //            _root = root;
-    //            _originalUnitOfWork = _root.UnitOfWork;
-    //            _root.UnitOfWork = this;
-    //        }
-
-    //        public void AddEmittedEvent<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
-    //        {
-    //            throw new InvalidOperationException(string.Format("The aggregate root of type {0} with ID {1} attempted to emit event {2} while applying events, which is not allowed",
-    //                _root.GetType(), _root.Id, e));
-    //        }
-
-    //        public void AddToCache<TAggregateRoot>(TAggregateRoot aggregateRoot, long globalSequenceNumberCutoff) where TAggregateRoot : AggregateRoot
-    //        {
-    //            _originalUnitOfWork.AddToCache(aggregateRoot, globalSequenceNumberCutoff);
-    //        }
-
-    //        public bool Exists<TAggregateRootToLoad>(string aggregateRootId, long globalSequenceNumberCutoff) where TAggregateRootToLoad : AggregateRoot
-    //        {
-    //            return _originalUnitOfWork.Exists<TAggregateRootToLoad>(aggregateRootId, globalSequenceNumberCutoff);
-    //        }
-
-    //        public AggregateRootInfo<TAggregateRootToLoad> Get<TAggregateRootToLoad>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists) where TAggregateRootToLoad : AggregateRoot, new()
-    //        {
-    //            return _originalUnitOfWork.Get<TAggregateRootToLoad>(aggregateRootId, globalSequenceNumberCutoff);
-    //        }
-
-    //        public void Dispose()
-    //        {
-    //            _root.UnitOfWork = _originalUnitOfWork;
-    //        }
-    //    }
-    //}
+        /// <summary>
+        /// Applies the given event, performing any related lookups using the given unit of work
+        /// </summary>
+        public void Apply(DomainEvent domainEvent, IUnitOfWork unitOfWork)
+        {
+            var previousUnitOfWork = Instance.UnitOfWork;
+            try
+            {
+                Instance.UnitOfWork = unitOfWork;
+                Instance.ApplyEvent(domainEvent, ReplayState.ReplayApply);
+            }
+            finally
+            {
+                Instance.UnitOfWork = previousUnitOfWork;
+            }
+        }
+    }
 }

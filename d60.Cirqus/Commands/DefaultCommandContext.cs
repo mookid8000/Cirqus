@@ -25,7 +25,7 @@ namespace d60.Cirqus.Commands
             }
 
             var root = (TAggregateRoot)_unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true);
-            root.CurrentCommandContext = this;
+
             root.CurrentCommandMetadata = _metadata;
 
             return root;
@@ -36,7 +36,7 @@ namespace d60.Cirqus.Commands
             try
             {
                 var root = _unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: false);
-                root.CurrentCommandContext = this;
+                
                 root.CurrentCommandMetadata = _metadata;
 
                 return root as TAggregateRoot;
@@ -50,7 +50,7 @@ namespace d60.Cirqus.Commands
         public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : class
         {
             var root = _unitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: false);
-            root.CurrentCommandContext = this;
+            
             root.CurrentCommandMetadata = _metadata;
 
             return root as TAggregateRoot;

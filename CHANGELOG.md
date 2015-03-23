@@ -514,6 +514,9 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added `StandardViewManagerProfiler` to make simple profiling of views easy
 
+## 0.58.2
+
+* Added `AggregateRootInfo` that can be used as a helper when you want to implement caching
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen

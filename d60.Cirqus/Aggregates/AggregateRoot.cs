@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
@@ -15,7 +14,6 @@ namespace d60.Cirqus.Aggregates
 
         internal IUnitOfWork UnitOfWork { get; set; }
         
-        internal ICommandContext CurrentCommandContext { get; set; }
         internal Metadata CurrentCommandMetadata { get; set; }
 
         internal void Initialize(string id)
