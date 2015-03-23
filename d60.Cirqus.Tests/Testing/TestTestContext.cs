@@ -205,7 +205,7 @@ namespace d60.Cirqus.Tests.Testing
                 return _position;
             }
 
-            public void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
+            public void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch, IViewManagerProfiler viewManagerProfiler)
             {
                 ReceivedDomainEvents.AddRange(batch);
 

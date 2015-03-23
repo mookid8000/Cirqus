@@ -5,6 +5,7 @@ using d60.Cirqus.Events;
 using d60.Cirqus.MsSql.Views;
 using d60.Cirqus.Numbers;
 using d60.Cirqus.Tests.Stubs;
+using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
@@ -32,7 +33,7 @@ namespace d60.Cirqus.Tests.MsSql
         [Test]
         public void VerifyDataTypes()
         {
-            _viewManager.Dispatch(new ThrowingViewContext(), new DomainEvent[] { GetAnEvent("key") });
+            _viewManager.Dispatch(new ThrowingViewContext(), new DomainEvent[] { GetAnEvent("key") }, new NullProfiler());
 
             var view = _viewManager.Load(InstancePerAggregateRootLocator.GetViewIdFromAggregateRootId("key"));
 

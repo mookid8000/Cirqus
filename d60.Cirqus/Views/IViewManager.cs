@@ -20,7 +20,7 @@ namespace d60.Cirqus.Views
         /// <summary>
         /// Must update the view with the specified events
         /// </summary>
-        void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch);
+        void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch, IViewManagerProfiler viewManagerProfiler);
 
         /// <summary>
         /// Must block until the results of the specified command processing result are visible in the view

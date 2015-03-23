@@ -244,7 +244,7 @@ namespace d60.Cirqus.Views
             {
                 _logger.Debug("Dispatching batch of {0} events to {1}", eventList.Count, viewManager);
 
-                viewManager.Dispatch(context, eventList);
+                viewManager.Dispatch(context, eventList, _viewManagerProfiler);
             }
         }
 

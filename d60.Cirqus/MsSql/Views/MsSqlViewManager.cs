@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -105,7 +106,7 @@ namespace d60.Cirqus.MsSql.Views
             return null;
         }
 
-        public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
+        public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch, IViewManagerProfiler viewManagerProfiler)
         {
             var eventList = batch.ToList();
 
@@ -125,6 +126,7 @@ namespace d60.Cirqus.MsSql.Views
                     {
                         if (!ViewLocator.IsRelevant<TViewInstance>(e)) continue;
 
+                        var stopwatch = Stopwatch.StartNew();
                         var viewIds = _viewLocator.GetAffectedViewIds(viewContext, e);
 
                         foreach (var viewId in viewIds)
@@ -135,6 +137,8 @@ namespace d60.Cirqus.MsSql.Views
 
                             _dispatcher.DispatchToView(viewContext, e, view);
                         }
+
+                        viewManagerProfiler.RegisterTimeSpent(this, e, stopwatch.Elapsed);
                     }
 
                     Save(activeViewsById, conn, tx);

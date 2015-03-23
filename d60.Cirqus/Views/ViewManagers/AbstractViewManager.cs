@@ -37,7 +37,7 @@ namespace d60.Cirqus.Views.ViewManagers
 
         public abstract Task<long> GetPosition(bool canGetFromCache = true);
 
-        public abstract void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch);
+        public abstract void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch, IViewManagerProfiler viewManagerProfiler);
 
         public abstract void Purge();
 

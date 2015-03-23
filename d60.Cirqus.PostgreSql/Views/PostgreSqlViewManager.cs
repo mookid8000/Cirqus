@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using d60.Cirqus.Events;
@@ -110,7 +111,7 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
             }
         }
 
-        public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
+        public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch, IViewManagerProfiler viewManagerProfiler)
         {
             var eventList = batch.ToList();
 
@@ -128,6 +129,7 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
                     {
                         if (!ViewLocator.IsRelevant<TViewInstance>(e)) continue;
 
+                        var stopwatch = Stopwatch.StartNew();
                         var viewIds = _viewLocator.GetAffectedViewIds(viewContext, e);
 
                         foreach (var viewId in viewIds)
@@ -144,6 +146,8 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
 
                             _dispatcher.DispatchToView(viewContext, e, view.ViewInstance);
                         }
+
+                        viewManagerProfiler.RegisterTimeSpent(this, e, stopwatch.Elapsed);
                     }
 
                     Save(activeViewsById, connection, transaction);

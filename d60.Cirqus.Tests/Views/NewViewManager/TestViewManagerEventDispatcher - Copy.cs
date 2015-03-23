@@ -104,7 +104,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
                 return _position;
             }
 
-            public void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
+            public void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch, IViewManagerProfiler viewManagerProfiler)
             {
                 foreach (var e in batch)
                 {

@@ -4,6 +4,7 @@ using d60.Cirqus.Events;
 using d60.Cirqus.MsSql.Views;
 using d60.Cirqus.Numbers;
 using d60.Cirqus.Tests.Stubs;
+using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
@@ -42,7 +43,7 @@ namespace d60.Cirqus.Tests.MsSql
             {
                 GetAnEvent(Guid.NewGuid(), 0),
                 GetAnEvent(Guid.NewGuid(), 1)
-            });
+            }, new NullProfiler());
 
             var view = _viewManager.Load(GlobalInstanceLocator.GetViewInstanceId());
             Assert.That(view.Events, Is.EqualTo(2));

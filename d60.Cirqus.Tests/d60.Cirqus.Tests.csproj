@@ -165,6 +165,7 @@
     <Compile Include="Contracts\Views\Models\ViewLocators\MyViewInstance.cs" />
     <Compile Include="Contracts\Views\Models\ViewLocators\Root.cs" />
     <Compile Include="Contracts\Views\Models\ViewLocators\ThisIsJustAnEvent.cs" />
+    <Compile Include="Contracts\Views\Models\ViewProfiling\Test.cs" />
     <Compile Include="Contracts\Views\PolymorphicDispatch.cs" />
     <Compile Include="Contracts\Views\PurgeTest.cs" />
     <Compile Include="Contracts\Views\RecoveryTest.cs" />
@@ -175,6 +176,7 @@
     <Compile Include="Contracts\Views\ViewInstanceDeletion.cs" />
     <Compile Include="Contracts\Views\ViewLocators.cs" />
     <Compile Include="Contracts\Views\Models\ObjectGraph\ViewRoot.cs" />
+    <Compile Include="Contracts\Views\ViewProfiling.cs" />
     <Compile Include="Diagnostics\TestLapTimes.cs" />
     <Compile Include="Diagnostics\TestProfiler.cs" />
     <Compile Include="Diagnostics\TestViewManagerProfiler.cs" />

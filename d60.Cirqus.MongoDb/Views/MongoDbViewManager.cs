@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -126,7 +127,7 @@ namespace d60.Cirqus.MongoDb.Views
             Interlocked.Exchange(ref _cachedPosition, newPosition);
         }
 
-        public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
+        public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch, IViewManagerProfiler viewManagerProfiler)
         {
             if (_purging) return;
 
@@ -140,6 +141,7 @@ namespace d60.Cirqus.MongoDb.Views
             {
                 if (!ViewLocator.IsRelevant<TViewInstance>(e)) continue;
 
+                var stopwatch = Stopwatch.StartNew();
                 var viewIds = _viewLocator.GetAffectedViewIds(viewContext, e);
 
                 foreach (var viewId in viewIds)
@@ -148,6 +150,8 @@ namespace d60.Cirqus.MongoDb.Views
 
                     _dispatcherHelper.DispatchToView(viewContext, e, viewInstance);
                 }
+
+                viewManagerProfiler.RegisterTimeSpent(this, e, stopwatch.Elapsed);
             }
 
             FlushCacheToDatabase(cachedViewInstances);

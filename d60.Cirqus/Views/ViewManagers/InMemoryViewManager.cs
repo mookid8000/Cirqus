@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using d60.Cirqus.Events;
@@ -42,7 +43,7 @@ namespace d60.Cirqus.Views.ViewManagers
             return InnerGetPosition();
         }
 
-        public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
+        public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch, IViewManagerProfiler viewManagerProfiler)
         {
             var updatedViews = new HashSet<TViewInstance>();
 
@@ -50,6 +51,7 @@ namespace d60.Cirqus.Views.ViewManagers
             {
                 if (ViewLocator.IsRelevant<TViewInstance>(e))
                 {
+                    var stopwatch = Stopwatch.StartNew();
                     var affectedViewIds = _viewLocator.GetAffectedViewIds(viewContext, e);
 
                     foreach (var viewId in affectedViewIds)
@@ -60,6 +62,8 @@ namespace d60.Cirqus.Views.ViewManagers
 
                         updatedViews.Add(viewInstance);
                     }
+
+                    viewManagerProfiler.RegisterTimeSpent(this, e, stopwatch.Elapsed);
                 }
 
                 Interlocked.Exchange(ref _position, e.GetGlobalSequenceNumber());

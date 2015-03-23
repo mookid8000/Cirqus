@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using d60.Cirqus.Events;
@@ -99,7 +100,7 @@ namespace d60.Cirqus.EntityFramework
             }
         }
 
-        public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch)
+        public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch, IViewManagerProfiler viewManagerProfiler)
         {
             var eventList = batch.ToList();
 
@@ -113,6 +114,7 @@ namespace d60.Cirqus.EntityFramework
                 {
                     if (!ViewLocator.IsRelevant<TViewInstance>(e)) continue;
 
+                    var stopwatch = Stopwatch.StartNew();
                     var viewIds = _viewLocator.GetAffectedViewIds(viewContext, e);
 
                     foreach (var viewId in viewIds)
@@ -124,6 +126,8 @@ namespace d60.Cirqus.EntityFramework
 
                         _dispatcherHelper.DispatchToView(viewContext, e, viewInstance);
                     }
+
+                    viewManagerProfiler.RegisterTimeSpent(this, e, stopwatch.Elapsed);
                 }
 
                 UpdatePersistentCache(context, eventList.Max(e => e.GetGlobalSequenceNumber()));
