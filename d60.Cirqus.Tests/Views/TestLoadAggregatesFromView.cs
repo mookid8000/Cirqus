@@ -79,7 +79,7 @@ namespace d60.Cirqus.Tests.Views
             Console.WriteLine("---------------------------------------------");
 
             Assert.That(stringWithTheLines.ToLowerInvariant(), Contains.Substring("exception"));
-            Assert.That(stringWithTheLines.ToLowerInvariant(), Contains.Substring("does not exist"));
+            Assert.That(stringWithTheLines.ToLowerInvariant(), Contains.Substring("but it didn't exist"));
         }
 
         [Test]
