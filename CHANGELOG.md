@@ -522,6 +522,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Changed `StandardViewManagerProfiler` model to include number of events with its trackings
 
+## 0.59.1
+
+* Fixed odd missing delegation to inner unit of work in `DefaultViewContext`
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund

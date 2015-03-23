@@ -24,21 +24,16 @@ namespace d60.Cirqus.Views.ViewManagers
 
         public bool Exists(string aggregateRootId, long globalSequenceNumberCutoff)
         {
-            return _aggregateRootRepository.Exists(aggregateRootId, globalSequenceNumberCutoff);
+            return _realUnitOfWork.Exists(aggregateRootId, globalSequenceNumberCutoff);
         }
 
         public AggregateRoot Get<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists)
         {
-            return _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, _realUnitOfWork, globalSequenceNumberCutoff);
+            return _realUnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff, createIfNotExists);
         }
 
         public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : class
         {
-            if (!_aggregateRootRepository.Exists(aggregateRootId, maxGlobalSequenceNumber: globalSequenceNumber))
-            {
-                throw new ArgumentException(string.Format("Aggregate root with ID {0} does not exist!", aggregateRootId), "aggregateRootId");
-            }
-
             var aggregateRootInfo = _aggregateRootRepository
                 .Get<TAggregateRoot>(aggregateRootId, this, maxGlobalSequenceNumber: globalSequenceNumber);
 
@@ -68,7 +63,6 @@ namespace d60.Cirqus.Views.ViewManagers
             try
             {
                 return Load<TAggregateRoot>(aggregateRootId);
-
             }
             catch
             {
@@ -81,7 +75,6 @@ namespace d60.Cirqus.Views.ViewManagers
             try
             {
                 return Load<TAggregateRoot>(aggregateRootId, globalSequenceNumber);
-
             }
             catch
             {

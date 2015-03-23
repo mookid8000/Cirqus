@@ -15,7 +15,7 @@ namespace d60.Cirqus.Views.ViewManagers
         /// <summary>
         /// Loads the specified aggregate root snapshot as it looked at the time after the event with the specified global sequence number, throwing an exception if an instance with that ID did not exist at that time
         /// </summary>
-        TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : class;
+        TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot :  class;
 
         /// <summary>
         /// Loads the specified aggregate root snapshot as it looked after emitting the event currently being handled, returning null if an instance with that ID does not exist
