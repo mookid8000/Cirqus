@@ -518,6 +518,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added `AggregateRootInfo` that can be used as a helper when you want to implement caching
 
+## 0.59.0
+
+* Changed `StandardViewManagerProfiler` model to include number of events with its trackings
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,13 +16,30 @@ namespace d60.Cirqus.Views.ViewManagers
     /// </summary>
     public class StandardViewManagerProfiler : IViewManagerProfiler
     {
-        readonly ConcurrentDictionary<IViewManager, ConcurrentDictionary<Type, TimeSpan>> 
-            _timeSpent = new ConcurrentDictionary<IViewManager, ConcurrentDictionary<Type, TimeSpan>>();
+        class Tracking
+        {
+            public Tracking(TimeSpan initialDuration)
+            {
+                Total = initialDuration;
+                Updates = 1;
+            }
+            public TimeSpan Total { get; private set; }
+            public int Updates { get; private set; }
+            public Tracking Update(TimeSpan duration)
+            {
+                Total += duration;
+                Updates++;
+                return this;
+            }
+        }
+
+        readonly ConcurrentDictionary<IViewManager, ConcurrentDictionary<Type, Tracking>>
+            _timeSpent = new ConcurrentDictionary<IViewManager, ConcurrentDictionary<Type, Tracking>>();
 
         public void RegisterTimeSpent(IViewManager viewManager, DomainEvent domainEvent, TimeSpan duration)
         {
-            _timeSpent.GetOrAdd(viewManager, vm => new ConcurrentDictionary<Type, TimeSpan>())
-                .AddOrUpdate(domainEvent.GetType(), type => duration, (type, sum) => sum + duration);
+            _timeSpent.GetOrAdd(viewManager, vm => new ConcurrentDictionary<Type, Tracking>())
+                .AddOrUpdate(domainEvent.GetType(), type => new Tracking(duration), (type, tracking) => tracking.Update(duration));
         }
 
         public ViewManagerStatsResult GetStats()
@@ -31,59 +49,82 @@ namespace d60.Cirqus.Views.ViewManagers
 
             foreach (var viewManager in viewManagers)
             {
-                ConcurrentDictionary<Type, TimeSpan> dict;
-                if (!_timeSpent.TryRemove(viewManager, out dict)) continue;
+                ConcurrentDictionary<Type, Tracking> trackings;
+                if (!_timeSpent.TryRemove(viewManager, out trackings)) continue;
 
-                collectedStats.Add(new ViewManagerStats(viewManager, dict.Select(kvp => new DomainEventStats(kvp.Key, kvp.Value))));
+                collectedStats.Add(new ViewManagerStats(viewManager, trackings.Select(kvp => new DomainEventStats(kvp.Key, kvp.Value.Total, kvp.Value.Updates))));
             }
 
             return new ViewManagerStatsResult(collectedStats);
         }
 
-        public class ViewManagerStatsResult
+        public class ViewManagerStatsResult : IEnumerable<ViewManagerStats>
         {
-            public ViewManagerStatsResult(List<ViewManagerStats> stats)
+            readonly List<ViewManagerStats> _stats;
+
+            public ViewManagerStatsResult(IEnumerable<ViewManagerStats> stats)
             {
-                Stats = stats;
+                _stats = stats.ToList();
             }
 
-            public List<ViewManagerStats> Stats { get; private set; }
+            public IEnumerator<ViewManagerStats> GetEnumerator()
+            {
+                return _stats.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
         }
 
-        public class ViewManagerStats
+        public class ViewManagerStats : IEnumerable<DomainEventStats>
         {
+            readonly List<DomainEventStats> _eventStats;
+
             public ViewManagerStats(IViewManager viewManager, IEnumerable<DomainEventStats> eventStats)
             {
+                _eventStats = eventStats.ToList();
                 ViewManager = viewManager;
-                Stats = eventStats.ToList();
             }
 
             public IViewManager ViewManager { get; private set; }
-            
-            public List<DomainEventStats> Stats { get; private set; }
+
+            public IEnumerator<DomainEventStats> GetEnumerator()
+            {
+                return _eventStats.GetEnumerator();
+            }
 
             public override string ToString()
             {
                 return string.Format(@"{0}:
-{1}", ViewManager.GetType().GetPrettyName(), string.Join(Environment.NewLine, Stats.Select(s => s.ToString()).Indented()));
+{1}", ViewManager.GetType().GetPrettyName(), string.Join(Environment.NewLine, this.Select(s => s.ToString()).Indented()));
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
             }
         }
 
         public class DomainEventStats
         {
-            public DomainEventStats(Type domainEventType, TimeSpan elapsed)
+            public DomainEventStats(Type domainEventType, TimeSpan elapsed, int numberOfOccurrences)
             {
                 DomainEventType = domainEventType;
                 Elapsed = elapsed;
+                NumberOfOccurrences = numberOfOccurrences;
             }
 
             public Type DomainEventType { get; private set; }
             
             public TimeSpan Elapsed { get; private set; }
+            
+            public int NumberOfOccurrences { get; private set; }
 
             public override string ToString()
             {
-                return string.Format("{0}: {1:0.0} s", DomainEventType.Name, Elapsed.TotalSeconds);
+                return string.Format("{0}: {1:0.0} s ({2})", DomainEventType.Name, Elapsed.TotalSeconds, NumberOfOccurrences);
             }
         }
     }
