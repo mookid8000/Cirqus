@@ -1,4 +1,5 @@
-﻿using d60.Cirqus.Aggregates;
+﻿using System;
+using d60.Cirqus.Aggregates;
 
 namespace d60.Cirqus.Events
 {
@@ -26,5 +27,7 @@ namespace d60.Cirqus.Events
         /// Gets from the cache or from another relevant place the aggregate root instance with the given ID
         /// </summary>
         AggregateRoot Get<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists);
+
+        event Action Committed;
     }
 }

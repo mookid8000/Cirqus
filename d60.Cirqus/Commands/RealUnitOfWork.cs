@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Config;
 using d60.Cirqus.Events;
@@ -65,6 +66,8 @@ namespace d60.Cirqus.Commands
             return aggregateRoot;
         }
 
+        public event Action Committed;
+
         AggregateRoot GetAggregateRootFromCache(string aggregateRootId, long globalSequenceNumberCutoff)
         {
             if (!CachedAggregateRoots.ContainsKey(globalSequenceNumberCutoff)) return null;
@@ -76,6 +79,16 @@ namespace d60.Cirqus.Commands
             var aggregateRoot = cachedEntriesForThisInstant[aggregateRootId];
 
             return aggregateRoot;
+        }
+
+        public void RaiseCommitted()
+        {
+            var committed = Committed;
+            
+            if (committed != null)
+            {
+                committed();
+            }
         }
     }
 }

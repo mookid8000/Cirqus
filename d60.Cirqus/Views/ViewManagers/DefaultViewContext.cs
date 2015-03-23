@@ -32,6 +32,8 @@ namespace d60.Cirqus.Views.ViewManagers
             return _realUnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff, createIfNotExists);
         }
 
+        public event Action Committed;
+
         public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : class
         {
             var aggregateRootInfo = _aggregateRootRepository
@@ -114,6 +116,8 @@ namespace d60.Cirqus.Views.ViewManagers
             {
                 return _realUnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff, createIfNotExists: false);
             }
+
+            public event Action Committed;
         }
 
         public DomainEvent CurrentEvent { get; set; }

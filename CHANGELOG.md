@@ -526,6 +526,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Fixed odd missing delegation to inner unit of work in `DefaultViewContext`
 
+## 0.60.0
+
+* Added `Committed` hook to `IUnitOfWork` - will probably turn out to be useful
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund

@@ -43,14 +43,8 @@ namespace d60.Cirqus.Tests.Snapshotting
             commandProcessor.ProcessCommand(new CrushItRealGood("id", 0.1m));
         }
 
-        [TestCase(true, 3, 50)]
-        [TestCase(false, 3, 50)]
-        [TestCase(true, 10, 1000, Ignore = TestCategories.IgnoreLongRunning)]
-        [TestCase(false, 10, 1000, Ignore = TestCategories.IgnoreLongRunning)]
-        [TestCase(true, 100, 10000, Ignore = TestCategories.IgnoreLongRunning)]
-        [TestCase(false, 100, 10000, Ignore = TestCategories.IgnoreLongRunning)]
-        [TestCase(true, 10, 10000, Ignore = TestCategories.IgnoreLongRunning)]
-        [TestCase(false, 10, 10000, Ignore = TestCategories.IgnoreLongRunning)]
+        [TestCase(true, 10, 1000)]
+        [TestCase(false, 10, 1000)]
         public void RunTest(bool useCaching, int numberOfRoots, int numberOfCommands)
         {
             var aggregateRootIds = Enumerable.Range(0, numberOfRoots).Select(i => i.ToString()).ToArray();
