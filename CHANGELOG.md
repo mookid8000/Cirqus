@@ -506,6 +506,9 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added simple profiler hook to `ViewManagerEventDispatcher` - let's see if it turns out to be useful
 
+## 0.58.0
+
+* Made view manager profiler hook more details - now captures time for individual events
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
