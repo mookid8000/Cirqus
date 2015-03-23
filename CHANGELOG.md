@@ -510,6 +510,11 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Made view manager profiler hook more details - now captures time for individual events
 
+## 0.58.1
+
+* Added `StandardViewManagerProfiler` to make simple profiling of views easy
+
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund

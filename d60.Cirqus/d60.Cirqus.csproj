@@ -51,6 +51,8 @@
     <Compile Include="Config\Configurers\ConfigurationBuilder.cs" />
     <Compile Include="Config\Configurers\ViewManagerEventDispatcherConfiguationBuilder.cs" />
     <Compile Include="Events\DisplayAttribute.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="Testing\TestContextConfigurationBuilder.cs" />
     <Compile Include="Config\CustomizableDomainTypeNameMapper.cs" />
     <Compile Include="Config\DefaultDomainTypeNameMapper.cs" />
@@ -156,6 +158,7 @@
     <Compile Include="Views\IViewManager.cs" />
     <Compile Include="Views\ViewManagers\InMemoryViewManager.cs" />
     <Compile Include="Views\ViewManagerEventDispatcher.cs" />
+    <Compile Include="Views\ViewManagers\StandardViewManagerProfiler.cs" />
     <Compile Include="Views\ViewManagers\ViewInstanceUpdatedHandler.cs" />
     <Compile Include="Views\ViewManagers\ViewManagerWaitHandle.cs" />
     <Compile Include="Views\ViewManagers\IViewContext.cs" />

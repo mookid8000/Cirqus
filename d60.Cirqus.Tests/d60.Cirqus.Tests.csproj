@@ -190,6 +190,7 @@
     <Compile Include="Events\Ntfs\TestNtfsEventStore.cs" />
     <Compile Include="Examples\ReadmeSnippet.cs" />
     <Compile Include="Extensions\Helpful.cs" />
+    <Compile Include="Extensions\TestTypeExtensions.cs" />
     <Compile Include="FixtureBase.cs" />
     <Compile Include="Integration\IntegrationTestBase.cs" />
     <Compile Include="Integration\LoadAggregateRootBySuperclass.cs" />
