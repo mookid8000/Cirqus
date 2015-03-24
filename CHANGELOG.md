@@ -530,6 +530,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added `Committed` hook to `IUnitOfWork` - will probably turn out to be useful
 
+## 0.60.1
+
+* Made `Sturdylizer` even more sturdy
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund

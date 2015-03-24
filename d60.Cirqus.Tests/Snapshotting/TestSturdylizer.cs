@@ -48,5 +48,31 @@ namespace d60.Cirqus.Tests.Snapshotting
         }
         // ReSharper restore UnusedMember.Local
 
+        [Test]
+        public void WorksWithThisBadBoyToo()
+        {
+            var roow = new Root{ClassWithConstructionValidation = new ClassWithConstructionValidation(4)};
+
+            var data = _sturdylizer.SerializeObject(roow);
+            var roundtrippedRoow = (Root)_sturdylizer.DeserializeObject(data);
+
+            Assert.That(roundtrippedRoow.ClassWithConstructionValidation.Value , Is.EqualTo(4));
+        }
+
+        public class Root : AggregateRoot
+        {
+            public ClassWithConstructionValidation ClassWithConstructionValidation { get; set; }
+        }
+
+        public class ClassWithConstructionValidation
+        {
+            public int Value { get; private set; }
+
+            public ClassWithConstructionValidation(int value)
+            {
+                Value = value;
+                if (value <= 0) throw new ArgumentException(string.Format("Oh noes: {0}", value));
+            }
+        }
     }
 }
