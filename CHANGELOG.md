@@ -534,6 +534,12 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Made `Sturdylizer` even more sturdy
 
+## 0.60.2
+
+* Made in-mem event cache simpler and trim itself in the background
+* Introduced deserialized domain event serializer cache
+
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund

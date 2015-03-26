@@ -15,7 +15,7 @@ namespace d60.Cirqus.Aggregates
             if (aggregateRootFactoryMethod == null)
                 throw new ArgumentNullException("aggregateRootFactoryMethod");
 
-            this._aggregateRootFactoryMethod = aggregateRootFactoryMethod;
+            _aggregateRootFactoryMethod = aggregateRootFactoryMethod;
         }
 
         protected override AggregateRoot CreateAggregateRootInstance(Type aggregateRootType)

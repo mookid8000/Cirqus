@@ -11,19 +11,6 @@ namespace d60.Cirqus.Config.Configurers
         public AggregateRootRepositoryConfigurationBuilder(IRegistrar registrar) : base(registrar) { }
 
         /// <summary>
-        /// Registers a <see cref="DefaultAggregateRootRepository"/> as the <see cref="IAggregateRootRepository"/> implementation. Since this is the
-        /// default, there's no need to call this method explicitly.
-        /// </summary>
-        public void UseDefault()
-        {
-            Register(context =>
-                new DefaultAggregateRootRepository(
-                    context.Get<IEventStore>(),
-                    context.Get<IDomainEventSerializer>(),
-                    context.Get<IDomainTypeNameMapper>()));
-        }
-
-        /// <summary>
         /// Registers a <see cref="FactoryBasedAggregateRootRepository"/> as the <see cref="IAggregateRootRepository"/> implementation. 
         /// </summary>
         public void UseFactoryMethod(Func<Type, AggregateRoot> factoryMethod)

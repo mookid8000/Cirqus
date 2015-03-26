@@ -3,7 +3,7 @@
 namespace d60.Cirqus.Aggregates
 {
     /// <summary>
-    /// Opens up <see cref="AggregateRoot"/> for getting sequence number information
+    /// Opens up <see cref="AggregateRoot"/> for getting sequence number information. Can be useful when working with caching
     /// </summary>
     public class AggregateRootInfo
     {

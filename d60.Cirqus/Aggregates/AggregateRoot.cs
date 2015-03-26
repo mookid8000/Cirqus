@@ -6,6 +6,10 @@ using d60.Cirqus.Numbers;
 
 namespace d60.Cirqus.Aggregates
 {
+    /// <summary>
+    /// This is the base class of aggregate roots. Derive from this in order to create an event-driven domain model root object that
+    /// is capable of emitting its own events, building its state as a projection off of previously emitted events.
+    /// </summary>
     public abstract class AggregateRoot
     {
         internal const int InitialAggregateRootSequenceNumber = -1;

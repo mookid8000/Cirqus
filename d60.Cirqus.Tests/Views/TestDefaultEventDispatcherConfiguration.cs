@@ -1,7 +1,5 @@
-﻿using System;
-using d60.Cirqus.Aggregates;
+﻿using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
-using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
@@ -28,7 +26,6 @@ namespace d60.Cirqus.Tests.Views
         {
             using (var commandProcessor = CommandProcessor.With()
                 .EventStore(e => e.Register<IEventStore>(c => new InMemoryEventStore(c.Get<IDomainEventSerializer>())))
-                .AggregateRootRepository(a => a.UseDefault())
                 .Create())
             {
                 commandProcessor.ProcessCommand(new Commando("id"));

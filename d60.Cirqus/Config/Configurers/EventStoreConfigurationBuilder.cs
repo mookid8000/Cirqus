@@ -12,7 +12,10 @@ namespace d60.Cirqus.Config.Configurers
         /// </summary>
         public void EnableCaching(int maxCacheEntries)
         {
-            Decorate(context => new CachingEventStoreDecorator(context.Get<IEventStore>()));
+            Decorate(context => new CachingEventStoreDecorator(context.Get<IEventStore>())
+            {
+                MaxCacheEntries = maxCacheEntries
+            });
         }
     }
 }

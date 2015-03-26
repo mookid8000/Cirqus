@@ -7,6 +7,7 @@ using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 
@@ -170,6 +171,35 @@ namespace d60.Cirqus.MongoDb.Events
 
         public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
         {
+            // aggregation framework is extremely slow - don't use it (for this)
+            //var args = new AggregateArgs
+            //{
+            //    Pipeline = new[]
+            //    {
+            //        new BsonDocument {{"$unwind", "$Events"}},
+            //        new BsonDocument
+            //        {
+            //            {
+            //                "$match", new BsonDocument
+            //                {
+            //                    {"Events.AggregateRootId", aggregateRootId},
+            //                    {"Events.SequenceNumber", new BsonDocument {{"$gte", firstSeq}}},
+            //                }
+            //            }
+            //        },
+            //        new BsonDocument {{"$sort", new BsonDocument {{"Events.SequenceNumber", 1}}}}
+            //    }
+            //};
+
+            //return _eventBatches.Aggregate(args)
+            //    .Select(result =>
+            //    {
+            //        var bsonValue = result["Events"];
+            //        var asBsonDocument = bsonValue.AsBsonDocument;
+            //        return BsonSerializer.Deserialize<MongoEvent>(asBsonDocument);
+            //    })
+            //    .Select(MongoEventToEvent);
+
             var criteria = Query.And(
                 Query.EQ(AggregateRootIdDocPath, aggregateRootId),
                 Query.GTE(SeqNoDocPath, firstSeq));
