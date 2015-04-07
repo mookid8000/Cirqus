@@ -1,10 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 
 namespace d60.Cirqus.Events
 {
+    /// <summary>
+    /// Replicator that can sync events from one event store to another. PLEASE NOTE that it is assumed that the destination
+    /// event store does not receive events from anywhere else, since the destinations event store's <see cref="IEventStore.GetNextGlobalSequenceNumber"/>
+    /// is used to figure out which sequence number to resume from in the source event store.
+    /// </summary>
     public class EventReplicator : IDisposable
     {
         public const string SourceEventBatchId = "src_batch_id";
@@ -35,6 +42,7 @@ namespace d60.Cirqus.Events
             };
 
             TimeToPauseOnError = TimeSpan.FromSeconds(10);
+            MaxEventsPerBatch = 100;
         }
 
         public void Start()
@@ -58,7 +66,7 @@ namespace d60.Cirqus.Events
                 {
                     _logger.Error(exception, "An error occurred while attempting to load events from {0} into {1} - waiting {2}",
                         _sourceEventStore, _destinationEventStore, TimeToPauseOnError);
-                    
+
                     // avoid thrashing
                     Thread.Sleep(TimeToPauseOnError);
                 }
@@ -67,26 +75,45 @@ namespace d60.Cirqus.Events
 
         public TimeSpan TimeToPauseOnError { get; set; }
 
+        public int MaxEventsPerBatch { get; set; }
+
         void PumpEvents()
         {
             var didGetEvents = false;
+            var nextEventBatch = new List<EventData>();
 
             foreach (var newEvent in _sourceEventStore.Stream(_destinationEventStore.GetNextGlobalSequenceNumber()))
             {
-                var newEventBatchId = Guid.NewGuid();
-
                 newEvent.Meta[SourceEventBatchId] = newEvent.GetBatchId().ToString();
 
                 _logger.Debug("Replicating event {0}", newEvent.GetGlobalSequenceNumber());
 
-                _destinationEventStore.Save(newEventBatchId, new[] { newEvent });
+                nextEventBatch.Add(newEvent);
+
+                if (nextEventBatch.Count >= MaxEventsPerBatch)
+                {
+                    SaveBatch(nextEventBatch);
+                    nextEventBatch = new List<EventData>();
+                }
+
                 didGetEvents = true;
+            }
+
+            if (nextEventBatch.Any())
+            {
+                SaveBatch(nextEventBatch);
             }
 
             if (!didGetEvents)
             {
                 Thread.Sleep(200);
             }
+        }
+
+        void SaveBatch(List<EventData> nextEventBatch)
+        {
+            var newEventBatchId = Guid.NewGuid();
+            _destinationEventStore.Save(newEventBatchId, nextEventBatch);
         }
 
         bool _disposed;

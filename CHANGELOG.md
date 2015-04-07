@@ -539,6 +539,9 @@ This is a big update that completes the transition to the new, vastly improved v
 * Made in-mem event cache simpler and trim itself in the background
 * Introduced deserialized domain event serializer cache
 
+## 0.60.3
+
+* Enable batching in `EventReplicator`
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
