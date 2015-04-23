@@ -27,8 +27,7 @@ namespace d60.Cirqus.Views
         /// <summary>
         /// Use a concurrent queue to store views so that it's safe to traverse in the background even though new views may be added to it at runtime
         /// </summary>
-        readonly ConcurrentQueue<IViewManager> _viewManagers = new ConcurrentQueue<IViewManager>();
-
+        readonly ConcurrentDictionary<IViewManager, object> _viewManagers = new ConcurrentDictionary<IViewManager, object>();
         readonly ConcurrentQueue<PieceOfWork> _work = new ConcurrentQueue<PieceOfWork>();
 
         readonly IAggregateRootRepository _aggregateRootRepository;
@@ -61,7 +60,7 @@ namespace d60.Cirqus.Views
             _domainEventSerializer = domainEventSerializer;
             _domainTypeNameMapper = domainTypeNameMapper;
 
-            viewManagers.ToList().ForEach(view => _viewManagers.Enqueue(view));
+            viewManagers.ToList().ForEach(AddViewManager);
 
             _worker = new Thread(DoWork) { IsBackground = true };
 
@@ -83,8 +82,14 @@ namespace d60.Cirqus.Views
         public void AddViewManager(IViewManager viewManager)
         {
             if (viewManager == null) throw new ArgumentNullException("viewManager");
-            _logger.Info("Adding view manager: {0}", viewManager);
-            _viewManagers.Enqueue(viewManager);
+
+            _viewManagers.AddOrUpdate(viewManager,
+                v =>
+                {
+                    _logger.Debug("Adding view manager: {0}", viewManager);
+                    return new object();
+                },
+                (vm, existing) => existing);
         }
 
         public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
@@ -127,7 +132,7 @@ namespace d60.Cirqus.Views
         public async Task WaitUntilProcessed(CommandProcessingResult result, TimeSpan timeout)
         {
             if (result == null) throw new ArgumentNullException("result");
-            await Task.WhenAll(_viewManagers
+            await Task.WhenAll(_viewManagers.Keys
                 .Select(v => v.WaitUntilProcessed(result, timeout))
                 .ToArray());
         }
@@ -179,7 +184,7 @@ namespace d60.Cirqus.Views
 
                 try
                 {
-                    CatchUpTo(sequenceNumberToCatchUpTo, _eventStore, pieceOfWork.CanUseCachedInformation, pieceOfWork.PurgeViewsFirst, _viewManagers.ToArray(), pieceOfWork.Events);
+                    CatchUpTo(sequenceNumberToCatchUpTo, _eventStore, pieceOfWork.CanUseCachedInformation, pieceOfWork.PurgeViewsFirst, _viewManagers.Keys.ToArray(), pieceOfWork.Events);
                 }
                 catch (Exception exception)
                 {
