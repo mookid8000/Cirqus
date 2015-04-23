@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -205,8 +204,11 @@ namespace d60.Cirqus.Views
             }
 
             // get the lowest position among all the view managers
-            var lowestSequenceNumberSuccessfullyProcessed = viewManagers
-                .Min(v => v.GetPosition(canGetFromCache: cachedInformationAllowed).Result);
+            var positions = viewManagers
+                .Select(viewManager => new Pos(viewManager, viewManager.GetPosition(canGetFromCache: cachedInformationAllowed).Result))
+                .ToDictionary(a => a.ViewManager);
+
+            var lowestSequenceNumberSuccessfullyProcessed = positions.Min(a => a.Value.Position);
 
             // if we've already been there, don't do anything
             if (lowestSequenceNumberSuccessfullyProcessed >= sequenceNumberToCatchUpTo) return;
@@ -216,7 +218,7 @@ namespace d60.Cirqus.Views
             {
                 var serializedEvents = events.Select(e => _domainEventSerializer.Serialize(e));
 
-                DispatchBatchToViewManagers(viewManagers, serializedEvents);
+                DispatchBatchToViewManagers(viewManagers, serializedEvents, positions);
 
                 lowestSequenceNumberSuccessfullyProcessed = events.Last().GetGlobalSequenceNumber();
 
@@ -229,11 +231,23 @@ namespace d60.Cirqus.Views
 
             foreach (var batch in eventStore.Stream(sequenceNumberToReplayFrom).Batch(MaxDomainEventsPerBatch))
             {
-                DispatchBatchToViewManagers(viewManagers, batch);
+                DispatchBatchToViewManagers(viewManagers, batch, positions);
             }
         }
 
-        void DispatchBatchToViewManagers(IEnumerable<IViewManager> viewManagers, IEnumerable<EventData> batch)
+        class Pos
+        {
+            public Pos(IViewManager viewManager, long position)
+            {
+                ViewManager = viewManager;
+                Position = position;
+            }
+
+            public IViewManager ViewManager { get; private set; }
+            public long Position { get; private set; }
+        }
+
+        void DispatchBatchToViewManagers(IEnumerable<IViewManager> viewManagers, IEnumerable<EventData> batch, Dictionary<IViewManager, Pos> positions)
         {
             var context = new DefaultViewContext(_aggregateRootRepository, _domainTypeNameMapper);
             var eventList = batch
@@ -242,6 +256,9 @@ namespace d60.Cirqus.Views
 
             foreach (var viewManager in viewManagers)
             {
+                var thisParticularPosition = positions[viewManager].Position;
+                if (thisParticularPosition >= eventList.Max(e => e.GetGlobalSequenceNumber())) continue;
+
                 _logger.Debug("Dispatching batch of {0} events to {1}", eventList.Count, viewManager);
 
                 viewManager.Dispatch(context, eventList, _viewManagerProfiler);

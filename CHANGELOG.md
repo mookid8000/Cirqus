@@ -543,6 +543,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Enable batching in `EventReplicator`
 
+## 0.60.4
+
+* Fixed odd behavior that would accidentally replay events agains entire pool of view managers when one of them was behind
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund
