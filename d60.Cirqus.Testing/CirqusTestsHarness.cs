@@ -70,6 +70,9 @@ namespace d60.Cirqus.Testing
 
         void Emit<T>(string id, DomainEvent<T> @event) where T : AggregateRoot
         {
+            
+            var emitterType = ids.First(i => i.ToString() == Latest<T>()).GetEmitterType().AssemblyQualifiedName;
+            @event.Meta[DomainEvent.MetadataKeys.Emitter] = emitterType;
             @event.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id;
 
             //SetupAuthenticationMetadata(@event.Meta);
@@ -172,10 +175,10 @@ namespace d60.Cirqus.Testing
             var next = results.FirstOrDefault();
 
             formatter.Block("Then:");
-            
+
             Assert(
-                next is T, 
-                () => formatter.Write(typeof(T).Name).NewLine(), 
+                next is T,
+                () => formatter.Write(typeof(T).Name).NewLine(),
                 () => formatter.Write("But we got " + next.GetType().Name).NewLine());
 
             // consume one event
@@ -284,7 +287,7 @@ namespace d60.Cirqus.Testing
         {
             latest = null;
 
-            var lastestOfType = ids.OfType<TypedId<T>>().ToList();
+            var lastestOfType = ids.Where(i => typeof(T).IsAssignableFrom(i.GetEmitterType())).ToList();
             if (lastestOfType.Any())
             {
                 latest = lastestOfType.First().ToString();
@@ -360,7 +363,8 @@ namespace d60.Cirqus.Testing
 
         protected interface TypedId
         {
-             
+            Type GetEmitterType();
+
         }
 
         class TypedId<T> : TypedId
@@ -375,6 +379,11 @@ namespace d60.Cirqus.Testing
             public override string ToString()
             {
                 return id;
+            }
+
+            public Type GetEmitterType()
+            {
+                return typeof(T);
             }
         }
 
