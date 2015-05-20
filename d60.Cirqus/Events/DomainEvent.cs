@@ -42,12 +42,6 @@ namespace d60.Cirqus.Events
             /// </summary>
             public const string Owner = "owner";
 
-
-            /// <summary>
-            /// "Emmiter" of the event - must be set to the type name of the aggregate root that emitted this event
-            /// </summary>
-            public const string Emitter = "emitter";
-
             /// <summary>
             /// Type of the event - must be set to the name of the event type
             /// </summary>

@@ -152,8 +152,7 @@ namespace d60.Cirqus.Testing
                     .Select(aggregateRootId =>
                     {
                         var firstEvent = _eventStore.Load(aggregateRootId).First();
-                        var ownerType = _domainTypeNameMapper.GetName(Type.GetType(firstEvent.Meta[DomainEvent.MetadataKeys.Emitter]));
-                        var typeName = firstEvent.Meta[DomainEvent.MetadataKeys.Owner] ?? ownerType;
+                        var typeName = firstEvent.Meta[DomainEvent.MetadataKeys.Owner] ?? "";
                         var type = TryGetType(typeName);
 
                         if (type == null) return null;
@@ -202,16 +201,18 @@ namespace d60.Cirqus.Testing
         /// <summary>
         /// Saves the given domain event to the history - requires that the aggregate root ID has been added in the event's metadata under the <see cref="DomainEvent.MetadataKeys.AggregateRootId"/> key
         /// </summary>
-        public CommandProcessingResultWithEvents Save<TAggregateRoot>(DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
+        public CommandProcessingResultWithEvents Save<TAggregateRoot>(Type aggregateRootType, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
         {
             if (!domainEvent.Meta.ContainsKey(DomainEvent.MetadataKeys.AggregateRootId))
             {
                 throw new InvalidOperationException(
                     string.Format(
-                        "Canno save domain event {0} because it does not have an aggregate root ID! Use the Save(id, event) overload or make sure that the '{1}' metadata key has been set",
+                        "Cannot save domain event {0} because it does not have an aggregate root ID! Use the Save(id, event) overload or make sure that the '{1}' metadata key has been set",
                         domainEvent, DomainEvent.MetadataKeys.AggregateRootId));
             }
-
+            
+            domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = _domainTypeNameMapper.GetName(aggregateRootType);
+           
             return Save(domainEvent.GetAggregateRootId(), domainEvent);
         }
 
@@ -304,14 +305,11 @@ Current view positions:
         {
             var now = GetNow();
             
-            var emitterType = typeof (TAggregateRoot);
-        
-            if (domainEvent.Meta.ContainsKey(DomainEvent.MetadataKeys.Emitter))
-                emitterType = Type.GetType(domainEvent.Meta[DomainEvent.MetadataKeys.Emitter]);
-
+            if(!domainEvent.Meta.ContainsKey(DomainEvent.MetadataKeys.Owner))
+                domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = _domainTypeNameMapper.GetName(typeof(TAggregateRoot));
+            
             domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId] = aggregateRootId;
             domainEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber] = _eventStore.GetNextSeqNo(aggregateRootId).ToString(Metadata.NumberCulture);
-            domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = _domainTypeNameMapper.GetName(emitterType);
             domainEvent.Meta[DomainEvent.MetadataKeys.Type] = _domainTypeNameMapper.GetName(domainEvent.GetType());
             domainEvent.Meta[DomainEvent.MetadataKeys.TimeUtc] = now.ToString("u");
 

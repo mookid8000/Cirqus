@@ -20,7 +20,7 @@ namespace d60.Cirqus.Tests.Aggregates
         }
 
         [Test]
-        public void OwnerAndEmitterIsAppliedToEmittedEvents()
+        public void ConcreteTypeIsAppliedAsOwnerToEmittedEvents()
         {
             // arrange
             var uow = _context.BeginUnitOfWork();
@@ -37,7 +37,6 @@ namespace d60.Cirqus.Tests.Aggregates
 
             Assert.That(uow.EmittedEvents.Count(), Is.EqualTo(2));
           
-            Assert.That(emittedEvent.Meta[DomainEvent.MetadataKeys.Emitter], Is.EqualTo(typeof(EvenMoreExtendedAggregate).AssemblyQualifiedName));
             Assert.That(emittedEvent.Meta[DomainEvent.MetadataKeys.Owner], Is.StringContaining(typeof(EvenMoreExtendedAggregate).Name));
 
         }

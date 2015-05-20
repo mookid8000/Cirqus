@@ -15,7 +15,7 @@ namespace d60.Cirqus.Tests.Stubs
             _aggregateRootRepository = aggregateRootRepository;
         }
 
-        public void AddEmittedEvent<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
+        public void AddEmittedEvent<TAggregateRoot>(AggregateRoot aggregateRoot, DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
         {
             Console.WriteLine("Emitted: {0}", e);
         }
