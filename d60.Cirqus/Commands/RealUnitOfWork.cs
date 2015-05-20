@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Config;
 using d60.Cirqus.Events;
@@ -7,6 +9,7 @@ using d60.Cirqus.Extensions;
 
 namespace d60.Cirqus.Commands
 {
+  
     /// <summary>
     /// Unit of work implementation that works and uses the given <see cref="IAggregateRootRepository"/> to supply aggregate root instances
     /// when it cannot find them in its cache
@@ -32,7 +35,8 @@ namespace d60.Cirqus.Commands
 
         public void AddEmittedEvent<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
         {
-            e.Meta[DomainEvent.MetadataKeys.Owner] = _typeNameMapper.GetName(typeof (TAggregateRoot));
+            var emitterType = Type.GetType(e.Meta[DomainEvent.MetadataKeys.Emitter]);
+            e.Meta[DomainEvent.MetadataKeys.Owner] = _typeNameMapper.GetName(emitterType);
             e.Meta[DomainEvent.MetadataKeys.Type] = _typeNameMapper.GetName(e.GetType());
 
             Events.Add(e);
@@ -71,7 +75,7 @@ namespace d60.Cirqus.Commands
         AggregateRoot GetAggregateRootFromCache(string aggregateRootId, long globalSequenceNumberCutoff)
         {
             if (!CachedAggregateRoots.ContainsKey(globalSequenceNumberCutoff)) return null;
-            
+
             var cachedEntriesForThisInstant = CachedAggregateRoots[globalSequenceNumberCutoff];
 
             if (!cachedEntriesForThisInstant.ContainsKey(aggregateRootId)) return null;
@@ -84,7 +88,7 @@ namespace d60.Cirqus.Commands
         public void RaiseCommitted()
         {
             var committed = Committed;
-            
+
             if (committed != null)
             {
                 committed();
