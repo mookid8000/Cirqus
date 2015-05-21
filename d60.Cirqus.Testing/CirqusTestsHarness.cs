@@ -72,13 +72,15 @@ namespace d60.Cirqus.Testing
         void Emit<T>(string id, DomainEvent<T> @event) where T : AggregateRoot
         {
 
+            if (!ids.Any(d=>d.ToString() == id))
+                NewId<T>(id);
+
             var emitterType = typeof(T);
             var tid = ids.FirstOrDefault(i => i.ToString() == Latest<T>());
 
             if (tid != null)
                 emitterType = tid.GetEmitterType();
-            else NewId<T>(id);
-
+         
             @event.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id;
 
             //SetupAuthenticationMetadata(@event.Meta);
