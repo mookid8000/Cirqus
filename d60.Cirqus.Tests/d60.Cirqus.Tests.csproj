@@ -83,7 +83,6 @@
     <Compile Include="Aggregates\TestFactoryBasedAggregateRootRepository.cs" />
     <Compile Include="Aggregates\TestIsNewProperty.cs" />
     <Compile Include="Aggregates\TestLoading.cs" />
-    <Compile Include="Aggregates\TestInheritance.cs" />
     <Compile Include="Aggregates\TestVersionAttributeApplication.cs" />
     <Compile Include="Aggregates\TestVersioningWhenLoadingAnotherAggregate.cs" />
     <Compile Include="Assumptions\TestConcurrentBag.cs" />

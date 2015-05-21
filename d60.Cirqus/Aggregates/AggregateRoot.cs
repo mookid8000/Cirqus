@@ -17,7 +17,7 @@ namespace d60.Cirqus.Aggregates
         public string Id { get; internal set; }
 
         internal IUnitOfWork UnitOfWork { get; set; }
-
+        
         internal Metadata CurrentCommandMetadata { get; set; }
 
         internal void Initialize(string id)
@@ -78,7 +78,7 @@ namespace d60.Cirqus.Aggregates
                 throw new InvalidOperationException(string.Format("Attempted to emit event {0}, but the aggreate root's replay state is {1}! - events can only be emitted when the root is not applying events", e, ReplayState));
             }
 
-            if (!typeof(TAggregateRoot).IsAssignableFrom(GetType()))
+            if (typeof(TAggregateRoot) != GetType())
             {
                 throw new InvalidOperationException(
                     string.Format("Attempted to emit event {0} which is owned by {1} from aggregate root of type {2}",
@@ -90,7 +90,6 @@ namespace d60.Cirqus.Aggregates
 
             e.Meta.Merge(CurrentCommandMetadata ?? new Metadata());
             e.Meta[DomainEvent.MetadataKeys.AggregateRootId] = Id;
-            e.Meta[DomainEvent.MetadataKeys.Emitter] = GetType().AssemblyQualifiedName;
             e.Meta[DomainEvent.MetadataKeys.TimeUtc] = now.ToString("u");
             e.Meta[DomainEvent.MetadataKeys.SequenceNumber] = sequenceNumber.ToString(Metadata.NumberCulture);
 
@@ -113,7 +112,7 @@ namespace d60.Cirqus.Aggregates
         internal void ApplyEvent(DomainEvent e, ReplayState replayState)
         {
             // tried caching here with a (aggRootType, eventType) lookup in two levels of concurrent dictionaries.... didn't provide significant perf boost
-
+            
             var applyMethod = GetType().GetMethod("Apply", new[] { e.GetType() });
 
             if (applyMethod == null)
@@ -126,8 +125,8 @@ namespace d60.Cirqus.Aggregates
             if (CurrentSequenceNumber + 1 != e.GetSequenceNumber())
             {
                 throw new ApplicationException(
-                    string.Format("Tried to apply event with sequence number {0} to aggregate root with ID {1} with current sequence number {2}. Expected an event with sequence number {3}.",
-                    e.GetSequenceNumber(), Id, CurrentSequenceNumber, CurrentSequenceNumber + 1));
+                    string.Format("Tried to apply event with sequence number {0} to aggregate root with ID {1} with current sequence number {2}. Expected an event with sequence number {3}.", 
+                    e.GetSequenceNumber(), Id, CurrentSequenceNumber, CurrentSequenceNumber+1));
             }
 
             var previousReplayState = ReplayState;
