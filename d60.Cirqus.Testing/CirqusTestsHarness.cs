@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
@@ -71,19 +70,14 @@ namespace d60.Cirqus.Testing
 
         void Emit<T>(string id, DomainEvent<T> @event) where T : AggregateRoot
         {
-
-            var emitterType = typeof(T);
-            var tid = ids.FirstOrDefault(i => i.ToString() == Latest<T>());
-
-            if (tid != null)
-                emitterType = tid.GetEmitterType();
-            else NewId<T>(id);
-
+            
+            var emitterType = ids.First(i => i.ToString() == Latest<T>()).GetEmitterType().AssemblyQualifiedName;
+            @event.Meta[DomainEvent.MetadataKeys.Emitter] = emitterType;
             @event.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id;
 
             //SetupAuthenticationMetadata(@event.Meta);
-            
-            Context.Save(emitterType, @event);
+
+            Context.Save(@event);
 
             formatter
                 .Block("Given that:")
@@ -257,9 +251,9 @@ namespace d60.Cirqus.Testing
             results = Enumerable.Empty<DomainEvent>();
         }
 
-        protected string NewId<T>(params string[] args)
+        protected string NewId<T>(params object[] args)
         {
-            var id = args.FirstOrDefault() ?? Guid.NewGuid().ToString();
+            var id = Guid.NewGuid().ToString();
             ids.Push(new TypedId<T>(id));
             return id;
         }

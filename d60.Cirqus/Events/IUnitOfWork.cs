@@ -11,7 +11,7 @@ namespace d60.Cirqus.Events
         /// <summary>
         /// Adds an emitted event to the current unit of work, staging it for being committed with the next event batch
         /// </summary>
-        void AddEmittedEvent<TAggregateRoot>(AggregateRoot aggregateRoot, DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot;
+        void AddEmittedEvent<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot;
 
         /// <summary>
         /// Adds the given aggregate root to the unit of work, ensuring that the instance is reused if it gets loaded again

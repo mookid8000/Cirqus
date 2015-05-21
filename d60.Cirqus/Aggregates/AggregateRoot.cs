@@ -90,6 +90,7 @@ namespace d60.Cirqus.Aggregates
 
             e.Meta.Merge(CurrentCommandMetadata ?? new Metadata());
             e.Meta[DomainEvent.MetadataKeys.AggregateRootId] = Id;
+            e.Meta[DomainEvent.MetadataKeys.Emitter] = GetType().AssemblyQualifiedName;
             e.Meta[DomainEvent.MetadataKeys.TimeUtc] = now.ToString("u");
             e.Meta[DomainEvent.MetadataKeys.SequenceNumber] = sequenceNumber.ToString(Metadata.NumberCulture);
 
@@ -105,7 +106,7 @@ namespace d60.Cirqus.Aggregates
                 throw new ApplicationException(string.Format(@"Could not apply event {0} to {1} - please check the inner exception, and/or make sure that the aggregate root type is PUBLIC", e, this), exception);
             }
 
-            UnitOfWork.AddEmittedEvent(this, e);
+            UnitOfWork.AddEmittedEvent(e);
             EventEmitted(e);
         }
 

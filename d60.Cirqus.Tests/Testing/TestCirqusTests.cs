@@ -93,44 +93,17 @@ Then:
         }
 
         [Test]
-        public void ThenWithExplicitId()
-        {
-            var id = Guid.NewGuid().ToString();
-
-            Emit(id, new EventA1());
-
-            When(new CommandA { Id = id });
-
-            Then(new EventA2());
-        }
-
-        [Test]
         public void GivenWithExtendedRoot()
         {
-            Emit(NewId<RootAExtended>(), new EventA1());
+            var id = NewId<RootAExtended>();
+            Emit(id, new EventA1());
             Emit(new EventA2());
 
             var history = Context.History.ToList();
             Assert.AreEqual(Id<RootAExtended>(), history[0].GetAggregateRootId());
             Assert.Catch<IndexOutOfRangeException>(() => Id<RootA>());
-            Assert.IsInstanceOf<RootAExtended>(Context.AggregateRoots.First(d => d.Id == Id<RootAExtended>()));
-
-        }
-
-
-        [Test]
-        public void GivenWithBaseRoot()
-        {
-            var id = Guid.NewGuid().ToString();
-
-            Emit(id, new EventA1());
-            Emit(new EventA2());
-
-            var history = Context.History.ToList();
-            Assert.AreEqual(Id<RootA>(), history[0].GetAggregateRootId());
-            Assert.Catch<IndexOutOfRangeException>(() => Id<RootAExtended>());
-            Assert.IsInstanceOf<RootA>(Context.AggregateRoots.First(d => d.Id == id));
-
+            Assert.IsInstanceOf<RootAExtended>(Context.AggregateRoots.First(d => d.Id == id));
+           
         }
 
         public class RootA : AggregateRoot, IEmit<EventA1>, IEmit<EventA2>

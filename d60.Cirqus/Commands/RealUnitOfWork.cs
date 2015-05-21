@@ -9,7 +9,7 @@ using d60.Cirqus.Extensions;
 
 namespace d60.Cirqus.Commands
 {
-
+  
     /// <summary>
     /// Unit of work implementation that works and uses the given <see cref="IAggregateRootRepository"/> to supply aggregate root instances
     /// when it cannot find them in its cache
@@ -33,9 +33,10 @@ namespace d60.Cirqus.Commands
             get { return Events; }
         }
 
-        public void AddEmittedEvent<TAggregateRoot>(AggregateRoot aggregateRoot, DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
+        public void AddEmittedEvent<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
         {
-            e.Meta[DomainEvent.MetadataKeys.Owner] = _typeNameMapper.GetName(aggregateRoot.GetType());
+            var emitterType = Type.GetType(e.Meta[DomainEvent.MetadataKeys.Emitter]);
+            e.Meta[DomainEvent.MetadataKeys.Owner] = _typeNameMapper.GetName(emitterType);
             e.Meta[DomainEvent.MetadataKeys.Type] = _typeNameMapper.GetName(e.GetType());
 
             Events.Add(e);
