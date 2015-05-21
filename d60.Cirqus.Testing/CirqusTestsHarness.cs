@@ -71,19 +71,16 @@ namespace d60.Cirqus.Testing
 
         void Emit<T>(string id, DomainEvent<T> @event) where T : AggregateRoot
         {
-
-            var emitterType = typeof(T);
-            var tid = ids.FirstOrDefault(i => i.ToString() == Latest<T>());
-
-            if (tid != null)
-                emitterType = tid.GetEmitterType();
-            else NewId<T>(id);
+            if (!ids.Any(d => d.ToString() == id))
+                NewId<T>(id);
 
             @event.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id;
 
             //SetupAuthenticationMetadata(@event.Meta);
-            
-            Context.Save(emitterType, @event);
+
+            var ownerType = ids.First(i => i.ToString() == Latest<T>()).GetOwnerType();
+
+            Context.Save(ownerType, @event);
 
             formatter
                 .Block("Given that:")
@@ -293,7 +290,7 @@ namespace d60.Cirqus.Testing
         {
             latest = null;
 
-            var lastestOfType = ids.Where(i => typeof(T).IsAssignableFrom(i.GetEmitterType())).ToList();
+            var lastestOfType = ids.Where(i => typeof(T).IsAssignableFrom(i.GetOwnerType())).ToList();
             if (lastestOfType.Any())
             {
                 latest = lastestOfType.First().ToString();
@@ -369,7 +366,7 @@ namespace d60.Cirqus.Testing
 
         protected interface TypedId
         {
-            Type GetEmitterType();
+            Type GetOwnerType();
 
         }
 
@@ -387,7 +384,7 @@ namespace d60.Cirqus.Testing
                 return id;
             }
 
-            public Type GetEmitterType()
+            public Type GetOwnerType()
             {
                 return typeof(T);
             }
