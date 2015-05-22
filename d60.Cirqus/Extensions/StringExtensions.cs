@@ -3,6 +3,9 @@ using System.Linq;
 
 namespace d60.Cirqus.Extensions
 {
+    /// <summary>
+    /// String extensions. Seriously.
+    /// </summary>
     public static class StringExtensions
     {
         /// <summary>

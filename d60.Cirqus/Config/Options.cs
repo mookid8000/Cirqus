@@ -4,12 +4,21 @@ using d60.Cirqus.Logging;
 
 namespace d60.Cirqus.Config
 {
+    /// <summary>
+    /// Represents additional options for how Cirqus does its thing
+    /// </summary>
     public class Options
     {
+        /// <summary>
+        /// Default number of retries for command processing
+        /// </summary>
         public const int DefaultMaxRetries = 10;
 
         readonly HashSet<Type> _domainExceptionTypes = new HashSet<Type>();
 
+        /// <summary>
+        /// Constructs the default options
+        /// </summary>
         public Options()
         {
             PurgeExistingViews = false;

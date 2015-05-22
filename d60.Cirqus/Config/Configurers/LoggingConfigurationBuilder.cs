@@ -4,8 +4,14 @@ using d60.Cirqus.Logging.Null;
 
 namespace d60.Cirqus.Config.Configurers
 {
+    /// <summary>
+    /// Configuration builder for configuring logging
+    /// </summary>
     public class LoggingConfigurationBuilder : ConfigurationBuilder
     {
+        /// <summary>
+        /// Constructs the builder
+        /// </summary>
         public LoggingConfigurationBuilder(IRegistrar registrar) : base(registrar) { }
 
         /// <summary>

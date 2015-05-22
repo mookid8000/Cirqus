@@ -4,8 +4,14 @@ using System.Linq;
 
 namespace d60.Cirqus.Extensions
 {
+    /// <summary>
+    /// Enumerable. Extensions. Yeah.
+    /// </summary>
     public static class EnumerableExtensions
     {
+        /// <summary>
+        /// Divides the given sequence of items into batches of max <paramref name="maxItemsPerBatch"/> items per batch. Duh.
+        /// </summary>
         public static IEnumerable<IEnumerable<T>> Batch<T>(this IEnumerable<T> items, int maxItemsPerBatch)
         {
             if (maxItemsPerBatch < 1)
@@ -31,11 +37,6 @@ namespace d60.Cirqus.Extensions
             {
                 yield return batch;
             }
-        }
-
-        public static IEnumerable<string> Indented(this IEnumerable<string> lines, int indentationLevel)
-        {
-            return lines.Select(line => new string(' ', indentationLevel) + line);
         }
     }
 }
