@@ -14,6 +14,9 @@ namespace d60.Cirqus.Aggregates
     {
         internal const int InitialAggregateRootSequenceNumber = -1;
 
+        /// <summary>
+        /// Gets the ID of the aggregate root. This one should be automatically set on the aggregate root instance provided by Cirqus
+        /// </summary>
         public string Id { get; internal set; }
 
         internal IUnitOfWork UnitOfWork { get; set; }
@@ -38,13 +41,23 @@ namespace d60.Cirqus.Aggregates
 
         internal ReplayState ReplayState = ReplayState.None;
 
+        /// <summary>
+        /// Method that is called when the aggregate root is first created, allowing you to emit that famous created event if you absolutely need it ;)
+        /// </summary>
         protected virtual void Created() { }
 
+        /// <summary>
+        /// Gets whether this aggregate root has emitted any events. I.e. it will already be false after having used the <see cref="Created"/> method to emit one
+        /// single "MyRootCreated" event.
+        /// </summary>
         protected bool IsNew
         {
             get { return CurrentSequenceNumber == InitialAggregateRootSequenceNumber; }
         }
 
+        /// <summary>
+        /// Emits the given domain event, adding the aggregate root's <see cref="Id"/> and a sequence number to its metadata, along with some type information
+        /// </summary>
         protected void Emit<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
         {
             if (e == null) throw new ArgumentNullException("e", "Can't emit null!");
@@ -158,6 +171,9 @@ namespace d60.Cirqus.Aggregates
             return string.Format("{0} ({1})", GetType().Name, Id);
         }
 
+        /// <summary>
+        /// Creates another aggregate root with the specified <paramref name="aggregateRootId"/>. Will throw an exception if a root already exists with the specified ID.
+        /// </summary>
         protected TAggregateRoot Create<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
             if (UnitOfWork == null)
@@ -183,6 +199,10 @@ namespace d60.Cirqus.Aggregates
             return (TAggregateRoot)UnitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true);
         }
 
+        /// <summary>
+        /// Tries to load another aggregate root with the specified <paramref name="aggregateRootId"/>. Returns null if no root exists with that ID.
+        /// Throws an <see cref="InvalidCastException"/> if a root was found, but its type was not compatible with the specified <typeparamref name="TAggregateRoot"/> type.
+        /// </summary>
         protected TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
             if (UnitOfWork == null)
@@ -197,19 +217,32 @@ namespace d60.Cirqus.Aggregates
                 ? GlobalSequenceNumberCutoff
                 : long.MaxValue;
 
+            AggregateRoot aggregateRoot;
             try
             {
-                var aggregateRootInfo = UnitOfWork
+                aggregateRoot = UnitOfWork
                     .Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists: false);
-
-                return (TAggregateRoot)aggregateRootInfo;
             }
             catch
             {
                 return null;
             }
+
+            try
+            {
+                return (TAggregateRoot) aggregateRoot;
+            }
+            catch (Exception exception)
+            {
+                throw new InvalidCastException(string.Format("Found aggregate root with ID {0} and type {1}, but the type is not compatible with the desired {2} type!",
+                    aggregateRoot, aggregateRoot.GetType(), typeof(TAggregateRoot)), exception);
+            }
         }
 
+        /// <summary>
+        /// Loads another aggregate root with the specified <paramref name="aggregateRootId"/>. Throws an exception if an aggregate root with that ID could not be found.
+        /// Also throws an exception if an aggregate root instance was found, but the type was not compatible with the desired <typeparamref name="TAggregateRoot"/>
+        /// </summary>
         protected TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
         {
             if (UnitOfWork == null)

@@ -2,7 +2,7 @@
 
 namespace d60.Cirqus.Caching
 {
-    public class CacheEntry<TData>
+    class CacheEntry<TData>
     {
         public CacheEntry(TData data)
         {

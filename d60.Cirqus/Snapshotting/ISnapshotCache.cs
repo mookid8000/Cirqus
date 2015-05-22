@@ -2,6 +2,9 @@
 
 namespace d60.Cirqus.Snapshotting
 {
+    /// <summary>
+    /// Aggregate root snapshot cache
+    /// </summary>
     public interface ISnapshotCache
     {
         /// <summary>

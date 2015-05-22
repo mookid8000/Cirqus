@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
-using d60.Cirqus.Numbers;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.Testing.TestContext;
 
@@ -23,22 +22,21 @@ namespace d60.Cirqus.Tests.Aggregates
         public void ConcreteTypeIsAppliedAsOwnerToEmittedEvents()
         {
             // arrange
-            var uow = _context.BeginUnitOfWork();
-           
-            var root = uow.Load<EvenMoreExtendedAggregate>("someid");
+            using (var uow = _context.BeginUnitOfWork())
+            {
+                var root = uow.Load<EvenMoreExtendedAggregate>("someid");
 
-            // act
-            root.DoMore();
-            root.DoSomething();
+                // act
+                root.DoMore();
+                root.DoSomething();
 
-            // assert
-            var emittedEvent = uow.EmittedEvents.OfType<SomeEvent>().First();
-            Console.WriteLine(emittedEvent.Meta);
+                // assert
+                var emittedEvent = uow.EmittedEvents.OfType<SomeEvent>().First();
+                Console.WriteLine(emittedEvent.Meta);
 
-            Assert.That(uow.EmittedEvents.Count(), Is.EqualTo(2));
-          
-            Assert.That(emittedEvent.Meta[DomainEvent.MetadataKeys.Owner], Is.StringContaining(typeof(EvenMoreExtendedAggregate).Name));
-
+                Assert.That(uow.EmittedEvents.Count(), Is.EqualTo(2));
+                Assert.That(emittedEvent.Meta[DomainEvent.MetadataKeys.Owner], Is.StringContaining(typeof(EvenMoreExtendedAggregate).Name));
+            }
         }
 
 
@@ -73,8 +71,6 @@ namespace d60.Cirqus.Tests.Aggregates
             {
                 Emit(new SomeEvent("emitted an event"));
             }
-
-
         }
 
         class EvenMoreExtendedAggregate : ExtendedAggregate
@@ -83,8 +79,6 @@ namespace d60.Cirqus.Tests.Aggregates
             {
                 base.DoSomething();
             }
-
         }
-
     }
 }

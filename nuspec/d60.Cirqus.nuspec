@@ -12,5 +12,6 @@
   </metadata>
   <files>
     <file src="..\d60.Cirqus\bin\Release\merged\d60.Cirqus.dll" target="lib\NET45" />
+    <file src="..\d60.Cirqus\bin\Release\d60.Cirqus.xml" target="lib\NET45" />
   </files>
 </package>

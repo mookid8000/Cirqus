@@ -2,13 +2,19 @@ using System;
 
 namespace d60.Cirqus.Config.Configurers
 {
+    /// <summary>
+    /// Configuration builder that is used to register factory methods for various services
+    /// </summary>
     public abstract class ConfigurationBuilder
     {
-        protected IRegistrar _registrar;
+        protected IRegistrar Registrar;
 
+        /// <summary>
+        /// Constructs the builder
+        /// </summary>
         protected ConfigurationBuilder(IRegistrar registrar)
         {
-            _registrar = registrar;
+            Registrar = registrar;
         }
 
         /// <summary>
@@ -16,7 +22,7 @@ namespace d60.Cirqus.Config.Configurers
         /// </summary>
         public void Register<TService>(Func<ResolutionContext, TService> serviceFactory)
         {
-            _registrar.Register(serviceFactory);
+            Registrar.Register(serviceFactory);
         }
 
         /// <summary>
@@ -24,7 +30,7 @@ namespace d60.Cirqus.Config.Configurers
         /// </summary>
         public void RegisterInstance<TService>(TService instance, bool multi = false)
         {
-            _registrar.RegisterInstance(instance, multi);
+            Registrar.RegisterInstance(instance, multi);
         }
 
         /// <summary>
@@ -32,7 +38,7 @@ namespace d60.Cirqus.Config.Configurers
         /// </summary>
         public void Decorate<TService>(Func<ResolutionContext, TService> serviceFactory)
         {
-            _registrar.Decorate(serviceFactory);
+            Registrar.Decorate(serviceFactory);
         }
 
         /// <summary>
@@ -40,12 +46,18 @@ namespace d60.Cirqus.Config.Configurers
         /// </summary>
         public bool HasService<TService>(bool checkForPrimary = false)
         {
-            return _registrar.HasService<TService>(checkForPrimary);
+            return Registrar.HasService<TService>(checkForPrimary);
         }
     }
 
+    /// <summary>
+    /// Typed configuration builder that can be used to fixate the type that the registered factory must return
+    /// </summary>
     public abstract class ConfigurationBuilder<TService> : ConfigurationBuilder
     {
+        /// <summary>
+        /// Constructs the builder
+        /// </summary>
         protected ConfigurationBuilder(IRegistrar registrar) : base(registrar) {}
 
         /// <summary>
@@ -53,7 +65,7 @@ namespace d60.Cirqus.Config.Configurers
         /// </summary>
         public void Register(Func<ResolutionContext, TService> serviceFactory)
         {
-            _registrar.Register(serviceFactory);
+            Registrar.Register(serviceFactory);
         }
 
         /// <summary>
@@ -61,7 +73,7 @@ namespace d60.Cirqus.Config.Configurers
         /// </summary>
         public void RegisterInstance(TService instance, bool multi = false)
         {
-            _registrar.RegisterInstance(instance, multi);
+            Registrar.RegisterInstance(instance, multi);
         }
 
         /// <summary>
@@ -69,7 +81,7 @@ namespace d60.Cirqus.Config.Configurers
         /// </summary>
         public void Decorate(Func<ResolutionContext, TService> serviceFactory)
         {
-            _registrar.Decorate(serviceFactory);
+            Registrar.Decorate(serviceFactory);
         }
     }
 }
