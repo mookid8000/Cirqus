@@ -547,6 +547,13 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Fixed odd behavior that would accidentally replay events agains entire pool of view managers when one of them was behind
 
+## 0.60.5
+
+* Fixed support for inherited aggregate roots - thanks [mhertis]
+
+
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund
+[mhertis]: https://github.com/mhertis
