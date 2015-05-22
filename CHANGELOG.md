@@ -550,7 +550,7 @@ This is a big update that completes the transition to the new, vastly improved v
 ## 0.60.5
 
 * Fixed support for inherited aggregate roots - thanks [mhertis]
-
+* Fixed subtle bug that would cause waiting for specific view instances to not work
 
 
 [asgerhallas]: https://github.com/asgerhallas
