@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.NUnit;
-using d60.Cirqus.Tests.Aggregates;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Testing
@@ -131,6 +131,20 @@ Then:
             Assert.AreEqual(Id<RootA>(), history[0].GetAggregateRootId());
             Assert.Catch<IndexOutOfRangeException>(() => Id<RootAExtended>());
             Assert.IsInstanceOf<RootA>(Context.AggregateRoots.First(d => d.Id == id));
+        }
+
+        [Test]
+        public void WhenWithHook()
+        {
+            var flag = false;
+            OnWhen += x => flag = true;
+
+            var id = Guid.NewGuid().ToString();
+            Emit(id, new EventA1());
+
+            When(new CommandA { Id = id });
+
+            Assert.IsTrue(flag);
         }
 
         public class RootA : AggregateRoot, IEmit<EventA1>, IEmit<EventA2>

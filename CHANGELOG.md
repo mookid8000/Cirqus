@@ -556,6 +556,11 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added support for overriding id generation in test framework
 
+## 0.60.7
+
+* Added support for manipulating the command before executing it in the test framework
+
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
@@ -27,6 +26,7 @@ namespace d60.Cirqus.Testing
         JsonSerializerSettings settings;
 
         protected TestContext Context { get; private set; }
+        protected Action<Command> OnWhen = x => { };
 
         protected void Begin(TestContext context)
         {
@@ -92,8 +92,7 @@ namespace d60.Cirqus.Testing
 
         protected void When(ExecutableCommand command)
         {
-            //SetupAuthenticationMetadata(command.Meta);
-            //command.IdGenerator = new FakeIdGenerator(this);
+            OnWhen(command);
 
             formatter
                 .Block("When users:")
@@ -255,19 +254,19 @@ namespace d60.Cirqus.Testing
             results = Enumerable.Empty<DomainEvent>();
         }
 
-        protected virtual string NewId<T>(params string[] args)
+        protected virtual string NewId<T>(params object[] args) where T : AggregateRoot
         {
             var id = Guid.NewGuid().ToString();
             ids.Push(new InternalId<T>(id));
             return id;
         }
 
-        protected string Id<T>() where T : class
+        protected string Id<T>() where T : AggregateRoot
         {
             return Id<T>(1);
         }
 
-        protected string Id<T>(int index) where T : class
+        protected string Id<T>(int index) where T : AggregateRoot
         {
             var array = ids.OfType<InternalId<T>>().Reverse().ToArray();
             if (array.Length < index)
@@ -352,21 +351,6 @@ namespace d60.Cirqus.Testing
         //        meta[MetadataEx.UserIdMetadataKey] = latestUserId.ToString();
         //}
 
-        //public class FakeIdGenerator : IdGenerator
-        //{
-        //    readonly CirqusTestsHarness self;
-
-        //    public FakeIdGenerator(CirqusTestsHarness self)
-        //    {
-        //        this.self = self;
-        //    }
-
-        //    public string NewId<T>(params object[] args)
-        //    {
-        //        return self.NewId<T>(args);
-        //    }
-        //}
-
         interface InternalId
         {
             string GetId();
@@ -405,9 +389,4 @@ namespace d60.Cirqus.Testing
             }
         }
     }
-
-    //public interface IdGenerator
-    //{
-    //    string NewId<T>(params object[] args);
-    //}
 }
