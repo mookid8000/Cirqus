@@ -552,6 +552,9 @@ This is a big update that completes the transition to the new, vastly improved v
 * Fixed support for inherited aggregate roots - thanks [mhertis]
 * Fixed subtle bug that would cause waiting for specific view instances to not work
 
+## 0.60.6
+
+* Added support for overriding id generation in test framework
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
