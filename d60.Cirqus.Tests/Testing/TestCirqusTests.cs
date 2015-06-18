@@ -112,11 +112,12 @@ Then:
 
             var history = Context.History.ToList();
             Assert.AreEqual(Id<RootAExtended>(), history[0].GetAggregateRootId());
-            Assert.Catch<IndexOutOfRangeException>(() => Id<RootA>());
+            Assert.Catch<IndexOutOfRangeException>(() =>
+            {
+                Id<RootA>();
+            });
             Assert.IsInstanceOf<RootAExtended>(Context.AggregateRoots.First(d => d.Id == Id<RootAExtended>()));
-
         }
-
 
         [Test]
         public void GivenWithBaseRoot()
@@ -130,7 +131,6 @@ Then:
             Assert.AreEqual(Id<RootA>(), history[0].GetAggregateRootId());
             Assert.Catch<IndexOutOfRangeException>(() => Id<RootAExtended>());
             Assert.IsInstanceOf<RootA>(Context.AggregateRoots.First(d => d.Id == id));
-
         }
 
         public class RootA : AggregateRoot, IEmit<EventA1>, IEmit<EventA2>

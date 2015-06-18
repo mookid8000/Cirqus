@@ -26,7 +26,7 @@ namespace d60.Cirqus.NUnit
         public void TeardownInternal()
         {
             Teardown();
-            End(TestContext.CurrentContext.Result.State == TestState.Error);
+            End(TestContext.CurrentContext.Result.State != TestState.Error);
         }
 
         protected virtual void Teardown()

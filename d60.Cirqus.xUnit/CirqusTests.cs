@@ -16,7 +16,7 @@ namespace d60.Cirqus.xUnit
 
         public void Dispose()
         {
-            End(Marshal.GetExceptionCode() == 0);
+            End(Marshal.GetExceptionCode() != 0);
         }
 
         protected override void Fail()

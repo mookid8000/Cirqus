@@ -47,7 +47,7 @@ namespace d60.Cirqus.Testing
         protected void End(bool isInExceptionalState)
         {
             // only if we are _not_ in an exceptional state
-            if (isInExceptionalState)
+            if (!isInExceptionalState)
             {
                 AssertAllEventsExpected();
             }
@@ -70,16 +70,18 @@ namespace d60.Cirqus.Testing
 
         void Emit<T>(string id, DomainEvent<T> @event) where T : AggregateRoot
         {
-            if (!ids.Any(d => d.ToString() == id))
-                NewId<T>(id);
+            if (!Exists<T>(id))
+            {
+                ids.Push(new InternalId<T>(id));
+            }
 
             @event.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id;
 
             //SetupAuthenticationMetadata(@event.Meta);
 
-            var ownerType = ids.First(i => i.ToString() == Latest<T>()).GetOwnerType();
+            var emitterType = ids.First(x => x.GetId() == Latest<T>()).GetOwnerType();
 
-            Context.Save(ownerType, @event);
+            Context.Save(emitterType, @event);
 
             formatter
                 .Block("Given that:")
@@ -253,9 +255,9 @@ namespace d60.Cirqus.Testing
             results = Enumerable.Empty<DomainEvent>();
         }
 
-        protected string NewId<T>(params string[] args)
+        protected virtual string NewId<T>(params string[] args)
         {
-            var id = args.FirstOrDefault() ?? Guid.NewGuid().ToString();
+            var id = Guid.NewGuid().ToString();
             ids.Push(new InternalId<T>(id));
             return id;
         }
@@ -273,7 +275,7 @@ namespace d60.Cirqus.Testing
                 throw new IndexOutOfRangeException(String.Format("Could not find Id<{0}> with index {1}", typeof(T).Name, index));
             }
 
-            return array[index - 1].ToString();
+            return array[index - 1].GetId();
         }
 
         protected string Latest<T>() where T : AggregateRoot
@@ -289,15 +291,18 @@ namespace d60.Cirqus.Testing
         {
             latest = null;
 
-            var lastestOfType = ids.OfType<InternalId<T>>().ToList();
-            var lastestOfType = ids.Where(i => typeof(T).IsAssignableFrom(i.GetOwnerType())).ToList();
-            if (lastestOfType.Any())
-            {
-                latest = lastestOfType.First().ToString();
-                return true;
-            }
+            var lastestOfType = ids.FirstOrDefault(i => typeof(T).IsAssignableFrom(i.GetOwnerType()));
+            
+            if (lastestOfType == null) 
+                return false;
+            
+            latest = lastestOfType.GetId();
+            return true;
+        }
 
-            return false;
+        protected bool Exists<T>(string id) where T : AggregateRoot
+        {
+            return ids.Any(x => x.GetId() == id);
         }
 
         void AssertAllEventsExpected()
@@ -349,23 +354,23 @@ namespace d60.Cirqus.Testing
 
         //public class FakeIdGenerator : IdGenerator
         //{
-        //    readonly CommandTests self;
+        //    readonly CirqusTestsHarness self;
 
-        //    public FakeIdGenerator(CommandTests self)
+        //    public FakeIdGenerator(CirqusTestsHarness self)
         //    {
         //        this.self = self;
         //    }
 
-        //    public virtual Id<T> NewId<T>(params object[] args)
+        //    public string NewId<T>(params object[] args)
         //    {
         //        return self.NewId<T>(args);
         //    }
         //}
 
-        protected interface InternalId
+        interface InternalId
         {
+            string GetId();
             Type GetOwnerType();
-
         }
 
         class InternalId<T> : InternalId
@@ -377,7 +382,7 @@ namespace d60.Cirqus.Testing
                 this.id = id;
             }
 
-            public override string ToString()
+            public string GetId()
             {
                 return id;
             }
@@ -400,4 +405,9 @@ namespace d60.Cirqus.Testing
             }
         }
     }
+
+    //public interface IdGenerator
+    //{
+    //    string NewId<T>(params object[] args);
+    //}
 }

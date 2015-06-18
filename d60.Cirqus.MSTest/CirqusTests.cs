@@ -32,7 +32,7 @@ namespace d60.Cirqus.MSTest
         public void TeardownInternal()
         {
             Teardown();
-            End(TestContext.CurrentTestOutcome == UnitTestOutcome.Error);
+            End(TestContext.CurrentTestOutcome != UnitTestOutcome.Error);
         }
 
         protected virtual void Teardown()

@@ -201,7 +201,7 @@ namespace d60.Cirqus.Testing
         /// <summary>
         /// Saves the given domain event to the history - requires that the aggregate root ID has been added in the event's metadata under the <see cref="DomainEvent.MetadataKeys.AggregateRootId"/> key
         /// </summary>
-        public CommandProcessingResultWithEvents Save<TAggregateRoot>(Type aggregateRootType, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
+        public CommandProcessingResultWithEvents Save<TAggregateRoot>(Type emitterType, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
         {
             if (!domainEvent.Meta.ContainsKey(DomainEvent.MetadataKeys.AggregateRootId))
             {
@@ -211,7 +211,7 @@ namespace d60.Cirqus.Testing
                         domainEvent, DomainEvent.MetadataKeys.AggregateRootId));
             }
             
-            domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = _domainTypeNameMapper.GetName(aggregateRootType);
+            domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = _domainTypeNameMapper.GetName(emitterType);
            
             return Save(domainEvent.GetAggregateRootId(), domainEvent);
         }
