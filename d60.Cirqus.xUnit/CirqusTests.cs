@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using d60.Cirqus.Testing;
-using Xunit.Sdk;
+using Xunit;
 
 namespace d60.Cirqus.xUnit
 {
@@ -21,7 +21,7 @@ namespace d60.Cirqus.xUnit
 
         protected override void Fail()
         {
-            throw new AssertException();
+            Assert.False(true, "Assertion failed.");
         }
     }
 }

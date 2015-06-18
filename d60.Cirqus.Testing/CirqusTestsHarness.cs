@@ -19,7 +19,7 @@ namespace d60.Cirqus.Testing
         protected const string checkmark = "\u221A";
         protected const string cross = "\u2717";
 
-        Stack<TypedId> ids;
+        Stack<InternalId> ids;
         TextFormatter formatter;
 
         IEnumerable<DomainEvent> results;
@@ -29,7 +29,7 @@ namespace d60.Cirqus.Testing
 
         protected void Begin(TestContext context)
         {
-            ids = new Stack<TypedId>();
+            ids = new Stack<InternalId>();
 
             settings = new JsonSerializerSettings
             {
@@ -43,8 +43,7 @@ namespace d60.Cirqus.Testing
             formatter = new TextFormatter(Writer());
         }
 
-
-        public void End(bool isInExceptionalState)
+        protected void End(bool isInExceptionalState)
         {
             // only if we are _not_ in an exceptional state
             if (isInExceptionalState)
@@ -251,7 +250,7 @@ namespace d60.Cirqus.Testing
         protected string NewId<T>(params object[] args)
         {
             var id = Guid.NewGuid().ToString();
-            ids.Push(new TypedId<T>(id));
+            ids.Push(new InternalId<T>(id));
             return id;
         }
 
@@ -262,7 +261,7 @@ namespace d60.Cirqus.Testing
 
         protected string Id<T>(int index) where T : class
         {
-            var array = ids.OfType<TypedId<T>>().Reverse().ToArray();
+            var array = ids.OfType<InternalId<T>>().Reverse().ToArray();
             if (array.Length < index)
             {
                 throw new IndexOutOfRangeException(String.Format("Could not find Id<{0}> with index {1}", typeof(T).Name, index));
@@ -284,7 +283,7 @@ namespace d60.Cirqus.Testing
         {
             latest = null;
 
-            var lastestOfType = ids.OfType<TypedId<T>>().ToList();
+            var lastestOfType = ids.OfType<InternalId<T>>().ToList();
             if (lastestOfType.Any())
             {
                 latest = lastestOfType.First().ToString();
@@ -341,8 +340,6 @@ namespace d60.Cirqus.Testing
         //        meta[MetadataEx.UserIdMetadataKey] = latestUserId.ToString();
         //}
 
-
-
         //public class FakeIdGenerator : IdGenerator
         //{
         //    readonly CommandTests self;
@@ -358,16 +355,16 @@ namespace d60.Cirqus.Testing
         //    }
         //}
 
-        protected interface TypedId
+        protected interface InternalId
         {
              
         }
 
-        class TypedId<T> : TypedId
+        class InternalId<T> : InternalId
         {
             readonly string id;
 
-            public TypedId(string id)
+            public InternalId(string id)
             {
                 this.id = id;
             }
