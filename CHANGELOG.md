@@ -560,6 +560,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added support for manipulating the command before executing it in the test framework
 
+## 0.60.8
+
+* Made test harness generate and store IDs for entities
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen

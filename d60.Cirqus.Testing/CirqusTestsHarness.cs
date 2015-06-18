@@ -254,19 +254,19 @@ namespace d60.Cirqus.Testing
             results = Enumerable.Empty<DomainEvent>();
         }
 
-        protected virtual string NewId<T>(params object[] args) where T : AggregateRoot
+        protected virtual string NewId<T>(params object[] args) where T : class
         {
             var id = Guid.NewGuid().ToString();
             ids.Push(new InternalId<T>(id));
             return id;
         }
 
-        protected string Id<T>() where T : AggregateRoot
+        protected string Id<T>() where T : class
         {
             return Id<T>(1);
         }
 
-        protected string Id<T>(int index) where T : AggregateRoot
+        protected string Id<T>(int index) where T : class
         {
             var array = ids.OfType<InternalId<T>>().Reverse().ToArray();
             if (array.Length < index)
@@ -277,7 +277,7 @@ namespace d60.Cirqus.Testing
             return array[index - 1].GetId();
         }
 
-        protected string Latest<T>() where T : AggregateRoot
+        protected string Latest<T>() where T : class
         {
             string id;
             if (!TryGetLatest<T>(out id))
@@ -286,7 +286,7 @@ namespace d60.Cirqus.Testing
             return id;
         }
 
-        protected bool TryGetLatest<T>(out string latest) where T : AggregateRoot
+        protected bool TryGetLatest<T>(out string latest) where T : class
         {
             latest = null;
 
@@ -299,7 +299,7 @@ namespace d60.Cirqus.Testing
             return true;
         }
 
-        protected bool Exists<T>(string id) where T : AggregateRoot
+        protected bool Exists<T>(string id) where T : class
         {
             return ids.Any(x => x.GetId() == id);
         }
