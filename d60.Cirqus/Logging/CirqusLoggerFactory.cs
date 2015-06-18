@@ -6,6 +6,11 @@ using d60.Cirqus.Logging.Null;
 
 namespace d60.Cirqus.Logging
 {
+    /// <summary>
+    /// Abstract logger factory that can be used to install a global logger factory (by setting <see cref="Current"/>).
+    /// Classes that want to log stuff should subscribe to the <see cref="Changed"/> event and (possibly re-)set their
+    /// logger instance from the factory passed to the event handler.
+    /// </summary>
     public abstract class CirqusLoggerFactory
     {
         static readonly object ChangedHandlersLock = new object();
@@ -13,6 +18,10 @@ namespace d60.Cirqus.Logging
 
         static CirqusLoggerFactory _current = new NullLoggerFactory();
 
+        /// <summary>
+        /// Event that is raised whenever the global logger factory is changed. Also immediately raises the event
+        /// for each new subscriber, so that their logger gets initialized.
+        /// </summary>
         public static event Action<CirqusLoggerFactory> Changed
         {
             [MethodImpl(MethodImplOptions.Synchronized)]
@@ -34,6 +43,9 @@ namespace d60.Cirqus.Logging
             }
         }
 
+        /// <summary>
+        /// Gets/sets the global logger factory
+        /// </summary>
         public static CirqusLoggerFactory Current
         {
             get { return _current; }
@@ -51,6 +63,10 @@ namespace d60.Cirqus.Logging
             }
         }
 
+        /// <summary>
+        /// Gets a logger with the calling class's name (takes a walk down the call stack)
+        /// </summary>
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public Logger GetCurrentClassLogger()
         {
             for (var frames = 0;; frames++)
@@ -63,6 +79,9 @@ namespace d60.Cirqus.Logging
             }
         }
 
+        /// <summary>
+        /// Returns a logger with the given <paramref name="ownerType"/> as its name
+        /// </summary>
         public abstract Logger GetLogger(Type ownerType);
     }
 }

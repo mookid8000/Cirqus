@@ -3,8 +3,14 @@ using System.Linq;
 
 namespace d60.Cirqus.Extensions
 {
+    /// <summary>
+    /// Nifty extensions for <see cref="Type"/>
+    /// </summary>
     public static class TypeExtensions
     {
+        /// <summary>
+        /// Gets a much-improved name of the type, optionally including namespace information
+        /// </summary>
         public static string GetPrettyName(this Type type, bool includeNamespace = false)
         {
             return GetTypeName(type, includeNamespace);

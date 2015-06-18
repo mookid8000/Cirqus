@@ -2,6 +2,9 @@ using System;
 
 namespace d60.Cirqus.Config.Configurers
 {
+    /// <summary>
+    /// Semi-IoC-like registrar that can decorate instances too
+    /// </summary>
     public interface IRegistrar
     {
         /// <summary>

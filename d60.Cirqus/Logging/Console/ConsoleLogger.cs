@@ -2,12 +2,15 @@
 
 namespace d60.Cirqus.Logging.Console
 {
+    /// <summary>
+    /// Logger implementation that logs to standard output
+    /// </summary>
     public class ConsoleLogger : Logger
     {
         readonly Type _ownerType;
         readonly Level _minLevel;
 
-        public ConsoleLogger(Type ownerType, Level minLevel = Level.Info)
+        internal ConsoleLogger(Type ownerType, Level minLevel = Level.Info)
         {
             _ownerType = ownerType;
             _minLevel = minLevel;

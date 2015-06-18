@@ -5,6 +5,9 @@ using d60.Cirqus.Logging;
 
 namespace d60.Cirqus.Config.Configurers
 {
+    /// <summary>
+    /// Context that is passed into resolver factory methods, allowing them to resolve dependent services
+    /// </summary>
     public class ResolutionContext : IDisposable
     {
         static Logger _logger;
@@ -20,11 +23,17 @@ namespace d60.Cirqus.Config.Configurers
         readonly HashSet<object> _resolvedObjects = new HashSet<object>();
         readonly List<ResolutionContext> _childContexts = new List<ResolutionContext>();
 
+        /// <summary>
+        /// Constructs the context with the given resolvers available
+        /// </summary>
         public ResolutionContext(IEnumerable<Resolver> resolvers)
         {
             _resolvers = resolvers;
         }
 
+        /// <summary>
+        /// Resolves an implementation of <typeparamref name="TService"/>. Throws a <see cref="ResolutionException"/> if none could be found
+        /// </summary>
         public TService Get<TService>()
         {
             var result = GetOrDefault<TService>();
@@ -37,6 +46,9 @@ namespace d60.Cirqus.Config.Configurers
             return result;
         }
 
+        /// <summary>
+        /// Resolves an implementation of <typeparamref name="TService"/>. Returns null if none could be found.
+        /// </summary>
         public TService GetOrDefault<TService>()
         {
             if (_cache.ContainsKey(typeof(TService)))
@@ -69,6 +81,9 @@ namespace d60.Cirqus.Config.Configurers
             return result;
         }
 
+        /// <summary>
+        /// Gets all instances of <typeparamref name="TService"/> that were registered with multi = true
+        /// </summary>
         public IEnumerable<TService> GetAll<TService>()
         {
             return _resolvers
@@ -77,6 +92,9 @@ namespace d60.Cirqus.Config.Configurers
                 .Select(r => r.InvokeFactory(this));
         }
 
+        /// <summary>
+        /// Adds a child context
+        /// </summary>
         public void AddChildContext(ResolutionContext context)
         {
             _childContexts.Add(context);
@@ -117,35 +135,61 @@ namespace d60.Cirqus.Config.Configurers
             return _levels[serviceType];
         }
 
+        /// <summary>
+        /// Wrapper of a factory method
+        /// </summary>
         public abstract class Resolver
         {
-            protected Resolver(Delegate factory, bool decorator, bool multi)
+            /// <summary>
+            /// Constructs the resolver
+            /// </summary>
+            protected Resolver(bool decorator, bool multi, Type type)
             {
-                Factory = factory;
                 Decorator = decorator;
                 Multi = multi;
+                Type = type;
             }
 
-            public Type Type { get; protected set; }
+            /// <summary>
+            /// Gets the type that can be resolved by this resolver
+            /// </summary>
+            public Type Type { get; private set; }
 
-            public Delegate Factory { get; private set; }
-
+            /// <summary>
+            /// Gets whether this is a decorator and will resolve 
+            /// </summary>
             public bool Decorator { get; private set; }
 
+            /// <summary>
+            /// Gets whether this is a multi-registration, i.e. whether it can be resolved with <see cref="ResolutionContext.GetAll{TService}"/>
+            /// </summary>
             public bool Multi { get; private set; }
         }
 
+        /// <summary>
+        /// Typed resolver
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
         public class Resolver<TService> : Resolver
         {
-            public Resolver(Delegate factory, bool decorator, bool multi)
-                : base(factory, decorator, multi)
+            readonly Func<ResolutionContext, TService> _factory;
+
+            /// <summary>
+            /// Constructs the resolver
+            /// </summary>
+            public Resolver(Func<ResolutionContext, TService> factory, bool decorator, bool multi)
+                : base(decorator, multi, typeof(TService))
             {
-                Type = typeof(TService);
+                if (factory == null) throw new ArgumentNullException("factory");
+                _factory = factory;
             }
 
+            /// <summary>
+            /// Invokes the factory method, resolving the instance
+            /// </summary>
             public TService InvokeFactory(ResolutionContext resolutionContext)
             {
-                return ((Func<ResolutionContext, TService>)Factory)(resolutionContext);
+                return _factory(resolutionContext);
             }
         }
     }

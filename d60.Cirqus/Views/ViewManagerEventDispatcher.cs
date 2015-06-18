@@ -15,6 +15,11 @@ using Timer = System.Timers.Timer;
 
 namespace d60.Cirqus.Views
 {
+    /// <summary>
+    /// Event dispatcher implementation that is capable of hosting any number of <see cref="IViewManager"/> implementations.
+    /// A dedicated thread will dispatch events to the views as they happen, periodically checking in the background whether
+    /// any of the views have got some catching up to do
+    /// </summary>
     public class ViewManagerEventDispatcher : IEventDispatcher, IDisposable
     {
         static Logger _logger;
@@ -46,6 +51,9 @@ namespace d60.Cirqus.Views
 
         IViewManagerProfiler _viewManagerProfiler = new NullProfiler();
 
+        /// <summary>
+        /// Constructs the event dispatcher
+        /// </summary>
         public ViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, 
             IDomainEventSerializer domainEventSerializer, IDomainTypeNameMapper domainTypeNameMapper, params IViewManager[] viewManagers)
         {
@@ -72,6 +80,9 @@ namespace d60.Cirqus.Views
             AutomaticCatchUpInterval = TimeSpan.FromSeconds(1);
         }
 
+        /// <summary>
+        /// Sets the profiler that the event dispatcher should use to aggregate timing information
+        /// </summary>
         public void SetProfiler(IViewManagerProfiler viewManagerProfiler)
         {
             if (viewManagerProfiler == null) throw new ArgumentNullException("viewManagerProfiler");
@@ -79,6 +90,9 @@ namespace d60.Cirqus.Views
             _viewManagerProfiler = viewManagerProfiler;
         }
 
+        /// <summary>
+        /// Adds the given view manager
+        /// </summary>
         public void AddViewManager(IViewManager viewManager)
         {
             if (viewManager == null) throw new ArgumentNullException("viewManager");
@@ -120,15 +134,23 @@ namespace d60.Cirqus.Views
             _work.Enqueue(PieceOfWork.JustCatchUp(list));
         }
 
+        /// <summary>
+        /// Waits until the view(s) with the specified view instance type have successfully processed event at least up until those that were emitted
+        /// as part of processing the command that yielded the given result
+        /// </summary>
         public async Task WaitUntilProcessed<TViewInstance>(CommandProcessingResult result, TimeSpan timeout) where TViewInstance : IViewInstance
         {
             if (result == null) throw new ArgumentNullException("result");
-            await Task.WhenAll(_viewManagers
+            await Task.WhenAll(_viewManagers.Keys
                 .OfType<IViewManager<TViewInstance>>()
                 .Select(v => v.WaitUntilProcessed(result, timeout))
                 .ToArray());
         }
 
+        /// <summary>
+        /// Waits until all view with the specified view instance type have successfully processed event at least up until those that were emitted
+        /// as part of processing the command that yielded the given result
+        /// </summary>
         public async Task WaitUntilProcessed(CommandProcessingResult result, TimeSpan timeout)
         {
             if (result == null) throw new ArgumentNullException("result");
@@ -137,6 +159,9 @@ namespace d60.Cirqus.Views
                 .ToArray());
         }
 
+        /// <summary>
+        /// Gets/sets how many events to include at most in a batch between saving the state of view instances
+        /// </summary>
         public int MaxDomainEventsPerBatch
         {
             get { return _maxDomainEventsPerBatch; }
@@ -150,6 +175,9 @@ namespace d60.Cirqus.Views
             }
         }
 
+        /// <summary>
+        /// Gets/sets the interval between automatically checking whether any views have got catching up to do
+        /// </summary>
         public TimeSpan AutomaticCatchUpInterval
         {
             get { return TimeSpan.FromMilliseconds(_automaticCatchUpTimer.Interval); }
@@ -298,7 +326,7 @@ namespace d60.Cirqus.Views
                 };
             }
 
-            public List<DomainEvent> Events { get; set; }
+            public List<DomainEvent> Events { get; private set; }
 
             public bool CatchUpAsFarAsPossible { get; private set; }
 
@@ -329,6 +357,10 @@ namespace d60.Cirqus.Views
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Stops the background timer and shuts down the worker thread
+        /// </summary>
+        /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed) return;
@@ -348,7 +380,10 @@ namespace d60.Cirqus.Views
 
                 try
                 {
-                    _worker.Join(TimeSpan.FromSeconds(1));
+                    if (!_worker.Join(TimeSpan.FromSeconds(4)))
+                    {
+                        _logger.Warn("Worker thread did not stop within 4 second timeout!");
+                    }
                 }
                 catch
                 {

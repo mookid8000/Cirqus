@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
@@ -69,11 +70,16 @@ namespace d60.Cirqus.Testing
 
         void Emit<T>(string id, DomainEvent<T> @event) where T : AggregateRoot
         {
+            if (!ids.Any(d => d.ToString() == id))
+                NewId<T>(id);
+
             @event.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id;
 
             //SetupAuthenticationMetadata(@event.Meta);
 
-            Context.Save(@event);
+            var ownerType = ids.First(i => i.ToString() == Latest<T>()).GetOwnerType();
+
+            Context.Save(ownerType, @event);
 
             formatter
                 .Block("Given that:")
@@ -171,10 +177,10 @@ namespace d60.Cirqus.Testing
             var next = results.FirstOrDefault();
 
             formatter.Block("Then:");
-            
+
             Assert(
-                next is T, 
-                () => formatter.Write(typeof(T).Name).NewLine(), 
+                next is T,
+                () => formatter.Write(typeof(T).Name).NewLine(),
                 () => formatter.Write("But we got " + next.GetType().Name).NewLine());
 
             // consume one event
@@ -247,9 +253,9 @@ namespace d60.Cirqus.Testing
             results = Enumerable.Empty<DomainEvent>();
         }
 
-        protected string NewId<T>(params object[] args)
+        protected string NewId<T>(params string[] args)
         {
-            var id = Guid.NewGuid().ToString();
+            var id = args.FirstOrDefault() ?? Guid.NewGuid().ToString();
             ids.Push(new InternalId<T>(id));
             return id;
         }
@@ -284,6 +290,7 @@ namespace d60.Cirqus.Testing
             latest = null;
 
             var lastestOfType = ids.OfType<InternalId<T>>().ToList();
+            var lastestOfType = ids.Where(i => typeof(T).IsAssignableFrom(i.GetOwnerType())).ToList();
             if (lastestOfType.Any())
             {
                 latest = lastestOfType.First().ToString();
@@ -357,7 +364,8 @@ namespace d60.Cirqus.Testing
 
         protected interface InternalId
         {
-             
+            Type GetOwnerType();
+
         }
 
         class InternalId<T> : InternalId
@@ -372,6 +380,11 @@ namespace d60.Cirqus.Testing
             public override string ToString()
             {
                 return id;
+            }
+
+            public Type GetOwnerType()
+            {
+                return typeof(T);
             }
         }
 

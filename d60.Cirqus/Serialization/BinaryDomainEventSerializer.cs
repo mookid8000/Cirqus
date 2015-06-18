@@ -4,6 +4,9 @@ using d60.Cirqus.Events;
 
 namespace d60.Cirqus.Serialization
 {
+    /// <summary>
+    /// Serializer that uses .NET's <see cref="BinaryFormatter"/> to do its thing
+    /// </summary>
     public class BinaryDomainEventSerializer : IDomainEventSerializer
     {
         public EventData Serialize(DomainEvent e)

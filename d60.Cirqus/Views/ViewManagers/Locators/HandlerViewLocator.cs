@@ -7,6 +7,11 @@ using d60.Cirqus.Events;
 
 namespace d60.Cirqus.Views.ViewManagers.Locators
 {
+    /// <summary>
+    /// Special view locator that allows for using a "handler-like" dispatch mechanism to map events to view IDs.
+    /// Implement one or more <see cref="IGetViewIdsFor{TDomainEvent}"/> interfaces, closing it with either concrete
+    /// event types or base types (or interfaces, even) in order to have events of those types dispatched to the view locator.
+    /// </summary>
     public class HandlerViewLocator : ViewLocator
     {
         readonly ConcurrentDictionary<Type, MethodInfo> _handlerMethodsByDomainEventType = new ConcurrentDictionary<Type, MethodInfo>();

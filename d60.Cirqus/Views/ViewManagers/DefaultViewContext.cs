@@ -95,7 +95,7 @@ namespace d60.Cirqus.Views.ViewManagers
                 _realUnitOfWork = realUnitOfWork;
             }
 
-            public void AddEmittedEvent<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
+            public void AddEmittedEvent<TAggregateRoot>(AggregateRoot aggregateRoot, DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
             {
                 throw new InvalidOperationException(
                     string.Format("Aggregate root {0} with ID {1} attempted to emit event {2}, but that cannot be done when the root instance is frozen! (global sequence number: {3})",
@@ -127,7 +127,7 @@ namespace d60.Cirqus.Views.ViewManagers
 
         }
 
-        public void AddEmittedEvent<TAggregateRoot>(DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
+        public void AddEmittedEvent<TAggregateRoot>(AggregateRoot aggregateRoot, DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
         {
             throw new NotImplementedException("A view context cannot be used as a unit of work when emitting events");
         }

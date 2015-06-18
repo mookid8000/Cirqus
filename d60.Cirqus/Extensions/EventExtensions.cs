@@ -4,9 +4,19 @@ using d60.Cirqus.Events;
 
 namespace d60.Cirqus.Extensions
 {
+    /// <summary>
+    /// Extensions that make it easier to work with domain events
+    /// </summary>
     public static class EventExtensions
     {
+        /// <summary>
+        /// Metadata key to use for specifying a content type (can be used as a technical header if the event is serialized with an introspectable format, like e.g. JSON)
+        /// </summary>
         public const string ContentTypeMetadataKey = "content-type";
+
+        /// <summary>
+        /// Value to use with the <see cref="ContentTypeMetadataKey"/> header if it's JSON-serialized
+        /// </summary>
         public const string Utf8JsonMetadataValue = "application/json;charset=utf8";
 
         /// <summary>
@@ -41,12 +51,19 @@ namespace d60.Cirqus.Extensions
             return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.GlobalSequenceNumber, Convert.ToInt64, throwIfNotFound);
         }
 
+        /// <summary>
+        /// Gets whther the serialized event data is UTF8-encoded JSON
+        /// </summary>
         public static bool IsJson(this EventData e)
         {
             return e.Meta.ContainsKey(ContentTypeMetadataKey)
                    && e.Meta[ContentTypeMetadataKey] == Utf8JsonMetadataValue;
         }
 
+        /// <summary>
+        /// Addes the <see cref="ContentTypeMetadataKey"/> header with the <see cref="Utf8JsonMetadataValue"/> to mark the serialized
+        /// event data as UTF8-encoded JSON
+        /// </summary>
         public static void MarkAsJson(this EventData e)
         {
             e.Meta[ContentTypeMetadataKey] = Utf8JsonMetadataValue;

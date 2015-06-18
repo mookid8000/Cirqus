@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.NUnit;
+using d60.Cirqus.Tests.Aggregates;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Testing
@@ -90,6 +92,47 @@ Then:
             Then(new EventA2());
         }
 
+        [Test]
+        public void ThenWithExplicitId()
+        {
+            var id = Guid.NewGuid().ToString();
+
+            Emit(id, new EventA1());
+
+            When(new CommandA { Id = id });
+
+            Then(new EventA2());
+        }
+
+        [Test]
+        public void GivenWithExtendedRoot()
+        {
+            Emit(NewId<RootAExtended>(), new EventA1());
+            Emit(new EventA2());
+
+            var history = Context.History.ToList();
+            Assert.AreEqual(Id<RootAExtended>(), history[0].GetAggregateRootId());
+            Assert.Catch<IndexOutOfRangeException>(() => Id<RootA>());
+            Assert.IsInstanceOf<RootAExtended>(Context.AggregateRoots.First(d => d.Id == Id<RootAExtended>()));
+
+        }
+
+
+        [Test]
+        public void GivenWithBaseRoot()
+        {
+            var id = Guid.NewGuid().ToString();
+
+            Emit(id, new EventA1());
+            Emit(new EventA2());
+
+            var history = Context.History.ToList();
+            Assert.AreEqual(Id<RootA>(), history[0].GetAggregateRootId());
+            Assert.Catch<IndexOutOfRangeException>(() => Id<RootAExtended>());
+            Assert.IsInstanceOf<RootA>(Context.AggregateRoots.First(d => d.Id == id));
+
+        }
+
         public class RootA : AggregateRoot, IEmit<EventA1>, IEmit<EventA2>
         {
             public void DoA1()
@@ -104,13 +147,24 @@ Then:
 
             public void Apply(EventA1 e)
             {
-                
+
             }
 
             public void Apply(EventA2 e)
             {
-                
+
             }
+        }
+
+        public class RootAExtended : RootA
+        {
+
+            public void DoA3()
+            {
+                Emit(new EventA1());
+                Emit(new EventA2());
+            }
+
         }
 
         public class EventA1 : DomainEvent<RootA>

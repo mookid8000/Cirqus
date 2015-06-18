@@ -4,6 +4,9 @@ using System.Runtime.Serialization;
 
 namespace d60.Cirqus.Extensions
 {
+    /// <summary>
+    /// Exception extensions
+    /// </summary>
     public static class ExceptionExtensions
     {
         /// <summary>
