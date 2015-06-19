@@ -564,6 +564,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Made test harness generate and store IDs for entities
 
+## 0.60.9
+
+* Fixed storing of IDs for entities
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
