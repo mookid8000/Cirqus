@@ -254,9 +254,9 @@ namespace d60.Cirqus.Testing
             results = Enumerable.Empty<DomainEvent>();
         }
 
-        protected virtual string NewId<T>(params object[] args) where T : class
+        protected string NewId<T>(params object[] args) where T : class
         {
-            var id = Guid.NewGuid().ToString();
+            var id = GenerateId<T>(args);
             ids.Push(new InternalId<T>(id));
             return id;
         }
@@ -302,6 +302,11 @@ namespace d60.Cirqus.Testing
         protected bool Exists<T>(string id) where T : class
         {
             return ids.Any(x => x.GetId() == id);
+        }
+
+        protected virtual string GenerateId<T>(params object[] args) where T : class
+        {
+            return Guid.NewGuid().ToString();
         }
 
         void AssertAllEventsExpected()
