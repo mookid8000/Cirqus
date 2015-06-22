@@ -26,7 +26,8 @@ namespace d60.Cirqus.Testing
         JsonSerializerSettings settings;
 
         protected TestContext Context { get; private set; }
-        protected Action<Command> OnWhen = x => { };
+        protected Action<DomainEvent> OnEvent = x => { };
+        protected Action<Command> OnCommand = x => { };
 
         protected void Begin(TestContext context)
         {
@@ -77,7 +78,7 @@ namespace d60.Cirqus.Testing
 
             @event.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id;
 
-            //SetupAuthenticationMetadata(@event.Meta);
+            OnEvent(@event);
 
             var emitterType = ids.First(x => x.GetId() == Latest<T>()).GetOwnerType();
 
@@ -92,7 +93,7 @@ namespace d60.Cirqus.Testing
 
         protected void When(ExecutableCommand command)
         {
-            OnWhen(command);
+            OnCommand(command);
 
             formatter
                 .Block("When users:")

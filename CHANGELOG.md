@@ -568,6 +568,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Fixed storing of IDs for entities
 
+## 0.60.10
+
+* support for manipulating the event before emitting it in the test framework
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen

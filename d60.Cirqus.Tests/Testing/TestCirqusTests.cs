@@ -134,10 +134,22 @@ Then:
         }
 
         [Test]
+        public void EmitWithHook()
+        {
+            var flag = false;
+            OnEvent += x => flag = true;
+
+            var id = Guid.NewGuid().ToString();
+            Emit(id, new EventA1());
+
+            Assert.IsTrue(flag);
+        }
+
+        [Test]
         public void WhenWithHook()
         {
             var flag = false;
-            OnWhen += x => flag = true;
+            OnCommand += x => flag = true;
 
             var id = Guid.NewGuid().ToString();
             Emit(id, new EventA1());
