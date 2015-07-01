@@ -235,6 +235,7 @@
     <Compile Include="Testing\TestTestContext.cs" />
     <Compile Include="Testing\TestEventFormatter.cs" />
     <Compile Include="Testing\TestWriter.cs" />
+    <Compile Include="Views\DependentViewManagerEventDispatcher.cs" />
     <Compile Include="Views\NewViewManager\TestViewManagerEventDispatcher - Copy.cs" />
     <Compile Include="Views\NewViewManager\Views\AllPotatoesView.cs" />
     <Compile Include="Views\NewViewManager\Events\BaptizedSomeone.cs" />
@@ -249,6 +250,7 @@
     <Compile Include="Views\NewViewManager\Views\SlowView.cs" />
     <Compile Include="Contracts\Views\ObjectGraph.cs" />
     <Compile Include="Views\TestDefaultEventDispatcherConfiguration.cs" />
+    <Compile Include="Views\TestDependentViews.cs" />
     <Compile Include="Views\TestLoadAggregatesFromView.cs" />
     <Compile Include="Views\TestViewLocator.cs" />
   </ItemGroup>

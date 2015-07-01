@@ -1,4 +1,5 @@
-﻿using d60.Cirqus.Events;
+﻿using System.Collections.Generic;
+using d60.Cirqus.Events;
 
 namespace d60.Cirqus.Views.ViewManagers
 {
@@ -32,9 +33,9 @@ namespace d60.Cirqus.Views.ViewManagers
         /// </summary>
         DomainEvent CurrentEvent { get; set; }
 
-        ///// <summary>
-        ///// Marks this view instance for deletion
-        ///// </summary>
-        //void DeleteThisViewInstance();
+        /// <summary>
+        /// Gets the items associated with this view context
+        /// </summary>
+        Dictionary<string, object> Items { get; } 
     }
 }

@@ -12,9 +12,9 @@ namespace d60.Cirqus.Views.ViewManagers
     /// </summary>
     public class ViewManagerWaitHandle
     {
-        readonly List<ViewManagerEventDispatcher> _dispatchers = new List<ViewManagerEventDispatcher>();
+        readonly List<IAwaitableEventDispatcher> _dispatchers = new List<IAwaitableEventDispatcher>();
 
-        internal void Register(ViewManagerEventDispatcher dispatcher)
+        internal void Register(IAwaitableEventDispatcher dispatcher)
         {
             _dispatchers.Add(dispatcher);
         }

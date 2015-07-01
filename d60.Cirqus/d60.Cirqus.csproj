@@ -142,6 +142,7 @@
     <Compile Include="Testing\TestContext.cs" />
     <Compile Include="Testing\TestContextConfigurationExtensions.cs" />
     <Compile Include="Testing\TestUnitOfWork.cs" />
+    <Compile Include="Views\IAwaitableEventDispatcher.cs" />
     <Compile Include="Views\InMemoryViewEventDispatcher.cs" />
     <Compile Include="Views\NullEventDispatcher.cs" />
     <Compile Include="Views\NullProfiler.cs" />

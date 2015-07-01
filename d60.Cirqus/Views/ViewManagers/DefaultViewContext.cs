@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Config;
@@ -17,6 +18,8 @@ namespace d60.Cirqus.Views.ViewManagers
 
         public DefaultViewContext(IAggregateRootRepository aggregateRootRepository, IDomainTypeNameMapper domainTypeNameMapper)
         {
+            Items = new Dictionary<string, object>();
+
             _aggregateRootRepository = aggregateRootRepository;
 
             _realUnitOfWork = new RealUnitOfWork(_aggregateRootRepository, domainTypeNameMapper);
@@ -121,6 +124,8 @@ namespace d60.Cirqus.Views.ViewManagers
         }
 
         public DomainEvent CurrentEvent { get; set; }
+        
+        public Dictionary<string, object> Items { get; private set; }
 
         public void DeleteThisViewInstance()
         {

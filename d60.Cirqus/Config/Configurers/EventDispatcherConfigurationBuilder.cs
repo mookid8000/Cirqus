@@ -7,8 +7,14 @@ using d60.Cirqus.Views.ViewManagers;
 
 namespace d60.Cirqus.Config.Configurers
 {
+    /// <summary>
+    /// Configuration builder for attaching event processors to the command processor
+    /// </summary>
     public class EventDispatcherConfigurationBuilder : ConfigurationBuilder<IEventDispatcher>
     {
+        /// <summary>
+        /// Constructs the builder
+        /// </summary>
         public EventDispatcherConfigurationBuilder(IRegistrar registrar) : base(registrar) { }
 
         /// <summary>

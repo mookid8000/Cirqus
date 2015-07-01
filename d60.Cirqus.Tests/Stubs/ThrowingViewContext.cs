@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using d60.Cirqus.Events;
 using d60.Cirqus.Views.ViewManagers;
 
@@ -6,6 +7,11 @@ namespace d60.Cirqus.Tests.Stubs
 {
     public class ThrowingViewContext : IViewContext
     {
+        public ThrowingViewContext()
+        {
+            Items = new Dictionary<string, object>();
+        }
+
         public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : class
         {
             throw new NotImplementedException("This view context is a stub that throws when someone uses it");
@@ -35,5 +41,7 @@ namespace d60.Cirqus.Tests.Stubs
         /// We do allow for setting/getting the event currently being handled though
         /// </summary>
         public DomainEvent CurrentEvent { get; set; }
+
+        public Dictionary<string, object> Items { get; private set; }
     }
 }

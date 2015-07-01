@@ -7,7 +7,6 @@ using System.Threading;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.Numbers;
-using d60.Cirqus.Tests.Stubs;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using NUnit.Framework;
