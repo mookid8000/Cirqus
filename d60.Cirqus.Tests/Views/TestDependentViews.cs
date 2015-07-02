@@ -21,7 +21,7 @@ namespace d60.Cirqus.Tests.Views
     [TestFixture]
     public class TestDependentViews : FixtureBase
     {
-        [Test]
+        [Test, Category(TestCategories.MongoDb)]
         public async Task YeyItWorks()
         {
             CirqusLoggerFactory.Current = new ConsoleLoggerFactory();
