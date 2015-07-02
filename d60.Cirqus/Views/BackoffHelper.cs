@@ -10,6 +10,7 @@ namespace d60.Cirqus.Views
         readonly TimeSpan[] _backoffTimes;
 
         int _currentBackoffTimeIndex;
+        DateTime _lastError;
 
         public BackoffHelper(IEnumerable<TimeSpan> backoffTimes)
         {
@@ -31,6 +32,7 @@ namespace d60.Cirqus.Views
         public void Reset()
         {
             Interlocked.Exchange(ref _currentBackoffTimeIndex, 0);
+            _lastError = DateTime.MinValue;
         }
     }
 }
