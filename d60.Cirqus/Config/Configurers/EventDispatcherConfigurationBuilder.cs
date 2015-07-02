@@ -63,6 +63,43 @@ namespace d60.Cirqus.Config.Configurers
         }
 
         /// <summary>
+        /// Configures a dependent view manager event dispatcher that tacks on to any number of dependent views, catching up from the
+        /// event store when the dependent views have caught up.
+        /// </summary>
+        public DependentViewManagerEventDispatcherSettings UseDependentViewManagerEventDispatcher(params IViewManager[] viewManagers)
+        {
+            var settings = new DependentViewManagerEventDispatcherSettings();
+
+            UseEventDispatcher(context =>
+            {
+                var eventDispatcher = new DependentViewManagerEventDispatcher(settings.DependentViewManagers,
+                    viewManagers,
+                    context.Get<IEventStore>(),
+                    context.Get<IDomainEventSerializer>(),
+                    context.Get<IAggregateRootRepository>(),
+                    context.Get<IDomainTypeNameMapper>(),
+                    settings.ViewContextItems)
+                {
+                    MaxDomainEventsPerBatch = settings.MaxDomainEventsPerBatch
+                };
+
+                if (settings.ViewManagerProfiler != null)
+                {
+                    eventDispatcher.SetProfiler(settings.ViewManagerProfiler);
+                }
+
+                foreach (var waitHandle in settings.WaitHandles)
+                {
+                    waitHandle.Register(eventDispatcher);
+                }
+
+                return eventDispatcher;
+            });
+
+            return settings;
+        }
+
+        /// <summary>
         /// Registers the given event dispatcher. Can be called multiple times.
         /// </summary>
         public void UseEventDispatcher(IEventDispatcher eventDispatcher)

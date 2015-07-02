@@ -4,16 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
-using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.MongoDb.Views;
-using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.Extensions;
 using d60.Cirqus.Tests.MongoDb;
-using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using MongoDB.Driver.Linq;
@@ -34,9 +31,9 @@ namespace d60.Cirqus.Tests.Views
             var firstView = new MongoDbViewManager<HeyCounter>(mongoDatabase);
             var secondView = new MongoDbViewManager<WordCounter>(mongoDatabase);
 
-            /* |---===^^^===---| */
+            /*         ________.......------=====^^!^^=====------.......________             */
             var dependentView = new MongoDbViewManager<HeyPercentageCalculator>(mongoDatabase);
-            /* |---===___===---| */
+            /*         ________.......------=====^^!^^=====------.......________             */
 
             var waitHandle = new ViewManagerWaitHandle();
             var specialWaitHandle = new ViewManagerWaitHandle();
@@ -45,28 +42,20 @@ namespace d60.Cirqus.Tests.Views
                 .EventStore(e => e.UseInMemoryEventStore())
                 .EventDispatcher(e =>
                 {
-                    e.UseViewManagerEventDispatcher(firstView).WithWaitHandle(waitHandle);
-                    e.UseViewManagerEventDispatcher(secondView).WithWaitHandle(waitHandle);
+                    e.UseViewManagerEventDispatcher(firstView)
+                        .WithWaitHandle(waitHandle);
+                    
+                    e.UseViewManagerEventDispatcher(secondView)
+                        .WithWaitHandle(waitHandle);
 
-                    e.UseEventDispatcher(c =>
-                    {
-                        var dependencies = new IViewManager[] { firstView, secondView };
-
-                        var viewManagers = new IViewManager[] { dependentView };
-
-                        var eventStore = c.Get<IEventStore>();
-                        var domainEventSerializer = c.Get<IDomainEventSerializer>();
-                        var aggregateRootRepository = c.Get<IAggregateRootRepository>();
-                        var domainTypeNameMapper = c.Get<IDomainTypeNameMapper>();
-
-                        return new DependentViewManagerEventDispatcher(dependencies, viewManagers, eventStore,
-                            domainEventSerializer, aggregateRootRepository, domainTypeNameMapper, specialWaitHandle,
-                            new Dictionary<string, object>
-                            {
-                                {"heys", mongoDatabase.GetCollection<HeyCounter>(typeof(HeyCounter).Name).AsQueryable()},
-                                {"words", mongoDatabase.GetCollection<WordCounter>(typeof(WordCounter).Name).AsQueryable()},
-                            });
-                    });
+                    e.UseDependentViewManagerEventDispatcher(dependentView)
+                        .WithWaitHandle(specialWaitHandle)
+                        .DependentOn(firstView, secondView)
+                        .WithViewContext(new Dictionary<string, object>
+                        {
+                            {"heys", mongoDatabase.GetCollection<HeyCounter>(typeof (HeyCounter).Name).AsQueryable()},
+                            {"words", mongoDatabase.GetCollection<WordCounter>(typeof (WordCounter).Name).AsQueryable()},
+                        });
                 })
                 .Create();
 

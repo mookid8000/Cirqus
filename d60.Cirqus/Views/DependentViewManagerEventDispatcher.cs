@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -9,11 +10,14 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Serialization;
-using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
+using Timer = System.Timers.Timer;
 
-namespace d60.Cirqus.Tests.Views
+namespace d60.Cirqus.Views
 {
+    /// <summary>
+    /// Special view manager event dispatcher that can have other views as a dependency, causing it to catch up to those views instead of catching up to the event store
+    /// </summary>
     public class DependentViewManagerEventDispatcher : IEventDispatcher, IDisposable, IAwaitableEventDispatcher
     {
         static Logger _logger;
@@ -23,6 +27,8 @@ namespace d60.Cirqus.Tests.Views
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
         }
 
+        readonly ConcurrentQueue<Work> _work = new ConcurrentQueue<Work>();
+        readonly Timer _automaticCatchUpTimer = new Timer();
         readonly List<IViewManager> _dependencies;
         readonly List<IViewManager> _viewManagers;
         readonly IEventStore _eventStore;
@@ -33,9 +39,14 @@ namespace d60.Cirqus.Tests.Views
         readonly Thread _workerThread;
 
         volatile bool _keepWorking = true;
-        IViewManagerProfiler _viewManagerProfiler = new NullProfiler();
 
-        public DependentViewManagerEventDispatcher(IEnumerable<IViewManager> dependencies, IEnumerable<IViewManager> viewManagers, IEventStore eventStore, IDomainEventSerializer domainEventSerializer, IAggregateRootRepository aggregateRootRepository, IDomainTypeNameMapper domainTypeNameMapper, ViewManagerWaitHandle waitHandle, Dictionary<string, object> viewContextItems)
+        IViewManagerProfiler _viewManagerProfiler = new NullProfiler();
+        int _maxDomainEventsPerBatch;
+
+        /// <summary>
+        /// Constructs the event dispatcher
+        /// </summary>
+        public DependentViewManagerEventDispatcher(IEnumerable<IViewManager> dependencies, IEnumerable<IViewManager> viewManagers, IEventStore eventStore, IDomainEventSerializer domainEventSerializer, IAggregateRootRepository aggregateRootRepository, IDomainTypeNameMapper domainTypeNameMapper, Dictionary<string, object> viewContextItems)
         {
             _dependencies = dependencies.ToList();
             _viewManagers = viewManagers.ToList();
@@ -44,9 +55,36 @@ namespace d60.Cirqus.Tests.Views
             _aggregateRootRepository = aggregateRootRepository;
             _domainTypeNameMapper = domainTypeNameMapper;
             _viewContextItems = viewContextItems;
-            _workerThread = new Thread(DoWork);
+            _workerThread = new Thread(DoWork) {IsBackground = true};
 
-            waitHandle.Register(this);
+            _automaticCatchUpTimer.Elapsed += (o, ea) => _work.Enqueue(new Work());
+            _automaticCatchUpTimer.Interval = 1000;
+        }
+
+        /// <summary>
+        /// Gets/sets how many events to include at most in a batch between saving the state of view instances
+        /// </summary>
+        public int MaxDomainEventsPerBatch
+        {
+            get { return _maxDomainEventsPerBatch; }
+            set
+            {
+                if (value < 1)
+                {
+                    throw new ArgumentException(string.Format("Attempted to set MAX items per batch to {0}! Please set it to at least 1...", value));
+                }
+                _maxDomainEventsPerBatch = value;
+            }
+        }
+
+        /// <summary>
+        /// Sets the profiler that the event dispatcher should use to aggregate timing information
+        /// </summary>
+        public void SetProfiler(IViewManagerProfiler viewManagerProfiler)
+        {
+            if (viewManagerProfiler == null) throw new ArgumentNullException("viewManagerProfiler");
+            _logger.Info("Setting profiler: {0}", viewManagerProfiler);
+            _viewManagerProfiler = viewManagerProfiler;
         }
 
         void DoWork()
@@ -61,7 +99,16 @@ namespace d60.Cirqus.Tests.Views
 
                 try
                 {
-                    DoSomeWork();
+                    Work work;
+
+                    if (!_work.TryDequeue(out work))
+                    {
+                        Thread.Sleep(200);
+                    }
+                    else
+                    {
+                        DoSomeWork();
+                    }
                 }
                 catch (Exception exception)
                 {
@@ -74,7 +121,11 @@ namespace d60.Cirqus.Tests.Views
 
         void DoSomeWork()
         {
-            if (!_viewManagers.Any()) return;
+            if (!_viewManagers.Any())
+            {
+                Thread.Sleep(1000);
+                return;
+            }
 
             var sequenceNumberToCatchUpTo = GetPosition(_dependencies, _eventStore.GetNextGlobalSequenceNumber() - 1);
 
@@ -84,7 +135,10 @@ namespace d60.Cirqus.Tests.Views
 
             var currentPosition = positions.Min(a => a.Value.Position);
 
-            if (currentPosition >= sequenceNumberToCatchUpTo) return;
+            if (currentPosition >= sequenceNumberToCatchUpTo)
+            {
+                return;
+            }
 
             var relevantEventBatches = _eventStore
                 .Stream(currentPosition)
@@ -137,16 +191,23 @@ namespace d60.Cirqus.Tests.Views
 
         public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
         {
+            _work.Enqueue(new Work());
             _workerThread.Start();
+            _automaticCatchUpTimer.Start();
         }
+
+        class Work { }
 
         public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
+            _work.Enqueue(new Work());
         }
 
         public void Dispose()
         {
             _logger.Info("Stopping dependent view manager event dispatcher");
+
+            _automaticCatchUpTimer.Dispose();
 
             _keepWorking = false;
             if (!_workerThread.Join(TimeSpan.FromSeconds(5)))
