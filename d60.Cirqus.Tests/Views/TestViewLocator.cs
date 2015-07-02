@@ -66,6 +66,7 @@ namespace d60.Cirqus.Tests.Views
                 yield return "interface, as expected!";
             }
         }
+
         [Test]
         public void CanGetViewIdsFromHandlerTypeViewLocatorWhenEventIsInherited()
         {

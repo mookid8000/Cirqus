@@ -346,17 +346,6 @@ namespace d60.Cirqus.Testing
             }
         }
 
-        //protected void SetupAuthenticationMetadata(Metadata meta)
-        //{
-        //    Id<Company> latestCompanyId;
-        //    if (TryGetLatest(out latestCompanyId))
-        //        meta[MetadataEx.CompanyIdMetadataKey] = latestCompanyId.ToString();
-
-        //    Id<User> latestUserId;
-        //    if (TryGetLatest(out latestUserId))
-        //        meta[MetadataEx.UserIdMetadataKey] = latestUserId.ToString();
-        //}
-
         interface InternalId
         {
             string GetId();
