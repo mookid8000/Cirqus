@@ -6,6 +6,7 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Config;
 using d60.Cirqus.Events;
+using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.MongoDb.Views;
@@ -15,6 +16,7 @@ using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
+using MongoDB.Driver.Linq;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Views
@@ -61,8 +63,8 @@ namespace d60.Cirqus.Tests.Views
                             domainEventSerializer, aggregateRootRepository, domainTypeNameMapper, specialWaitHandle,
                             new Dictionary<string, object>
                             {
-                                {"heys", firstView},
-                                {"words", secondView},
+                                {"heys", mongoDatabase.GetCollection<HeyCounter>(typeof(HeyCounter).Name).AsQueryable()},
+                                {"words", mongoDatabase.GetCollection<WordCounter>(typeof(WordCounter).Name).AsQueryable()},
                             });
                     });
                 })
@@ -71,7 +73,7 @@ namespace d60.Cirqus.Tests.Views
             RegisterForDisposal(commandProcessor);
 
             var result = Enumerable.Range(0, 100)
-                .Select(i => commandProcessor.ProcessCommand(new DoStuff("test", "hej med dig min ven " + i)))
+                .Select(i => commandProcessor.ProcessCommand(new DoStuff("test", "hej meddig min ven " + i)))
                 .Last();
 
             await waitHandle.WaitForAll(result, TimeSpan.FromSeconds(5));
@@ -82,13 +84,14 @@ namespace d60.Cirqus.Tests.Views
             var secondViewInstance = secondView.Load(viewId);
 
             Assert.That(firstViewInstance.Count, Is.EqualTo(100));
-            Assert.That(secondViewInstance.Count, Is.EqualTo(600));
+            Assert.That(secondViewInstance.Count, Is.EqualTo(500));
 
             Console.WriteLine("Waiting for dependent views to catch up...");
             await specialWaitHandle.WaitForAll(result, TimeSpan.FromSeconds(5));
             Console.WriteLine("DOne!");
 
             var heyPercentageCalculator = dependentView.Load(viewId);
+            Assert.That(heyPercentageCalculator.HeyPercentage, Is.EqualTo(20));
         }
 
         public class HeyPercentageCalculator : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<DidStuff>
@@ -96,30 +99,25 @@ namespace d60.Cirqus.Tests.Views
             public string Id { get; set; }
             public long LastGlobalSequenceNumber { get; set; }
 
-            public long HeyPosition { get; set; }
-            public long WordPosition { get; set; }
+            public long DependentViewsPosition { get; set; }
+
             public decimal HeyPercentage { get; set; }
 
             public void Handle(IViewContext context, DidStuff domainEvent)
             {
-                var heyCounter = context.Get<IViewManager<HeyCounter>>("heys");
-                var wordCounter = context.Get<IViewManager<WordCounter>>("words");
+                if (DependentViewsPosition > domainEvent.GetGlobalSequenceNumber()) return;
 
-                var heyPosition = heyCounter.GetPosition().Result;
-                var wordPosition = wordCounter.GetPosition().Result;
+                var heyCounter = context.Get<IQueryable<HeyCounter>>("heys");
+                var wordCounter = context.Get<IQueryable<WordCounter>>("words");
 
-                if (heyPosition == HeyPosition) return;
-                if (wordPosition == WordPosition) return;
-
-                Console.WriteLine("Loading and stuff - {0} {1}", heyPosition, wordPosition);
-
-                var heys = heyCounter.Load(Id);
-                var words = wordCounter.Load(Id);
+                var heys = heyCounter.First(v => v.Id == Id);
+                var words = wordCounter.First(v => v.Id == Id);
 
                 HeyPercentage = 100M*heys.Count/words.Count;
 
-                HeyPosition = heyPosition;
-                WordPosition = wordPosition;
+                DependentViewsPosition = Math.Min(heys.LastGlobalSequenceNumber, words.LastGlobalSequenceNumber);
+
+                Console.WriteLine("Loading and stuff - {0}", DependentViewsPosition);
             }
         }
 
