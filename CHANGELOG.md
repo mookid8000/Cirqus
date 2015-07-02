@@ -572,6 +572,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * support for manipulating the event before emitting it in the test framework
 
+## 0.61.0
+
+* Added support for dependent views - i.e. views that catch up with other views instead of catching up with the event store
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
