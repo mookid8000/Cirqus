@@ -27,6 +27,22 @@ namespace d60.Cirqus.Views
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
         }
 
+        readonly BackoffHelper _backoffHelper = new BackoffHelper(new[]
+        {
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(30),
+        });
+
         readonly ConcurrentQueue<Work> _work = new ConcurrentQueue<Work>();
         readonly Timer _automaticCatchUpTimer = new Timer();
         readonly List<IViewManager> _dependencies;
@@ -108,13 +124,17 @@ namespace d60.Cirqus.Views
                     else
                     {
                         DoSomeWork();
+
+                        _backoffHelper.Reset();
                     }
                 }
                 catch (Exception exception)
                 {
-                    _logger.Warn("Could not catch up: {0}", exception);
+                    var timeToWait = _backoffHelper.GetTimeToWait();
+
+                    _logger.Warn(exception, "Could not catch up - waiting {0}", timeToWait);
                     
-                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                    Thread.Sleep(timeToWait);
                 }
             }
         }
