@@ -113,20 +113,19 @@ namespace d60.Cirqus.Views
             {
                 Thread.Sleep(100);
 
+                Work work;
+
+                if (!_work.TryDequeue(out work))
+                {
+                    Thread.Sleep(20);
+                    continue;
+                }
+
                 try
                 {
-                    Work work;
+                    CatchUp();
 
-                    if (!_work.TryDequeue(out work))
-                    {
-                        Thread.Sleep(200);
-                    }
-                    else
-                    {
-                        DoSomeWork();
-
-                        _backoffHelper.Reset();
-                    }
+                    _backoffHelper.Reset();
                 }
                 catch (Exception exception)
                 {
@@ -139,7 +138,7 @@ namespace d60.Cirqus.Views
             }
         }
 
-        void DoSomeWork()
+        void CatchUp()
         {
             if (!_viewManagers.Any())
             {

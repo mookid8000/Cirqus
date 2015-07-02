@@ -57,7 +57,10 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             RegisterForDisposal(_commandProcessor);
         }
 
-        [Test, Description("This test throws a bunch of exceptions - the point is, though, that the event store's stream method throws an exception, which means that the only way for the view manager to catch up is if it can get events by direct dispatch")]
+        [Test]
+        [Description(@"This test throws a bunch of exceptions - the point is, though, that the event store's stream
+                       method throws an exception, which means that the only way for the view manager to catch up is
+                       if it can get events by direct dispatch")]
         public void CanDeliverDomainEventsDirectlyWhenEverythingAlignsPerfectly()
         {
             var testViewManager = new TestViewManager();
@@ -67,7 +70,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
             CommandProcessingResult result = null;
             10.Times(() => result = _commandProcessor.ProcessCommand(new LeCommand("someId")));
 
-            testViewManager.WaitUntilProcessed(result, TimeSpan.FromSeconds(1)).Wait();
+            testViewManager.WaitUntilProcessed(result, TimeSpan.FromSeconds(3)).Wait();
         }
 
         class LeCommand : Command<Root>
@@ -99,6 +102,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
         class TestViewManager : IViewManager
         {
             long _position = -1;
+            
             public async Task<long> GetPosition(bool canGetFromCache = true)
             {
                 return _position;
@@ -109,6 +113,7 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
                 foreach (var e in batch)
                 {
                     _position = e.GetGlobalSequenceNumber();
+                    Console.WriteLine("TestViewManager: position = {0}", _position);
                 }
             }
 

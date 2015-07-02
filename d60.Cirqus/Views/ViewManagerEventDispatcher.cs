@@ -31,6 +31,16 @@ namespace d60.Cirqus.Views
 
         readonly BackoffHelper _backoffHelper = new BackoffHelper(new[]
         {
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
             TimeSpan.FromSeconds(1),
             TimeSpan.FromSeconds(1),
             TimeSpan.FromSeconds(1),
@@ -218,7 +228,7 @@ namespace d60.Cirqus.Views
                 PieceOfWork pieceOfWork;
                 if (!_work.TryDequeue(out pieceOfWork))
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(20);
                     continue;
                 }
 
