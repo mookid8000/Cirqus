@@ -7,11 +7,9 @@ namespace d60.Cirqus.xUnit
 {
     public class CirqusTests : CirqusTestsHarness, IDisposable
     {
-        public CirqusTests() : this(TestContext.Create()) {}
-
-        public CirqusTests(TestContext context)
+        public CirqusTests()
         {
-            Begin(context);
+            Begin();
         }
 
         public void Dispose()
