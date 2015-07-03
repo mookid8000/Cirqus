@@ -23,6 +23,7 @@ namespace d60.Cirqus.Testing
         Stack<InternalId> ids;
         TextFormatter formatter;
 
+        IOptionalConfiguration<TestContext> configuration;
         IEnumerable<DomainEvent> results;
         JsonSerializerSettings settings;
 
@@ -41,11 +42,11 @@ namespace d60.Cirqus.Testing
                 Formatting = Formatting.Indented,
             };
 
-            var builder = TestContext.With();
-            Configure(builder);
-            Context = builder.Create();
-
             formatter = new TextFormatter(Writer());
+
+            configuration = TestContext.With();
+
+            Configure(x => { });
         }
 
         protected void End(bool isInExceptionalState)
@@ -57,8 +58,11 @@ namespace d60.Cirqus.Testing
             }
         }
 
-        protected virtual void Configure(IOptionalConfiguration<TestContext> builder)
+        protected void Configure(Action<IOptionalConfiguration<TestContext>> configurator)
         {
+            configurator(configuration);
+            
+            Context = configuration.Create();
         }
 
         protected abstract void Fail();

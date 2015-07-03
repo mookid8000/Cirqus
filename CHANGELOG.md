@@ -584,6 +584,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Simplified test context setup to support testing the new dependent view event dispatcher
 
+## 0.61.3
+
+* Changed api for test context setup
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
