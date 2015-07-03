@@ -19,6 +19,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
     [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
     [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql, Ignore = true, IgnoreReason = "The contained List<int> cannot be persisted by EF")]
     [TestFixture(typeof(InMemoryViewManagerFactory))]
+    [TestFixture(typeof(HybridDbViewManagerFactory), Category = TestCategories.MsSql)]
     public class RecoveryTest<TFactory> : FixtureBase where TFactory : AbstractViewManagerFactory, new()
     {
         TFactory _factory;

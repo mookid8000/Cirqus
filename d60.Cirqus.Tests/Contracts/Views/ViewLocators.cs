@@ -14,6 +14,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
     [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
     [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql)]
     [TestFixture(typeof(InMemoryViewManagerFactory))]
+    [TestFixture(typeof(HybridDbViewManagerFactory), Category = TestCategories.MsSql)]
     public class ViewLocators<TFactory> : FixtureBase where TFactory : AbstractViewManagerFactory, new()
     {
         TFactory _factory;

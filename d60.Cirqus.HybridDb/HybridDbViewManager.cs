@@ -70,10 +70,7 @@ namespace d60.Cirqus.HybridDb
                         
                         if (viewInstance == null)
                         {
-                            viewInstance = new TViewInstance
-                            {
-                                Id = viewId
-                            };
+                            viewInstance = _dispatcherHelper.CreateNewInstance(viewId);
                             session.Store(viewInstance);
                         }
 
@@ -111,7 +108,7 @@ namespace d60.Cirqus.HybridDb
 
             var positionTable = _store.Configuration.GetDesignFor<ViewPosition>().Table;
 
-            if (_store.Get(positionTable, viewPositionKey).Any())
+            if (_store.Get(positionTable, viewPositionKey) != null)
             {
                 commands.Add(new DeleteCommand(positionTable, viewPositionKey, Guid.Empty, true));
             }
