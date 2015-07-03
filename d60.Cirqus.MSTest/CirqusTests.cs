@@ -15,13 +15,8 @@ namespace d60.Cirqus.MSTest
         [TestInitialize]
         public void SetupInternal()
         {
-            Begin(CreateContext());
+            Begin();
             Setup();
-        }
-
-        protected virtual Testing.TestContext CreateContext()
-        {
-            return Testing.TestContext.Create();
         }
 
         protected virtual void Setup()

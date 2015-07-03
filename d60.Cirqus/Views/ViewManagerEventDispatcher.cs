@@ -29,6 +29,32 @@ namespace d60.Cirqus.Views
             CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
         }
 
+        readonly BackoffHelper _backoffHelper = new BackoffHelper(new[]
+        {
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromMilliseconds(100),
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(30),
+        });
+
         /// <summary>
         /// Use a concurrent queue to store views so that it's safe to traverse in the background even though new views may be added to it at runtime
         /// </summary>
@@ -202,7 +228,7 @@ namespace d60.Cirqus.Views
                 PieceOfWork pieceOfWork;
                 if (!_work.TryDequeue(out pieceOfWork))
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(20);
                     continue;
                 }
 
@@ -213,10 +239,23 @@ namespace d60.Cirqus.Views
                 try
                 {
                     CatchUpTo(sequenceNumberToCatchUpTo, _eventStore, pieceOfWork.CanUseCachedInformation, pieceOfWork.PurgeViewsFirst, _viewManagers.Keys.ToArray(), pieceOfWork.Events);
+
+                    _backoffHelper.Reset();
                 }
                 catch (Exception exception)
                 {
-                    _logger.Warn(exception, "Could not catch up to {0}", sequenceNumberToCatchUpTo);
+                    var timeToWait = _backoffHelper.GetTimeToWait();
+
+                    if (sequenceNumberToCatchUpTo == long.MaxValue)
+                    {
+                        _logger.Warn(exception, "Could not catch up - waiting {0}", timeToWait);
+                    }
+                    else
+                    {
+                        _logger.Warn(exception, "Could not catch up to {0} - waiting {1}", sequenceNumberToCatchUpTo, timeToWait);
+                    }
+
+                    Thread.Sleep(timeToWait);
                 }
             }
 

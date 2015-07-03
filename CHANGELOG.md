@@ -576,6 +576,14 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added support for dependent views - i.e. views that catch up with other views instead of catching up with the event store
 
+## 0.61.1
+
+* Gradually back off from attempting to catch up in the view manager event dispatchers when an error has occurred
+
+## 0.61.2
+
+* Simplified test context setup to support testing the new dependent view event dispatcher
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen

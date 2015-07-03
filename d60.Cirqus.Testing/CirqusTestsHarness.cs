@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
+using d60.Cirqus.Config.Configurers;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using EnergyProjects.Tests.Utils;
@@ -29,7 +30,7 @@ namespace d60.Cirqus.Testing
         protected Action<DomainEvent> OnEvent = x => { };
         protected Action<Command> OnCommand = x => { };
 
-        protected void Begin(TestContext context)
+        protected void Begin()
         {
             ids = new Stack<InternalId>();
 
@@ -40,7 +41,9 @@ namespace d60.Cirqus.Testing
                 Formatting = Formatting.Indented,
             };
 
-            Context = context;
+            var builder = TestContext.With();
+            Configure(builder);
+            Context = builder.Create();
 
             formatter = new TextFormatter(Writer());
         }
@@ -52,6 +55,10 @@ namespace d60.Cirqus.Testing
             {
                 AssertAllEventsExpected();
             }
+        }
+
+        protected virtual void Configure(IOptionalConfiguration<TestContext> builder)
+        {
         }
 
         protected abstract void Fail();
