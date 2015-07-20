@@ -27,7 +27,7 @@ namespace d60.Cirqus.HybridDb
 
         public HybridDbViewManager(IDocumentStore store)
         {
-            store.Configuration.Document<ViewPosition>();
+            store.Configuration.Document<ViewPosition>().With("Id", x => x.Id);
             new SchemaMigrationRunner(store, new SchemaDiffer()).Run();
             
             this._store = store;
@@ -88,6 +88,8 @@ namespace d60.Cirqus.HybridDb
                 }
 
                 position.Position = eventList.Max(e => e.GetGlobalSequenceNumber());
+
+                RaiseUpdatedEventFor(session.Advanced.ManagedEntities.OfType<TViewInstance>());
 
                 session.SaveChanges();
             }

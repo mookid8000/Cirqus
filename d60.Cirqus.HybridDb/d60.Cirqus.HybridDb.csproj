@@ -32,7 +32,7 @@
   <ItemGroup>
     <Reference Include="HybridDb, Version=0.6.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\HybridDb.0.7.0\lib\net40\HybridDb.dll</HintPath>
+      <HintPath>..\packages\HybridDb.0.7.1\lib\net40\HybridDb.dll</HintPath>
     </Reference>
     <Reference Include="Serilog">
       <HintPath>..\packages\Serilog.1.4.1\lib\net45\Serilog.dll</HintPath>
