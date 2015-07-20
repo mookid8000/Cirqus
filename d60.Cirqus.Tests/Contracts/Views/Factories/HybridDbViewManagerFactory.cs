@@ -16,16 +16,18 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
 
         protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>()
         {
+            var tableName = typeof (TViewInstance) + "_HybridDb";
+
+            MsSqlTestHelper.DropTable(tableName);
+
             var documentStore = DocumentStore.ForTesting(
                     TableMode.UseRealTables,
                     MsSqlTestHelper.ConnectionString,
                     new LambdaHybridDbConfigurator(x =>
                     {
                         x.Document<HybridDbViewManager<TViewInstance>.ViewPosition>().With("Id", v => v.Id);
-                        x.Document<TViewInstance>().With("Id", v => v.Id);
+                        x.Document<TViewInstance>(tableName).With("Id", v => v.Id);
                     }));
-
-            MsSqlTestHelper.DropTable(typeof(TViewInstance).Name + "s");
 
             RegisterDisposable(documentStore);
 

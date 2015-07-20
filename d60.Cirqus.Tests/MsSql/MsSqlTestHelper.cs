@@ -80,7 +80,7 @@ END
             }
             catch (SqlException exception)
             {
-                if (exception.Errors.Cast<SqlError>().Any(e => e.Number == 3701))
+                if (exception.Number == 3701)
                 {
                     Console.WriteLine("Table '{0}' was already gone", tableName);
                     return;
