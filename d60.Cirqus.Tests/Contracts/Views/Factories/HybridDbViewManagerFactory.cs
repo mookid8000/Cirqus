@@ -11,6 +11,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
         {
             MsSqlTestHelper.EnsureTestDatabaseExists();
             MsSqlTestHelper.DropTable("HybridDb");
+            MsSqlTestHelper.DropTable("ViewPosition");
         }
 
         protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>()
@@ -23,6 +24,8 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
                         x.Document<HybridDbViewManager<TViewInstance>.ViewPosition>().With("Id", v => v.Id);
                         x.Document<TViewInstance>().With("Id", v => v.Id);
                     }));
+
+            MsSqlTestHelper.DropTable(typeof(TViewInstance).Name + "s");
 
             RegisterDisposable(documentStore);
 
