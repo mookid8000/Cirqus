@@ -20,7 +20,7 @@ namespace d60.Cirqus.HybridDb
         readonly ViewLocator _viewLocator = ViewLocator.GetLocatorFor<TViewInstance>();
         readonly ViewDispatcherHelper<TViewInstance> _dispatcherHelper = new ViewDispatcherHelper<TViewInstance>();
 
-        readonly string viewPositionKey = typeof (TViewInstance).Name;
+        readonly string _viewPositionKey = typeof (TViewInstance).Name;
 
         bool _purging;
 
@@ -33,7 +33,7 @@ namespace d60.Cirqus.HybridDb
         {
             using (var session = _store.OpenSession())
             {
-                var position = session.Load<ViewPosition>(viewPositionKey);
+                var position = session.Load<ViewPosition>(_viewPositionKey);
                 if (position != null)
                 {
                     return position.Position;
@@ -76,10 +76,10 @@ namespace d60.Cirqus.HybridDb
                     viewManagerProfiler.RegisterTimeSpent(this, e, stopwatch.Elapsed);
                 }
 
-                var position = session.Load<ViewPosition>(viewPositionKey);
+                var position = session.Load<ViewPosition>(_viewPositionKey);
                 if (position == null)
                 {
-                    position = new ViewPosition { Id = viewPositionKey };
+                    position = new ViewPosition { Id = _viewPositionKey };
                     session.Store(position);
                 }
 
@@ -106,9 +106,9 @@ namespace d60.Cirqus.HybridDb
 
             var positionTable = _store.Configuration.GetDesignFor<ViewPosition>().Table;
 
-            if (_store.Get(positionTable, viewPositionKey) != null)
+            if (_store.Get(positionTable, _viewPositionKey) != null)
             {
-                commands.Add(new DeleteCommand(positionTable, viewPositionKey, Guid.Empty, true));
+                commands.Add(new DeleteCommand(positionTable, _viewPositionKey, Guid.Empty, true));
             }
 
             _store.Execute(commands);

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using d60.Cirqus.Events;
-using d60.Cirqus.HybridDb;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Testing;
