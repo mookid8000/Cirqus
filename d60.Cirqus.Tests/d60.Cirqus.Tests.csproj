@@ -98,6 +98,7 @@
     <Compile Include="Aggregates\TestVersioningWhenLoadingAnotherAggregate.cs" />
     <Compile Include="Assumptions\TestConcurrentBag.cs" />
     <Compile Include="Bugs\Issue27_CallingLoadFromWithinRootInvokesCreatedCallback.cs" />
+    <Compile Include="Bugs\VerifyThatCommandMetadataFlowsToOtherRoots.cs" />
     <Compile Include="Bugs\VerifyThatDuplicateSequenceNumbersAreNotAssigned.cs" />
     <Compile Include="Bugs\VerifyThatLoadingAnotherRootMultipleTimesWillYieldTheCorrectVersionEveryTime.cs" />
     <Compile Include="Bugs\VerifyThatNewlyCreatedAggregateRootsAreAvailableForLoading.cs" />
