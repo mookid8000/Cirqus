@@ -9,7 +9,6 @@ using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using HybridDb;
 using HybridDb.Commands;
-using HybridDb.Migrations;
 
 namespace d60.Cirqus.HybridDb
 {
@@ -27,10 +26,7 @@ namespace d60.Cirqus.HybridDb
 
         public HybridDbViewManager(IDocumentStore store)
         {
-            store.Configuration.Document<ViewPosition>().With("Id", x => x.Id);
-            new SchemaMigrationRunner(store, new SchemaDiffer()).Run();
-            
-            this._store = store;
+            _store = store;
         }
 
         public override async Task<long> GetPosition(bool canGetFromCache = true)
