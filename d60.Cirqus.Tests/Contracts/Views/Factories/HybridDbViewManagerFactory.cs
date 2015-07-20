@@ -7,20 +7,15 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
 {
     public class HybridDbViewManagerFactory : AbstractViewManagerFactory
     {
-        IDocumentStore _documentStore;
-
         public HybridDbViewManagerFactory()
         {
             MsSqlTestHelper.EnsureTestDatabaseExists();
+            MsSqlTestHelper.DropTable("HybridDb");
         }
 
         protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>()
         {
-            if (_documentStore == null)
-            {
-                MsSqlTestHelper.DropTable("HybridDb");
-
-                _documentStore = DocumentStore.ForTesting(
+            var documentStore = DocumentStore.ForTesting(
                     TableMode.UseRealTables,
                     MsSqlTestHelper.ConnectionString,
                     new LambdaHybridDbConfigurator(x =>
@@ -29,10 +24,9 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
                         x.Document<TViewInstance>().With("Id", v => v.Id);
                     }));
 
-                RegisterDisposable(_documentStore);
-            }
+            RegisterDisposable(documentStore);
 
-            return new HybridDbViewManager<TViewInstance>(_documentStore);
+            return new HybridDbViewManager<TViewInstance>(documentStore);
         }
     }
 }
