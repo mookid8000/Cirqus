@@ -588,6 +588,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Changed api for test context setup
 
+## 0.61.4
+
+* Fixed metadata flow bug
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
