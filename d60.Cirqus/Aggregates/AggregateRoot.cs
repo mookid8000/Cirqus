@@ -196,7 +196,11 @@ namespace d60.Cirqus.Aggregates
                     typeof(TAggregateRoot), aggregateRootId));
             }
 
-            return (TAggregateRoot)UnitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true);
+            var aggregateRoot = (TAggregateRoot)UnitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true);
+
+            aggregateRoot.CurrentCommandMetadata = CurrentCommandMetadata;
+
+            return aggregateRoot;
         }
 
         /// <summary>
@@ -230,6 +234,8 @@ namespace d60.Cirqus.Aggregates
 
             try
             {
+                aggregateRoot.CurrentCommandMetadata = CurrentCommandMetadata;
+             
                 return (TAggregateRoot) aggregateRoot;
             }
             catch (Exception exception)
@@ -264,6 +270,8 @@ namespace d60.Cirqus.Aggregates
                 throw new InvalidOperationException(string.Format("Attempted to load aggregate root with ID {0} as a {1}, but the concrete type is {2} which is not compatible",
                     aggregateRootId, typeof(TAggregateRoot), aggregateRootId.GetType()));
             }
+
+            aggregateRoot.CurrentCommandMetadata = CurrentCommandMetadata;
 
             return (TAggregateRoot)aggregateRoot;
         }

@@ -12,11 +12,17 @@ namespace d60.Cirqus.Commands
     /// </summary>
     public abstract class Command
     {
+        /// <summary>
+        /// Constructs the command with an empty metadata collection
+        /// </summary>
         protected Command()
         {
             Meta = new Metadata();
         }
 
+        /// <summary>
+        /// Accesses the command's metadata, which will automatically flow to all events emitted as a consequence of processing the command
+        /// </summary>
         public Metadata Meta { get; private set; }
     }
 
