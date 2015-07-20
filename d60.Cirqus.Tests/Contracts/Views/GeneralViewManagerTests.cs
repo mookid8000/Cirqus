@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using d60.Cirqus.Events;
+using d60.Cirqus.HybridDb;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Testing;
@@ -18,9 +19,10 @@ namespace d60.Cirqus.Tests.Contracts.Views
     [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
     [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql, Ignore = true, IgnoreReason = "The contained HashSet<string> cannot be persisted by EF")]
     [TestFixture(typeof(InMemoryViewManagerFactory))]
+    [TestFixture(typeof(HybridDbViewManagerFactory), Category = TestCategories.MsSql)]
     public class GeneralViewManagerTests<TFactory> : FixtureBase where TFactory : AbstractViewManagerFactory, new()
     {
-        readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(5);
+        readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(50);
 
         TFactory _factory;
         TestContext _context;

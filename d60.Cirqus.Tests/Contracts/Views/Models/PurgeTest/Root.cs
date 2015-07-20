@@ -2,5 +2,5 @@
 
 namespace d60.Cirqus.Tests.Contracts.Views.Models.PurgeTest
 {
-    class Root : AggregateRoot { }
+    public class Root : AggregateRoot { }
 }

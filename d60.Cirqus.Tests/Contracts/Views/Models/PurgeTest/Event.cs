@@ -2,7 +2,7 @@
 
 namespace d60.Cirqus.Tests.Contracts.Views.Models.PurgeTest
 {
-    class Event : DomainEvent<Root>
+    public class Event : DomainEvent<Root>
     {
     }
 }

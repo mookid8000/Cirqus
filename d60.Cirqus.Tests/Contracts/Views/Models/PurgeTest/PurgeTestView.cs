@@ -3,7 +3,7 @@ using d60.Cirqus.Views.ViewManagers.Locators;
 
 namespace d60.Cirqus.Tests.Contracts.Views.Models.PurgeTest
 {
-    class PurgeTestView : IViewInstance<GlobalInstanceLocator>, ISubscribeTo<Event>
+    public class PurgeTestView : IViewInstance<GlobalInstanceLocator>, ISubscribeTo<Event>
     {
         public static string StaticBadBoy { get; set; }
 

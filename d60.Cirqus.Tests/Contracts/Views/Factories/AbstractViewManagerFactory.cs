@@ -56,9 +56,10 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
             _stuffToDispose.Clear();
         }
 
-        protected void RegisterDisposable(IDisposable disposable)
+        protected T RegisterDisposable<T>(T disposable) where T:IDisposable
         {
             _stuffToDispose.Add(disposable);
+            return disposable;
         }
     }
 }
