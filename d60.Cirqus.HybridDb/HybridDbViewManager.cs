@@ -133,11 +133,5 @@ namespace d60.Cirqus.HybridDb
                 session.SaveChanges();
             }
         }
-
-        public class ViewPosition
-        {
-            public string Id { get; set; }
-            public long Position { get; set; }
-        }
     }
 }
