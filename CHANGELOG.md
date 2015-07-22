@@ -593,7 +593,7 @@ This is a big update that completes the transition to the new, vastly improved v
 * Added initial HybridDb view manager support
 * Fixed metadata flow bug
 
-## 0.61.5
+## 0.61.6
 
 * Tiny enhancment of HybridDb view manager configuration 
 
