@@ -25,7 +25,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
                     MsSqlTestHelper.ConnectionString,
                     new LambdaHybridDbConfigurator(x =>
                     {
-                        x.Document<HybridDbViewManager<TViewInstance>.ViewPosition>().With("Id", v => v.Id);
+                        x.Document<ViewPosition>().With("Id", v => v.Id);
                         x.Document<TViewInstance>(tableName).With("Id", v => v.Id);
                     }));
 

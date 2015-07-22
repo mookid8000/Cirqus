@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="HybridDbViewManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewPosition.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

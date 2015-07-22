@@ -597,6 +597,9 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added nuspec for HybridDb view manager
 
+## 0.61.6
+
+* Tiny enhancment of HybridDb view manager configuration 
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
