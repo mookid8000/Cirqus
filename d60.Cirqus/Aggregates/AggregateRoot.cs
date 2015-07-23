@@ -200,6 +200,8 @@ namespace d60.Cirqus.Aggregates
 
             aggregateRoot.CurrentCommandMetadata = CurrentCommandMetadata;
 
+            aggregateRoot.InvokeCreated();
+
             return aggregateRoot;
         }
 

@@ -75,8 +75,6 @@ namespace d60.Cirqus.Aggregates
                 }
 
                 aggregateRoot = CreateNewAggregateRootInstance(typeof(TAggregateRoot), aggregateRootId, unitOfWork);
-
-                aggregateRoot.InvokeCreated();
             }
 
             return aggregateRoot;

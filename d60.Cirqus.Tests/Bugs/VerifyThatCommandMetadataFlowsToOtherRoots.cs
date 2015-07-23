@@ -32,6 +32,27 @@ namespace d60.Cirqus.Tests.Bugs
         }
 
         [Test]
+        public void FlowsToEventsEmittedOnCreated()
+        {
+            ProcessCommand(new OrdinaryCommand("bimse")
+            {
+                Meta = { { "testkey", "testvalue" } }
+            });
+
+            var eventsInTestContext = _context.History.OfType<CreatedEvent>().ToList();
+
+            Assert.That(eventsInTestContext.Count, Is.EqualTo(1));
+            Assert.That(eventsInTestContext[0].Meta.ContainsKey("testkey"), "Metadata did NOT contain the 'testkey' key!");
+            Assert.That(eventsInTestContext[0].Meta["testkey"], Is.EqualTo("testvalue"));
+
+            var eventsInRealEventStore = _inMemoryEventStore.OfType<CreatedEvent>().ToList();
+
+            Assert.That(eventsInRealEventStore.Count, Is.EqualTo(1));
+            Assert.That(eventsInRealEventStore[0].Meta.ContainsKey("testkey"), "Metadata did NOT contain the 'testkey' key!");
+            Assert.That(eventsInRealEventStore[0].Meta["testkey"], Is.EqualTo("testvalue"));
+        }
+
+        [Test]
         public void FlowsCorrectlyTrivialCase()
         {
             ProcessCommand(new OrdinaryCommand("bimse")
@@ -96,24 +117,35 @@ namespace d60.Cirqus.Tests.Bugs
             }
         }
 
-        public class Root : AggregateRoot, IEmit<Event>
+        public class Root : AggregateRoot, IEmit<Event>, IEmit<CreatedEvent>
         {
+            protected override void Created()
+            {
+                Emit(new CreatedEvent());
+            }
+
             public void DoStuff()
             {
                 Emit(new Event());
-            }
-
-            public void Apply(Event e)
-            {
             }
 
             public void MakeOtherRootDoStuff()
             {
                 Create<Root>("root2").DoStuff();
             }
+
+            public void Apply(Event e)
+            {
+            }
+
+            public void Apply(CreatedEvent e)
+            {
+            }
         }
 
         public class Event : DomainEvent<Root> { }
+
+        public class CreatedEvent : DomainEvent<Root> { }
 
         void ProcessCommand(Command command)
         {

@@ -601,6 +601,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Tiny enhancment of HybridDb view manager configuration 
 
+## 0.61.7
+
+* Fixed bug that would result in metadata not being set correctly on events emitted in an overridden `Created` method
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund
