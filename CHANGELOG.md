@@ -613,6 +613,9 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Fixing TestContext to handle dependent view managers
 
+## 0.61.10
+
+* Fixing failing test
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen

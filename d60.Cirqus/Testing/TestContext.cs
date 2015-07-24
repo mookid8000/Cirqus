@@ -57,7 +57,7 @@ namespace d60.Cirqus.Testing
 
         public TestContext AddViewManager(IViewManager viewManager)
         {
-            WithEventDispatcher<ViewManagerEventDispatcher>(x =>
+            WithEventDispatcherOfType<ViewManagerEventDispatcher>(x =>
             {
                 x.AddViewManager(viewManager);
             });
@@ -252,7 +252,7 @@ namespace d60.Cirqus.Testing
 
             var result = CommandProcessingResult.WithNewPosition(allGlobalSequenceNumbers.Max());
 
-            WithEventDispatcher<IAwaitableEventDispatcher>(x => x.WaitUntilProcessed(result, TimeSpan.FromSeconds(timeoutSeconds)).Wait());
+            WithEventDispatcherOfType<IAwaitableEventDispatcher>(x => x.WaitUntilProcessed(result, TimeSpan.FromSeconds(timeoutSeconds)).Wait());
         }
 
         /// <summary>
@@ -266,7 +266,7 @@ namespace d60.Cirqus.Testing
 
             var result = CommandProcessingResult.WithNewPosition(allGlobalSequenceNumbers.Max());
 
-            WithEventDispatcher<IAwaitableEventDispatcher>(x => x.WaitUntilProcessed<TViewInstance>(result, TimeSpan.FromSeconds(timeoutSeconds)).Wait());
+            WithEventDispatcherOfType<IAwaitableEventDispatcher>(x => x.WaitUntilProcessed<TViewInstance>(result, TimeSpan.FromSeconds(timeoutSeconds)).Wait());
         }
 
         public void Initialize()
@@ -333,7 +333,7 @@ Headers: {3}", domainEvent, firstSerialization, secondSerialization, domainEvent
             return timeToReturn;
         }
 
-        void WithEventDispatcher<T>(Action<T> action) where T: IEventDispatcher
+        void WithEventDispatcherOfType<T>(Action<T> action) where T: IEventDispatcher
         {
             if (!(_eventDispatcher is T)) return;
 

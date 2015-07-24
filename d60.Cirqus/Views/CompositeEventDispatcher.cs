@@ -1,13 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using d60.Cirqus.Events;
+using d60.Cirqus.Views.ViewManagers;
 
 namespace d60.Cirqus.Views
 {
     /// <summary>
     /// Event dispatcher that can contain multiple event dispatchers
     /// </summary>
-    public class CompositeEventDispatcher : IEventDispatcher
+    public class CompositeEventDispatcher : IAwaitableEventDispatcher
     {
         readonly List<IEventDispatcher> _eventDispatchers;
 
@@ -29,6 +32,16 @@ namespace d60.Cirqus.Views
         public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
             _eventDispatchers.ForEach(d => d.Dispatch(eventStore, events));
+        }
+
+        public Task WaitUntilProcessed<TViewInstance>(CommandProcessingResult result, TimeSpan timeout) where TViewInstance : IViewInstance
+        {
+            return Task.WhenAll(_eventDispatchers.OfType<IAwaitableEventDispatcher>().Select(x => x.WaitUntilProcessed<TViewInstance>(result, timeout)));
+        }
+
+        public Task WaitUntilProcessed(CommandProcessingResult result, TimeSpan timeout)
+        {
+            return Task.WhenAll(_eventDispatchers.OfType<IAwaitableEventDispatcher>().Select(x => x.WaitUntilProcessed(result, timeout)));
         }
     }
 }
