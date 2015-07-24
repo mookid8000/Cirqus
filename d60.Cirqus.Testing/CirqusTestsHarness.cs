@@ -46,7 +46,7 @@ namespace d60.Cirqus.Testing
 
             configuration = TestContext.With();
 
-            Configure(x => { });
+            Context = null;
         }
 
         protected void End(bool isInExceptionalState)
@@ -60,8 +60,18 @@ namespace d60.Cirqus.Testing
 
         protected void Configure(Action<IOptionalConfiguration<TestContext>> configurator)
         {
+            if (Context != null)
+            {
+                throw new InvalidOperationException("You must call configure before first invocation of Emit() og When().");
+            }
+
             configurator(configuration);
-            
+        }
+
+        void EnsureContext()
+        {
+            if (Context != null) return;
+
             Context = configuration.Create();
         }
 
@@ -82,6 +92,8 @@ namespace d60.Cirqus.Testing
 
         void Emit<T>(string id, DomainEvent<T> @event) where T : AggregateRoot
         {
+            EnsureContext();
+
             if (!Exists<T>(id))
             {
                 ids.Push(new InternalId<T>(id));
@@ -104,6 +116,8 @@ namespace d60.Cirqus.Testing
 
         protected void When(ExecutableCommand command)
         {
+            EnsureContext();
+
             OnCommand(command);
 
             formatter
