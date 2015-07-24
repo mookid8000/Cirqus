@@ -593,11 +593,19 @@ This is a big update that completes the transition to the new, vastly improved v
 * Added initial HybridDb view manager support
 * Fixed metadata flow bug
 
+## 0.61.5
+
+* Added nuspec for HybridDb view manager
+
 ## 0.61.6
 
 * Tiny enhancment of HybridDb view manager configuration 
 
 ## 0.61.7
+
+* Fixed bug that would result in metadata not being set correctly on events emitted in an overridden `Created` method
+
+## 0.61.8
 
 * Fixing configuration in testing harness - again! 
 

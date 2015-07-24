@@ -28,6 +28,8 @@ namespace d60.Cirqus.Commands
 
             root.CurrentCommandMetadata = _metadata;
 
+            root.InvokeCreated();
+
             return root;
         }
 
