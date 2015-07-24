@@ -6,6 +6,9 @@ using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.NUnit;
+using d60.Cirqus.Views;
+using d60.Cirqus.Views.ViewManagers;
+using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Testing
@@ -159,6 +162,27 @@ Then:
             Assert.IsTrue(flag);
         }
 
+        [Test]
+        public void CanTestWithDependentViewManagerEventDispatcher()
+        {
+            var a = new InMemoryViewManager<ViewA>();
+            var b = new InMemoryViewManager<ViewB>();
+
+            Configure(x =>
+            {
+                x.EventDispatcher(d =>
+                {
+                    d.UseViewManagerEventDispatcher(a);
+                    d.UseDependentViewManagerEventDispatcher(b).DependentOn(a);
+                });
+            });
+
+            Emit("asger", new EventA1());
+
+            Assert.NotNull(a.Load(GlobalInstanceLocator.GetViewInstanceId()));
+            Assert.NotNull(b.Load(GlobalInstanceLocator.GetViewInstanceId()));
+        }
+
         public class RootA : AggregateRoot, IEmit<EventA1>, IEmit<EventA2>
         {
             public void DoA1()
@@ -211,6 +235,26 @@ Then:
             {
                 var rootA = context.Load<RootA>(Id);
                 rootA.DoA2();
+            }
+        }
+
+        public class ViewA : IViewInstance<GlobalInstanceLocator>, ISubscribeTo<EventA1>
+        {
+            public string Id { get; set; }
+            public long LastGlobalSequenceNumber { get; set; }
+            
+            public void Handle(IViewContext context, EventA1 domainEvent)
+            {
+            }
+        }
+
+        public class ViewB : IViewInstance<GlobalInstanceLocator>, ISubscribeTo<EventA1>
+        {
+            public string Id { get; set; }
+            public long LastGlobalSequenceNumber { get; set; }
+            
+            public void Handle(IViewContext context, EventA1 domainEvent)
+            {
             }
         }
     }

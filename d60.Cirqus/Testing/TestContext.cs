@@ -24,10 +24,7 @@ namespace d60.Cirqus.Testing
         readonly IDomainEventSerializer _domainEventSerializer;
         readonly IDomainTypeNameMapper _domainTypeNameMapper;
         readonly IAggregateRootRepository _aggregateRootRepository;
-        readonly ViewManagerEventDispatcher _viewManagerEventDispatcher;
         readonly IEventDispatcher _eventDispatcher;
-        readonly ViewManagerWaitHandle _waitHandle = new ViewManagerWaitHandle();
-        readonly List<IViewManager> _addedViews = new List<IViewManager>();
         readonly ICommandMapper _testCommandMapper;
         readonly InMemoryEventStore _eventStore;
 
@@ -43,12 +40,6 @@ namespace d60.Cirqus.Testing
             _domainEventSerializer = domainEventSerializer;
             _testCommandMapper = commandMapper;
             _domainTypeNameMapper = domainTypeNameMapper;
-
-            _viewManagerEventDispatcher = eventDispatcher as ViewManagerEventDispatcher;
-            if (_viewManagerEventDispatcher != null)
-            {
-                _waitHandle.Register(_viewManagerEventDispatcher);
-            }
         }
 
         public static IOptionalConfiguration<TestContext> With()
@@ -66,10 +57,10 @@ namespace d60.Cirqus.Testing
 
         public TestContext AddViewManager(IViewManager viewManager)
         {
-            if (_viewManagerEventDispatcher == null) return this;
-
-            _addedViews.Add(viewManager);
-            _viewManagerEventDispatcher.AddViewManager(viewManager);
+            WithEventDispatcher<ViewManagerEventDispatcher>(x =>
+            {
+                x.AddViewManager(viewManager);
+            });
 
             return this;
         }
@@ -261,17 +252,7 @@ namespace d60.Cirqus.Testing
 
             var result = CommandProcessingResult.WithNewPosition(allGlobalSequenceNumbers.Max());
 
-            try
-            {
-                _waitHandle.WaitForAll(result, TimeSpan.FromSeconds(timeoutSeconds)).Wait();
-            }
-            catch (TimeoutException exception)
-            {
-                throw new TimeoutException(string.Format(@"One or more views did not catch up within {0} s timeout
-
-Current view positions:
-{1}", timeoutSeconds, string.Join(Environment.NewLine, _addedViews.Select(viewManager => string.Format("    {0}: {1}", viewManager.GetPosition().ToString().PadRight(5), viewManager.GetType().FullName)))), exception);
-            }
+            WithEventDispatcher<IAwaitableEventDispatcher>(x => x.WaitUntilProcessed(result, TimeSpan.FromSeconds(timeoutSeconds)).Wait());
         }
 
         /// <summary>
@@ -285,18 +266,14 @@ Current view positions:
 
             var result = CommandProcessingResult.WithNewPosition(allGlobalSequenceNumbers.Max());
 
-            _waitHandle.WaitFor<TViewInstance>(result, TimeSpan.FromSeconds(timeoutSeconds)).Wait();
+            WithEventDispatcher<IAwaitableEventDispatcher>(x => x.WaitUntilProcessed<TViewInstance>(result, TimeSpan.FromSeconds(timeoutSeconds)).Wait());
         }
 
         public void Initialize()
         {
             if (!_initialized)
             {
-                if (_viewManagerEventDispatcher != null)
-                {
-                    _viewManagerEventDispatcher.Initialize(_eventStore, purgeExistingViews: true);
-                }
-
+                _eventDispatcher.Initialize(_eventStore, purgeExistingViews: true);
                 _initialized = true;
             }
         }
@@ -356,6 +333,15 @@ Headers: {3}", domainEvent, firstSerialization, secondSerialization, domainEvent
             return timeToReturn;
         }
 
+        void WithEventDispatcher<T>(Action<T> action) where T: IEventDispatcher
+        {
+            if (!(_eventDispatcher is T)) return;
+
+            var viewManangerEventDispatcher = (T)_eventDispatcher;
+
+            action(viewManangerEventDispatcher);
+        }
+
         bool _disposed;
 
         ~TestContext()
@@ -375,11 +361,6 @@ Headers: {3}", domainEvent, firstSerialization, secondSerialization, domainEvent
 
             if (disposing)
             {
-                if (_viewManagerEventDispatcher != null)
-                {
-                    _viewManagerEventDispatcher.Dispose();
-                }
-
                 Disposed();
             }
 

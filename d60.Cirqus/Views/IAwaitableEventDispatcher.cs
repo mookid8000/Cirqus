@@ -7,7 +7,7 @@ namespace d60.Cirqus.Views
     /// <summary>
     /// Common interface of event dispatchers that can be waited upon
     /// </summary>
-    public interface IAwaitableEventDispatcher
+    public interface IAwaitableEventDispatcher : IEventDispatcher
     {
         /// <summary>
         /// Waits until the view(s) with the specified view instance type have successfully processed event at least up until those that were emitted
