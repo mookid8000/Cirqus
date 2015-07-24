@@ -609,6 +609,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Fixing configuration in testing harness - again! 
 
+## 0.61.9
+
+* Fixing TestContext to handle dependent view managers
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
