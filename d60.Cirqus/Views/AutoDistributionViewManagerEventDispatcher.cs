@@ -22,7 +22,7 @@ namespace d60.Cirqus.Views
         }
 
         readonly string _id;
-        readonly IAutoDistributionPersistence _autoDistributionPersistence;
+        readonly IAutoDistributionState _autoDistributionState;
         readonly Timer _heartbeatTimer;
         readonly Timer _distributeViewsTimer;
         ViewManagerEventDispatcher _eventDispatcher;
@@ -32,23 +32,27 @@ namespace d60.Cirqus.Views
         /// <summary>
         /// Constructs the <see cref="AutoDistributionViewManagerEventDispatcher"/>
         /// </summary>
-        public AutoDistributionViewManagerEventDispatcher(string id, IAutoDistributionPersistence autoDistributionPersistence)
+        public AutoDistributionViewManagerEventDispatcher(string id, IAutoDistributionState autoDistributionState)
         {
             _id = id;
-            _autoDistributionPersistence = autoDistributionPersistence;
+            _autoDistributionState = autoDistributionState;
 
             _heartbeatTimer = new Timer(1000);
-            _heartbeatTimer.Elapsed += (sender, args) => EmitHeartbeat();
+            _heartbeatTimer.Elapsed += (sender, args) => EmitHeartbeat(true);
 
-            _distributeViewsTimer = new Timer(3000);
+            _distributeViewsTimer = new Timer(4000);
             _distributeViewsTimer.Elapsed += (sender, args) => DistributeViews();
         }
 
-        void EmitHeartbeat()
+        void EmitHeartbeat(bool runDistribution)
         {
             try
             {
-                var idsOfViewsToBeManagedByMe = _autoDistributionPersistence.Heartbeat(_id, true).ToList();
+                var idsOfViewsToBeManagedByMe = _autoDistributionState.Heartbeat(_id, true).ToList();
+
+                if (!runDistribution) return;
+
+
                 var idsOfCurrentlyManagedViews = _eventDispatcher.GetViewManagers().Select(v => v.Id).ToList();
 
                 var idsOfViewsToStopManaging = idsOfCurrentlyManagedViews.Except(idsOfViewsToBeManagedByMe).ToList();
@@ -90,7 +94,7 @@ namespace d60.Cirqus.Views
         {
             try
             {
-                var currentState = _autoDistributionPersistence.GetCurrentState();
+                var currentState = _autoDistributionState.GetCurrentState().ToList();
 
                 if (!currentState.Any())
                 {
@@ -108,10 +112,11 @@ namespace d60.Cirqus.Views
 
                 var newState = idsOfViewsThatNeedToBeDistributed
                     .Distribute(currentState.Count)
-                    .Zip(currentState.Keys, (viewIds, managerId) => new KeyValuePair<string, HashSet<string>>(managerId, new HashSet<string>(viewIds)))
-                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                    .Zip(currentState.Select(s => s.ManagerId), (viewIds, managerId) => new KeyValuePair<string, HashSet<string>>(managerId, new HashSet<string>(viewIds)))
+                    .Select(kvp => new AutoDistributionState(kvp.Key, kvp.Value))
+                    .ToList();
 
-                _autoDistributionPersistence.SetNewState(newState);
+                _autoDistributionState.SetNewState(newState);
             }
             catch (Exception exception)
             {
@@ -143,6 +148,8 @@ namespace d60.Cirqus.Views
 
             _eventDispatcher.Initialize(eventStore, purgeExistingViews);
 
+            EmitHeartbeat(false);
+
             _heartbeatTimer.Start();
             _distributeViewsTimer.Start();
         }
@@ -162,7 +169,7 @@ namespace d60.Cirqus.Views
             _heartbeatTimer.Dispose();
             _distributeViewsTimer.Dispose();
 
-            _autoDistributionPersistence.Heartbeat(_id, false);
+            _autoDistributionState.Heartbeat(_id, false);
         }
     }
 }

@@ -56,7 +56,7 @@
     <Compile Include="Events\MongoEventBatch.cs" />
     <Compile Include="Logging\MongoDbLoggerFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Views\MongoDbAutoDistributionPersistence.cs" />
+    <Compile Include="Views\MongoDbAutoDistributionState.cs" />
     <Compile Include="Views\MongoDbViewManager.cs" />
   </ItemGroup>
   <ItemGroup>

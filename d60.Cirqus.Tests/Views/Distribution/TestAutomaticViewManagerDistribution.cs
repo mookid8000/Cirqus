@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.MongoDb.Config;
@@ -33,8 +34,8 @@ namespace d60.Cirqus.Tests.Views.Distribution
             // two bad boys in parallel, we're not going to make it in 15 seconds
             var viewManagers = new[]
             {
-                new MongoDbViewManager<SomeRootView>(_mongoDatabase, "view1"), 
-                new MongoDbViewManager<SomeRootView>(_mongoDatabase, "view2")
+                new MongoDbViewManager<SomeRootView>(_mongoDatabase, "view1", "Position"), 
+                new MongoDbViewManager<SomeRootView>(_mongoDatabase, "view2", "Position")
             };
 
             var firstWaitHandle = new ViewManagerWaitHandle();
@@ -50,7 +51,10 @@ namespace d60.Cirqus.Tests.Views.Distribution
 
             var goal = TimeSpan.FromSeconds(15);
 
-            firstWaitHandle.WaitForAll(lastResult, goal).Wait();
+            //firstWaitHandle.WaitForAll(lastResult, goal).Wait();
+
+
+            Task.WaitAll(viewManagers.Select(v => v.WaitUntilProcessed(lastResult, goal)).ToArray());
         }
 
         ICommandProcessor CreateCommandProcessor(string id, ViewManagerWaitHandle waitHandle, IEnumerable<IViewManager> viewManagers)
@@ -61,7 +65,7 @@ namespace d60.Cirqus.Tests.Views.Distribution
                 {
                     e.UseViewManagerEventDispatcher(viewManagers.ToArray())
                         .WithWaitHandle(waitHandle)
-                        .AutomaticallyRedistributeViews(id, new MongoDbAutoDistributionPersistence(_mongoDatabase, "AutoDistribution"));
+                        .AutomaticallyRedistributeViews(id, new MongoDbAutoDistributionState(_mongoDatabase, "AutoDistribution"));
                 })
                 .Create();
 

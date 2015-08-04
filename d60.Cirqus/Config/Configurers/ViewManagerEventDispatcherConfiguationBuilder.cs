@@ -45,9 +45,9 @@ namespace d60.Cirqus.Config.Configurers
         /// among the available processes.
         /// </summary>
         /// <param name="id"></param>
-        public ViewManagerEventDispatcherConfiguationBuilder AutomaticallyRedistributeViews(string id, IAutoDistributionPersistence autoDistributionPersistence)
+        public ViewManagerEventDispatcherConfiguationBuilder AutomaticallyRedistributeViews(string id, IAutoDistributionState autoDistributionState)
         {
-            RegisterInstance(new AutoDistributionViewManagerEventDispatcher(id, autoDistributionPersistence));
+            RegisterInstance(new AutoDistributionViewManagerEventDispatcher(id, autoDistributionState));
             return this;
         }
     }

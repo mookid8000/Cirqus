@@ -9,15 +9,15 @@ using MongoDB.Driver.Builders;
 namespace d60.Cirqus.MongoDb.Views
 {
     /// <summary>
-    /// Implementation of <see cref="IAutoDistributionPersistence"/> that uses MongoDB to communicate heartbeats and current state
+    /// Implementation of <see cref="IAutoDistributionState"/> that uses MongoDB to communicate heartbeats and current state
     /// </summary>
-    public class MongoDbAutoDistributionPersistence : IAutoDistributionPersistence
+    public class MongoDbAutoDistributionState : IAutoDistributionState
     {
         const string DocumentId = "__current_global_state__";
         readonly MongoDatabase _mongoDatabase;
         readonly string _collectionName;
 
-        public MongoDbAutoDistributionPersistence(MongoDatabase mongoDatabase, string collectionName)
+        public MongoDbAutoDistributionState(MongoDatabase mongoDatabase, string collectionName)
         {
             _mongoDatabase = mongoDatabase;
             _collectionName = collectionName;
@@ -37,25 +37,21 @@ namespace d60.Cirqus.MongoDb.Views
 
                 if (!online) return new string[0];
 
-                var currentState = GetCurrentState();
+                var currentState = GetCurrentState().FirstOrDefault(s => s.ManagerId == id);
 
-                return currentState.ContainsKey(id)
-                    ? currentState[id]
-                    : new HashSet<string>();
+                return currentState != null ? currentState.ViewIds : new HashSet<string>();
             }
             catch (MongoDuplicateKeyException)
             {
                 if (!online) return new string[0];
 
-                var currentState = GetCurrentState();
+                var currentState = GetCurrentState().FirstOrDefault(s => s.ManagerId == id);
 
-                return currentState.ContainsKey(id)
-                    ? currentState[id]
-                    : new HashSet<string>();
+                return currentState != null ? currentState.ViewIds : new HashSet<string>();
             }
         }
 
-        public Dictionary<string, HashSet<string>> GetCurrentState()
+        public IEnumerable<AutoDistributionState> GetCurrentState()
         {
             var mongoCollection = _mongoDatabase.GetCollection<State>(_collectionName);
 
@@ -63,19 +59,23 @@ namespace d60.Cirqus.MongoDb.Views
 
             if (state == null)
             {
-                return new Dictionary<string, HashSet<string>>();
+                return Enumerable.Empty<AutoDistributionState>();
             }
 
             return state.Heartbeats
-                .Where(kvp => (DateTime.UtcNow - kvp.Value) < TimeSpan.FromSeconds(3))
-                .ToDictionary(kvp => kvp.Key, kvp => state.GetViewsFor(kvp.Key));
+                .Where(kvp => (DateTime.UtcNow - kvp.Value) < TimeSpan.FromSeconds(5))
+                .Select(kvp => new AutoDistributionState(kvp.Key, state.GetViewsFor(kvp.Key)))
+                .ToList();
         }
 
-        public void SetNewState(Dictionary<string, HashSet<string>> newState)
+        public void SetNewState(IEnumerable<AutoDistributionState> newState)
         {
+            var newStateDictionary = newState.ToDictionary(s => s.ManagerId, s => s.ViewIds);
+            var doc = BsonValue.Create(newStateDictionary);
+
             var mongoCollection = _mongoDatabase.GetCollection<BsonDocument>(_collectionName);
             var query = Query.EQ("_id", DocumentId);
-            var update = Update.Set("Views", BsonValue.Create(newState));
+            var update = Update.Set("Views", doc);
 
             mongoCollection.Update(query, update);
         }
