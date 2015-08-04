@@ -53,6 +53,11 @@ namespace d60.Cirqus.MsSql.Views
         {
         }
 
+        public override string Id
+        {
+            get { return string.Format("{0}/{1}", typeof (TViewInstance).GetPrettyName(), _tableName); }
+        }
+
         public override async Task<long> GetPosition(bool canGetFromCache = true)
         {
             if (canGetFromCache && false)

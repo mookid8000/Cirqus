@@ -143,8 +143,10 @@
     <Compile Include="Testing\TestContext.cs" />
     <Compile Include="Testing\TestContextConfigurationExtensions.cs" />
     <Compile Include="Testing\TestUnitOfWork.cs" />
+    <Compile Include="Views\AutoDistributionViewManagerEventDispatcher.cs" />
     <Compile Include="Views\BackoffHelper.cs" />
     <Compile Include="Views\DependentViewManagerEventDispatcher.cs" />
+    <Compile Include="Views\IAutoDistributionPersistence.cs" />
     <Compile Include="Views\IAwaitableEventDispatcher.cs" />
     <Compile Include="Views\InMemoryViewEventDispatcher.cs" />
     <Compile Include="Views\NullEventDispatcher.cs" />

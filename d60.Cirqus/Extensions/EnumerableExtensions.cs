@@ -38,5 +38,28 @@ namespace d60.Cirqus.Extensions
                 yield return batch;
             }
         }
+
+        /// <summary>
+        /// Distributes the given sequence into the number of buckets
+        /// </summary>
+        public static IEnumerable<IEnumerable<TItem>> Distribute<TItem>(this IEnumerable<TItem> items, int numberOfBuckets)
+        {
+            if (numberOfBuckets < 1)
+            {
+                throw new ArgumentException(string.Format("Cannot distrbute {0} into {1} buckets!", items, numberOfBuckets));
+            }
+
+            var buckets = Enumerable.Range(0, numberOfBuckets).Select(i => new List<TItem>()).ToList();
+            var currentBucketIndex = 0;
+
+            foreach (var item in items)
+            {
+                buckets[currentBucketIndex].Add(item);
+
+                currentBucketIndex = (currentBucketIndex + 1)%buckets.Count;
+            }
+
+            return buckets;
+        }
     }
 }

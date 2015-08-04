@@ -29,6 +29,11 @@ namespace d60.Cirqus.HybridDb
             _store = store;
         }
 
+        public override string Id
+        {
+            get { return string.Format("{0}", typeof (TViewInstance).GetPrettyName()); }
+        }
+
         public override async Task<long> GetPosition(bool canGetFromCache = true)
         {
             using (var session = _store.OpenSession())

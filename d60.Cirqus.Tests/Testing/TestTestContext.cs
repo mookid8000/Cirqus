@@ -199,7 +199,12 @@ namespace d60.Cirqus.Tests.Testing
             }
             
             public List<DomainEvent> ReceivedDomainEvents { get; set; }
-            
+
+            public string Id
+            {
+                get { return string.Format("sillyviewmanager-{0}", GetHashCode()); }
+            }
+
             public async Task<long> GetPosition(bool canGetFromCache = true)
             {
                 return _position;

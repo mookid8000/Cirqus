@@ -38,6 +38,11 @@ namespace d60.Cirqus.Views.ViewManagers
             _views.TryRemove(viewId, out dummy);
         }
 
+        public override string Id
+        {
+            get { return string.Format("{0}/{1}", typeof(TViewInstance).GetPrettyName(), GetHashCode()); }
+        }
+
         public override async Task<long> GetPosition(bool canGetFromCache = true)
         {
             return InnerGetPosition();

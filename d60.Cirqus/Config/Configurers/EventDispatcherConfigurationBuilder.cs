@@ -56,6 +56,13 @@ namespace d60.Cirqus.Config.Configurers
                     eventDispatcher.SetProfiler(viewManagerProfiler);
                 }
 
+                var autoDistributionViewManagerEventDispatcher = viewManagerContext.GetOrDefault<AutoDistributionViewManagerEventDispatcher>();
+                if (autoDistributionViewManagerEventDispatcher != null)
+                {
+                    autoDistributionViewManagerEventDispatcher.Register(eventDispatcher);
+                    return autoDistributionViewManagerEventDispatcher;
+                }
+
                 return eventDispatcher;
             });
 

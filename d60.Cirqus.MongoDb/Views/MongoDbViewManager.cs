@@ -74,6 +74,11 @@ namespace d60.Cirqus.MongoDb.Views
             
         }
 
+        public override string Id
+        {
+            get { return string.Format("{0}/{1}", typeof (TViewInstance).GetPrettyName(), _viewCollection); }
+        }
+
         public override async Task<long> GetPosition(bool canGetFromCache = true)
         {
             if (canGetFromCache && false)

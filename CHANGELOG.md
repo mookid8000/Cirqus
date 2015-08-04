@@ -617,6 +617,11 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Fixing failing test
 
+## 0.62.0
+
+* Added experimental auto-balacing of views among multiple processes (WARNING: not suitable for production just yet)
+
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund
