@@ -9,7 +9,6 @@ using d60.Cirqus.MongoDb.Views;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Views.Distribution.Model;
 using d60.Cirqus.Views;
-using d60.Cirqus.Views.ViewManagers;
 using MongoDB.Driver;
 using NUnit.Framework;
 
@@ -38,33 +37,27 @@ namespace d60.Cirqus.Tests.Views.Distribution
                 new MongoDbViewManager<SomeRootView>(_mongoDatabase, "view2", "Position")
             };
 
-            var firstWaitHandle = new ViewManagerWaitHandle();
-            var secondWaitHandle = new ViewManagerWaitHandle();
-
-            var firstCommandProcessor = CreateCommandProcessor("1", firstWaitHandle, viewManagers);
+            var firstCommandProcessor = CreateCommandProcessor("1", viewManagers);
            
-            CreateCommandProcessor("2", secondWaitHandle, viewManagers);
+            CreateCommandProcessor("2", viewManagers);
 
-            var lastResult = Enumerable.Range(0, 10)
+            var lastResult = Enumerable.Range(0, 20)
                 .Select(i => firstCommandProcessor.ProcessCommand(new MakeSomeRootDoStuff("bimse")))
                 .Last();
 
-            var goal = TimeSpan.FromSeconds(15);
-
-            //firstWaitHandle.WaitForAll(lastResult, goal).Wait();
+            var goal = TimeSpan.FromSeconds(30);
 
 
             Task.WaitAll(viewManagers.Select(v => v.WaitUntilProcessed(lastResult, goal)).ToArray());
         }
 
-        ICommandProcessor CreateCommandProcessor(string id, ViewManagerWaitHandle waitHandle, IEnumerable<IViewManager> viewManagers)
+        ICommandProcessor CreateCommandProcessor(string id, IEnumerable<IViewManager> viewManagers)
         {
             var commandProcessor = CommandProcessor.With()
                 .EventStore(e => e.UseMongoDb(_mongoDatabase, "Events"))
                 .EventDispatcher(e =>
                 {
                     e.UseViewManagerEventDispatcher(viewManagers.ToArray())
-                        .WithWaitHandle(waitHandle)
                         .AutomaticallyRedistributeViews(id, new MongoDbAutoDistributionState(_mongoDatabase, "AutoDistribution"));
                 })
                 .Create();
