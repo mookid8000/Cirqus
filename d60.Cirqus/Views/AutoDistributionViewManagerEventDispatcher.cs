@@ -52,7 +52,6 @@ namespace d60.Cirqus.Views
 
                 if (!runDistribution) return;
 
-
                 var idsOfCurrentlyManagedViews = _eventDispatcher.GetViewManagers().Select(v => v.Id).ToList();
 
                 var idsOfViewsToStopManaging = idsOfCurrentlyManagedViews.Except(idsOfViewsToBeManagedByMe).ToList();
@@ -148,10 +147,15 @@ namespace d60.Cirqus.Views
 
             _eventDispatcher.Initialize(eventStore, purgeExistingViews);
 
-            EmitHeartbeat(false);
+            SignOn();
 
             _heartbeatTimer.Start();
             _distributeViewsTimer.Start();
+        }
+
+        void SignOn()
+        {
+            EmitHeartbeat(false);
         }
 
         public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
@@ -169,7 +173,21 @@ namespace d60.Cirqus.Views
             _heartbeatTimer.Dispose();
             _distributeViewsTimer.Dispose();
 
-            _autoDistributionState.Heartbeat(_id, false);
+            SignOff();
+
+            DistributeViews();
+        }
+
+        void SignOff()
+        {
+            try
+            {
+                _autoDistributionState.Heartbeat(_id, false);
+            }
+            catch (Exception exception)
+            {
+                _logger.Warn(exception, "Error during sign-off");
+            }
         }
     }
 }

@@ -621,6 +621,11 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added experimental auto-balacing of views among multiple processes (WARNING: not suitable for production just yet)
 
+## 0.62.1
+
+* More intelligent sign-off in automatic view distributor
+
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
