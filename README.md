@@ -123,7 +123,7 @@ some specific value, as indicated by the given `delta` parameter:
 
     public class IncrementCounter : Command<Counter>
     {
-        public IncrementCounter(Guid aggregateRootId, int delta)
+        public IncrementCounter(string aggregateRootId, int delta)
             : base(aggregateRootId)
         {
             Delta = delta;
