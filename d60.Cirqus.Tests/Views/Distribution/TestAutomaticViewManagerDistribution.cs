@@ -45,8 +45,7 @@ namespace d60.Cirqus.Tests.Views.Distribution
                 .Select(i => firstCommandProcessor.ProcessCommand(new MakeSomeRootDoStuff("bimse")))
                 .Last();
 
-            var goal = TimeSpan.FromSeconds(30);
-
+            var goal = TimeSpan.FromSeconds(34);
 
             Task.WaitAll(viewManagers.Select(v => v.WaitUntilProcessed(lastResult, goal)).ToArray());
         }
