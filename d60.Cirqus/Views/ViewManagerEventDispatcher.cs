@@ -20,7 +20,7 @@ namespace d60.Cirqus.Views
     /// A dedicated thread will dispatch events to the views as they happen, periodically checking in the background whether
     /// any of the views have got some catching up to do
     /// </summary>
-    public class ViewManagerEventDispatcher : IEventDispatcher, IDisposable, IAwaitableEventDispatcher
+    public class ViewManagerEventDispatcher : IDisposable, IAwaitableEventDispatcher
     {
         static Logger _logger;
 
