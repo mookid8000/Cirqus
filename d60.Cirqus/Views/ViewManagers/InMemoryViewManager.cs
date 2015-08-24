@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using d60.Cirqus.Events;
@@ -43,6 +44,8 @@ namespace d60.Cirqus.Views.ViewManagers
             get { return string.Format("{0}/{1}", typeof(TViewInstance).GetPrettyName(), GetHashCode()); }
         }
 
+        public bool BatchDispatchEnabled { get; set; }
+
         public override async Task<long> GetPosition(bool canGetFromCache = true)
         {
             return InnerGetPosition();
@@ -51,8 +54,16 @@ namespace d60.Cirqus.Views.ViewManagers
         public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch, IViewManagerProfiler viewManagerProfiler)
         {
             var updatedViews = new HashSet<TViewInstance>();
+            var eventList = batch.ToList();
 
-            foreach (var e in batch)
+            if (BatchDispatchEnabled)
+            {
+                var domainEventBatch = new DomainEventBatch(eventList);
+                eventList.Clear();
+                eventList.Add(domainEventBatch);
+            }
+
+            foreach (var e in eventList)
             {
                 if (ViewLocator.IsRelevant<TViewInstance>(e))
                 {

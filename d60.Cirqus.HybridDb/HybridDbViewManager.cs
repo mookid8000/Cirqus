@@ -34,6 +34,8 @@ namespace d60.Cirqus.HybridDb
             get { return string.Format("{0}", typeof (TViewInstance).GetPrettyName()); }
         }
 
+        public bool BatchDispatchEnabled { get; set; }
+
         public override async Task<long> GetPosition(bool canGetFromCache = true)
         {
             using (var session = _store.OpenSession())
@@ -55,6 +57,13 @@ namespace d60.Cirqus.HybridDb
             var eventList = batch.ToList();
 
             if (!eventList.Any()) return;
+
+            if (BatchDispatchEnabled)
+            {
+                var domainEventBatch = new DomainEventBatch(eventList);
+                eventList.Clear();
+                eventList.Add(domainEventBatch);
+            }
 
             using (var session = _store.OpenSession())
             {

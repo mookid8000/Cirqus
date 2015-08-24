@@ -27,7 +27,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
             viewManager.Purge();
         }
 
-        public IViewManager<TViewInstance> GetViewManager<TViewInstance>() where TViewInstance : class, IViewInstance, ISubscribeTo, new()
+        public IViewManager<TViewInstance> GetViewManager<TViewInstance>(bool enableBatchDispatch = false) where TViewInstance : class, IViewInstance, ISubscribeTo, new()
         {
             var viewManager = _viewManagers
                 .OfType<IViewManager<TViewInstance>>()
@@ -35,7 +35,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
 
             if (viewManager == null)
             {
-                viewManager = CreateViewManager<TViewInstance>();
+                viewManager = CreateViewManager<TViewInstance>(enableBatchDispatch);
                 viewManager.Purge();
                 _viewManagers.Add(viewManager);
             }
@@ -43,7 +43,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
             return viewManager;
         }
 
-        protected abstract IViewManager<TViewInstance> CreateViewManager<TViewInstance>() where TViewInstance : class, IViewInstance, ISubscribeTo, new();
+        protected abstract IViewManager<TViewInstance> CreateViewManager<TViewInstance>(bool enableBatchDispatch = false) where TViewInstance : class, IViewInstance, ISubscribeTo, new();
         
         public void Dispose()
         {

@@ -152,6 +152,7 @@
     <Compile Include="Views\NullEventDispatcher.cs" />
     <Compile Include="Views\NullProfiler.cs" />
     <Compile Include="Views\ViewManagers\AbstractViewManager.cs" />
+    <Compile Include="Views\ViewManagers\DomainEventBatch.cs" />
     <Compile Include="Views\ViewManagers\IViewManager.cs" />
     <Compile Include="Serialization\JsonDomainEventSerializer.cs" />
     <Compile Include="Serialization\GenericSerializer.cs" />

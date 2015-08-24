@@ -625,6 +625,9 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * More intelligent sign-off in automatic view distributor
 
+## 0.62.2
+
+* Enabled batch dispatch capabilities in MongoDB, Postgres, In-mem, and MSSQL view managers
 
 
 [asgerhallas]: https://github.com/asgerhallas

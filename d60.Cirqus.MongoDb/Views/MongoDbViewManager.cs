@@ -64,6 +64,11 @@ namespace d60.Cirqus.MongoDb.Views
         {
         }
 
+        /// <summary>
+        /// Can be set to true in order to enable batch dispatch
+        /// </summary>
+        public bool BatchDispatchEnabled { get; set; }
+
         public override TViewInstance Load(string viewId)
         {
             return _viewCollection.FindOneById(viewId);
@@ -141,6 +146,13 @@ namespace d60.Cirqus.MongoDb.Views
             var eventList = batch.ToList();
 
             if (!eventList.Any()) return;
+
+            if (BatchDispatchEnabled)
+            {
+                var domainEventBatch = new DomainEventBatch(eventList);
+                eventList.Clear();
+                eventList.Add(domainEventBatch);
+            }
 
             foreach (var e in eventList)
             {

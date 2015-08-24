@@ -1,9 +1,13 @@
 ﻿using System;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Numbers;
+// ReSharper disable UnusedTypeParameter
 
 namespace d60.Cirqus.Events
 {
+    /// <summary>
+    /// Base class of all domain events. Has a collection of metadata and
+    /// </summary>
     [Serializable]
     public abstract class DomainEvent
     {
@@ -67,11 +71,17 @@ namespace d60.Cirqus.Events
             public const string CommandTypeName = "command_type";
         }
 
+        /// <summary>
+        /// Constructs the domain event with an empty metadata collection
+        /// </summary>
         protected DomainEvent()
         {
             Meta = new Metadata();
         }
 
+        /// <summary>
+        /// Gets the domain event's metadata
+        /// </summary>
         public Metadata Meta { get; internal set; }
 
         public override string ToString()
@@ -84,6 +94,9 @@ namespace d60.Cirqus.Events
         }
     }
 
+    /// <summary>
+    /// Domain event that belongs to one particular type of aggregate root
+    /// </summary>
     [Serializable]
     public abstract class DomainEvent<TOwner> : DomainEvent where TOwner : AggregateRoot
     {
