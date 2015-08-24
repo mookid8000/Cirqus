@@ -17,6 +17,9 @@ namespace d60.Cirqus.Views.ViewManagers
         readonly Logger _logger = CirqusLoggerFactory.Current.GetCurrentClassLogger();
         readonly MethodInfo _dispatchToViewGenericMethod;
 
+        /// <summary>
+        /// Constructs the dispatcher helper
+        /// </summary>
         public ViewDispatcherHelper()
         {
             _dispatchToViewGenericMethod = GetType()
@@ -28,6 +31,11 @@ namespace d60.Cirqus.Views.ViewManagers
             }
         }
 
+        /// <summary>
+        /// Dispatches the given domain event to the view instance. The view instance's <see cref="IViewInstance.LastGlobalSequenceNumber"/>
+        /// will automatically be updated after successful dispatch. If the global sequence number of the event is lower or equal to the
+        /// view instance's <see cref="IViewInstance.LastGlobalSequenceNumber"/>, the event is ignored.
+        /// </summary>
         public void DispatchToView(IViewContext context, DomainEvent domainEvent, TViewInstance view)
         {
             var lastGlobalSequenceNumber = domainEvent.GetGlobalSequenceNumber();
@@ -41,12 +49,15 @@ namespace d60.Cirqus.Views.ViewManagers
 
             try
             {
-                _logger.Debug("Dispatching event {0} to {1} with ID {2}", lastGlobalSequenceNumber, view, view.Id);
+                var viewId = view.Id;
+
+                _logger.Debug("Dispatching event {0} to {1} with ID {2}", lastGlobalSequenceNumber, view, viewId);
 
                 context.CurrentEvent = domainEvent;
 
                 dispatcherMethod.Invoke(this, new object[] { context, domainEvent, view });
 
+                view.Id = viewId;
                 view.LastGlobalSequenceNumber = lastGlobalSequenceNumber;
             }
             catch (Exception exception)
@@ -55,6 +66,9 @@ namespace d60.Cirqus.Views.ViewManagers
             }
         }
 
+        /// <summary>
+        /// Creates a new view instance with the given <paramref name="viewId"/>
+        /// </summary>
         public TViewInstance CreateNewInstance(string viewId)
         {
             return new TViewInstance
