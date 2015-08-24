@@ -57,6 +57,8 @@
     <Compile Include="Events\DisplayAttribute.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
+    <Compile Include="Logging\Debug\DebugLogger.cs" />
+    <Compile Include="Logging\Debug\DebugLoggerFactory.cs" />
     <Compile Include="Serialization\CachingDomainEventSerializerDecorator.cs" />
     <Compile Include="Snapshotting\NewSimpleSnapshottingAggregateRootRepositoryDecorator.cs" />
     <Compile Include="Testing\TestContextConfigurationBuilder.cs" />
