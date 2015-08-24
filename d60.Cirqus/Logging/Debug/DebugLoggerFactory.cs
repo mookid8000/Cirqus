@@ -7,8 +7,11 @@ namespace d60.Cirqus.Logging.Debug
     /// </summary>
     public class DebugLoggerFactory: CirqusLoggerFactory
     {
-        private readonly Logger.Level _minLevel;
+        readonly Logger.Level _minLevel;
 
+        /// <summary>
+        /// Creates the logger factory
+        /// </summary>
         public DebugLoggerFactory(Logger.Level minLevel = Logger.Level.Debug)
         {
             _minLevel = minLevel;

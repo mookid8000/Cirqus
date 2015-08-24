@@ -7,9 +7,12 @@ namespace d60.Cirqus.Logging.Debug
     /// </summary>
     public class DebugLogger : Logger
     {
-        private readonly Level _minLevel;
-        private readonly Type _ownerType;
+        readonly Level _minLevel;
+        readonly Type _ownerType;
 
+        /// <summary>
+        /// Constructs a new logger that logs to <see cref="System.Diagnostics.Debug.WriteLine(string)"/>
+        /// </summary>
         public DebugLogger(Type ownerType, Level minLevel = Level.Debug)
         {
             _ownerType = ownerType;
@@ -48,10 +51,10 @@ namespace d60.Cirqus.Logging.Debug
             Write(Level.Error, SafeFormat("{0} - exception: {1}", text, exception));
         }
 
-
-        private void Write(Level level, string message)
+        void Write(Level level, string message)
         {
             if ((int) level < (int) _minLevel) return;
+
             System.Diagnostics.Debug.WriteLine("{0:O}|{1}|{2}|{3}", DateTime.Now, level, _ownerType.FullName, message);
         }
 

@@ -1,5 +1,7 @@
-﻿using d60.Cirqus.Logging;
+﻿using System.Diagnostics;
+using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
+using d60.Cirqus.Logging.Debug;
 using d60.Cirqus.Logging.Null;
 
 namespace d60.Cirqus.Config.Configurers
@@ -20,6 +22,14 @@ namespace d60.Cirqus.Config.Configurers
         public void UseConsole(Logger.Level minLevel = Logger.Level.Info)
         {
             Use(new ConsoleLoggerFactory(minLevel: minLevel));
+        }
+
+        /// <summary>
+        /// Configures Cirqus to log using <see cref="Debug.WriteLine(string)"/>.
+        /// </summary>
+        public void UseDebug(Logger.Level minLevel = Logger.Level.Info)
+        {
+            Use(new DebugLoggerFactory(minLevel: minLevel));
         }
 
         /// <summary>

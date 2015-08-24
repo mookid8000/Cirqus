@@ -629,8 +629,14 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Enabled batch dispatch capabilities in MongoDB, Postgres, In-mem, and MSSQL view managers
 
+## 0.62.3
+
+* Added debug logging factory - thanks [SamuelDebruyn]
+
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis
+[SamuelDebruyn]: https://github.com/SamuelDebruyn
