@@ -633,6 +633,9 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added debug logging factory - thanks [SamuelDebruyn]
 
+## 0.62.4
+
+* Made dependent view manager event dispatcher actually use the "max domain events per batch" setting
 
 
 [asgerhallas]: https://github.com/asgerhallas

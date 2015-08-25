@@ -162,7 +162,7 @@ namespace d60.Cirqus.Views
             var relevantEventBatches = _eventStore
                 .Stream(currentPosition)
                 .TakeWhile(e => e.GetGlobalSequenceNumber() <= sequenceNumberToCatchUpTo)
-                .Batch(100)
+                .Batch(MaxDomainEventsPerBatch)
                 .Select(b => b.ToList());
 
             foreach (var e in relevantEventBatches)
