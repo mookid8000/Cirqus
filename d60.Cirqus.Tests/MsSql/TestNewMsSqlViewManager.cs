@@ -40,6 +40,8 @@ namespace d60.Cirqus.Tests.MsSql
             Assert.That(view, Is.Not.Null, "View was not properly generated");
             Assert.That(view.NullString, Is.Null);
             Assert.That(view.NullInt, Is.Null);
+            Assert.That(view.Boolooleananana, Is.EqualTo(true));
+            Assert.That(view.MaybeBoolooleananana, Is.EqualTo(true));
             Assert.That(view.String, Is.EqualTo("a string"));
             Assert.That(view.Guid, Is.EqualTo(SomeKnownGuid));
             Assert.That(view.NullableGuid, Is.EqualTo(SomeKnownGuid));
@@ -96,6 +98,9 @@ namespace d60.Cirqus.Tests.MsSql
                 // this bad boy is intentionally set to null
                 NullString = null;
                 NullInt = null;
+
+                Boolooleananana = true;
+                MaybeBoolooleananana = true;
 
                 String = "a string";
 
@@ -156,6 +161,9 @@ namespace d60.Cirqus.Tests.MsSql
                     }
                 };
             }
+
+            public bool Boolooleananana { get; set; }
+            public bool? MaybeBoolooleananana { get; set; }
 
             public string Id { get; set; }
             public long LastGlobalSequenceNumber { get; set; }

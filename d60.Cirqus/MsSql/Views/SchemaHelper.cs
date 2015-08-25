@@ -15,6 +15,9 @@ namespace d60.Cirqus.MsSql.Views
                 {typeof (Guid), Tuple.Create(SqlDbType.UniqueIdentifier, "")},
                 {typeof (Guid?), Tuple.Create(SqlDbType.UniqueIdentifier, "")},
 
+                {typeof (bool), Tuple.Create(SqlDbType.Bit, "")},
+                {typeof (bool?), Tuple.Create(SqlDbType.Bit, "")},
+
                 {typeof (short), Tuple.Create(SqlDbType.SmallInt, "")},
                 {typeof (int), Tuple.Create(SqlDbType.Int, "")},
                 {typeof (long), Tuple.Create(SqlDbType.BigInt, "")},

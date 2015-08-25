@@ -637,6 +637,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Made dependent view manager event dispatcher actually use the "max domain events per batch" setting
 
+## 0.62.5
+
+* Fixed bug in `MsSqlViewManager` that caused properties of type `bool` and `bool?` to be stored as `NVARCHAR(MAX)`, leading to invalid cast exceptions on update
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
