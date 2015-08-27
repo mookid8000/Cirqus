@@ -112,7 +112,7 @@ namespace d60.Cirqus.Identity
                 new Switch<string>(term)
                     .Match((LiteralText t) => t.Text)
                     .Match((GuidKeyword t) => "guid")
-                    .Match((Placeholder t) => "{" + t.Property + "}")
+                    .Match((Placeholder t) => string.IsNullOrEmpty(t.Property) ? "*" : "{" + t.Property + "}")
                     .OrThrow(new ArgumentOutOfRangeException())));
         }
 

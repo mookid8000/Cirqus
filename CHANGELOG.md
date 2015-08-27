@@ -645,6 +645,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Added d60.Cirqus.Identity package and added support for Id<T> in the test tools
 
+## 0.62.7
+
+* Fixed failing test
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
