@@ -649,6 +649,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Fixed failing test
 
+## 0.62.8
+
+* Fxied a misspell in the nuspec 
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
