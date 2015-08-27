@@ -651,7 +651,11 @@ This is a big update that completes the transition to the new, vastly improved v
 
 ## 0.62.8
 
-* Fxied a misspell in the nuspec 
+* Fxied a misspell in the nuspec
+
+## 0.62.9
+
+* Build script now supports nuspec with multiple Cirqus-dependencies
 
 
 [asgerhallas]: https://github.com/asgerhallas

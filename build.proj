@@ -33,12 +33,12 @@
     <Message Text="Updating NuSpec version..."/>
 
     <XmlPoke XmlInputPath="%(NuSpecFiles.FullPath)" Query="//version" Value="$(Version)" />
-    <XmlPoke XmlInputPath="%(DependantNuSpecFiles.FullPath)" Query="//dependency[@id='d60.Cirqus']/@version" Value="$(Version)" />
+    <XmlPoke XmlInputPath="%(DependantNuSpecFiles.FullPath)" Query="//dependency[starts-with(@id, 'd60.Cirqus')]/@version" Value="$(Version)" />
     
     <CallTarget Targets="publish_packages"/>
     
     <XmlPoke XmlInputPath="%(NuSpecFiles.FullPath)" Query="//version" Value="$(DefaultNuSpecVersion)" />
-    <XmlPoke XmlInputPath="%(DependantNuSpecFiles.FullPath)" Query="//dependency[@id='d60.Cirqus']/@version" Value="$(DefaultNuSpecVersion)" />
+    <XmlPoke XmlInputPath="%(DependantNuSpecFiles.FullPath)" Query="//dependency[starts-with(@id, 'd60.Cirqus')]/@version" Value="$(DefaultNuSpecVersion)" />
   </Target>
 
   <Target Name="build" DependsOnTargets="clean_output_folder; build_solution" />
