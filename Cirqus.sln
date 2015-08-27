@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".solution items", ".solution items", "{53C890A9-D587-4BD6-B69C-5B01F64B39F1}"
 	ProjectSection(SolutionItems) = preProject
@@ -95,6 +95,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Cirqus.MSTest", "d60.Ci
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Cirqus.HybridDb", "d60.Cirqus.HybridDb\d60.Cirqus.HybridDb.csproj", "{A39585D8-1F4B-4328-99BB-1C1124947CDD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d60.Cirqus.Identity", "d60.Cirqus.Identity\d60.Cirqus.Identity.csproj", "{70478ED2-4591-432A-9F69-C5E8CDA16124}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -165,6 +167,10 @@ Global
 		{A39585D8-1F4B-4328-99BB-1C1124947CDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A39585D8-1F4B-4328-99BB-1C1124947CDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A39585D8-1F4B-4328-99BB-1C1124947CDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70478ED2-4591-432A-9F69-C5E8CDA16124}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70478ED2-4591-432A-9F69-C5E8CDA16124}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70478ED2-4591-432A-9F69-C5E8CDA16124}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70478ED2-4591-432A-9F69-C5E8CDA16124}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -199,5 +205,6 @@ Global
 		{0E7808B7-EC24-414D-8200-E4F1025FF5D4} = {AAD28E32-1CB5-46C8-B3B2-40BDC275EA63}
 		{7E0A697F-2DB9-48A9-B808-B4C83D46762F} = {0E7808B7-EC24-414D-8200-E4F1025FF5D4}
 		{A39585D8-1F4B-4328-99BB-1C1124947CDD} = {9A508454-A284-4E81-BC28-2262A5FE200E}
+		{70478ED2-4591-432A-9F69-C5E8CDA16124} = {003097E1-0A40-411C-8E01-E26BAC5CA7C3}
 	EndGlobalSection
 EndGlobal

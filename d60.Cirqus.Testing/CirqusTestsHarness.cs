@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Aggregates;
@@ -6,6 +7,7 @@ using d60.Cirqus.Commands;
 using d60.Cirqus.Config.Configurers;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Identity;
 using EnergyProjects.Tests.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -20,7 +22,7 @@ namespace d60.Cirqus.Testing
         protected const string checkmark = "\u221A";
         protected const string cross = "\u2717";
 
-        Stack<InternalId> ids;
+        Stack<Id> ids;
         TextFormatter formatter;
 
         IOptionalConfiguration<TestContext> configuration;
@@ -33,7 +35,7 @@ namespace d60.Cirqus.Testing
 
         protected void Begin()
         {
-            ids = new Stack<InternalId>();
+            ids = new Stack<Id>();
 
             settings = new JsonSerializerSettings
             {
@@ -77,12 +79,17 @@ namespace d60.Cirqus.Testing
 
         protected abstract void Fail();
 
-        protected void Emit<T>(params DomainEvent<T>[] events) where T : AggregateRoot
+        protected void Emit<T>(params DomainEvent[] events) where T : AggregateRoot
         {
             Emit(Latest<T>(), events);
         }
 
-        protected void Emit<T>(string id, params DomainEvent<T>[] events) where T : AggregateRoot
+        protected void Emit<T>(string id, params DomainEvent[] events) where T : AggregateRoot
+        {
+            Emit(Identity.Id<T>.Parse(id), events);
+        }
+
+        protected void Emit<T>(Id<T> id, params DomainEvent[] events) where T : AggregateRoot
         {
             foreach (var @event in events)
             {
@@ -90,22 +97,24 @@ namespace d60.Cirqus.Testing
             }
         }
 
-        void Emit<T>(string id, DomainEvent<T> @event) where T : AggregateRoot
+        void Emit<T>(Id<T> id, DomainEvent @event) where T : AggregateRoot
         {
             EnsureContext();
 
-            if (!Exists<T>(id))
+            var closedGeneric = TryGetClosedGenericTypeByOpenGeneric(@event.GetType(), typeof(DomainEvent<>));
+            if (closedGeneric == null || !closedGeneric.GetGenericArguments()[0].IsAssignableFrom(typeof(T)))
             {
-                ids.Push(new InternalId<T>(id));
+                throw new InvalidOperationException(string.Format(
+                    "Event {0} is not emittable from root of type {1}", @event, typeof(T)));
             }
 
-            @event.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id;
+            TryRegisterId(id);
+
+            @event.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id.ToString();
 
             OnEvent(@event);
 
-            var emitterType = ids.First(x => x.GetId() == Latest<T>()).GetOwnerType();
-
-            Context.Save(emitterType, @event);
+            Context.Save(typeof(T), @event);
 
             formatter
                 .Block("Given that:")
@@ -214,12 +223,17 @@ namespace d60.Cirqus.Testing
             results = results.Skip(1);
         }
 
-        protected void Then<T>(params DomainEvent<T>[] events) where T : AggregateRoot
+        protected void Then<T>(params DomainEvent[] events) where T : AggregateRoot
         {
             Then(Latest<T>(), events);
         }
 
-        protected void Then<T>(string id, params DomainEvent<T>[] events) where T : AggregateRoot
+        protected void Then<T>(string id, params DomainEvent[] events) where T : AggregateRoot
+        {
+            Then(Identity.Id<T>.Parse(id), events);
+        }
+
+        protected void Then<T>(Id<T> id, params DomainEvent[] events) where T : AggregateRoot
         {
             if (events.Length == 0) return;
 
@@ -280,59 +294,73 @@ namespace d60.Cirqus.Testing
             results = Enumerable.Empty<DomainEvent>();
         }
 
-        protected string NewId<T>(params object[] args) where T : class
+        protected Id<T> NewId<T>(params object[] args) where T : class
         {
             var id = GenerateId<T>(args);
-            ids.Push(new InternalId<T>(id));
+            TryRegisterId(id);
             return id;
         }
 
-        protected string Id<T>() where T : class
+        protected Id<T> Id<T>() where T : class
         {
             return Id<T>(1);
         }
 
-        protected string Id<T>(int index) where T : class
+        protected Id<T> Id<T>(int index) where T : class
         {
-            var array = ids.OfType<InternalId<T>>().Reverse().ToArray();
+            var array = ids.OfType<Id<T>>().Reverse().ToArray();
             if (array.Length < index)
             {
                 throw new IndexOutOfRangeException(String.Format("Could not find Id<{0}> with index {1}", typeof(T).Name, index));
             }
 
-            return array[index - 1].GetId();
+            return array[index - 1];
         }
 
-        protected string Latest<T>() where T : class
+        protected Id<T> Latest<T>() where T : class
         {
-            string id;
-            if (!TryGetLatest<T>(out id))
+            Id<T> id;
+            if (!TryGetLatest(out id))
                 throw new InvalidOperationException(string.Format("Can not get latest {0} id, since none exists.", typeof(T).Name));
 
             return id;
         }
 
-        protected bool TryGetLatest<T>(out string latest) where T : class
+        protected bool TryGetLatest<T>(out Id<T> latest) where T : class
         {
-            latest = null;
+            var lastestOfType = ids.OfType<Id<T>>().ToList();
 
-            var lastestOfType = ids.FirstOrDefault(i => typeof(T).IsAssignableFrom(i.GetOwnerType()));
-            
-            if (lastestOfType == null) 
+            if (!lastestOfType.Any())
+            {
+                latest = default(Id<T>);
                 return false;
-            
-            latest = lastestOfType.GetId();
+            }
+                
+            latest = lastestOfType.First();
             return true;
         }
 
-        protected bool Exists<T>(string id) where T : class
+        protected virtual Id<T> GenerateId<T>(params object[] args) where T : class
         {
-            return ids.Any(x => x.GetId() == id);
+            return Identity.Id<T>.New(args);
         }
 
-        protected virtual string GenerateId<T>(params object[] args) where T : class
+        void TryRegisterId<T>(Id<T> id)
         {
-            return Guid.NewGuid().ToString();
+            var candidate = ids.SingleOrDefault(x => x.Equals(id));
+
+            if (candidate == null)
+            {
+                ids.Push(id);
+                return;
+            }
+
+            if (!id.ForType.IsAssignableFrom(candidate.ForType))
+            {
+                throw new InvalidOperationException(string.Format(
+                    "You tried to register a new id '{0}' for type '{1}', but the id already exist and is for non-compatible type '{2}'", 
+                    id, id.ForType, candidate.ForType));
+            }
         }
 
         void AssertAllEventsExpected()
@@ -371,32 +399,19 @@ namespace d60.Cirqus.Testing
             }
         }
 
-        interface InternalId
+        static Type TryGetClosedGenericTypeByOpenGeneric(Type subject, Type openGenericType)
         {
-            string GetId();
-            Type GetOwnerType();
+            while (subject != null && subject != typeof(object))
+            {
+                var current = subject.IsGenericType ? subject.GetGenericTypeDefinition() : subject;
+                if (openGenericType == current) return subject;
+                
+                subject = subject.BaseType;
+            }
+            
+            return null;
         }
-
-        class InternalId<T> : InternalId
-        {
-            readonly string id;
-
-            public InternalId(string id)
-            {
-                this.id = id;
-            }
-
-            public string GetId()
-            {
-                return id;
-            }
-
-            public Type GetOwnerType()
-            {
-                return typeof(T);
-            }
-        }
-
+        
         class ContractResolver : DefaultContractResolver
         {
             protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)

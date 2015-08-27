@@ -1,10 +1,6 @@
-﻿#region
-
-using d60.Cirqus.Testing;
+﻿using d60.Cirqus.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TestContext = Microsoft.VisualStudio.TestTools.UnitTesting.TestContext;
-
-#endregion
 
 namespace d60.Cirqus.MSTest
 {

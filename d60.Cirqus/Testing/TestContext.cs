@@ -192,7 +192,7 @@ namespace d60.Cirqus.Testing
         /// <summary>
         /// Saves the given domain event to the history - requires that the aggregate root ID has been added in the event's metadata under the <see cref="DomainEvent.MetadataKeys.AggregateRootId"/> key
         /// </summary>
-        public CommandProcessingResultWithEvents Save<TAggregateRoot>(Type emitterType, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
+        public CommandProcessingResultWithEvents Save(Type owner, DomainEvent domainEvent)
         {
             if (!domainEvent.Meta.ContainsKey(DomainEvent.MetadataKeys.AggregateRootId))
             {
@@ -202,27 +202,25 @@ namespace d60.Cirqus.Testing
                         domainEvent, DomainEvent.MetadataKeys.AggregateRootId));
             }
             
-            domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = _domainTypeNameMapper.GetName(emitterType);
-           
-            return Save(domainEvent.GetAggregateRootId(), domainEvent);
+            return Save(domainEvent.GetAggregateRootId(), owner, domainEvent);
         }
 
         /// <summary>
         /// Saves the given domain event to the history as if it was emitted by the specified aggregate root, immediately dispatching the event to the event dispatcher
         /// </summary>
-        public CommandProcessingResultWithEvents Save<TAggregateRoot>(string aggregateRootId, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
+        public CommandProcessingResultWithEvents Save<TAggregateRoot>(string aggregateRootId, params DomainEvent<TAggregateRoot>[] domainEvents) where TAggregateRoot : AggregateRoot
         {
-            return Save(aggregateRootId, new[] { domainEvent });
+            return Save(aggregateRootId, typeof(TAggregateRoot), domainEvents.ToArray<DomainEvent>());
         }
 
         /// <summary>
         /// Saves the given domain events to the history as if they were emitted by the specified aggregate root, immediately dispatching the events to the event dispatcher
         /// </summary>
-        public CommandProcessingResultWithEvents Save<TAggregateRoot>(string aggregateRootId, params DomainEvent<TAggregateRoot>[] domainEvents) where TAggregateRoot : AggregateRoot
+        public CommandProcessingResultWithEvents Save(string aggregateRootId, Type owner, params DomainEvent[] domainEvents)
         {
             foreach (var domainEvent in domainEvents)
             {
-                SetMetadata(aggregateRootId, domainEvent);
+                SetMetadata(aggregateRootId, owner, domainEvent);
             }
 
             var eventData = domainEvents.Select(e => _domainEventSerializer.Serialize(e)).ToList();
@@ -278,20 +276,18 @@ namespace d60.Cirqus.Testing
             }
         }
 
-        void SetMetadata<TAggregateRoot>(string aggregateRootId, DomainEvent<TAggregateRoot> domainEvent) where TAggregateRoot : AggregateRoot
+        void SetMetadata(string aggregateRootId, Type owner, DomainEvent domainEvent)
         {
             var now = GetNow();
             
-            if(!domainEvent.Meta.ContainsKey(DomainEvent.MetadataKeys.Owner))
-                domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = _domainTypeNameMapper.GetName(typeof(TAggregateRoot));
-            
+            domainEvent.Meta[DomainEvent.MetadataKeys.Owner] = _domainTypeNameMapper.GetName(owner);
             domainEvent.Meta[DomainEvent.MetadataKeys.AggregateRootId] = aggregateRootId;
             domainEvent.Meta[DomainEvent.MetadataKeys.SequenceNumber] = _eventStore.GetNextSeqNo(aggregateRootId).ToString(Metadata.NumberCulture);
             domainEvent.Meta[DomainEvent.MetadataKeys.Type] = _domainTypeNameMapper.GetName(domainEvent.GetType());
             domainEvent.Meta[DomainEvent.MetadataKeys.TimeUtc] = now.ToString("u");
 
             domainEvent.Meta.TakeFromAttributes(domainEvent.GetType());
-            domainEvent.Meta.TakeFromAttributes(typeof(TAggregateRoot));
+            domainEvent.Meta.TakeFromAttributes(owner);
 
             EnsureSerializability(domainEvent);
         }

@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.NUnit;
-using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
+using Shouldly;
 
 namespace d60.Cirqus.Tests.Testing
 {
@@ -78,11 +77,11 @@ Then:
         public void GivenWithImplicitId()
         {
             Emit(NewId<RootA>(), new EventA1());
-            Emit(new EventA2());
+            Emit<RootA>(new EventA2());
 
             var history = Context.History.ToList();
-            Assert.AreEqual(Id<RootA>(), history[0].GetAggregateRootId());
-            Assert.AreEqual(Id<RootA>(), history[1].GetAggregateRootId());
+            Assert.AreEqual(Id<RootA>().ToString(), history[0].GetAggregateRootId());
+            Assert.AreEqual(Id<RootA>().ToString(), history[1].GetAggregateRootId());
         }
 
         [Test]
@@ -92,7 +91,7 @@ Then:
 
             When(new CommandA { Id = Id<RootA>() });
 
-            Then(new EventA2());
+            Then<RootA>(new EventA2());
         }
 
         [Test]
@@ -100,40 +99,41 @@ Then:
         {
             var id = Guid.NewGuid().ToString();
 
-            Emit(id, new EventA1());
+            Emit<RootA>(id, new EventA1());
 
             When(new CommandA { Id = id });
 
-            Then(new EventA2());
+            Then<RootA>(new EventA2());
         }
 
         [Test]
-        public void GivenWithExtendedRoot()
+        public void IdForDerivedClassIsNotApplicableToBaseClass()
         {
             Emit(NewId<RootAExtended>(), new EventA1());
-            Emit(new EventA2());
-
-            var history = Context.History.ToList();
-            Assert.AreEqual(Id<RootAExtended>(), history[0].GetAggregateRootId());
-            Assert.Catch<IndexOutOfRangeException>(() =>
-            {
-                Id<RootA>();
-            });
-            Assert.IsInstanceOf<RootAExtended>(Context.AggregateRoots.First(d => d.Id == Id<RootAExtended>()));
+            
+            Assert.Throws<InvalidOperationException>(() => Emit<RootA>(new EventA2()))
+                .Message.ShouldBe("Can not get latest RootA id, since none exists.");
         }
 
         [Test]
-        public void GivenWithBaseRoot()
+        public void EmittingForDerivedRootThenBaseRootWithSameIdYieldsOneRootOfDerivedType()
         {
             var id = Guid.NewGuid().ToString();
 
-            Emit(id, new EventA1());
-            Emit(new EventA2());
+            Emit<RootAExtended>(id, new EventA1());
+            Emit<RootA>(id, new EventA2());
 
-            var history = Context.History.ToList();
-            Assert.AreEqual(Id<RootA>(), history[0].GetAggregateRootId());
-            Assert.Catch<IndexOutOfRangeException>(() => Id<RootAExtended>());
-            Assert.IsInstanceOf<RootA>(Context.AggregateRoots.First(d => d.Id == id));
+            Context.AggregateRoots.Count().ShouldBe(1);
+            Context.AggregateRoots.Single().ShouldBeOfType<RootAExtended>();
+        }
+
+        [Test]
+        public void EmittingForBaseRootThenDerivedRootWithSameIdShouldFailOnEmit()
+        {
+            var id = Guid.NewGuid().ToString();
+            Emit<RootA>(id, new EventA1());
+
+            Should.Throw<InvalidOperationException>(() => Emit<RootAExtended>(id, new EventA2()));
         }
 
         [Test]
@@ -143,7 +143,7 @@ Then:
             OnEvent += x => flag = true;
 
             var id = Guid.NewGuid().ToString();
-            Emit(id, new EventA1());
+            Emit<RootA>(id, new EventA1());
 
             Assert.IsTrue(flag);
         }
@@ -155,7 +155,7 @@ Then:
             OnCommand += x => flag = true;
 
             var id = Guid.NewGuid().ToString();
-            Emit(id, new EventA1());
+            Emit<RootA>(id, new EventA1());
 
             When(new CommandA { Id = id });
 
@@ -177,7 +177,7 @@ Then:
                 });
             });
 
-            Emit("asger", new EventA1());
+            Emit(NewId<RootA>(), new EventA1());
 
             Assert.NotNull(a.Load(GlobalInstanceLocator.GetViewInstanceId()));
             Assert.NotNull(b.Load(GlobalInstanceLocator.GetViewInstanceId()));

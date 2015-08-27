@@ -75,6 +75,14 @@
     <Reference Include="Serilog.FullNetFx">
       <HintPath>..\packages\Serilog.1.4.1\lib\net45\Serilog.FullNetFx.dll</HintPath>
     </Reference>
+    <Reference Include="Shouldly, Version=2.5.0.0, Culture=neutral, PublicKeyToken=6042cbcb05cbc941, processorArchitecture=MSIL">
+      <HintPath>..\packages\Shouldly.2.5.0\lib\net40\Shouldly.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Sprache, Version=2.0.0.46, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Sprache.2.0.0.46\lib\portable-net4+netcore45+win8+wp8+sl5+MonoAndroid1+MonoTouch1\Sprache.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
@@ -206,6 +214,9 @@
     <Compile Include="Extensions\Helpful.cs" />
     <Compile Include="Extensions\TestTypeExtensions.cs" />
     <Compile Include="FixtureBase.cs" />
+    <Compile Include="Identity\IdParserTests.cs" />
+    <Compile Include="Identity\IdTests.cs" />
+    <Compile Include="Identity\KeyFormatTests.cs" />
     <Compile Include="Integration\IntegrationTestBase.cs" />
     <Compile Include="Integration\LoadAggregateRootBySuperclass.cs" />
     <Compile Include="Integration\Scenarios\ProcessingYieldsNoEvents.cs" />
@@ -277,6 +288,10 @@
     <ProjectReference Include="..\d60.Cirqus.HybridDb\d60.Cirqus.HybridDb.csproj">
       <Project>{A39585D8-1F4B-4328-99BB-1C1124947CDD}</Project>
       <Name>d60.Cirqus.HybridDb</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\d60.Cirqus.Identity\d60.Cirqus.Identity.csproj">
+      <Project>{70478ED2-4591-432A-9F69-C5E8CDA16124}</Project>
+      <Name>d60.Cirqus.Identity</Name>
     </ProjectReference>
     <ProjectReference Include="..\d60.Cirqus.MongoDb\d60.Cirqus.MongoDb.csproj">
       <Project>{1ECCDCD5-DD78-4F9C-B0C3-BC083742CE99}</Project>

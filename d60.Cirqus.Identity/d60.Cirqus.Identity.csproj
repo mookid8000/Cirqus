@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{8CF7545B-BAD0-44C8-B611-B013AECAD528}</ProjectGuid>
+    <ProjectGuid>{70478ED2-4591-432A-9F69-C5E8CDA16124}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>d60.Cirqus.Testing</RootNamespace>
-    <AssemblyName>d60.Cirqus.Testing</AssemblyName>
+    <RootNamespace>d60.Cirqus.Identity</RootNamespace>
+    <AssemblyName>d60.Cirqus.Identity</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -30,13 +30,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.5\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Sprache, Version=2.0.0.46, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Sprache.2.0.0.46\lib\portable-net4+netcore45+win8+wp8+sl5+MonoAndroid1+MonoTouch1\Sprache.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -44,23 +43,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TextFormatter.cs" />
-    <Compile Include="CirqusTestsHarness.cs" />
-    <Compile Include="ConsoleWriter.cs" />
-    <Compile Include="IWriter.cs" />
+    <Compile Include="Id.cs" />
+    <Compile Include="KeyAttribute.cs" />
+    <Compile Include="KeyFormat.cs" />
+    <Compile Include="KeyParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Differ.cs" />
-    <Compile Include="DiffMatchPatch.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\d60.Cirqus.Identity\d60.Cirqus.Identity.csproj">
-      <Project>{70478ED2-4591-432A-9F69-C5E8CDA16124}</Project>
-      <Name>d60.Cirqus.Identity</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\d60.Cirqus\d60.Cirqus.csproj">
-      <Project>{8E2DF6B4-A4DF-495E-8D74-5DCE6B333FB4}</Project>
-      <Name>d60.Cirqus</Name>
-    </ProjectReference>
+    <Compile Include="Switch.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
