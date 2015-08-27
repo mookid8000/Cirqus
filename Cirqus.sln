@@ -14,6 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "nuspec", "nuspec", "{407E21
 		nuspec\d60.Cirqus.AzureServiceBus.nuspec = nuspec\d60.Cirqus.AzureServiceBus.nuspec
 		nuspec\d60.Cirqus.EntityFramework.nuspec = nuspec\d60.Cirqus.EntityFramework.nuspec
 		nuspec\d60.Cirqus.HybridDb.nuspec = nuspec\d60.Cirqus.HybridDb.nuspec
+		nuspec\d60.Cirqus.Identity.nuspec = nuspec\d60.Cirqus.Identity.nuspec
 		nuspec\d60.Cirqus.MongoDb.nuspec = nuspec\d60.Cirqus.MongoDb.nuspec
 		nuspec\d60.Cirqus.MSTest.nuspec = nuspec\d60.Cirqus.MSTest.nuspec
 		nuspec\d60.Cirqus.NLog.nuspec = nuspec\d60.Cirqus.NLog.nuspec

@@ -641,6 +641,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Fixed bug in `MsSqlViewManager` that caused properties of type `bool` and `bool?` to be stored as `NVARCHAR(MAX)`, leading to invalid cast exceptions on update
 
+## 0.62.6
+
+* Added d60.Cirqus.Identity package and added support for Id<T> in the test tools
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen

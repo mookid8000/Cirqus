@@ -1,21 +1,19 @@
 <?xml version="1.0"?>
 <package>
   <metadata>
-    <id>d60.Cirqus.MSTest</id>
+    <id>d60.Cirqus.Identity</id>
     <version>VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT</version>
-    <title>d60.Cirqus.MSTest</title>
+    <title>d60.Cirqus.Identity</title>
     <authors>Mogens Heller Grabe</authors>
     <owners>mookid8000</owners>
     <licenseUrl>http://opensource.org/licenses/MIT</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>MSTest integration for Cirqus testing tools</description>
+    <description>Typed ids for Cirqus</description>
     <dependencies>
       <dependency id="d60.Cirqus" version="VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT" />
-      <dependency id="d60.Cirqus.Identity" version="VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT" />
     </dependencies>
   </metadata>
   <files>
-    <file src="..\d60.Cirqus.Testing\bin\Release\d60.Cirqus.Testing.dll" target="lib\NET45" />
-    <file src="..\d60.Cirqus.MSTest\bin\Release\d60.Cirqus.MSTest.dll" target="lib\NET45" />
+    <file src="..\d60.Cirqus.Testing\bin\Release\merged\d60.Cirqus.Identity.dll" target="lib\NET45" />
   </files>
 </package>

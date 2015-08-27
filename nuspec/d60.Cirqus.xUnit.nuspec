@@ -11,6 +11,7 @@
     <description>xUnit integration for Cirqus testing tools</description>
     <dependencies>
       <dependency id="d60.Cirqus" version="VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT" />
+      <dependency id="d60.Cirqus.Identity" version="VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT" />
       <dependency id="xUnit" version="1.9.2" />
     </dependencies>
   </metadata>

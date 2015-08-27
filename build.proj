@@ -65,6 +65,9 @@
       <TsClientBuildOutputDirectory>$(Root)\d60.Cirqus.TsClient\bin\Release</TsClientBuildOutputDirectory>
       <TsClientDestinationForMergedFile>$(TsClientBuildOutputDirectory)\merged</TsClientDestinationForMergedFile>
 
+      <IdentityBuildOutputDirectory>$(Root)\d60.Cirqus.Identity\bin\Release</IdentityBuildOutputDirectory>
+      <IdentityDestinationForMergedFile>$(IdentityBuildOutputDirectory)\merged</IdentityDestinationForMergedFile>
+
       <ReferenceAssemblies>$(ProgramFiles)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5</ReferenceAssemblies>
     </PropertyGroup>
     
@@ -77,10 +80,12 @@
     <MakeDir Directories="$(CoreDestinationForMergedFile)"/>
     <MakeDir Directories="$(MongoDbDestinationForMergedFile)"/>
     <MakeDir Directories="$(TsClientDestinationForMergedFile)"/>
+    <MakeDir Directories="$(IdentityDestinationForMergedFile)"/>
     
     <Exec Command="$(IlMerge) /out:$(CoreDestinationForMergedFile)\d60.Cirqus.dll $(CoreBuildOutputDirectory)\d60.Cirqus.dll $(CoreBuildOutputDirectory)\Newtonsoft.Json.dll /targetplatform:&quot;v4,$(ReferenceAssemblies)&quot; /internalize" />
     <Exec Command="$(IlMerge) /out:$(MongoDbDestinationForMergedFile)\d60.Cirqus.MongoDb.dll $(MongoDbBuildOutputDirectory)\d60.Cirqus.MongoDb.dll $(MongoDbBuildOutputDirectory)\Newtonsoft.Json.dll /targetplatform:&quot;v4,$(ReferenceAssemblies)&quot; /internalize" />
     <Exec Command="$(IlMerge) /out:$(TsClientDestinationForMergedFile)\d60.Cirqus.TsClient.exe $(TsClientBuildOutputDirectory)\d60.Cirqus.TsClient.exe $(TsClientBuildOutputDirectory)\Newtonsoft.Json.dll /targetplatform:&quot;v4,$(ReferenceAssemblies)&quot; /internalize" />
+    <Exec Command="$(IlMerge) /out:$(IdentityDestinationForMergedFile)\d60.Cirqus.Identity.dll $(IdentityBuildOutputDirectory)\d60.Cirqus.Identity.dll $(IdentityBuildOutputDirectory)\Sprache.dll /targetplatform:&quot;v4,$(ReferenceAssemblies)&quot; /internalize" />
   </Target>
 
   <Target Name="validate_version_is_present">
