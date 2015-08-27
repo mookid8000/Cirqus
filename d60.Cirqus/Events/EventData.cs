@@ -10,6 +10,9 @@ namespace d60.Cirqus.Events
         readonly Metadata _meta;
         readonly byte[] _data;
 
+        /// <summary>
+        /// Creates the event data
+        /// </summary>
         protected EventData(byte[] data, Metadata meta)
         {
             _data = data;

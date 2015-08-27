@@ -15,13 +15,16 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
             _connectionString = MsSqlTestHelper.ConnectionString;
         }
 
-        protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>()
+        protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>(bool enableBatchDispatch = false)
         {
             var tableName = typeof(TViewInstance).Name;
 
             MsSqlTestHelper.DropTable(tableName);
 
-            var viewManager = new MsSqlViewManager<TViewInstance>(_connectionString, tableName);
+            var viewManager = new MsSqlViewManager<TViewInstance>(_connectionString, tableName)
+            {
+                BatchDispatchEnabled = enableBatchDispatch
+            };
 
             return viewManager;
         }

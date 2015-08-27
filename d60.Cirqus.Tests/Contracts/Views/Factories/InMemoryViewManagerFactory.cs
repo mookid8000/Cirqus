@@ -4,9 +4,12 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
 {
     public class InMemoryViewManagerFactory : AbstractViewManagerFactory
     {
-        protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>()
+        protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>(bool enableBatchDispatch = false)
         {
-            return new InMemoryViewManager<TViewInstance>();
+            return new InMemoryViewManager<TViewInstance>()
+            {
+                BatchDispatchEnabled = enableBatchDispatch
+            };
         }
     }
 }

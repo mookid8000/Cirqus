@@ -1,3 +1,4 @@
+using System;
 using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
 
@@ -37,6 +38,17 @@ namespace d60.Cirqus.Config.Configurers
         public ViewManagerEventDispatcherConfiguationBuilder WithProfiler(IViewManagerProfiler profiler)
         {
             RegisterInstance(profiler);
+            return this;
+        }
+
+        /// <summary>
+        /// Enables the automatic view manager distribution service which periodically ensures that views are relatively fairly distributed
+        /// among the available processes.
+        /// </summary>
+        [Obsolete("Please note that the AutomaticallyRedistributeViews function has not been tested yet")]
+        public ViewManagerEventDispatcherConfiguationBuilder AutomaticallyRedistributeViews(string id, IAutoDistributionState autoDistributionState)
+        {
+            RegisterInstance(new AutoDistributionViewManagerEventDispatcher(id, autoDistributionState));
             return this;
         }
     }

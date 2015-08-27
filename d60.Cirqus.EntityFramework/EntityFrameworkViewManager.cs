@@ -88,6 +88,11 @@ namespace d60.Cirqus.EntityFramework
             }
         }
 
+        public override string Id
+        {
+            get { return string.Format("{0}", typeof (TViewInstance).GetPrettyName()); }
+        }
+
         public override async Task<long> GetPosition(bool canGetFromCache = true)
         {
             using (var context = GetContext())

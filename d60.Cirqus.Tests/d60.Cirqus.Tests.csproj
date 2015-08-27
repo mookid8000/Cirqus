@@ -132,6 +132,7 @@
     <Compile Include="Contracts\EventStore\Factories\MongoDbEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\Factories\MsSqlEventStoreFactory.cs" />
     <Compile Include="Contracts\EventStore\InsertPerfOverTime.cs" />
+    <Compile Include="Contracts\Views\DomainEventBatchDispatch.cs" />
     <Compile Include="Contracts\Views\Factories\HybridDbViewManagerFactory.cs" />
     <Compile Include="Contracts\Views\Factories\PostgreSqlViewManagerFactory.cs" />
     <Compile Include="Contracts\Views\Models\GeneralViewManagerTest\GeneratedIds.cs" />
@@ -258,6 +259,12 @@
     <Compile Include="Testing\TestTestContext.cs" />
     <Compile Include="Testing\TestEventFormatter.cs" />
     <Compile Include="Testing\TestWriter.cs" />
+    <Compile Include="Views\Distribution\Model\DidStuff.cs" />
+    <Compile Include="Views\Distribution\Model\MakeSomeRootDoStuff.cs" />
+    <Compile Include="Views\Distribution\Model\SomeRoot.cs" />
+    <Compile Include="Views\Distribution\Model\SomeRootView.cs" />
+    <Compile Include="Views\Distribution\TestAutomaticViewManagerDistribution.cs" />
+    <Compile Include="Views\Distribution\TestMongoDbAutoDistributionPersistence.cs" />
     <Compile Include="Views\NewViewManager\TestViewManagerEventDispatcher - Copy.cs" />
     <Compile Include="Views\NewViewManager\Views\AllPotatoesView.cs" />
     <Compile Include="Views\NewViewManager\Events\BaptizedSomeone.cs" />

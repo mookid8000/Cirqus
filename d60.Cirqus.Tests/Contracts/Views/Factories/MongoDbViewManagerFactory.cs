@@ -14,10 +14,12 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
             _database = MongoHelper.InitializeTestDatabase();
         }
 
-        protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>()
+        protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>(bool enableBatchDispatch = false)
         {
-            var viewManager = new MongoDbViewManager<TViewInstance>(_database);
-            
+            var viewManager = new MongoDbViewManager<TViewInstance>(_database)
+            {
+                BatchDispatchEnabled = enableBatchDispatch
+            };
             return viewManager;
         }
     }

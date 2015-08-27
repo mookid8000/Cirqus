@@ -1,5 +1,6 @@
 ﻿using d60.Cirqus.Events;
 using d60.Cirqus.Views.ViewManagers.Locators;
+// ReSharper disable UnusedTypeParameter
 
 namespace d60.Cirqus.Views.ViewManagers
 {
@@ -9,11 +10,19 @@ namespace d60.Cirqus.Views.ViewManagers
     /// </summary>
     public interface IViewInstance
     {
+        /// <summary>
+        /// Holds the ID of this particular view instance. The value will be managed from the outside, so you should never change this one
+        /// </summary>
         string Id { get; set; }
+        
+        /// <summary>
+        /// Holds the last global sequence number of the most recent <see cref="DomainEvent"/> that this view instance has handled. This
+        /// is used to make each view instance idempotent, so that event dispatch to individual views ise guaranteed to happen exactly
+        /// once
+        /// </summary>
         long LastGlobalSequenceNumber { get; set; }
     }
 
-    // ReSharper disable UnusedTypeParameter
     /// <summary>
     /// Base interface of a view that can be located - i.e., given some <see cref="DomainEvent"/>,
     /// it can be determined which view instance that must be updated with the event.
@@ -22,5 +31,4 @@ namespace d60.Cirqus.Views.ViewManagers
     public interface IViewInstance<TViewLocator> : IViewInstance where TViewLocator : ViewLocator
     {
     }
-    // ReSharper restore UnusedTypeParameter
 }

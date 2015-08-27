@@ -102,7 +102,12 @@ namespace d60.Cirqus.Tests.Views.NewViewManager
         class TestViewManager : IViewManager
         {
             long _position = -1;
-            
+
+            public string Id
+            {
+                get { return string.Format("testviewmanager-{0}", GetHashCode()); }
+            }
+
             public async Task<long> GetPosition(bool canGetFromCache = true)
             {
                 return _position;

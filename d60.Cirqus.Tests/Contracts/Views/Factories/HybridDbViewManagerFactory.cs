@@ -14,9 +14,9 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
             MsSqlTestHelper.DropTable("ViewPosition");
         }
 
-        protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>()
+        protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>(bool enableBatchDispatch = false)
         {
-            var tableName = typeof (TViewInstance) + "_HybridDb";
+            var tableName = typeof (TViewInstance).Name + "_HybridDb";
 
             MsSqlTestHelper.DropTable(tableName);
 
@@ -31,7 +31,10 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
 
             RegisterDisposable(documentStore);
 
-            return new HybridDbViewManager<TViewInstance>(documentStore);
+            return new HybridDbViewManager<TViewInstance>(documentStore)
+            {
+                BatchDispatchEnabled = enableBatchDispatch
+            };
         }
     }
 }

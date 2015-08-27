@@ -20,7 +20,7 @@ namespace d60.Cirqus.Views
     /// A dedicated thread will dispatch events to the views as they happen, periodically checking in the background whether
     /// any of the views have got some catching up to do
     /// </summary>
-    public class ViewManagerEventDispatcher : IEventDispatcher, IDisposable, IAwaitableEventDispatcher
+    public class ViewManagerEventDispatcher : IDisposable, IAwaitableEventDispatcher
     {
         static Logger _logger;
 
@@ -80,7 +80,7 @@ namespace d60.Cirqus.Views
         /// <summary>
         /// Constructs the event dispatcher
         /// </summary>
-        public ViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore, 
+        public ViewManagerEventDispatcher(IAggregateRootRepository aggregateRootRepository, IEventStore eventStore,
             IDomainEventSerializer domainEventSerializer, IDomainTypeNameMapper domainTypeNameMapper, params IViewManager[] viewManagers)
         {
             if (aggregateRootRepository == null) throw new ArgumentNullException("aggregateRootRepository");
@@ -88,7 +88,7 @@ namespace d60.Cirqus.Views
             if (domainEventSerializer == null) throw new ArgumentNullException("domainEventSerializer");
             if (domainTypeNameMapper == null) throw new ArgumentNullException("domainTypeNameMapper");
             if (viewManagers == null) throw new ArgumentNullException("viewManagers");
-            
+
             _aggregateRootRepository = aggregateRootRepository;
             _eventStore = eventStore;
             _domainEventSerializer = domainEventSerializer;
@@ -126,10 +126,24 @@ namespace d60.Cirqus.Views
             _viewManagers.AddOrUpdate(viewManager,
                 v =>
                 {
-                    _logger.Debug("Adding view manager: {0}", viewManager);
+                    _logger.Debug("Added view manager: {0}", viewManager);
                     return new object();
                 },
                 (vm, existing) => existing);
+        }
+
+        /// <summary>
+        /// Removed the given view manager
+        /// </summary>
+        public void RemoveViewManager(IViewManager viewManager)
+        {
+            if (viewManager == null) throw new ArgumentNullException("viewManager");
+
+            object _;
+            if (_viewManagers.TryRemove(viewManager, out _))
+            {
+                _logger.Debug("Removed view manager: {0}", viewManager);
+            }
         }
 
         public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
@@ -340,7 +354,7 @@ namespace d60.Cirqus.Views
         class PieceOfWork
         {
             PieceOfWork()
-            {                
+            {
                 Events = new List<DomainEvent>();
             }
 
@@ -370,7 +384,7 @@ namespace d60.Cirqus.Views
             public bool CatchUpAsFarAsPossible { get; private set; }
 
             public bool CanUseCachedInformation { get; private set; }
-            
+
             public bool PurgeViewsFirst { get; private set; }
 
             public override string ToString()
@@ -430,6 +444,11 @@ namespace d60.Cirqus.Views
             }
 
             _disposed = true;
+        }
+
+        public IEnumerable<IViewManager> GetViewManagers()
+        {
+            return _viewManagers.Keys;
         }
     }
 }

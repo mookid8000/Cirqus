@@ -13,6 +13,11 @@ namespace d60.Cirqus.Views
     public interface IViewManager
     {
         /// <summary>
+        /// Gets an ID of this particular view manager
+        /// </summary>
+        string Id { get; }
+
+        /// <summary>
         /// Must return the global sequence number that this view knows for sure has been successfully processed
         /// </summary>
         Task<long> GetPosition(bool canGetFromCache = true);

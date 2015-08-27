@@ -53,6 +53,13 @@ namespace d60.Cirqus.MsSql.Views
         {
         }
 
+        public override string Id
+        {
+            get { return string.Format("{0}/{1}", typeof (TViewInstance).GetPrettyName(), _tableName); }
+        }
+
+        public bool BatchDispatchEnabled { get; set; }
+
         public override async Task<long> GetPosition(bool canGetFromCache = true)
         {
             if (canGetFromCache && false)
@@ -121,6 +128,13 @@ namespace d60.Cirqus.MsSql.Views
                 using (var tx = conn.BeginTransaction())
                 {
                     var activeViewsById = new Dictionary<string, TViewInstance>();
+
+                    if (BatchDispatchEnabled)
+                    {
+                        var domainEventBatch = new DomainEventBatch(eventList);
+                        eventList.Clear();
+                        eventList.Add(domainEventBatch);
+                    }
 
                     foreach (var e in eventList)
                     {

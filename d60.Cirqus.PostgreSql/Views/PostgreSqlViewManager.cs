@@ -85,7 +85,14 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
             return connection;
         }
 
-                
+
+        public override string Id
+        {
+            get { return string.Format("{0}/{1}", typeof (TViewInstance).GetPrettyName(), _tableName); }
+        }
+
+        public bool BatchDispatchEnabled { get; set; }
+
         public override async Task<long> GetPosition(bool canGetFromCache = true)
         {
             return await GetPositionFromPositionTable()
@@ -124,6 +131,13 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
                 using (var transaction = connection.BeginTransaction())
                 {
                     var activeViewsById = new Dictionary<string, ActiveViewInstance>();
+
+                    if (BatchDispatchEnabled)
+                    {
+                        var domainEventBatch = new DomainEventBatch(eventList);
+                        eventList.Clear();
+                        eventList.Add(domainEventBatch);
+                    }
 
                     foreach (var e in eventList)
                     {

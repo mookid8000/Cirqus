@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using d60.Cirqus.EntityFramework;
 using d60.Cirqus.Tests.Contracts.Views.Models.GeneralViewManagerTest;
@@ -23,8 +25,13 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
             _connectionString = MsSqlTestHelper.ConnectionString;
         }
 
-        protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>()
+        protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>(bool enableBatchDispatch = false)
         {
+            if (enableBatchDispatch)
+            {
+                throw new ArgumentException("Entity Framework view manager does not support batch dispatch, sorry....");
+            }
+
             var tableName = typeof(TViewInstance).Name;
 
             if (typeof(TViewInstance) == typeof(ViewRoot))

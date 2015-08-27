@@ -13,13 +13,16 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
             _connectionString = PostgreSqlTestHelper.PostgreSqlConnectionString;
         }
 
-        protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>()
+        protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>(bool enableBatchDispatch = false)
         {
             var tableName = typeof(TViewInstance).Name;
 
             PostgreSqlTestHelper.DropTable(tableName);
 
-            return new PostgreSqlViewManager<TViewInstance>(_connectionString, tableName);
+            return new PostgreSqlViewManager<TViewInstance>(_connectionString, tableName)
+            {
+                BatchDispatchEnabled = enableBatchDispatch
+            };
         }
     }
 }
