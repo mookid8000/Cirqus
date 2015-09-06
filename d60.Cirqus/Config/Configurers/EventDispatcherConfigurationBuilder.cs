@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
 using d60.Cirqus.Serialization;
@@ -54,6 +56,12 @@ namespace d60.Cirqus.Config.Configurers
                 if (viewManagerProfiler != null)
                 {
                     eventDispatcher.SetProfiler(viewManagerProfiler);
+                }
+
+                var contextItems = viewManagerContext.GetOrDefault<IDictionary<string, object>>();
+                if (contextItems != null)
+                {
+                    eventDispatcher.SetContextItems(contextItems);
                 }
 
                 var autoDistributionViewManagerEventDispatcher = viewManagerContext.GetOrDefault<AutoDistributionViewManagerEventDispatcher>();

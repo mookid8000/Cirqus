@@ -657,6 +657,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Build script now supports nuspec with multiple Cirqus-dependencies
 
+## 0.62.10
+
+* Can now add custom view context items to ordinary view manager event dispatcher's context
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
