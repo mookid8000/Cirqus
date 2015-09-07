@@ -27,10 +27,7 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
 
         protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>(bool enableBatchDispatch = false)
         {
-            if (enableBatchDispatch)
-            {
-                throw new ArgumentException("Entity Framework view manager does not support batch dispatch, sorry....");
-            }
+           
 
             var tableName = typeof(TViewInstance).Name;
 
@@ -47,8 +44,11 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
             MsSqlTestHelper.DropTable(tableName);
             MsSqlTestHelper.DropTable(tableName + "_Position");
 
-            var viewManager = new EntityFrameworkViewManager<TViewInstance>(_connectionString);
-
+            var viewManager = new EntityFrameworkViewManager<TViewInstance>(_connectionString)
+            {
+                BatchDispatchEnabled = enableBatchDispatch
+            };
+            
             _createdEntityFrameworkViewManagers.Add(viewManager);
 
             return viewManager;
