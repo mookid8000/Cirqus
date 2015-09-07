@@ -18,7 +18,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
     [TestFixture(typeof(MongoDbViewManagerFactory), Category = TestCategories.MongoDb)]
     [TestFixture(typeof(PostgreSqlViewManagerFactory), Category = TestCategories.PostgreSql)]
     [TestFixture(typeof(MsSqlViewManagerFactory), Category = TestCategories.MsSql)]
-    [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql, Ignore = true, IgnoreReason = "Because EF is confused")]
+    [TestFixture(typeof(EntityFrameworkViewManagerFactory), Category = TestCategories.MsSql)]
     [TestFixture(typeof(InMemoryViewManagerFactory))]
     [TestFixture(typeof(HybridDbViewManagerFactory), Category = TestCategories.MsSql)]
     public class DomainEventBatchDispatch<TFactory> : FixtureBase where TFactory : AbstractViewManagerFactory, new()
@@ -26,7 +26,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
         TFactory _factory;
         ICommandProcessor _commandProcessor;
         ViewManagerWaitHandle _waitHandle;
-        IViewManager<BatchView<TFactory>> _viewManager;
+        IViewManager<BatchView> _viewManager;
 
         protected override void DoSetUp()
         {
@@ -34,7 +34,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
             _factory = RegisterForDisposal(new TFactory());
 
-            _viewManager = _factory.GetViewManager<BatchView<TFactory>>(enableBatchDispatch: true);
+            _viewManager = _factory.GetViewManager<BatchView>(enableBatchDispatch: true);
 
             _waitHandle = new ViewManagerWaitHandle();
 
@@ -105,7 +105,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
         }
     }
 
-    class BatchView<TFactory> : IViewInstance<BatchViewLocator>, ISubscribeTo<DomainEventBatch> where TFactory : AbstractViewManagerFactory, new()
+   public class BatchView : IViewInstance<BatchViewLocator>, ISubscribeTo<DomainEventBatch>
     {
         public string Id { get; set; }
         public long LastGlobalSequenceNumber { get; set; }
