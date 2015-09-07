@@ -661,6 +661,9 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Can now add custom view context items to ordinary view manager event dispatcher's context
 
+## 0.62.11
+
+* Can now use batched domain events with entityFramework view manager
 
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
