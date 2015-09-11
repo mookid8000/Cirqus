@@ -93,6 +93,8 @@ namespace d60.Cirqus.EntityFramework
             get { return string.Format("{0}", typeof (TViewInstance).GetPrettyName()); }
         }
 
+        public bool BatchDispatchEnabled { get; set; }
+
         public override async Task<long> GetPosition(bool canGetFromCache = true)
         {
             using (var context = GetContext())
@@ -111,6 +113,13 @@ namespace d60.Cirqus.EntityFramework
 
             if (!eventList.Any()) return;
 
+
+            if (BatchDispatchEnabled)
+            {
+                var domainEventBatch = new DomainEventBatch(eventList);
+                eventList.Clear();
+                eventList.Add(domainEventBatch);
+            }
             var activeViewInstances = new Dictionary<string, TViewInstance>();
 
             using (var context = GetContext())
