@@ -665,6 +665,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Can now use batched domain events with entityFramework view manager
 
+## 0.63.0
+
+* Introduced `AggregateRootNotFoundException` to let other exceptions that can potentially occur during hydration bubble up properly when `TryLoad`ing
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund
