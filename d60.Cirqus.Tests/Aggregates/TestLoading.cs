@@ -1,6 +1,7 @@
 ﻿using System;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Config;
+using d60.Cirqus.Exceptions;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using NUnit.Framework;
@@ -21,7 +22,7 @@ namespace d60.Cirqus.Tests.Aggregates
                 UnitOfWork = GetUnitOfWork()
             };
 
-            Assert.Throws<ArgumentException>(someRoot.LoadOtherBeetRootWithDefaultBehavior);
+            Assert.Throws<AggregateRootNotFoundException>(someRoot.LoadOtherBeetRootWithDefaultBehavior);
         }
 
         [Test]
