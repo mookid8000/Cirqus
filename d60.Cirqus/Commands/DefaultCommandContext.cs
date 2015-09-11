@@ -1,5 +1,6 @@
 using System;
 using d60.Cirqus.Aggregates;
+using d60.Cirqus.Exceptions;
 using d60.Cirqus.Numbers;
 
 namespace d60.Cirqus.Commands
@@ -43,7 +44,7 @@ namespace d60.Cirqus.Commands
 
                 return root as TAggregateRoot;
             }
-            catch
+            catch (AggregateRootNotFoundException)
             {
                 return null;
             }
