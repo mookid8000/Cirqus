@@ -75,6 +75,7 @@ namespace d60.Cirqus.Views
 
             _automaticCatchUpTimer.Elapsed += (o, ea) => _work.Enqueue(new Work());
             _automaticCatchUpTimer.Interval = 1000;
+            _maxDomainEventsPerBatch = 100;
         }
 
         /// <summary>
