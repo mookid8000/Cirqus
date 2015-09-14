@@ -125,9 +125,9 @@ namespace d60.Cirqus.Tests.Integration
             var command = new GenericCommand(c => c.Load<SomeAggregateRoot>("doesNotExist"));
 
             var exception = Assert.Throws<CommandProcessingException>(() => _commandProcessor.ProcessCommand(command));
-            var invalidOperationException = (ArgumentException)exception.InnerException;
+            var invalidOperationException = (AggregateRootNotFoundException)exception.InnerException;
 
-            Assert.That(invalidOperationException.Message, Contains.Substring("it didn't exist"));
+            Assert.That(invalidOperationException.Message, Contains.Substring("Could not find aggregate root"));
         }
 
         class GenericCommand : ExecutableCommand
