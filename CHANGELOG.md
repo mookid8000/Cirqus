@@ -669,6 +669,10 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Introduced `AggregateRootNotFoundException` to let other exceptions that can potentially occur during hydration bubble up properly when `TryLoad`ing
 
+## 0.63.1
+
+* Fixed a bug where dependantviewdispatcher could be in a state with a invalid default MaxDomainEventsPrBatch - set it to 100
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund
