@@ -122,7 +122,7 @@ INSERT INTO [{0}] (
                         cmd.Transaction = tx;
                         cmd.CommandText = string.Format(@"
 
-SELECT [meta],[data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo
+SELECT [meta],[data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo ORDER BY [seqNo]
 
 ", _tableName);
                         cmd.Parameters.Add("aggId", SqlDbType.VarChar).Value = aggregateRootId;

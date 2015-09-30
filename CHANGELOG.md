@@ -673,6 +673,11 @@ This is a big update that completes the transition to the new, vastly improved v
 
 * Fixed a bug where dependantviewdispatcher could be in a state with a invalid default MaxDomainEventsPrBatch - set it to 100
 
+## 0.63.2
+
+* Fixed bug where MSSQL event store could return events for an aggregate root out of order (which was pretty unlikely to happen + aggregate roots guard against thist)
+
+
 [asgerhallas]: https://github.com/asgerhallas
 [ssboisen]: https://github.com/ssboisen
 [kimbirkelund]: https://github.com/kimbirkelund
