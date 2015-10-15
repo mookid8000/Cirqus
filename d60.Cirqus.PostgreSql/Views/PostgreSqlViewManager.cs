@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
 
                 var result = await command.ExecuteScalarAsync();
 
-                if (DBNull.Value == result)
+                if (result == null || DBNull.Value == result)
                 {
                     return null;
                 }
