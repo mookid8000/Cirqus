@@ -41,8 +41,8 @@ namespace d60.Cirqus.Tests.Testing
             eventFormatter.Format(null, @event);
             Assert.AreEqual(@"SomeEvent
   NoHayBanda: llorando
-  OleOgLone: 2
-", writer.Buffer);
+  OleOgLone: 2", 
+  writer.Buffer);
         }
 
         [Test]

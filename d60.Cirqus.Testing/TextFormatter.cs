@@ -67,10 +67,10 @@ namespace d60.Cirqus.Testing
 
             if (!unused.Any()) return;
 
-            formatter.NewLine();
             formatter.Indent();
             foreach (KeyValuePair<string, string> pair in unused)
             {
+                formatter.NewLine();
                 formatter.Write(pair.Key + ": " + pair.Value);
             }
             formatter.Unindent();
