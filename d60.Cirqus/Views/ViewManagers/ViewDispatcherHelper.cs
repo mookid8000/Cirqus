@@ -55,14 +55,18 @@ namespace d60.Cirqus.Views.ViewManagers
 
                 context.CurrentEvent = domainEvent;
 
-                dispatcherMethod.Invoke(this, new object[] { context, domainEvent, view });
+                dispatcherMethod.Invoke(this, new object[] {context, domainEvent, view});
 
                 view.Id = viewId;
                 view.LastGlobalSequenceNumber = lastGlobalSequenceNumber;
             }
-            catch (Exception exception)
+            catch (TargetInvocationException exception)
             {
                 throw new ApplicationException(string.Format("Could not dispatch {0} to {1}", domainEvent, view), exception.InnerException);
+            }
+            catch (Exception exception)
+            {
+                throw new ApplicationException(string.Format("Could not dispatch {0} to {1}", domainEvent, view), exception);
             }
         }
 

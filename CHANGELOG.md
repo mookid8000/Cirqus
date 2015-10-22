@@ -683,6 +683,10 @@
 
 * Fixed bug in `PostgreSqlViewManager` that would result in never dispatching the first event to anyone - thanks [pvivera]
 
+## 0.63.4
+
+* Fixed missing line breaks in testing tools output
+* Added synchronous event dispatcher for testing views and getting sensible exception output
 
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
