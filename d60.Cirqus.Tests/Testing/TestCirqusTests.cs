@@ -179,7 +179,7 @@ Then:
                 {
                     var context = new Dictionary<string, object>
                     {
-                        ["Tag"] = new Tag()
+                        { "Tag", new Tag() }
                     };
 
                     d.UseViewManagerEventDispatcher(a).WithViewContext(context);
@@ -189,8 +189,8 @@ Then:
 
             Emit(NewId<RootA>(), new EventA1());
 
-            Assert.NotNull(a.Load(GlobalInstanceLocator.GetViewInstanceId()));
-            Assert.NotNull(b.Load(GlobalInstanceLocator.GetViewInstanceId()));
+            b.Load(GlobalInstanceLocator.GetViewInstanceId())
+                .Tag.ShouldBe("Greetings from ViewA;Greetings from ViewB");
         }
 
         [Test]
@@ -202,7 +202,7 @@ Then:
                 .UseSynchronousViewManangerEventDispatcher(view)
                 .WithViewContext(new Dictionary<string, object>
                 {
-                    ["Tag"] = new Tag()
+                    {"Tag", new Tag()}
                 })));
 
             Emit(NewId<RootA>(), new EventA1());
@@ -221,7 +221,7 @@ Then:
                 .UseSynchronousViewManangerEventDispatcher(a, b)
                 .WithViewContext(new Dictionary<string, object>
                 {
-                    ["Tag"] = new Tag()
+                    {"Tag", new Tag()}
                 })));
 
             Emit(NewId<RootA>(), new EventA1());
