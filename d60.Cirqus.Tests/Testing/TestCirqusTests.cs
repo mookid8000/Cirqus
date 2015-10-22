@@ -27,7 +27,7 @@ namespace d60.Cirqus.Tests.Testing
         }
 
         [Test]
-        public void WriteGiven()
+        public void FormatsGiven()
         {
             Emit(NewId<RootA>(), new EventA1());
 
@@ -40,7 +40,7 @@ namespace d60.Cirqus.Tests.Testing
         }
 
         [Test]
-        public void GivenWhenThen()
+        public void FormatsGivenWhenThen()
         {
             Emit(NewId<RootA>(), new EventA1());
 
@@ -59,6 +59,7 @@ When users:
 
 Then:
   √ EventA2
+      Id: {0}
 
 ", Id<RootA>()), writer.Buffer);
         }

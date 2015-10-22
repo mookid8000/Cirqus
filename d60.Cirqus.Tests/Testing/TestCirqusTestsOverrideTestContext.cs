@@ -12,12 +12,10 @@ namespace d60.Cirqus.Tests.Testing
     {
         FunnySerializer serializer;
 
-        protected override TestContext CreateContext()
+        protected override void Setup()
         {
             serializer = new FunnySerializer();
-            return TestContext.With()
-                .Options(x => x.UseCustomDomainEventSerializer(serializer))
-                .Create();
+            Configure(context => context.Options(x => x.UseCustomDomainEventSerializer(serializer)));
         }
 
         [Test]

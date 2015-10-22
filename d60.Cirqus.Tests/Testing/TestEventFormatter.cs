@@ -30,6 +30,22 @@ namespace d60.Cirqus.Tests.Testing
         }
 
         [Test]
+        public void RenderProps()
+        {
+            var @event = new SomeEvent
+            {
+                NoHayBanda = "llorando",
+                OleOgLone = 2
+            };
+
+            eventFormatter.Format(null, @event);
+            Assert.AreEqual(@"SomeEvent
+  NoHayBanda: llorando
+  OleOgLone: 2
+", writer.Buffer);
+        }
+
+        [Test]
         [Ignore]
         public void RenderDefaultsWithMetadata()
         {

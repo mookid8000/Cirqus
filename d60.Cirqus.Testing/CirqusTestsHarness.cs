@@ -244,6 +244,8 @@ namespace d60.Cirqus.Testing
                 var actual = pair.actual;
                 var expected = pair.expected;
 
+                expected.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id;
+
                 var jActual = JObject.FromObject(actual, JsonSerializer.Create(settings));
                 var jExpected = JObject.FromObject(expected, JsonSerializer.Create(settings));
 

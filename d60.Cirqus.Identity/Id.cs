@@ -66,6 +66,18 @@ namespace d60.Cirqus.Identity
             return new Id<T>(GetFormatFromAttribute(), value);
         }
 
+        public static bool TryParse(string value, out Id<T> id)
+        {
+            if (GetFormatFromAttribute().Matches(value))
+            {
+                id = (Id<T>)value;
+                return true;
+            }
+
+            id = default(Id<T>);
+            return false;
+        }
+
         public bool Equals(Id<T> other)
         {
             return string.Equals(value, other.value);
