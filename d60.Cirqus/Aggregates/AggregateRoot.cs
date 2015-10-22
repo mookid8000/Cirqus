@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using d60.Cirqus.Events;
+using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
 
@@ -229,7 +230,7 @@ namespace d60.Cirqus.Aggregates
                 aggregateRoot = UnitOfWork
                     .Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoffToLookFor, createIfNotExists: false);
             }
-            catch
+            catch(AggregateRootNotFoundException)
             {
                 return null;
             }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using d60.Cirqus.Views;
 using d60.Cirqus.Views.ViewManagers;
 
@@ -20,6 +21,17 @@ namespace d60.Cirqus.Config.Configurers
         public ViewManagerEventDispatcherConfiguationBuilder WithWaitHandle(ViewManagerWaitHandle handle)
         {
             RegisterInstance(handle);
+            return this;
+        }
+
+        /// <summary>
+        /// Makes the given dictionary of items available in the <see cref="IViewContext"/> passed to the view's
+        /// locator and the view itself
+        /// </summary>
+        public ViewManagerEventDispatcherConfiguationBuilder WithViewContext(IDictionary<string, object> viewContextItems)
+        {
+            if (viewContextItems == null) throw new ArgumentNullException("viewContextItems");
+            RegisterInstance(viewContextItems);
             return this;
         }
 

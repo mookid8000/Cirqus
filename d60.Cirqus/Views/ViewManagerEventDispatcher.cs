@@ -60,6 +60,7 @@ namespace d60.Cirqus.Views
         /// </summary>
         readonly ConcurrentDictionary<IViewManager, object> _viewManagers = new ConcurrentDictionary<IViewManager, object>();
         readonly ConcurrentQueue<PieceOfWork> _work = new ConcurrentQueue<PieceOfWork>();
+        readonly IDictionary<string, object> _viewContextItems = new Dictionary<string, object>();
 
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventStore _eventStore;
@@ -114,6 +115,16 @@ namespace d60.Cirqus.Views
             if (viewManagerProfiler == null) throw new ArgumentNullException("viewManagerProfiler");
             _logger.Info("Setting profiler: {0}", viewManagerProfiler);
             _viewManagerProfiler = viewManagerProfiler;
+        }
+
+        public void SetContextItems(IDictionary<string, object> contextItems)
+        {
+            if (contextItems == null) throw new ArgumentNullException("contextItems");
+            
+            foreach (var kvp in contextItems)
+            {
+                _viewContextItems[kvp.Key] = kvp.Value;
+            }
         }
 
         /// <summary>
@@ -336,6 +347,12 @@ namespace d60.Cirqus.Views
         void DispatchBatchToViewManagers(IEnumerable<IViewManager> viewManagers, IEnumerable<EventData> batch, Dictionary<IViewManager, Pos> positions)
         {
             var context = new DefaultViewContext(_aggregateRootRepository, _domainTypeNameMapper);
+            
+            foreach (var kvp in _viewContextItems)
+            {
+                context.Items[kvp.Key] = kvp.Value;
+            }
+            
             var eventList = batch
                 .Select(e => _domainEventSerializer.Deserialize(e))
                 .ToList();

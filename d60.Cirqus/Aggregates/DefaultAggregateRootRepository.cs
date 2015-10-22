@@ -2,6 +2,7 @@
 using System.Linq;
 using d60.Cirqus.Config;
 using d60.Cirqus.Events;
+using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Serialization;
 
@@ -71,7 +72,7 @@ namespace d60.Cirqus.Aggregates
             {
                 if (!createIfNotExists)
                 {
-                    throw new ArgumentException(string.Format("Attempted to load aggregate root with ID {0} as {1}, but it didn't exist!", aggregateRootId, typeof(TAggregateRoot)));
+                    throw new AggregateRootNotFoundException(typeof(TAggregateRoot), aggregateRootId);
                 }
 
                 aggregateRoot = CreateNewAggregateRootInstance(typeof(TAggregateRoot), aggregateRootId, unitOfWork);
