@@ -11,7 +11,7 @@ namespace d60.Cirqus.Views.ViewManagers
     /// <summary>
     /// View context implementation that works nicely with the existing view managers
     /// </summary>
-    class DefaultViewContext : IViewContext, IUnitOfWork
+    public class DefaultViewContext : IViewContext, IUnitOfWork
     {
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly RealUnitOfWork _realUnitOfWork;

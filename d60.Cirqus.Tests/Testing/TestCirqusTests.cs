@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
+using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.NUnit;
+using d60.Cirqus.Serialization;
+using d60.Cirqus.Testing;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 using NUnit.Framework;
@@ -173,8 +177,13 @@ Then:
             {
                 x.EventDispatcher(d =>
                 {
-                    d.UseViewManagerEventDispatcher(a);
-                    d.UseDependentViewManagerEventDispatcher(b).DependentOn(a);
+                    var context = new Dictionary<string, object>
+                    {
+                        ["Tag"] = new Tag()
+                    };
+
+                    d.UseViewManagerEventDispatcher(a).WithViewContext(context);
+                    d.UseDependentViewManagerEventDispatcher(b).DependentOn(a).WithViewContext(context);
                 });
             });
 
@@ -182,6 +191,55 @@ Then:
 
             Assert.NotNull(a.Load(GlobalInstanceLocator.GetViewInstanceId()));
             Assert.NotNull(b.Load(GlobalInstanceLocator.GetViewInstanceId()));
+        }
+
+        [Test]
+        public void CanUpdateViewSynchronously()
+        {
+            var view = new InMemoryViewManager<ViewA>();
+
+            Configure(x => x.EventDispatcher(d => d
+                .UseSynchronousViewManangerEventDispatcher(view)
+                .WithViewContext(new Dictionary<string, object>
+                {
+                    ["Tag"] = new Tag()
+                })));
+
+            Emit(NewId<RootA>(), new EventA1());
+            Emit(NewId<RootA>(), new EventA1());
+
+            view.GetPosition().Result.ShouldBe(1); // position starts at -1
+        }
+
+        [Test]
+        public void CanUpdateMultipleViewsSynchronously()
+        {
+            var a = new InMemoryViewManager<ViewA>();
+            var b = new InMemoryViewManager<ViewB>();
+
+            Configure(x => x.EventDispatcher(d => d
+                .UseSynchronousViewManangerEventDispatcher(a, b)
+                .WithViewContext(new Dictionary<string, object>
+                {
+                    ["Tag"] = new Tag()
+                })));
+
+            Emit(NewId<RootA>(), new EventA1());
+
+            b.Load(GlobalInstanceLocator.GetViewInstanceId())
+                .Tag.ShouldBe("Greetings from ViewA;Greetings from ViewB");
+        }
+
+        [Test]
+        public void ExceptionsInViewsBubblesToSurface()
+        {
+            var view = new InMemoryViewManager<ThrowingView>();
+
+            Configure(x => x.EventDispatcher(d => d.UseSynchronousViewManangerEventDispatcher(view)));
+
+            Should.Throw<ApplicationException>(() => Emit(NewId<RootA>(), new EventA1()))
+                .InnerException.ShouldBeOfType<InvalidOperationException>()
+                .Message.ShouldBe("hej");
         }
 
         public class RootA : AggregateRoot, IEmit<EventA1>, IEmit<EventA2>
@@ -220,7 +278,6 @@ Then:
 
         public class EventA1 : DomainEvent<RootA>
         {
-
         }
 
         public class EventA2 : DomainEvent<RootA>
@@ -243,9 +300,10 @@ Then:
         {
             public string Id { get; set; }
             public long LastGlobalSequenceNumber { get; set; }
-            
+
             public void Handle(IViewContext context, EventA1 domainEvent)
             {
+                ((Tag)context.Items["Tag"]).Text = "Greetings from ViewA";
             }
         }
 
@@ -253,9 +311,27 @@ Then:
         {
             public string Id { get; set; }
             public long LastGlobalSequenceNumber { get; set; }
-            
+            public string Tag { get; set; }
+
             public void Handle(IViewContext context, EventA1 domainEvent)
             {
+                Tag = ((Tag)context.Items["Tag"]).Text + ";Greetings from ViewB";
+            }
+        }
+
+        public class Tag
+        {
+            public string Text { get; set; }
+        }
+
+        public class ThrowingView : IViewInstance<GlobalInstanceLocator>, ISubscribeTo<EventA1>
+        {
+            public string Id { get; set; }
+            public long LastGlobalSequenceNumber { get; set; }
+
+            public void Handle(IViewContext context, EventA1 domainEvent)
+            {
+                throw new InvalidOperationException("hej");
             }
         }
     }

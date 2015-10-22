@@ -62,7 +62,7 @@ namespace d60.Cirqus.Views.ViewManagers
             }
             catch (Exception exception)
             {
-                throw new ApplicationException(string.Format("Could not dispatch {0} to {1}", domainEvent, view), exception);
+                throw new ApplicationException(string.Format("Could not dispatch {0} to {1}", domainEvent, view), exception.InnerException);
             }
         }
 

@@ -44,6 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SynchronousViewManagerEventDispatcher.cs" />
+    <Compile Include="SynchronousViewManagerEventDispatcherConfiguationBuilder.cs" />
+    <Compile Include="TestingConfigurationExtensions.cs" />
     <Compile Include="TextFormatter.cs" />
     <Compile Include="CirqusTestsHarness.cs" />
     <Compile Include="ConsoleWriter.cs" />
