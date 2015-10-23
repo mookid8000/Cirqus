@@ -15,10 +15,13 @@ namespace d60.Cirqus.Identity
 
         internal Id(KeyFormat format, string value)
         {
-            AssertValid(format, value);
+            if (value == null)
+            {
+                throw new InvalidOperationException("Id cannot be null");
+            }
 
             this.format = format;
-            this.value = value;
+            this.value = format.Normalize(value);
         }
 
         public override string ToString()
@@ -105,21 +108,6 @@ namespace d60.Cirqus.Identity
         public static bool operator !=(Id<T> left, Id<T> right)
         {
             return !left.Equals(right);
-        }
-
-        static void AssertValid(KeyFormat format, string id)
-        {
-            if (id == null)
-            {
-                throw new InvalidOperationException("Id cannot be null");
-            }
-
-            if (!format.Matches(id))
-            {
-                throw new InvalidOperationException(string.Format(
-                    "Trying to make an id for type {0}, but \"{1}\" does not match the expected format \"{2}\".", 
-                    typeof(T).Name, id, format));
-            }
         }
 
         static KeyFormat GetFormatFromAttribute()

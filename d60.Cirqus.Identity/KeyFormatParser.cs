@@ -3,9 +3,9 @@ using Sprache;
 
 namespace d60.Cirqus.Identity
 {
-    public class KeyParser
+    public class KeyFormatParser
     {
-        public KeyParser(char separatorCharacter)
+        public KeyFormatParser(char separatorCharacter)
         {
             Parser<char> Separator = Parse.Char(separatorCharacter);
 
@@ -28,6 +28,11 @@ namespace d60.Cirqus.Identity
                 where term == "guid"
                 select (KeyFormat.Term)new KeyFormat.GuidKeyword();
 
+            var SGuidKeyword =
+                from term in Identifier
+                where term == "sguid"
+                select (KeyFormat.Term)new KeyFormat.SGuidKeyword();
+
             var AnyKeyword =
                 from term in Identifier
                 where term == "*"
@@ -38,7 +43,7 @@ namespace d60.Cirqus.Identity
                 select (KeyFormat.Term)new KeyFormat.LiteralText(text);
 
             var Term =
-                from term in Placeholder.XOr(GuidKeyword).XOr(AnyKeyword).XOr(LiteralText)
+                from term in Placeholder.XOr(GuidKeyword).XOr(SGuidKeyword).XOr(AnyKeyword).XOr(LiteralText)
                 select term;
 
             var EmptySpecification =

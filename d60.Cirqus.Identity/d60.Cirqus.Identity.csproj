@@ -46,7 +46,7 @@
     <Compile Include="Id.cs" />
     <Compile Include="KeyAttribute.cs" />
     <Compile Include="KeyFormat.cs" />
-    <Compile Include="KeyParser.cs" />
+    <Compile Include="KeyFormatParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Switch.cs" />
   </ItemGroup>

@@ -220,7 +220,7 @@
     <Compile Include="Extensions\Helpful.cs" />
     <Compile Include="Extensions\TestTypeExtensions.cs" />
     <Compile Include="FixtureBase.cs" />
-    <Compile Include="Identity\IdParserTests.cs" />
+    <Compile Include="Identity\KeyParserTests.cs" />
     <Compile Include="Identity\IdTests.cs" />
     <Compile Include="Identity\KeyFormatTests.cs" />
     <Compile Include="Integration\IntegrationTestBase.cs" />

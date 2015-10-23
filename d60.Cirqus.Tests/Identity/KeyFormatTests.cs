@@ -10,7 +10,7 @@ namespace d60.Cirqus.Tests.Identity
         [Test]
         public void ConvertsBackToString()
         {
-            new KeyParser('-').KeySpecification.Parse("ko-guid-{Int}-*-abe").ToString()
+            new KeyFormatParser('-').KeySpecification.Parse("ko-guid-{Int}-*-abe").ToString()
                 .ShouldBe("ko-guid-{Int}-*-abe");
         }
     }

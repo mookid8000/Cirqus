@@ -8,9 +8,10 @@ namespace d60.Cirqus.Tests.Identity
     public class IdTests
     {
         const string guid_pattern = "([0-9a-fA-F]){8}(-([0-9a-fA-F]){4}){3}-([0-9a-fA-F]){12}";
+        const string sguid_pattern = "([A-Za-z0-9\\-_]){22}";
 
         [Test]
-        public void NoFormatYieldsGuid()
+        public void NoFormatYieldsSGuid()
         {
             var id = NewId("");
             
@@ -28,7 +29,15 @@ namespace d60.Cirqus.Tests.Identity
         }
 
         [Test]
-        public void LiteralTextConstantYieldsTextAndGuid()
+        public void KeywordSGuidYieldsSGuid()
+        {
+            var id = NewId("sguid");
+
+            id.ShouldMatch("^" + sguid_pattern + "$");
+        }
+
+        [Test]
+        public void LiteralTextConstantYieldsTextAndSGuid()
         {
             var id = NewId("prefix");
             
@@ -167,6 +176,29 @@ namespace d60.Cirqus.Tests.Identity
             {
                 KeyFormat.SeparatorCharacter = '-';
             }
+        }
+
+        [Test]
+        public void ParsingGuidToGuid()
+        {
+            var id = new Id<object>(KeyFormat.FromString("guid"), "21952ee6-d028-433f-8634-94d6473275f0");
+            id.ToString().ShouldBe("21952ee6-d028-433f-8634-94d6473275f0");
+        }
+
+        [Test]
+        public void ParsingGuidToSGuid()
+        {
+            var id = new Id<object>(KeyFormat.FromString("sguid"), "21952ee6-d028-433f-8634-94d6473275f0");
+            id.ToString().ShouldBe(KeyFormat.ToSGuid(Guid.Parse("21952ee6-d028-433f-8634-94d6473275f0")));
+        }
+
+        [Test]
+        public void ParsingSGuidToSGuid()
+        {
+            var sguid = KeyFormat.ToSGuid(Guid.Parse("21952ee6-d028-433f-8634-94d6473275f0"));
+
+            var id = new Id<object>(KeyFormat.FromString("sguid"), sguid);
+            id.ToString().ShouldBe(sguid);
         }
 
         static string NewId(string input, params object[] args)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Channels;
 using System.Text.RegularExpressions;
 using Sprache;
 
@@ -8,6 +9,9 @@ namespace d60.Cirqus.Identity
 {
     public class KeyFormat
     {
+        const string guidPattern = "[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}";
+        const string sguidPattern = "[A-Za-z0-9\\-_]{22}";
+
         readonly Regex pattern;
 
         static KeyFormat()
@@ -36,7 +40,7 @@ namespace d60.Cirqus.Identity
         public static KeyFormat FromString(string format)
         {
             return InjectGuidsInConstantIds(
-                new KeyParser(SeparatorCharacter)
+                new KeyFormatParser(SeparatorCharacter)
                     .KeySpecification.Parse(format));
         }
 
@@ -53,6 +57,7 @@ namespace d60.Cirqus.Identity
                     new Switch<string>(term)
                         .Match((LiteralText t) => t.Text)
                         .Match((GuidKeyword t) => Guid.NewGuid().ToString())
+                        .Match((SGuidKeyword t) => ToSGuid(Guid.NewGuid()))
                         .Match((Placeholder t) =>
                         {
                             if (placeholderIndex >= args.Length)
@@ -74,14 +79,45 @@ namespace d60.Cirqus.Identity
                         .OrThrow(new ArgumentOutOfRangeException()))));
         }
 
+        public string Normalize(string id)
+        {
+            var match = pattern.Match(id);
+
+            if (!match.Success)
+            {
+                throw new InvalidOperationException(string.Format(
+                    "The string '{0}' does not match the expected format '{1}'.", id, ToString()));
+            }
+
+            return string.Join(SeparatorCharacter.ToString(),
+                Terms.Select((term, i) =>
+                {
+                    var value = match.Groups[i+1].Value;
+                    return new Switch<string>(term)
+                        .Match((LiteralText t) => t.Text)
+                        .Match((GuidKeyword t) => value)
+                        .Match((SGuidKeyword t) =>
+                        {
+                            Guid guid;
+                            return Guid.TryParse(value, out guid) ? ToSGuid(guid) : value;
+                        })
+                        .Match((Placeholder t) => value)
+                        .OrThrow(new ArgumentOutOfRangeException());
+                }));
+
+        }
+
         public void Apply(object target, string id)
         {
             var match = pattern.Match(id);
 
-            var i = 1;
-            foreach (var placeholder in Terms.OfType<Placeholder>())
+            var i = 0;
+            foreach (var term in Terms)
             {
-                if (String.IsNullOrEmpty(placeholder.Property))
+                i++;
+
+                var placeholder = term as Placeholder;
+                if (string.IsNullOrEmpty(placeholder?.Property))
                     continue;
 
                 var property = target.GetType().GetProperty(placeholder.Property);
@@ -90,13 +126,11 @@ namespace d60.Cirqus.Identity
                 var convertedValue =
                     new Switch<object>(property.PropertyType)
                         .Match<string>(() => value)
-                        .Match<int>(() => Int32.Parse(value))
-                        .Match<long>(() => Int64.Parse(value))
+                        .Match<int>(() => int.Parse(value))
+                        .Match<long>(() => long.Parse(value))
                         .OrThrow(new ArgumentOutOfRangeException());
 
                 property.SetValue(target, convertedValue);
-
-                i++;
             }
         }
 
@@ -125,6 +159,7 @@ namespace d60.Cirqus.Identity
                     new Switch<string>(term)
                         .Match((LiteralText t) => t.Text)
                         .Match((GuidKeyword t) => "guid")
+                        .Match((SGuidKeyword t) => "sguid")
                         .Match((Placeholder t) => string.IsNullOrEmpty(t.Property) ? "*" : "{" + t.Property + "}")
                         .OrThrow(new ArgumentOutOfRangeException())));
         }
@@ -147,15 +182,33 @@ namespace d60.Cirqus.Identity
             return pattern.GetHashCode();
         }
 
+        public static string ToSGuid(Guid guid)
+        {
+            return Convert.ToBase64String(guid.ToByteArray())
+                .Replace("/", "_")
+                .Replace("+", "-")
+                .Substring(0, 22);
+        }
+
+        public static Guid FromSGuid(string sguid)
+        {
+            return new Guid(
+                Convert.FromBase64String(sguid
+                    .Replace("_", "/")
+                    .Replace("-", "+") + "=="));
+        }
+
         Regex ToRegex()
         {
             return new Regex(string.Format("^{0}$", string.Join(SeparatorCharacter.ToString(),
                 Terms.Select(term =>
                     new Switch<string>(term)
                         .Match((LiteralText t) => t.Text)
-                        .Match((GuidKeyword t) => "([0-9a-fA-F]){8}(-([0-9a-fA-F]){4}){3}-([0-9a-fA-F]){12}")
-                        .Match((Placeholder t) => @"([^/]+)")
-                        .OrThrow(new ArgumentOutOfRangeException())))));
+                        .Match((GuidKeyword t) => guidPattern)
+                        .Match((SGuidKeyword t) => "(?:" + guidPattern + ")|(?:" + sguidPattern + ")")
+                        .Match((Placeholder t) => @"[^/]+")
+                        .OrThrow(new ArgumentOutOfRangeException()))
+                    .Select(x => string.Format("({0})", x)))));
         }
 
         static KeyFormat InjectGuidsInConstantIds(KeyFormat result)
@@ -165,7 +218,7 @@ namespace d60.Cirqus.Identity
                 : result;
         }
 
-        public interface Term { }
+       public interface Term { }
 
         public class LiteralText : Term
         {
@@ -179,6 +232,8 @@ namespace d60.Cirqus.Identity
 
         public class GuidKeyword : Term {}
 
+        public class SGuidKeyword : Term {}
+
         public class Placeholder : Term
         {
             public Placeholder(string property)
@@ -188,5 +243,6 @@ namespace d60.Cirqus.Identity
 
             public string Property { get; private set; }
         }
+
     }
 }
