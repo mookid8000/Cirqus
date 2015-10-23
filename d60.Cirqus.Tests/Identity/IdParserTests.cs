@@ -11,7 +11,7 @@ namespace d60.Cirqus.Tests.Identity
         [Test]
         public void ParseEmpty()
         {
-            var result = KeyParser.KeySpecification.Parse("");
+            var result = new KeyParser('-').KeySpecification.Parse("");
 
             result.Terms.Single().ShouldBeOfType<KeyFormat.GuidKeyword>();
         }
@@ -19,14 +19,14 @@ namespace d60.Cirqus.Tests.Identity
         [Test]
         public void ParseGuidKeyword()
         {
-            KeyParser.KeySpecification.Parse("guid")
+            new KeyParser('-').KeySpecification.Parse("guid")
                 .Terms.Single().ShouldBeOfType<KeyFormat.GuidKeyword>();
         }
 
         [Test]
         public void ParsePlaceholder()
         {
-            KeyParser.KeySpecification.Parse("{hej}")
+            new KeyParser('-').KeySpecification.Parse("{hej}")
                 .Terms.Single().ShouldBeOfType<KeyFormat.Placeholder>()
                 .Property.ShouldBe("hej");
         }
@@ -34,7 +34,7 @@ namespace d60.Cirqus.Tests.Identity
         [Test]
         public void ParseEmptyPlaceholder()
         {
-            KeyParser.KeySpecification.Parse("{}")
+            new KeyParser('-').KeySpecification.Parse("{}")
                 .Terms.Single().ShouldBeOfType<KeyFormat.Placeholder>()
                 .Property.ShouldBe("");
         }
@@ -42,7 +42,7 @@ namespace d60.Cirqus.Tests.Identity
         [Test]
         public void ParseAsterisk()
         {
-            KeyParser.KeySpecification.Parse("*")
+            new KeyParser('-').KeySpecification.Parse("*")
                 .Terms.Single().ShouldBeOfType<KeyFormat.Placeholder>()
                 .Property.ShouldBe("");
         }
@@ -51,14 +51,14 @@ namespace d60.Cirqus.Tests.Identity
         [Test]
         public void ParseLiteralText()
         {
-            KeyParser.KeySpecification.Parse("hallo")
+            new KeyParser('-').KeySpecification.Parse("hallo")
                 .Terms.Single().ShouldBeOfType<KeyFormat.LiteralText>().Text.ShouldBe("hallo");
         }
 
         [Test]
         public void ParseLiteralTexts()
         {
-            var terms = KeyParser.KeySpecification.Parse("hallo/halli").Terms;
+            var terms = new KeyParser('-').KeySpecification.Parse("hallo-halli").Terms;
             terms.Count.ShouldBe(2);
             terms[0].ShouldBeOfType<KeyFormat.LiteralText>().Text.ShouldBe("hallo");
             terms[1].ShouldBeOfType<KeyFormat.LiteralText>().Text.ShouldBe("halli");
@@ -67,7 +67,7 @@ namespace d60.Cirqus.Tests.Identity
         [Test]
         public void ParseComplexExpression()
         {
-            var terms = KeyParser.KeySpecification.Parse("hallo/guid/hvaderder/{props}/guid").Terms;
+            var terms = new KeyParser('-').KeySpecification.Parse("hallo-guid-hvaderder-{props}-guid").Terms;
 
             terms.Count.ShouldBe(5);
             terms[0].ShouldBeOfType<KeyFormat.LiteralText>().Text.ShouldBe("hallo");

@@ -10,8 +10,8 @@ namespace d60.Cirqus.Tests.Identity
         [Test]
         public void ConvertsBackToString()
         {
-            KeyParser.KeySpecification.Parse("ko/guid/{Int}/*/abe").ToString()
-                .ShouldBe("ko/guid/{Int}/*/abe");
+            new KeyParser('-').KeySpecification.Parse("ko-guid-{Int}-*-abe").ToString()
+                .ShouldBe("ko-guid-{Int}-*-abe");
         }
     }
 }

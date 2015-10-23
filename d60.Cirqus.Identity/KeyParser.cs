@@ -3,50 +3,55 @@ using Sprache;
 
 namespace d60.Cirqus.Identity
 {
-    public static class KeyParser
+    public class KeyParser
     {
-        static readonly Parser<char> Separator = Parse.Char('/');
+        public KeyParser(char separatorCharacter)
+        {
+            Parser<char> Separator = Parse.Char(separatorCharacter);
 
-        static readonly Parser<string> Identifier =
-            from identifier in Parse.AnyChar.Except(Separator).Many().Text()
-            where identifier != ""
-            select identifier;
+            var Identifier =
+                from identifier in Parse.AnyChar.Except(Separator).Many().Text()
+                where identifier != ""
+                select identifier;
 
-        static readonly Parser<char> PlaceholderBegin = Parse.Char('{');
-        static readonly Parser<char> PlaceholderEnd = Parse.Char('}');
+            var PlaceholderBegin = Parse.Char('{');
+            var PlaceholderEnd = Parse.Char('}');
 
-        static readonly Parser<KeyFormat.Term> Placeholder =
-            from begin in PlaceholderBegin
-            from property in Parse.AnyChar.Except(PlaceholderEnd).Many().Text()
-            from end in PlaceholderEnd
-            select new KeyFormat.Placeholder(property);
+            var Placeholder =
+                from begin in PlaceholderBegin
+                from property in Parse.AnyChar.Except(PlaceholderEnd).Many().Text()
+                from end in PlaceholderEnd
+                select (KeyFormat.Term)new KeyFormat.Placeholder(property);
 
-        static readonly Parser<KeyFormat.Term> GuidKeyword =
-            from term in Identifier
-            where term == "guid"
-            select new KeyFormat.GuidKeyword();
+            var GuidKeyword =
+                from term in Identifier
+                where term == "guid"
+                select (KeyFormat.Term)new KeyFormat.GuidKeyword();
 
-        static readonly Parser<KeyFormat.Term> AnyKeyword =
-            from term in Identifier
-            where term == "*"
-            select new KeyFormat.Placeholder("");
+            var AnyKeyword =
+                from term in Identifier
+                where term == "*"
+                select (KeyFormat.Term)new KeyFormat.Placeholder("");
 
-        static readonly Parser<KeyFormat.Term> LiteralText =
-            from text in Identifier
-            select new KeyFormat.LiteralText(text);
+            var LiteralText =
+                from text in Identifier
+                select (KeyFormat.Term)new KeyFormat.LiteralText(text);
 
-        public static readonly Parser<KeyFormat.Term> Term =
-            from term in Placeholder.XOr(GuidKeyword).XOr(AnyKeyword).XOr(LiteralText)
-            select term;
+            var Term =
+                from term in Placeholder.XOr(GuidKeyword).XOr(AnyKeyword).XOr(LiteralText)
+                select term;
 
-        public static readonly Parser<KeyFormat> EmptySpecification =
-            Parse.Return(new KeyFormat(new KeyFormat.GuidKeyword()));
+            var EmptySpecification =
+                Parse.Return(new KeyFormat(new KeyFormat.GuidKeyword()));
 
-        public static readonly Parser<KeyFormat> KeySpecification =
-            EmptySpecification.XOr(
-                from head in Term
-                from tail in Separator.Then(x => Term).Many()
-                select new KeyFormat(Cons(head, tail)));
+            KeySpecification =
+                EmptySpecification.XOr(
+                    from head in Term
+                    from tail in Separator.Then(x => Term).Many()
+                    select new KeyFormat(Cons(head, tail)));
+        }
+
+        public readonly Parser<KeyFormat> KeySpecification;
 
         static IEnumerable<T> Cons<T>(T head, IEnumerable<T> rest)
         {

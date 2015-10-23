@@ -2,13 +2,12 @@
 using d60.Cirqus.Identity;
 using NUnit.Framework;
 using Shouldly;
-using Sprache;
 
 namespace d60.Cirqus.Tests.Identity
 {
     public class IdTests
     {
-        const string guid_pattern = "^([0-9a-fA-F]){8}(-([0-9a-fA-F]){4}){3}-([0-9a-fA-F]){12}$";
+        const string guid_pattern = "([0-9a-fA-F]){8}(-([0-9a-fA-F]){4}){3}-([0-9a-fA-F]){12}";
 
         [Test]
         public void NoFormatYieldsGuid()
@@ -16,7 +15,7 @@ namespace d60.Cirqus.Tests.Identity
             var id = NewId("");
             
             id.ShouldNotBe(Guid.Empty.ToString());
-            id.ShouldMatch(guid_pattern);
+            id.ShouldMatch("^" + guid_pattern + "$");
         }
 
         [Test]
@@ -25,7 +24,7 @@ namespace d60.Cirqus.Tests.Identity
             var id = NewId("guid");
 
             id.ShouldNotBe(Guid.Empty.ToString());
-            id.ShouldMatch(guid_pattern);
+            id.ShouldMatch("^" + guid_pattern + "$");
         }
 
         [Test]
@@ -33,48 +32,48 @@ namespace d60.Cirqus.Tests.Identity
         {
             var id = NewId("prefix");
             
-            id.ShouldStartWith("prefix/");
+            id.ShouldStartWith("prefix-");
             id.ShouldNotBe(Guid.Empty.ToString());
-            id.Split('/')[1].ShouldMatch(guid_pattern);
+            id.ShouldMatch("^prefix-" + guid_pattern + "$");
         }
 
         [Test]
         public void LiteralTextConstantsYieldsTextsAndGuid()
         {
-            var id = NewId("prefix/preprefix");
+            var id = NewId("prefix-preprefix");
             
-            id.ShouldStartWith("prefix/preprefix");
+            id.ShouldStartWith("prefix-preprefix");
             id.ShouldNotBe(Guid.Empty.ToString());
-            id.Split('/')[2].ShouldMatch(guid_pattern);
+            id.ShouldMatch("^prefix-preprefix-" + guid_pattern + "$");
         }
 
         [Test]
         public void PlaceholdersAreReplacedPositionally()
         {
-            var id = NewId("{name}/{town}/{gender}", "asger", "mårslet", "mand");
+            var id = NewId("{name}-{town}-{gender}", "asger", "mårslet", "mand");
 
-            id.ShouldBe("asger/mårslet/mand");
+            id.ShouldBe("asger-mårslet-mand");
         }
 
         [Test]
         public void FailsOnMissingPlaceholderValues()
         {
-            Should.Throw<InvalidOperationException>(() => NewId("{name}/{town}/{gender}", "asger", "mårslet"))
+            Should.Throw<InvalidOperationException>(() => NewId("{name}-{town}-{gender}", "asger", "mårslet"))
                 .Message.ShouldBe("You did not supply a value for the placeholder 'gender' at position 2");
         }
 
         [Test]
         public void WorksWithEmptyPlaceholders()
         {
-            var id = NewId("*/{}", "mårslet", "mand");
+            var id = NewId("*-{}", "mårslet", "mand");
 
-            id.ShouldBe("mårslet/mand");
+            id.ShouldBe("mårslet-mand");
         }
 
         [Test]
         public void FailsOnMissingPlaceholderValuesForEmptyPlaceholders()
         {
-            Should.Throw<InvalidOperationException>(() => NewId("*/{}", "asger"))
+            Should.Throw<InvalidOperationException>(() => NewId("*-{}", "asger"))
                 .Message.ShouldBe("You did not supply a value for the *-placeholder or {}-placeholder at position 1");
         }
 
@@ -83,9 +82,9 @@ namespace d60.Cirqus.Tests.Identity
         {
             var id = (string)Id<GuidKeyedRoot>.New();
 
-            id.ShouldStartWith("hest/");
+            id.ShouldStartWith("hest-");
             id.ShouldNotBe(Guid.Empty.ToString());
-            id.Split('/')[1].ShouldMatch(guid_pattern);
+            id.ShouldMatch("^hest-" + guid_pattern + "$");
         }
 
         [Test]
@@ -111,7 +110,7 @@ namespace d60.Cirqus.Tests.Identity
         {
             Should.Throw<InvalidOperationException>(() =>
             {
-                Id<GuidKeyedRoot>.Parse("hest/123456");
+                Id<GuidKeyedRoot>.Parse("hest-123456");
             });
         }
 
@@ -120,14 +119,14 @@ namespace d60.Cirqus.Tests.Identity
         {
             Should.Throw<InvalidOperationException>(() =>
             {
-                Id<GuidKeyedRoot>.Parse("ko/21952ee6-d028-433f-8634-94d6473275f0");
+                Id<GuidKeyedRoot>.Parse("ko-21952ee6-d028-433f-8634-94d6473275f0");
             });
         }
 
         [Test]
         public void AppliesValuesToPlaceholders()
         {
-            var id = Id<PlaceholderKeyedRoot>.Parse("hest/asger/2/10000000000/anything");
+            var id = Id<PlaceholderKeyedRoot>.Parse("hest-asger-2-10000000000-anything");
             var root = new PlaceholderKeyedRoot();
             
             id.Apply(root);
@@ -140,9 +139,34 @@ namespace d60.Cirqus.Tests.Identity
         [Test]
         public void IdentityEquality()
         {
-            var id1 = Id<GuidKeyedRoot>.Parse("hest/21952ee6-d028-433f-8634-94d6473275f0");
-            var id2 = Id<GuidKeyedRoot>.Parse("hest/21952ee6-d028-433f-8634-94d6473275f0");
+            var id1 = Id<GuidKeyedRoot>.Parse("hest-21952ee6-d028-433f-8634-94d6473275f0");
+            var id2 = Id<GuidKeyedRoot>.Parse("hest-21952ee6-d028-433f-8634-94d6473275f0");
             id1.ShouldBe(id2);
+        }
+
+        [Test]
+        public void BugShouldNotAllowPrefixOnGuids()
+        {
+            Should.Throw<Exception>(() => new Id<object>(KeyFormat.FromString(""), "hest-21952ee6-d028-433f-8634-94d6473275f0"));
+        }
+
+        [Test]
+        public void AcceptsOtherSeperatorChars()
+        {
+            try
+            {
+                KeyFormat.SeparatorCharacter = '/';
+
+                var id = NewId("prefix/guid/{tal}", 123);
+
+                id.ShouldStartWith("prefix/");
+                id.ShouldNotBe(Guid.Empty.ToString());
+                id.ShouldMatch("^prefix/" + guid_pattern + "/123$");
+            }
+            finally
+            {
+                KeyFormat.SeparatorCharacter = '-';
+            }
         }
 
         static string NewId(string input, params object[] args)
@@ -151,13 +175,13 @@ namespace d60.Cirqus.Tests.Identity
             return format.Compile<object>(args);
         }
 
-        [Key("hest/guid")]
+        [Key("hest-guid")]
         public class GuidKeyedRoot
         {
             
         }
 
-        [Key("hest/{String}/{Int}/{Long}/*")]
+        [Key("hest-{String}-{Int}-{Long}-*")]
         public class PlaceholderKeyedRoot
         {
             public string String { get; set; }
