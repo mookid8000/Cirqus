@@ -117,7 +117,7 @@ namespace d60.Cirqus.Identity
                 i++;
 
                 var placeholder = term as Placeholder;
-                if (string.IsNullOrEmpty(placeholder?.Property))
+                if (placeholder == null || string.IsNullOrEmpty(placeholder.Property))
                     continue;
 
                 var property = target.GetType().GetProperty(placeholder.Property);
