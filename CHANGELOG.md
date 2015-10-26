@@ -693,6 +693,10 @@
 * Changes default ID separator to dash (but with an option for slash) to support using IDs directly in URLs
 * Added support for a shorter GUID notation for IDs
 
+## 0.63.6
+
+* Fixed a bug in IDs Get-method that I just introduced in 0.63.5
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis

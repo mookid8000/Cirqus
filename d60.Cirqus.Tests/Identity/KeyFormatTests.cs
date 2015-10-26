@@ -10,8 +10,21 @@ namespace d60.Cirqus.Tests.Identity
         [Test]
         public void ConvertsBackToString()
         {
-            new KeyFormatParser('-').KeySpecification.Parse("ko-guid-{Int}-*-abe").ToString()
+            GetKeyFormat("ko-guid-{Int}-*-abe").ToString()
                 .ShouldBe("ko-guid-{Int}-*-abe");
+        }
+
+        [Test]
+        public void CanGetValueFromNaturalKey()
+        {
+            GetKeyFormat("user-{Username}")
+                .Get("Username", "user-ahl@nonsense.dk")
+                .ShouldBe("ahl@nonsense.dk");
+        }
+
+        KeyFormat GetKeyFormat(string format)
+        {
+            return new KeyFormatParser('-').KeySpecification.Parse(format);
         }
     }
 }

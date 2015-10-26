@@ -138,15 +138,19 @@ namespace d60.Cirqus.Identity
         {
             var match = pattern.Match(id);
 
-            var i = 1;
-            foreach (var placeholder in Terms.OfType<Placeholder>())
+            var i = 0;
+            foreach (var term in Terms)
             {
+                i++;
+
+                var placeholder = term as Placeholder;
+                if (placeholder == null || string.IsNullOrEmpty(placeholder.Property))
+                    continue;
+
                 if (placeholder.Property == key)
                 {
                     return match.Groups[i].Value;
                 }
-
-                i++;
             }
 
             throw new IndexOutOfRangeException();
