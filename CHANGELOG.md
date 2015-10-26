@@ -688,6 +688,11 @@
 * Fixed missing line breaks in testing tools output
 * Added synchronous event dispatcher for testing views and getting sensible exception output
 
+## 0.63.5
+
+* Changes default ID separator to dash (but with an option for slash) to support using IDs directly in URLs
+* Added support for a shorter GUID notation for IDs
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis
