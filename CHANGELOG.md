@@ -701,6 +701,10 @@
 
 * Fixed bug in `CachingEventStoreDecorator` that could result in having many cache trim operations executed in parallel in the background if the execution time exceeds 30 s
 
+## 0.63.8
+
+* Added support for retrieving the type that an id matches by pre-, in- or postfix
+* Added support for a shorter GUID notation by default
 
 
 [asgerhallas]: https://github.com/asgerhallas
