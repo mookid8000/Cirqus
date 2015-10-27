@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Timers;
 using d60.Cirqus.Caching;
@@ -27,6 +28,9 @@ namespace d60.Cirqus.Events
         readonly IEventStore _innerEventStore;
 
         int _maxCacheEntries;
+
+        readonly object _trimLock = new object();
+        volatile bool _currentlyTrimmingCache;
 
         public CachingEventStoreDecorator(IEventStore innerEventStore)
         {
@@ -128,23 +132,52 @@ namespace d60.Cirqus.Events
 
         void PossiblyTrimCache()
         {
-            if (_eventsPerGlobalSequenceNumber.Count <= _maxCacheEntries) return;
+            // never trim in parallel
+            if (_currentlyTrimmingCache) return;
 
-            _log.Debug("Trimming caches");
-
-            var entriesOldestFirst = _eventsPerGlobalSequenceNumber.Values
-                .OrderByDescending(e => e.Age)
-                .ToList();
-
-            foreach (var entryToRemove in entriesOldestFirst)
+            lock (_trimLock)
             {
-                if (_eventsPerGlobalSequenceNumber.Count <= _maxCacheEntries) break;
+                if (_currentlyTrimmingCache) return;
 
-                CacheEntry<EventData> removedCacheEntry;
+                _currentlyTrimmingCache = true;
+            }
 
-                _eventsPerGlobalSequenceNumber.TryRemove(entryToRemove.Data.GetGlobalSequenceNumber(), out removedCacheEntry);
-                var eventsForThisAggregateRoot = GetEventsForThisAggregateRoot(entryToRemove.Data.GetAggregateRootId());
-                eventsForThisAggregateRoot.TryRemove(entryToRemove.Data.GetSequenceNumber(), out removedCacheEntry);
+            // _currentlyTrimmingCache is set to false again in the finally clause
+            try
+            {
+                if (_eventsPerGlobalSequenceNumber.Count <= _maxCacheEntries) return;
+
+                _log.Debug("Trimming caches");
+
+                var stopwatch = Stopwatch.StartNew();
+
+                var entriesOldestFirst = _eventsPerGlobalSequenceNumber.Values
+                    .OrderByDescending(e => e.Age)
+                    .ToList();
+
+                foreach (var entryToRemove in entriesOldestFirst)
+                {
+                    if (_eventsPerGlobalSequenceNumber.Count <= _maxCacheEntries) break;
+
+                    CacheEntry<EventData> removedCacheEntry;
+
+                    _eventsPerGlobalSequenceNumber.TryRemove(entryToRemove.Data.GetGlobalSequenceNumber(), out removedCacheEntry);
+                    var eventsForThisAggregateRoot = GetEventsForThisAggregateRoot(entryToRemove.Data.GetAggregateRootId());
+
+                    eventsForThisAggregateRoot.TryRemove(entryToRemove.Data.GetSequenceNumber(), out removedCacheEntry);
+                }
+
+                var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
+
+                _log.Info("Trimming event cache took {0:0.0} s", elapsedSeconds);
+            }
+            catch (Exception exception)
+            {
+                _log.Error(exception, "Error while trimming event cache");
+            }
+            finally
+            {
+                _currentlyTrimmingCache = false;
             }
         }
 
