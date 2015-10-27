@@ -11,54 +11,62 @@ namespace d60.Cirqus.Tests.Identity
         [Test]
         public void ParseEmpty()
         {
-            var result = GetKeyFormat("");
-
-            result.Terms.Single().ShouldBeOfType<KeyFormat.GuidKeyword>();
+            GetKeyFormat("").Terms.Single().ShouldBeOfType<KeyFormat.GuidKeyword>();
         }
 
         [Test]
-        public void ParseEmptyWithOtherDefaultUniquenessTerm()
+        public void ParseLiteralTextOnlyAddsDefaultUniquesnessTerm()
         {
-            var result = GetKeyFormat("", defaultUniquenessTerm: "sguid");
+            var terms = GetKeyFormat("prefix").Terms;
 
-            result.Terms.Single().ShouldBeOfType<KeyFormat.SGuidKeyword>();
+            terms[0].ShouldBeOfType<KeyFormat.LiteralText>();
+            terms[1].ShouldBeOfType<KeyFormat.GuidKeyword>();
+        }
+
+        [Test]
+        public void ParseLiteralTextOnlyAddsConfiguredDefaultUniquenessTerm()
+        {
+            var terms = GetKeyFormat("prefix", defaultUniquenessTerm: "sguid").Terms;
+
+            terms[0].ShouldBeOfType<KeyFormat.LiteralText>();
+            terms[1].ShouldBeOfType<KeyFormat.SGuidKeyword>();
         }
 
         [Test]
         public void ParseGuidKeyword()
         {
-            GetKeyFormat("guid")
-                .Terms.Single().ShouldBeOfType<KeyFormat.GuidKeyword>();
+            GetKeyFormat("prefix-guid")
+                .Terms.Last().ShouldBeOfType<KeyFormat.GuidKeyword>();
         }
 
         [Test]
         public void ParseSGuidKeyword()
         {
-            GetKeyFormat("sguid")
-                .Terms.Single().ShouldBeOfType<KeyFormat.SGuidKeyword>();
+            GetKeyFormat("prefix-sguid")
+                .Terms.Last().ShouldBeOfType<KeyFormat.SGuidKeyword>();
         }
 
         [Test]
         public void ParsePlaceholder()
         {
-            GetKeyFormat("{hej}")
-                .Terms.Single().ShouldBeOfType<KeyFormat.Placeholder>()
+            GetKeyFormat("prefix-{hej}")
+                .Terms.Last().ShouldBeOfType<KeyFormat.Placeholder>()
                 .Property.ShouldBe("hej");
         }
 
         [Test]
         public void ParseEmptyPlaceholder()
         {
-            GetKeyFormat("{}")
-                .Terms.Single().ShouldBeOfType<KeyFormat.Placeholder>()
+            GetKeyFormat("prefix-{}")
+                .Terms.Last().ShouldBeOfType<KeyFormat.Placeholder>()
                 .Property.ShouldBe("");
         }
 
         [Test]
         public void ParseAsterisk()
         {
-            GetKeyFormat("*")
-                .Terms.Single().ShouldBeOfType<KeyFormat.Placeholder>()
+            GetKeyFormat("prefix-*")
+                .Terms.Last().ShouldBeOfType<KeyFormat.Placeholder>()
                 .Property.ShouldBe("");
         }
 
@@ -109,7 +117,7 @@ namespace d60.Cirqus.Tests.Identity
 
         KeyFormat GetKeyFormat(string format, char separatorCharacter = '-', string defaultUniquenessTerm = "guid")
         {
-            return new KeyFormatParser(separatorCharacter, defaultUniquenessTerm).KeySpecification.Parse(format);
+            return new KeyFormatParser(separatorCharacter, defaultUniquenessTerm).Execute(format);
         }
     }
 }

@@ -2,6 +2,7 @@
 using d60.Cirqus.Identity;
 using NUnit.Framework;
 using Shouldly;
+using Sprache;
 
 namespace d60.Cirqus.Tests.Identity
 {
@@ -10,24 +11,19 @@ namespace d60.Cirqus.Tests.Identity
         const string guid_pattern = "([0-9a-fA-F]){8}(-([0-9a-fA-F]){4}){3}-([0-9a-fA-F]){12}";
         const string sguid_pattern = "([A-Za-z0-9\\-_]){22}";
 
-        [Test]
-        public void NoFormatYieldsGuid()
+        public IdTests()
         {
-            var id = NewId("");
-            
-            id.ShouldNotBe(Guid.Empty.ToString());
-            id.ShouldMatch("^" + guid_pattern + "$");
+            KeyFormat.For<GuidKeyedRoot>("hest-guid");
+            KeyFormat.For<PlaceholderKeyedRoot>("hest-{String}-{Int}-{Long}-*");
         }
 
         [Test]
-        public void NoFormatYieldsSGuidWithOtherDefaultUniquenessTerm()
+        public void NoFormatYieldsDefault()
         {
-            KeyFormat.DefaultUniquenessTerm = "sguid";
-
             var id = NewId("");
-            
+
             id.ShouldNotBe(Guid.Empty.ToString());
-            id.ShouldMatch("^" + sguid_pattern + "$");
+            id.ShouldMatch("^" + guid_pattern + "$");
         }
 
         [Test]
@@ -48,13 +44,27 @@ namespace d60.Cirqus.Tests.Identity
         }
 
         [Test]
-        public void LiteralTextConstantYieldsTextAndSGuid()
+        public void LiteralTextConstantYieldsTextAndGuid()
         {
             var id = NewId("prefix");
             
             id.ShouldStartWith("prefix-");
             id.ShouldNotBe(Guid.Empty.ToString());
             id.ShouldMatch("^prefix-" + guid_pattern + "$");
+        }
+
+        [Test]
+        public void LiteralTextConstantYieldsTextAndDefaultUniquenessTerm()
+        {
+            KeyFormat.DefaultUniquenessTerm = "sguid";
+
+            var id = NewId("prefix");
+
+            id.ShouldStartWith("prefix-");
+            id.ShouldNotBe(Guid.Empty.ToString());
+            id.ShouldMatch("^prefix-" + sguid_pattern + "$");
+
+            KeyFormat.DefaultUniquenessTerm = "guid";
         }
 
         [Test]
@@ -85,9 +95,9 @@ namespace d60.Cirqus.Tests.Identity
         [Test]
         public void WorksWithEmptyPlaceholders()
         {
-            var id = NewId("*-{}", "mårslet", "mand");
+            var id = NewId("*-infix-{}", "mårslet", "mand");
 
-            id.ShouldBe("mårslet-mand");
+            id.ShouldBe("mårslet-infix-mand");
         }
 
         [Test]
@@ -98,13 +108,22 @@ namespace d60.Cirqus.Tests.Identity
         }
 
         [Test]
-        public void UsesAttributeToObtainFormat()
+        public void UsesRegisteredTypesToObtainFormat()
         {
             var id = (string)Id<GuidKeyedRoot>.New();
 
             id.ShouldStartWith("hest-");
             id.ShouldNotBe(Guid.Empty.ToString());
             id.ShouldMatch("^hest-" + guid_pattern + "$");
+        }
+
+        [Test]
+        public void FailsWhenRegisteringTypesWithNoLiteralIdentifier()
+        {
+            Should.Throw<ParseException>(() =>
+            {
+                KeyFormat.For<object>("guid-sguid-{placeholder}-*");
+            });
         }
 
         [Test]
@@ -192,15 +211,15 @@ namespace d60.Cirqus.Tests.Identity
         [Test]
         public void ParsingGuidToGuid()
         {
-            var id = new Id<object>(KeyFormat.FromString("guid"), "21952ee6-d028-433f-8634-94d6473275f0");
-            id.ToString().ShouldBe("21952ee6-d028-433f-8634-94d6473275f0");
+            var id = new Id<object>(KeyFormat.FromString("prefix-guid"), "prefix-21952ee6-d028-433f-8634-94d6473275f0");
+            id.ToString().ShouldBe("prefix-21952ee6-d028-433f-8634-94d6473275f0");
         }
 
         [Test]
         public void ParsingGuidToSGuid()
         {
-            var id = new Id<object>(KeyFormat.FromString("sguid"), "21952ee6-d028-433f-8634-94d6473275f0");
-            id.ToString().ShouldBe(KeyFormat.ToSGuid(Guid.Parse("21952ee6-d028-433f-8634-94d6473275f0")));
+            var id = new Id<object>(KeyFormat.FromString("prefix-sguid"), "prefix-21952ee6-d028-433f-8634-94d6473275f0");
+            id.ToString().ShouldBe("prefix-" + KeyFormat.ToSGuid(Guid.Parse("21952ee6-d028-433f-8634-94d6473275f0")));
         }
 
         [Test]
@@ -208,23 +227,20 @@ namespace d60.Cirqus.Tests.Identity
         {
             var sguid = KeyFormat.ToSGuid(Guid.Parse("21952ee6-d028-433f-8634-94d6473275f0"));
 
-            var id = new Id<object>(KeyFormat.FromString("sguid"), sguid);
-            id.ToString().ShouldBe(sguid);
+            var id = new Id<object>(KeyFormat.FromString("prefix-sguid"), "prefix-" + sguid);
+            id.ToString().ShouldBe("prefix-" + sguid);
         }
 
         static string NewId(string input, params object[] args)
         {
-            var format = KeyFormat.FromAttribute(new KeyAttribute(input));
-            return format.Compile<object>(args);
+            return KeyFormat.FromString(input).Compile<object>(args);
         }
 
-        [Key("hest-guid")]
         public class GuidKeyedRoot
         {
             
         }
 
-        [Key("hest-{String}-{Int}-{Long}-*")]
         public class PlaceholderKeyedRoot
         {
             public string String { get; set; }

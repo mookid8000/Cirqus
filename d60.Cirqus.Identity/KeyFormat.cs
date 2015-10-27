@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Channels;
@@ -12,16 +13,20 @@ namespace d60.Cirqus.Identity
         const string guidPattern = "[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}";
         const string sguidPattern = "[A-Za-z0-9\\-_]{22}";
 
-        readonly Regex pattern;
+        static readonly IDictionary<Type, KeyFormat> formatByType;
 
         static KeyFormat()
         {
+            formatByType = new ConcurrentDictionary<Type, KeyFormat>();
+
             SeparatorCharacter = '-';
             DefaultUniquenessTerm = "guid";
         }
 
         public static char SeparatorCharacter { get; set; }
         public static string DefaultUniquenessTerm { get; set; }
+
+        readonly Regex pattern;
 
         public KeyFormat(params Term[] terms) : this((IEnumerable<Term>)terms) { }
 
@@ -34,15 +39,35 @@ namespace d60.Cirqus.Identity
 
         public IReadOnlyList<Term> Terms { get; private set; }
 
-        public static KeyFormat FromAttribute(KeyAttribute attribute)
+        public static void For<T>(string input)
         {
-            return FromString(attribute.Format);
+            var format = FromString(input);
+
+            if (!format.Terms.Any(x => x is LiteralText))
+                throw new ParseException("Format must contain a unique text identifying the type of id.");
+
+            formatByType.Add(typeof(T), format);
+        }
+
+        public static Type GetTypeById(string id)
+        {
+            return formatByType.Single(x => x.Value.Matches(id)).Key;
+        }
+
+        public static KeyFormat Get<T>()
+        {
+            KeyFormat value;
+            if (!formatByType.TryGetValue(typeof (T), out value))
+            {
+                return FromString("");
+            }
+
+            return value;
         }
 
         public static KeyFormat FromString(string format)
         {
-            return new KeyFormatParser(SeparatorCharacter, DefaultUniquenessTerm)
-                .KeySpecification.Parse(format);
+            return new KeyFormatParser(SeparatorCharacter, DefaultUniquenessTerm).Execute(format);
         }
 
         public bool Matches(string id)
@@ -87,7 +112,7 @@ namespace d60.Cirqus.Identity
             if (!match.Success)
             {
                 throw new InvalidOperationException(string.Format(
-                    "The string '{0}' does not match the expected format '{1}'.", id, ToString()));
+                    "The string '{0}' does not match the expected input '{1}'.", id, ToString()));
             }
 
             return string.Join(SeparatorCharacter.ToString(),

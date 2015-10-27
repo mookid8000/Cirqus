@@ -23,9 +23,18 @@ namespace d60.Cirqus.Tests.Identity
                 .ShouldBe("ahl@nonsense.dk");
         }
 
+        [Test]
+        public void CanGetTypeById()
+        {
+            KeyFormat.For<int>("i-{Username}");
+            KeyFormat.For<double>("d-guid");
+
+            KeyFormat.GetTypeById("d-9EA4FEC2-AA9F-460A-A2B7-60903218149D").ShouldBe(typeof(double));
+        }
+
         KeyFormat GetKeyFormat(string format)
         {
-            return new KeyFormatParser('-', "guid").KeySpecification.Parse(format);
+            return new KeyFormatParser('-', "guid").Execute(format);
         }
     }
 }

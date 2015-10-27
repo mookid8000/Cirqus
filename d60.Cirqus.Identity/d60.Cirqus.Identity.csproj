@@ -44,7 +44,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Id.cs" />
-    <Compile Include="KeyAttribute.cs" />
     <Compile Include="KeyFormat.cs" />
     <Compile Include="KeyFormatParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

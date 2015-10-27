@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Sprache;
 
 namespace d60.Cirqus.Identity
 {
     public class KeyFormatParser
     {
+        readonly Parser<KeyFormat> KeySpecification;
+
         public KeyFormatParser(char separatorCharacter, string defaultUniquenessKind)
         {
             var Separator = Parse.Char(separatorCharacter);
@@ -63,7 +66,10 @@ namespace d60.Cirqus.Identity
                     select new KeyFormat(terms));
         }
 
-        public readonly Parser<KeyFormat> KeySpecification;
+        public KeyFormat Execute(string input)
+        {
+            return KeySpecification.Parse(input);
+        }
 
         static IEnumerable<T> Cons<T>(T head, IEnumerable<T> rest)
         {

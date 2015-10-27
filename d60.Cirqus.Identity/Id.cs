@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 
 namespace d60.Cirqus.Identity
 {
@@ -61,17 +60,17 @@ namespace d60.Cirqus.Identity
 
         public static Id<T> New(params object[] args)
         {
-            return GetFormatFromAttribute().Compile<T>(args);
+            return KeyFormat.Get<T>().Compile<T>(args);
         }
 
         public static Id<T> Parse(string value)
         {
-            return new Id<T>(GetFormatFromAttribute(), value);
+            return new Id<T>(KeyFormat.Get<T>(), value);
         }
 
         public static bool TryParse(string value, out Id<T> id)
         {
-            if (GetFormatFromAttribute().Matches(value))
+            if (KeyFormat.Get<T>().Matches(value))
             {
                 id = (Id<T>)value;
                 return true;
@@ -108,11 +107,6 @@ namespace d60.Cirqus.Identity
         public static bool operator !=(Id<T> left, Id<T> right)
         {
             return !left.Equals(right);
-        }
-
-        static KeyFormat GetFormatFromAttribute()
-        {
-            return KeyFormat.FromAttribute(typeof (T).GetCustomAttribute<KeyAttribute>() ?? new KeyAttribute(""));
         }
     }
 }
