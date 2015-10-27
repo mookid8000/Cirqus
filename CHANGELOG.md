@@ -697,6 +697,12 @@
 
 * Fixed a bug in IDs Get-method that I just introduced in 0.63.5
 
+## 0.63.7
+
+* Fixed bug in `CachingEventStoreDecorator` that could result in having many cache trim operations executed in parallel in the background if the execution time exceeds 30 s
+
+
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis
