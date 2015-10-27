@@ -11,29 +11,37 @@ namespace d60.Cirqus.Tests.Identity
         [Test]
         public void ParseEmpty()
         {
-            var result = new KeyFormatParser('-').KeySpecification.Parse("");
+            var result = GetKeyFormat("");
 
             result.Terms.Single().ShouldBeOfType<KeyFormat.GuidKeyword>();
         }
 
         [Test]
+        public void ParseEmptyWithOtherDefaultUniquenessTerm()
+        {
+            var result = GetKeyFormat("", defaultUniquenessTerm: "sguid");
+
+            result.Terms.Single().ShouldBeOfType<KeyFormat.SGuidKeyword>();
+        }
+
+        [Test]
         public void ParseGuidKeyword()
         {
-            new KeyFormatParser('-').KeySpecification.Parse("guid")
+            GetKeyFormat("guid")
                 .Terms.Single().ShouldBeOfType<KeyFormat.GuidKeyword>();
         }
 
         [Test]
         public void ParseSGuidKeyword()
         {
-            new KeyFormatParser('-').KeySpecification.Parse("sguid")
+            GetKeyFormat("sguid")
                 .Terms.Single().ShouldBeOfType<KeyFormat.SGuidKeyword>();
         }
 
         [Test]
         public void ParsePlaceholder()
         {
-            new KeyFormatParser('-').KeySpecification.Parse("{hej}")
+            GetKeyFormat("{hej}")
                 .Terms.Single().ShouldBeOfType<KeyFormat.Placeholder>()
                 .Property.ShouldBe("hej");
         }
@@ -41,7 +49,7 @@ namespace d60.Cirqus.Tests.Identity
         [Test]
         public void ParseEmptyPlaceholder()
         {
-            new KeyFormatParser('-').KeySpecification.Parse("{}")
+            GetKeyFormat("{}")
                 .Terms.Single().ShouldBeOfType<KeyFormat.Placeholder>()
                 .Property.ShouldBe("");
         }
@@ -49,32 +57,41 @@ namespace d60.Cirqus.Tests.Identity
         [Test]
         public void ParseAsterisk()
         {
-            new KeyFormatParser('-').KeySpecification.Parse("*")
+            GetKeyFormat("*")
                 .Terms.Single().ShouldBeOfType<KeyFormat.Placeholder>()
                 .Property.ShouldBe("");
         }
 
-
         [Test]
         public void ParseLiteralText()
         {
-            new KeyFormatParser('-').KeySpecification.Parse("hallo")
-                .Terms.Single().ShouldBeOfType<KeyFormat.LiteralText>().Text.ShouldBe("hallo");
+            var terms = GetKeyFormat("hallo").Terms;
+            terms[0].ShouldBeOfType<KeyFormat.LiteralText>().Text.ShouldBe("hallo");
+            terms[1].ShouldBeOfType<KeyFormat.GuidKeyword>();
         }
 
         [Test]
-        public void ParseLiteralTexts()
+        public void ParseLiteralTextWithOtherDefaultUniquenessTerm()
         {
-            var terms = new KeyFormatParser('-').KeySpecification.Parse("hallo-halli").Terms;
-            terms.Count.ShouldBe(2);
+            var terms = GetKeyFormat("hallo", defaultUniquenessTerm: "sguid").Terms;
+            terms[0].ShouldBeOfType<KeyFormat.LiteralText>().Text.ShouldBe("hallo");
+            terms[1].ShouldBeOfType<KeyFormat.SGuidKeyword>();
+        }
+
+        [Test]
+        public void ParseOnlyLiteralTextsAddsAUniqnessTerm()
+        {
+            var terms = GetKeyFormat("hallo-halli").Terms;
+            terms.Count.ShouldBe(3);
             terms[0].ShouldBeOfType<KeyFormat.LiteralText>().Text.ShouldBe("hallo");
             terms[1].ShouldBeOfType<KeyFormat.LiteralText>().Text.ShouldBe("halli");
+            terms[2].ShouldBeOfType<KeyFormat.GuidKeyword>();
         }
 
         [Test]
         public void ParseComplexExpression()
         {
-            var terms = new KeyFormatParser('-').KeySpecification.Parse("hallo-guid-hvaderder-{props}-sguid").Terms;
+            var terms = GetKeyFormat("hallo-guid-hvaderder-{props}-sguid").Terms;
 
             terms.Count.ShouldBe(5);
             terms[0].ShouldBeOfType<KeyFormat.LiteralText>().Text.ShouldBe("hallo");
@@ -82,6 +99,17 @@ namespace d60.Cirqus.Tests.Identity
             terms[2].ShouldBeOfType<KeyFormat.LiteralText>().Text.ShouldBe("hvaderder");
             terms[3].ShouldBeOfType<KeyFormat.Placeholder>().Property.ShouldBe("props");
             terms[4].ShouldBeOfType<KeyFormat.SGuidKeyword>();
+        }
+
+        [Test]
+        public void FailsWithUnknownUniquenessTerm()
+        {
+            Should.Throw<ParseException>(() => GetKeyFormat("hallo", defaultUniquenessTerm: "skovshoved"));
+        }
+
+        KeyFormat GetKeyFormat(string format, char separatorCharacter = '-', string defaultUniquenessTerm = "guid")
+        {
+            return new KeyFormatParser(separatorCharacter, defaultUniquenessTerm).KeySpecification.Parse(format);
         }
     }
 }

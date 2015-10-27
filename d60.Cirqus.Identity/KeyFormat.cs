@@ -17,9 +17,11 @@ namespace d60.Cirqus.Identity
         static KeyFormat()
         {
             SeparatorCharacter = '-';
+            DefaultUniquenessTerm = "guid";
         }
 
         public static char SeparatorCharacter { get; set; }
+        public static string DefaultUniquenessTerm { get; set; }
 
         public KeyFormat(params Term[] terms) : this((IEnumerable<Term>)terms) { }
 
@@ -39,9 +41,8 @@ namespace d60.Cirqus.Identity
 
         public static KeyFormat FromString(string format)
         {
-            return InjectGuidsInConstantIds(
-                new KeyFormatParser(SeparatorCharacter)
-                    .KeySpecification.Parse(format));
+            return new KeyFormatParser(SeparatorCharacter, DefaultUniquenessTerm)
+                .KeySpecification.Parse(format);
         }
 
         public bool Matches(string id)

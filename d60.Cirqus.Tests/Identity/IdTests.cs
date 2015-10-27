@@ -11,12 +11,23 @@ namespace d60.Cirqus.Tests.Identity
         const string sguid_pattern = "([A-Za-z0-9\\-_]){22}";
 
         [Test]
-        public void NoFormatYieldsSGuid()
+        public void NoFormatYieldsGuid()
         {
             var id = NewId("");
             
             id.ShouldNotBe(Guid.Empty.ToString());
             id.ShouldMatch("^" + guid_pattern + "$");
+        }
+
+        [Test]
+        public void NoFormatYieldsSGuidWithOtherDefaultUniquenessTerm()
+        {
+            KeyFormat.DefaultUniquenessTerm = "sguid";
+
+            var id = NewId("");
+            
+            id.ShouldNotBe(Guid.Empty.ToString());
+            id.ShouldMatch("^" + sguid_pattern + "$");
         }
 
         [Test]

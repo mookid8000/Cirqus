@@ -1,3 +1,4 @@
+using System;
 using d60.Cirqus.Identity;
 using NUnit.Framework;
 using Shouldly;
@@ -24,7 +25,7 @@ namespace d60.Cirqus.Tests.Identity
 
         KeyFormat GetKeyFormat(string format)
         {
-            return new KeyFormatParser('-').KeySpecification.Parse(format);
+            return new KeyFormatParser('-', "guid").KeySpecification.Parse(format);
         }
     }
 }

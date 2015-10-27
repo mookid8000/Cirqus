@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Sprache;
 
@@ -5,9 +6,9 @@ namespace d60.Cirqus.Identity
 {
     public class KeyFormatParser
     {
-        public KeyFormatParser(char separatorCharacter)
+        public KeyFormatParser(char separatorCharacter, string defaultUniquenessKind)
         {
-            Parser<char> Separator = Parse.Char(separatorCharacter);
+            var Separator = Parse.Char(separatorCharacter);
 
             var Identifier =
                 from identifier in Parse.AnyChar.Except(Separator).Many().Text()
@@ -42,18 +43,24 @@ namespace d60.Cirqus.Identity
                 from text in Identifier
                 select (KeyFormat.Term)new KeyFormat.LiteralText(text);
 
+            var UniquenessTerms = Placeholder.XOr(GuidKeyword).XOr(SGuidKeyword).XOr(AnyKeyword);
+
             var Term =
-                from term in Placeholder.XOr(GuidKeyword).XOr(SGuidKeyword).XOr(AnyKeyword).XOr(LiteralText)
+                from term in UniquenessTerms.XOr(LiteralText)
                 select term;
 
             var EmptySpecification =
-                Parse.Return(new KeyFormat(new KeyFormat.GuidKeyword()));
+                Parse.Return(new KeyFormat(UniquenessTerms.Parse(defaultUniquenessKind)));
 
             KeySpecification =
                 EmptySpecification.XOr(
                     from head in Term
                     from tail in Separator.Then(x => Term).Many()
-                    select new KeyFormat(Cons(head, tail)));
+                    let terms = ConcatIfAll(
+                        Cons(head, tail), 
+                        x => x is KeyFormat.LiteralText, 
+                        UniquenessTerms.Parse(defaultUniquenessKind))
+                    select new KeyFormat(terms));
         }
 
         public readonly Parser<KeyFormat> KeySpecification;
@@ -64,5 +71,21 @@ namespace d60.Cirqus.Identity
             foreach (var item in rest)
                 yield return item;
         }
+
+        static IEnumerable<T> ConcatIfAll<T>(IEnumerable<T> list, Func<T, bool> test, T next)
+        {
+            var all = true;
+            foreach (var item in list)
+            {
+                all = test(item) && all;
+                yield return item;
+            }
+
+            if (all)
+            {
+                yield return next;
+            }
+        }
+
     }
 }
