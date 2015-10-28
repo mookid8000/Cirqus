@@ -706,6 +706,9 @@
 * Added support for retrieving the type that an id matches by pre-, in- or postfix
 * Added support for a shorter GUID notation by default
 
+## 0.63.9
+
+* Upgraded xunit to 2.1
 
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
