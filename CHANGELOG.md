@@ -710,6 +710,14 @@
 
 * Upgraded xunit to 2.1
 
+## 0.63.10
+
+* Same as 0.63.9. There was a disturbance on nuget.org that I thought originated from some deploy gone wrong.
+
+## 0.63.11
+
+* Fixed the xunit output that didn't show up
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis
