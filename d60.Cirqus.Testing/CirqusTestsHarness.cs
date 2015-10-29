@@ -17,8 +17,6 @@ namespace d60.Cirqus.Testing
 {
     public abstract class CirqusTestsHarness
     {
-        public static Func<IWriter> Writer = () => new ConsoleWriter();
-
         protected const string checkmark = "\u221A";
         protected const string cross = "\u2717";
 
@@ -33,7 +31,7 @@ namespace d60.Cirqus.Testing
         protected Action<DomainEvent> OnEvent = x => { };
         protected Action<Command> OnCommand = x => { };
 
-        protected void Begin()
+        protected void Begin(IWriter writer)
         {
             ids = new Stack<Id>();
 
@@ -44,7 +42,7 @@ namespace d60.Cirqus.Testing
                 Formatting = Formatting.Indented,
             };
 
-            formatter = new TextFormatter(Writer());
+            formatter = new TextFormatter(writer);
 
             configuration = TestContext.With();
 

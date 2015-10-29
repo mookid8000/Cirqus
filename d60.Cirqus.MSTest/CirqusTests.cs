@@ -11,7 +11,7 @@ namespace d60.Cirqus.MSTest
         [TestInitialize]
         public void SetupInternal()
         {
-            Begin();
+            Begin(new ConsoleWriter());
             Setup();
         }
 

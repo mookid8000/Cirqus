@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using d60.Cirqus.Testing;
+using Xunit.Abstractions;
 
 namespace d60.Cirqus.xUnit
 {
     public class CirqusTests : CirqusTestsHarness, IDisposable
     {
-        public CirqusTests()
+        public CirqusTests(ITestOutputHelper output)
         {
-            Begin();
+            Begin(new TestOutputWriter(output));
         }
 
         public void Dispose()

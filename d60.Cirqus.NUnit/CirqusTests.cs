@@ -9,8 +9,13 @@ namespace d60.Cirqus.NUnit
         [SetUp]
         public void SetupInternal()
         {
-            Begin();
+            Begin(GetWriter());
             Setup();
+        }
+
+        protected virtual IWriter GetWriter()
+        {
+            return new ConsoleWriter();
         }
 
         protected virtual void Setup()

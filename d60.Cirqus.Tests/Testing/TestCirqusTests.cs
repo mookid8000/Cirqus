@@ -18,15 +18,12 @@ namespace d60.Cirqus.Tests.Testing
     [TestFixture]
     public class TestCirqusTests : CirqusTests
     {
-        static TestWriter writer;
+        TestWriter writer;
 
-        static TestCirqusTests()
+        protected override IWriter GetWriter()
         {
-            Writer = () =>
-            {
-                writer = new TestWriter();
-                return writer;
-            };
+            writer = new TestWriter();
+            return writer;
         }
 
         [Test]
