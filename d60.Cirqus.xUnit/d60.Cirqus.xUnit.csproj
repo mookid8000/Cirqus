@@ -49,6 +49,7 @@
   <ItemGroup>
     <Compile Include="CirqusTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestOutputWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\d60.Cirqus.Testing\d60.Cirqus.Testing.csproj">
