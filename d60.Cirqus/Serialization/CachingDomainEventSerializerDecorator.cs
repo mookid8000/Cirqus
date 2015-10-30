@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Timers;
 using d60.Cirqus.Events;
@@ -21,6 +22,9 @@ namespace d60.Cirqus.Serialization
         readonly IDomainEventSerializer _innerDomainEventSerializer;
         readonly int _approximateMaxNumberOfEntries;
         readonly Timer _purgeTimer = new Timer(30000);
+
+        volatile bool _purging;
+        readonly object _purgeLock = new object();
 
         public CachingDomainEventSerializerDecorator(IDomainEventSerializer innerDomainEventSerializer, int approximateMaxNumberOfEntries)
         {
@@ -57,14 +61,39 @@ namespace d60.Cirqus.Serialization
 
         void PossiblyTrimCache()
         {
-            if (_cachedDomainEvents.Count < _approximateMaxNumberOfEntries) return;
+            if (_purging) return;
 
-            _log.Debug("Trimming cache");
-
-            while (_cachedDomainEvents.Count > _approximateMaxNumberOfEntries)
+            lock (_purgeLock)
             {
-                DomainEvent dummy;
-                _cachedDomainEvents.TryRemove(_cachedDomainEvents.Keys.First(), out dummy);
+                if (_purging) return;
+
+                _purging = true;
+            }
+
+            var stopwatch = Stopwatch.StartNew();
+            var didTrimCache = false;
+
+            try
+            {
+                if (_cachedDomainEvents.Count < _approximateMaxNumberOfEntries) return;
+
+                didTrimCache = true;
+                _log.Debug("Trimming cache");
+
+                while (_cachedDomainEvents.Count > _approximateMaxNumberOfEntries)
+                {
+                    DomainEvent dummy;
+                    _cachedDomainEvents.TryRemove(_cachedDomainEvents.Keys.First(), out dummy);
+                }
+            }
+            finally
+            {
+                _purging = false;
+
+                if (didTrimCache)
+                {
+                    _log.Info("Cache purge operation took {0:0.0} s", stopwatch.Elapsed.TotalSeconds);
+                }
             }
         }
 

@@ -718,6 +718,11 @@
 
 * Fixed the xunit output that didn't show up
 
+## 0.63.12
+
+* Makes no sense to have reentrant cache trimming in `CachingDomainEventSerializerDecorator`
+* Added view type reflection extension on `IViewManager`
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis
