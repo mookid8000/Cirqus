@@ -723,6 +723,10 @@
 * Makes no sense to have reentrant cache trimming in `CachingDomainEventSerializerDecorator`
 * Added view type reflection extension on `IViewManager`
 
+## 0.63.13
+
+* Fixed GetHashCode issue on KeyFormat
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis

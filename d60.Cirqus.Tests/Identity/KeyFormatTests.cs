@@ -32,6 +32,12 @@ namespace d60.Cirqus.Tests.Identity
             KeyFormat.GetTypeById("d-9EA4FEC2-AA9F-460A-A2B7-60903218149D").ShouldBe(typeof(double));
         }
 
+        [Test]
+        public void HashCodeMatches()
+        {
+            GetKeyFormat("sguid").GetHashCode().ShouldBe(GetKeyFormat("sguid").GetHashCode());
+        }
+
         KeyFormat GetKeyFormat(string format)
         {
             return new KeyFormatParser('-', "guid").Execute(format);
