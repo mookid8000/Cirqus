@@ -14,6 +14,7 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <NuGetPackageImportStamp>faacd2bf</NuGetPackageImportStamp>
+    <PROCESSOR_ARCHITEW6432 Condition=" '$(PROCESSOR_ARCHITEW6432)' == '' ">x86</PROCESSOR_ARCHITEW6432>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -333,10 +334,11 @@
       <Name>d60.Cirqus</Name>
     </ProjectReference>
   </ItemGroup>
+  
   <ItemGroup>
-    <Content Include="..\lib\SQLite\x64\sqlite3.dll">
+    <Content Include="..\lib\SQLite\$(PROCESSOR_ARCHITEW6432)\sqlite3.dll">
       <Link>sqlite3.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -345,6 +347,7 @@
   <Target Name="BeforeBuild">
   </Target>
   <Target Name="AfterBuild">
+
   </Target>
   -->
 </Project>
