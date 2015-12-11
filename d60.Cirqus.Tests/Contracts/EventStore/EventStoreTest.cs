@@ -23,7 +23,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
     [TestFixture(typeof(MsSqlEventStoreFactory), Category = TestCategories.MsSql)]
     [TestFixture(typeof(PostgreSqlEventStoreFactory), Category = TestCategories.PostgreSql)]
     [TestFixture(typeof(NtfsEventStoreFactory))]
-    [TestFixture(typeof(SQLiteEventStoreFactory))]
+    [TestFixture(typeof(SQLiteEventStoreFactory), Category = TestCategories.SQLite)]
     [TestFixture(typeof(CachedEventStoreFactory), Category = TestCategories.MongoDb, Description = "Uses MongoDB behind the scenes")]
     public class EventStoreTest<TEventStoreFactory> : FixtureBase where TEventStoreFactory : IEventStoreFactory, new()
     {

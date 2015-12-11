@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
-using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Serialization;
@@ -20,7 +19,7 @@ namespace d60.Cirqus.Tests.Contracts.Serialization
     [TestFixture(typeof(MsSqlEventStoreFactory), Category = TestCategories.MsSql)]
     [TestFixture(typeof(PostgreSqlEventStoreFactory), Category = TestCategories.PostgreSql)]
     [TestFixture(typeof(NtfsEventStoreFactory))]
-    [TestFixture(typeof(SQLiteEventStoreFactory))]
+    [TestFixture(typeof(SQLiteEventStoreFactory), Category = TestCategories.SQLite)]
     public class CustomSerilization<TEventStoreFactory> : FixtureBase where TEventStoreFactory : IEventStoreFactory, new()
     {
         ICommandProcessor _commandProcessor;
