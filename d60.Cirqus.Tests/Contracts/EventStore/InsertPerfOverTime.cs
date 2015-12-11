@@ -15,7 +15,7 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
     [TestFixture(typeof(MsSqlEventStoreFactory), Category = TestCategories.MsSql)]
     [TestFixture(typeof(PostgreSqlEventStoreFactory), Category = TestCategories.PostgreSql)]
     [TestFixture(typeof(NtfsEventStoreFactory))]
-    [TestFixture(typeof(SQLiteEventStoreFactory))]
+    [TestFixture(typeof(SQLiteEventStoreFactory), Category = TestCategories.SQLite)]
     public class InsertPerfOverTime<TEventStoreFactory> : FixtureBase where TEventStoreFactory : IEventStoreFactory, new()
     {
         readonly Dictionary<Guid, long> _seqNoPerRoot = new Dictionary<Guid, long>();
