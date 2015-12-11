@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Config.Configurers;
@@ -237,10 +238,18 @@ namespace d60.Cirqus.Testing
 
             formatter.Block("Then:");
 
-            foreach (var pair in results.Zip(events, (actual, expected) => new { actual, expected }))
+            foreach (var expected in events)
             {
-                var actual = pair.actual;
-                var expected = pair.expected;
+                var actual = results.FirstOrDefault();
+
+                if (actual == null)
+                {
+                    Assert(false,
+                        () => formatter.Write(expected, new EventFormatter(formatter)).NewLine(),
+                        () => formatter.Block("But we got nothing."));
+
+                    return;
+                }
 
                 expected.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id;
 
@@ -265,10 +274,10 @@ namespace d60.Cirqus.Testing
                             .Write("Diff:").NewLine()
                             .Write(diff);
                     });
-            }
 
-            // consume events
-            results = results.Skip(events.Length);
+                // consume events
+                results = results.Skip(1);
+            }
         }
 
         protected void ThenNo<T>() where T : DomainEvent

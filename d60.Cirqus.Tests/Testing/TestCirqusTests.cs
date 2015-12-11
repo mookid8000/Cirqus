@@ -44,7 +44,7 @@ namespace d60.Cirqus.Tests.Testing
         {
             Emit(NewId<RootA>(), new EventA1());
 
-            When(new CommandA { Id = Id<RootA>() });
+            When(new CommandResultingInOneEvent { Id = Id<RootA>() });
 
             Then(Id<RootA>(), new EventA2());
 
@@ -54,7 +54,7 @@ namespace d60.Cirqus.Tests.Testing
     Id: {0}
 
 When users:
-  CommandA
+  CommandResultingInOneEvent
     Id: {0}
 
 Then:
@@ -69,7 +69,7 @@ Then:
         {
             Emit(NewId<RootA>(), new EventA1());
 
-            When(new CommandA { Id = Id<RootA>() });
+            When(new CommandResultingInOneEvent { Id = Id<RootA>() });
 
             Assert.Throws<AssertionException>(() => Then(NewId<RootA>(), new EventA2()));
         }
@@ -90,7 +90,7 @@ Then:
         {
             Emit(NewId<RootA>(), new EventA1());
 
-            When(new CommandA { Id = Id<RootA>() });
+            When(new CommandResultingInOneEvent { Id = Id<RootA>() });
 
             Then<RootA>(new EventA2());
         }
@@ -102,8 +102,46 @@ Then:
 
             Emit<RootA>(id, new EventA1());
 
-            When(new CommandA { Id = id });
+            When(new CommandResultingInOneEvent { Id = id });
 
+            Then<RootA>(new EventA2());
+        }
+
+        [Test]
+        public void ThenWhenNoEventsAreEmitted()
+        {
+            var id = Guid.NewGuid().ToString();
+
+            Emit<RootA>(id, new EventA1());
+
+            When(new CommandWithNoResult());
+
+            Should.Throw<AssertionException>(() => Then<RootA>(new EventA2()));
+        }
+
+        [Test]
+        public void ThenWhenExpectingTwoButGotOne()
+        {
+            var id = Guid.NewGuid().ToString();
+
+            Emit<RootA>(id, new EventA1());
+
+            When(new CommandResultingInOneEvent { Id = id });
+
+            Then<RootA>(new EventA2());
+            Should.Throw<AssertionException>(() => Then<RootA>(new EventA2()));
+        }
+
+        [Test]
+        public void ThenWhenExpectingTwoAndGotTwo()
+        {
+            var id = Guid.NewGuid().ToString();
+
+            Emit<RootA>(id, new EventA1());
+
+            When(new CommandResultingInTwoEvents() { Id = id });
+
+            Then<RootA>(new EventA2());
             Then<RootA>(new EventA2());
         }
 
@@ -158,7 +196,7 @@ Then:
             var id = Guid.NewGuid().ToString();
             Emit<RootA>(id, new EventA1());
 
-            When(new CommandA { Id = id });
+            When(new CommandResultingInOneEvent { Id = id });
 
             Assert.IsTrue(flag);
         }
@@ -281,13 +319,30 @@ Then:
 
         }
 
-        public class CommandA : ExecutableCommand
+        public class CommandResultingInOneEvent : ExecutableCommand
         {
             public string Id { get; set; }
 
             public override void Execute(ICommandContext context)
             {
                 var rootA = context.Load<RootA>(Id);
+                rootA.DoA2();
+            }
+        }
+
+        public class CommandWithNoResult : ExecutableCommand
+        {
+            public override void Execute(ICommandContext context) {}
+        }
+
+        public class CommandResultingInTwoEvents : ExecutableCommand
+        {
+            public string Id { get; set; }
+
+            public override void Execute(ICommandContext context)
+            {
+                var rootA = context.Load<RootA>(Id);
+                rootA.DoA2();
                 rootA.DoA2();
             }
         }

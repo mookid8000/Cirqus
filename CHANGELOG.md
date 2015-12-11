@@ -727,6 +727,11 @@
 
 * Fixed GetHashCode issue on KeyFormat
 
+## 0.63.14
+
+* Fixed TestingHarness for bug when no event was emitted
+
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis
