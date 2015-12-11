@@ -285,6 +285,10 @@
     <Compile Include="Views\NewViewManager\Events\WasEaten.cs" />
     <Compile Include="Views\NewViewManager\Views\SlowView.cs" />
     <Compile Include="Contracts\Views\ObjectGraph.cs" />
+    <Compile Include="Views\TestAggregateRootView\AggregateRootViewWorks.cs" />
+    <Compile Include="Views\TestAggregateRootView\Model\AggregateRootWithLogic.cs" />
+    <Compile Include="Views\TestAggregateRootView\Model\IncrementNumberCommand.cs" />
+    <Compile Include="Views\TestAggregateRootView\Model\NumberEvent.cs" />
     <Compile Include="Views\TestDefaultEventDispatcherConfiguration.cs" />
     <Compile Include="Views\TestDependentViews.cs" />
     <Compile Include="Views\TestLoadAggregatesFromView.cs" />
