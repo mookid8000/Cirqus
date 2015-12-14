@@ -285,6 +285,10 @@
     <Compile Include="Views\NewViewManager\Events\WasEaten.cs" />
     <Compile Include="Views\NewViewManager\Views\SlowView.cs" />
     <Compile Include="Contracts\Views\ObjectGraph.cs" />
+    <Compile Include="Views\TestAggregateRootView\AggregateRootViewWorks.cs" />
+    <Compile Include="Views\TestAggregateRootView\Model\AggregateRootWithLogic.cs" />
+    <Compile Include="Views\TestAggregateRootView\Model\IncrementNumberCommand.cs" />
+    <Compile Include="Views\TestAggregateRootView\Model\NumberEvent.cs" />
     <Compile Include="Views\TestDefaultEventDispatcherConfiguration.cs" />
     <Compile Include="Views\TestDependentViews.cs" />
     <Compile Include="Views\TestLoadAggregatesFromView.cs" />
@@ -335,12 +339,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\lib\SQLite\$(PROCESSOR_ARCHITEW6432)\sqlite3.dll">
+    <Content Include="..\lib\SQLite\x64\sqlite3.dll">
       <Link>sqlite3.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

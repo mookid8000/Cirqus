@@ -14,6 +14,9 @@ namespace d60.Cirqus.Views.ViewManagers.Locators
         static readonly ConcurrentDictionary<Type, ViewLocator> CachedViewLocators = new ConcurrentDictionary<Type, ViewLocator>();
         static readonly ConcurrentDictionary<Type, ConcurrentDictionary<Type, bool>> CachedRelevancyChecks = new ConcurrentDictionary<Type, ConcurrentDictionary<Type, bool>>();
 
+        /// <summary>
+        /// Gets a view locator instance for the view of type <typeparamref name="TView"/>
+        /// </summary>
         public static ViewLocator GetLocatorFor<TView>()
         {
             var viewType = typeof(TView);
@@ -21,6 +24,9 @@ namespace d60.Cirqus.Views.ViewManagers.Locators
             return CachedViewLocators.GetOrAdd(viewType, t => ActivateNewViewLocatorInstanceFromClosingType(viewType));
         }
 
+        /// <summary>
+        /// Gets whether the given event is relevant for views of type <typeparamref name="TView"/>
+        /// </summary>
         public static bool IsRelevant<TView>(DomainEvent domainEvent) where TView : ISubscribeTo
         {
             var domainEventType = domainEvent.GetType();
