@@ -7,7 +7,7 @@ using d60.Cirqus.Events;
 
 namespace d60.Cirqus.Testing.Internals
 {
-    class InMemoryUnitOfWork : RealUnitOfWork, IEnumerable<DomainEvent>
+    public class InMemoryUnitOfWork : RealUnitOfWork, IEnumerable<DomainEvent>
     {
         public InMemoryUnitOfWork(IAggregateRootRepository aggregateRootRepository, IDomainTypeNameMapper domainTypeNameMapper)
             : base(aggregateRootRepository, domainTypeNameMapper)

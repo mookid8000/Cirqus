@@ -731,6 +731,10 @@
 
 * Fixed TestingHarness for bug when no event was emitted
 
+## 0.63.15
+
+* Making InMemoryEventStore and InMemoryUnitOfWork testing tools public to ease implementing custom event dispatchers
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund

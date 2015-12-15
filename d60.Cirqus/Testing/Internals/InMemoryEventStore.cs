@@ -10,7 +10,7 @@ using d60.Cirqus.Serialization;
 
 namespace d60.Cirqus.Testing.Internals
 {
-    class InMemoryEventStore : IEventStore, IEnumerable<DomainEvent>
+    public class InMemoryEventStore : IEventStore, IEnumerable<DomainEvent>
     {
         readonly IDomainEventSerializer _domainEventSerializer;
         readonly HashSet<string> _idAndSeqNoTuples = new HashSet<string>();
