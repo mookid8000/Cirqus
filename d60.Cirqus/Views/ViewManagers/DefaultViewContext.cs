@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Config;
@@ -14,13 +15,17 @@ namespace d60.Cirqus.Views.ViewManagers
     public class DefaultViewContext : IViewContext, IUnitOfWork
     {
         readonly IAggregateRootRepository _aggregateRootRepository;
+        readonly List<DomainEvent> _eventBatch;
         readonly RealUnitOfWork _realUnitOfWork;
 
-        public DefaultViewContext(IAggregateRootRepository aggregateRootRepository, IDomainTypeNameMapper domainTypeNameMapper)
+        public DefaultViewContext(IAggregateRootRepository aggregateRootRepository, IDomainTypeNameMapper domainTypeNameMapper, IEnumerable<DomainEvent> eventBatch)
         {
             Items = new Dictionary<string, object>();
 
             _aggregateRootRepository = aggregateRootRepository;
+
+            _eventBatch = eventBatch.ToList();
+            _eventBatch.Sort((e1, e2) => e1.GetGlobalSequenceNumber().CompareTo(e2.GetGlobalSequenceNumber()));
 
             _realUnitOfWork = new RealUnitOfWork(_aggregateRootRepository, domainTypeNameMapper);
         }
@@ -37,8 +42,14 @@ namespace d60.Cirqus.Views.ViewManagers
 
         public event Action Committed;
 
+        readonly Dictionary<string, CachedRoot> _cachedRoots = new Dictionary<string, CachedRoot>();
+
         public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : class
         {
+            var rootFromCache = GetFromCacheOrNull<TAggregateRoot>(aggregateRootId, globalSequenceNumber);
+
+            if (rootFromCache != null) return rootFromCache;
+
             var aggregateRootInfo = _aggregateRootRepository
                 .Get<TAggregateRoot>(aggregateRootId, this, maxGlobalSequenceNumber: globalSequenceNumber);
 
@@ -47,7 +58,73 @@ namespace d60.Cirqus.Views.ViewManagers
             var frozen = new FrozenAggregateRootService(aggregateRootInfo, _realUnitOfWork);
             aggregateRoot.UnitOfWork = frozen;
 
+            _cachedRoots[aggregateRootId] = new CachedRoot
+            {
+                AggregateRoot = aggregateRoot,
+                GlobalSequenceNumber = globalSequenceNumber,
+                Id = aggregateRootId,
+                IsOk = true
+            };
+
             return aggregateRoot as TAggregateRoot;
+        }
+
+        TAggregateRoot GetFromCacheOrNull<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : class
+        {
+            CachedRoot entry;
+
+            if (!_cachedRoots.TryGetValue(aggregateRootId, out entry)) return null;
+
+            foreach (var e in _eventBatch)
+            {
+                entry.MaybeApply(e, _realUnitOfWork, globalSequenceNumber);
+            }
+
+            if (entry.IsOk)
+            {
+                return (TAggregateRoot) entry.AggregateRoot;
+            }
+
+            return null;
+        }
+
+        class CachedRoot
+        {
+            public object AggregateRoot { get; set; }
+            public string Id { get; set; }
+            public long GlobalSequenceNumber { get; set; }
+
+            public bool IsOk { get; set; }
+
+            public void MaybeApply(DomainEvent domainEvent, RealUnitOfWork realUnitOfWork, long globalSequenceNumber)
+            {
+                var globalSequenceNumberFromEvent = domainEvent.GetGlobalSequenceNumber();
+
+                // don't do anything if we are not supposed to go this far
+                if (globalSequenceNumberFromEvent > globalSequenceNumber) return;
+
+                // don't do anything if the event is in the past
+                if (globalSequenceNumberFromEvent <= GlobalSequenceNumber) return;
+
+                // only apply event if it's ours...
+                if (domainEvent.GetAggregateRootId() != Id) return;
+
+                var info = new AggregateRootInfo(AggregateRoot as AggregateRoot);
+
+                var sequenceNumberFromEvent = domainEvent.GetSequenceNumber();
+
+                var expectedNextSequenceNumber = info.SequenceNumber + 1;
+
+                if (expectedNextSequenceNumber != sequenceNumberFromEvent)
+                {
+                    IsOk = false;
+                    return;
+                }
+
+                info.Apply(domainEvent, realUnitOfWork);
+
+                GlobalSequenceNumber = globalSequenceNumberFromEvent;
+            }
         }
 
         public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : class
@@ -124,7 +201,7 @@ namespace d60.Cirqus.Views.ViewManagers
         }
 
         public DomainEvent CurrentEvent { get; set; }
-        
+
         public Dictionary<string, object> Items { get; private set; }
 
         public void DeleteThisViewInstance()

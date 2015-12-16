@@ -58,7 +58,7 @@ namespace d60.Cirqus.Testing
 
         public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
         {
-            var context = new DefaultViewContext(_aggregateRootRepository, _domainTypeNameMapper);
+            var context = new DefaultViewContext(_aggregateRootRepository, _domainTypeNameMapper, events);
 
             foreach (var kvp in _viewContextItems)
             {

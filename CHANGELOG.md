@@ -738,7 +738,7 @@
 ## 0.63.16
 
 * Fixed `Kind` of `DateTime` retrieved by `MsSqlViewManager` to be UTC because that's what it is. The really short version of the description of this problem is: Use `DateTimeOffset`s instead. They are explicit about the fact that they are just a UTC timestamp.
-
+* Added aggregate root caching mechanism in `DefaultViewContext`
 
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund

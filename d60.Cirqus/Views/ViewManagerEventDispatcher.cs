@@ -346,17 +346,17 @@ namespace d60.Cirqus.Views
 
         void DispatchBatchToViewManagers(IEnumerable<IViewManager> viewManagers, IEnumerable<EventData> batch, Dictionary<IViewManager, Pos> positions)
         {
-            var context = new DefaultViewContext(_aggregateRootRepository, _domainTypeNameMapper);
+            var eventList = batch
+                .Select(e => _domainEventSerializer.Deserialize(e))
+                .ToList();
+
+            var context = new DefaultViewContext(_aggregateRootRepository, _domainTypeNameMapper, eventList);
             
             foreach (var kvp in _viewContextItems)
             {
                 context.Items[kvp.Key] = kvp.Value;
             }
             
-            var eventList = batch
-                .Select(e => _domainEventSerializer.Deserialize(e))
-                .ToList();
-
             foreach (var viewManager in viewManagers)
             {
                 var thisParticularPosition = positions[viewManager].Position;

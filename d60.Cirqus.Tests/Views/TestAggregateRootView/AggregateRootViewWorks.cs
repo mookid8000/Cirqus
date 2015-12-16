@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using d60.Cirqus.Aggregates;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using d60.Cirqus.Extensions;
-using d60.Cirqus.Tests.Extensions;
+using d60.Cirqus.Logging;
+using d60.Cirqus.Logging.Console;
+using d60.Cirqus.MongoDb.Config;
 using d60.Cirqus.Tests.Views.TestAggregateRootView.Model;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
@@ -16,49 +17,66 @@ namespace d60.Cirqus.Tests.Views.TestAggregateRootView
     {
         ICommandProcessor _commandProcessor;
         InMemoryViewManager<AggregateRootView> _viewManager;
+        ViewManagerWaitHandle _waitHandler;
 
         protected override void DoSetUp()
         {
+            CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel: Logger.Level.Info);
+
             _viewManager = new InMemoryViewManager<AggregateRootView>();
 
+            _waitHandler = new ViewManagerWaitHandle();
+
             _commandProcessor = CommandProcessor.With()
-                .EventStore(e => e.UseInMemoryEventStore())
-                .EventDispatcher(e => e.UseViewManagerEventDispatcher(_viewManager))
+                .EventStore(e => e.UseMongoDb("mongodb://localhost/cirqus_bimse", "Events"))
+                .EventDispatcher(e => e.UseViewManagerEventDispatcher(_viewManager).WithWaitHandle(_waitHandler))
                 .Create();
 
             RegisterForDisposal(_commandProcessor);
         }
 
         [Test]
-        public void YeahItWorks()
+        public async Task YeahItWorks()
         {
-            _commandProcessor.ProcessCommand(new IncrementNumberCommand("id1"));
-            _commandProcessor.ProcessCommand(new IncrementNumberCommand("id1"));
-            _commandProcessor.ProcessCommand(new IncrementNumberCommand("id1"));
-            _commandProcessor.ProcessCommand(new IncrementNumberCommand("id1"));
+            //1000.Times(() =>
+            //{
+            //    _commandProcessor.ProcessCommand(new IncrementNumberCommand("id1"));
+            //});
 
+            var stopwatch = Stopwatch.StartNew();
+
+            await _waitHandler.WaitForAll(CommandProcessingResult.WithNewPosition(1000), TimeSpan.FromSeconds(100));
+
+            Console.WriteLine("Catch-up took {0:0.0} s", stopwatch.Elapsed.TotalSeconds);
         }
 
-        class AggregateRootView : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<NumberEvent>, IAggregateRootView
+        class AggregateRootView : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<NumberEvent>
         {
+            static DateTime _lastOutput = DateTime.UtcNow;
+
             public string Id { get; set; }
             public long LastGlobalSequenceNumber { get; set; }
 
-            public string AggregateRootId { get; set; }
             public int Counter { get; set; }
 
             public void Handle(IViewContext context, NumberEvent domainEvent)
             {
-                AggregateRootId = domainEvent.GetAggregateRootId();
-
-                AggregateRoots.Follow(AggregateRootId);
-
-                var instance = context.Load<AggregateRootWithLogic>(AggregateRootId);
+                var aggregateRootId = domainEvent.GetAggregateRootId();
+                var instance = context.Load<AggregateRootWithLogic>(aggregateRootId);
 
                 Counter = instance.Counter;
-            }
 
-            public AggregateRootToFollow AggregateRoots { get; set; }
+                if (Counter%100 == 0)
+                {
+                    var now = DateTime.UtcNow;
+
+                    var elapsedSinceLastOutput = now - _lastOutput;
+
+                    _lastOutput = now;
+
+                    Console.WriteLine("Counter: {0} (elapsed: {1:0.0} s)", Counter, elapsedSinceLastOutput.TotalSeconds);
+                }
+            }
         }
     }
 }

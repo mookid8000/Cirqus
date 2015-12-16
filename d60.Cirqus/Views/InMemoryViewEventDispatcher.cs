@@ -74,7 +74,7 @@ namespace d60.Cirqus.Views
 
             try
             {
-                var viewContext = new DefaultViewContext(_aggregateRootRepository, _domainTypeNameMapper);
+                var viewContext = new DefaultViewContext(_aggregateRootRepository, _domainTypeNameMapper, events);
 
                 foreach (var e in events)
                 {
