@@ -58,13 +58,7 @@ namespace d60.Cirqus.Views.ViewManagers
             var frozen = new FrozenAggregateRootService(aggregateRootInfo, _realUnitOfWork);
             aggregateRoot.UnitOfWork = frozen;
 
-            _cachedRoots[aggregateRootId] = new CachedRoot
-            {
-                AggregateRoot = aggregateRoot,
-                GlobalSequenceNumber = globalSequenceNumber,
-                Id = aggregateRootId,
-                IsOk = true
-            };
+            _cachedRoots[aggregateRootId] = new CachedRoot(aggregateRoot, globalSequenceNumber);
 
             return aggregateRoot as TAggregateRoot;
         }
@@ -90,11 +84,21 @@ namespace d60.Cirqus.Views.ViewManagers
 
         class CachedRoot
         {
-            public object AggregateRoot { get; set; }
-            public string Id { get; set; }
-            public long GlobalSequenceNumber { get; set; }
+            readonly AggregateRootInfo _aggregateRootInfo;
+            readonly string _id;
+            long _globalSequenceNumber;
 
-            public bool IsOk { get; set; }
+            public CachedRoot(object aggregateRoot, long globalSequenceNumber)
+            {
+                AggregateRoot = aggregateRoot;
+                IsOk = true;
+                _globalSequenceNumber = globalSequenceNumber;
+                _aggregateRootInfo = new AggregateRootInfo(aggregateRoot as AggregateRoot);
+            }
+
+            public object AggregateRoot { get; private set; }
+
+            public bool IsOk { get; private set; }
 
             public void MaybeApply(DomainEvent domainEvent, RealUnitOfWork realUnitOfWork, long globalSequenceNumber)
             {
@@ -104,16 +108,14 @@ namespace d60.Cirqus.Views.ViewManagers
                 if (globalSequenceNumberFromEvent > globalSequenceNumber) return;
 
                 // don't do anything if the event is in the past
-                if (globalSequenceNumberFromEvent <= GlobalSequenceNumber) return;
+                if (globalSequenceNumberFromEvent <= _globalSequenceNumber) return;
 
                 // only apply event if it's ours...
-                if (domainEvent.GetAggregateRootId() != Id) return;
-
-                var info = new AggregateRootInfo(AggregateRoot as AggregateRoot);
+                if (domainEvent.GetAggregateRootId() != _id) return;
 
                 var sequenceNumberFromEvent = domainEvent.GetSequenceNumber();
 
-                var expectedNextSequenceNumber = info.SequenceNumber + 1;
+                var expectedNextSequenceNumber = _aggregateRootInfo.SequenceNumber + 1;
 
                 if (expectedNextSequenceNumber != sequenceNumberFromEvent)
                 {
@@ -121,9 +123,9 @@ namespace d60.Cirqus.Views.ViewManagers
                     return;
                 }
 
-                info.Apply(domainEvent, realUnitOfWork);
+                _aggregateRootInfo.Apply(domainEvent, realUnitOfWork);
 
-                GlobalSequenceNumber = globalSequenceNumberFromEvent;
+                _globalSequenceNumber = globalSequenceNumberFromEvent;
             }
         }
 

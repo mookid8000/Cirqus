@@ -59,14 +59,21 @@ namespace d60.Cirqus.Tests.Views.TestAggregateRootView
 
             public int Counter { get; set; }
 
+            public int OtherCounter { get; set; }
+
             public void Handle(IViewContext context, NumberEvent domainEvent)
             {
-                var aggregateRootId = domainEvent.GetAggregateRootId();
-                var instance = context.Load<AggregateRootWithLogic>(aggregateRootId);
+                OtherCounter++;
 
-                Counter = instance.Counter;
+                if (OtherCounter % 3 == 0)
+                {
 
-                if (Counter%100 == 0)
+                    var aggregateRootId = domainEvent.GetAggregateRootId();
+                    var instance = context.Load<AggregateRootWithLogic>(aggregateRootId);
+                    Counter = instance.Counter;
+                }
+
+                if (OtherCounter % 100 == 0)
                 {
                     var now = DateTime.UtcNow;
 

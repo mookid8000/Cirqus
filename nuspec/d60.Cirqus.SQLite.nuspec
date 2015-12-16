@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>d60.Cirqus.SQLite</id>
-    <version>VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT</version>
+    <version>$version$</version>
     <title>d60.Cirqus.SQLite</title>
     <authors>Mogens Heller Grabe</authors>
     <owners>mookid8000</owners>
@@ -10,7 +10,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>SQLite event store for d60 event sourcing + cqrs kit</description>
     <dependencies>
-      <dependency id="d60.Cirqus" version="VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT" />
+      <dependency id="d60.Cirqus" version="$version$" />
     </dependencies>
   </metadata>
   <files>

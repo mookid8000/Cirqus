@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>d60.Cirqus.xUnit</id>
-    <version>VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT</version>
+    <version>$version$</version>
     <title>d60.Cirqus.xUnit</title>
     <authors>Mogens Heller Grabe</authors>
     <owners>mookid8000</owners>
@@ -10,8 +10,8 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>xUnit integration for Cirqus testing tools</description>
     <dependencies>
-      <dependency id="d60.Cirqus" version="VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT" />
-      <dependency id="d60.Cirqus.Identity" version="VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT" />
+      <dependency id="d60.Cirqus" version="$version$" />
+      <dependency id="d60.Cirqus.Identity" version="$version$" />
       <dependency id="xunit.assert" version="2.1.0" />
       <dependency id="xunit.abstractions" version="2.0.0" />
     </dependencies>

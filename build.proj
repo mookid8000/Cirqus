@@ -7,7 +7,7 @@
     <NuSpecFolder>$(Root)\nuspec</NuSpecFolder>
     <ToolsFolder>$(Root)\tools</ToolsFolder>
     <NuGetFolder>$(ToolsFolder)\NuGet</NuGetFolder>
-    <DefaultNuSpecVersion>VERSION_MUST_BE_SET_BY_THE_BUILD_SCRIPT</DefaultNuSpecVersion>
+    <DefaultNuSpecVersion>$version$</DefaultNuSpecVersion>
     <ReleaseMaster>$(ToolsFolder)\ReleaseMaster\ReleaseMaster.exe</ReleaseMaster>
     <IlMerge>$(ToolsFolder)\IlMerge\ilmerge.exe</IlMerge>
   </PropertyGroup>
@@ -30,15 +30,15 @@
     <Error Condition="'$(NuggieRepoPath)' == ''"
            Text="Cannot publish packages because the NuggieRepoPath environment variable has not been set."/>
     
-    <Message Text="Updating NuSpec version..."/>
+    <!--<Message Text="Updating NuSpec version..."/>
 
     <XmlPoke XmlInputPath="%(NuSpecFiles.FullPath)" Query="//version" Value="$(Version)" />
-    <XmlPoke XmlInputPath="%(DependantNuSpecFiles.FullPath)" Query="//dependency[starts-with(@id, 'd60.Cirqus')]/@version" Value="$(Version)" />
+    <XmlPoke XmlInputPath="%(DependantNuSpecFiles.FullPath)" Query="//dependency[starts-with(@id, 'd60.Cirqus')]/@version" Value="$(Version)" />-->
     
     <CallTarget Targets="publish_packages"/>
     
-    <XmlPoke XmlInputPath="%(NuSpecFiles.FullPath)" Query="//version" Value="$(DefaultNuSpecVersion)" />
-    <XmlPoke XmlInputPath="%(DependantNuSpecFiles.FullPath)" Query="//dependency[starts-with(@id, 'd60.Cirqus')]/@version" Value="$(DefaultNuSpecVersion)" />
+    <!--<XmlPoke XmlInputPath="%(NuSpecFiles.FullPath)" Query="//version" Value="$(DefaultNuSpecVersion)" />
+    <XmlPoke XmlInputPath="%(DependantNuSpecFiles.FullPath)" Query="//dependency[starts-with(@id, 'd60.Cirqus')]/@version" Value="$(DefaultNuSpecVersion)" />-->
   </Target>
 
   <Target Name="build" DependsOnTargets="clean_output_folder; build_solution" />
@@ -101,7 +101,7 @@
     </ItemGroup>
     <Message Text="NUSPECS: %(NuSpecs.FullPath)"/>
     <MakeDir Directories="$(PackagesOutputFolder)"/>
-    <Exec Command="$(NuGetFolder)\nuget.exe pack %(NuSpecs.FullPath) -OutputDirectory $(PackagesOutputFolder)"/>
+    <Exec Command="$(NuGetFolder)\nuget.exe pack %(NuSpecs.FullPath) -OutputDirectory $(PackagesOutputFolder) -Version $(Version)"/>
   </Target>
 
   <Target Name="publish_packages" DependsOnTargets="validate_nuget_environment_variable; create_packages">
