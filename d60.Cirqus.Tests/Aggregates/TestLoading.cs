@@ -40,7 +40,7 @@ namespace d60.Cirqus.Tests.Aggregates
         {
             return new InMemoryUnitOfWork(
                 new DefaultAggregateRootRepository(
-                    new InMemoryEventStore(DomainEventSerializer),
+                    new InMemoryEventStore(),
                     DomainEventSerializer,
                     DefaultDomainTypeNameMapper),
                 DefaultDomainTypeNameMapper);

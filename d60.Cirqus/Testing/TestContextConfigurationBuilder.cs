@@ -69,7 +69,7 @@ namespace d60.Cirqus.Testing
 
         void FillInDefaults()
         {
-            _container.Register(x => new InMemoryEventStore(x.Get<IDomainEventSerializer>()));
+            _container.Register(x => new InMemoryEventStore());
             _container.Register<IEventStore>(x => x.Get<InMemoryEventStore>());
 
             if (!_container.HasService<IEventDispatcher>(checkForPrimary: true))

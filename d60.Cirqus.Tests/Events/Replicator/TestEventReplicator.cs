@@ -16,8 +16,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
         public void DoesNotThrowWhenDisposingUnstartedReplicator()
         {
             // arrange
-            var serializer = new JsonDomainEventSerializer();
-            var eventReplicator = new EventReplicator(new InMemoryEventStore(serializer), new InMemoryEventStore(serializer));
+            var eventReplicator = new EventReplicator(new InMemoryEventStore(), new InMemoryEventStore());
 
             // act
             eventReplicator.Dispose();
@@ -29,8 +28,8 @@ namespace d60.Cirqus.Tests.Events.Replicator
         public void TryReplicating()
         {
             var serializer = new JsonDomainEventSerializer();
-            var source = new InMemoryEventStore(serializer);
-            var destination = new InMemoryEventStore(serializer);
+            var source = new InMemoryEventStore();
+            var destination = new InMemoryEventStore();
             var seqNo = 0;
 
             Func<string, EventData> getRecognizableEvent = text => serializer.Serialize(new RecognizableEvent(text)

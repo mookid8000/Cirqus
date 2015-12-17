@@ -18,7 +18,7 @@ namespace d60.Cirqus.Tests.Events
 
         protected override void DoSetUp()
         {
-            _eventStore = new InMemoryEventStore(_domainEventSerializer);
+            _eventStore = new InMemoryEventStore();
         }
 
         [Test]

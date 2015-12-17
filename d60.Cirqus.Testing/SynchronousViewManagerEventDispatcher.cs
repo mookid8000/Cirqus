@@ -52,11 +52,11 @@ namespace d60.Cirqus.Testing
         {
             foreach (var batch in eventStore.Stream().Batch(1000))
             {
-                Dispatch(eventStore, batch.Select(e => _domainEventSerializer.Deserialize(e)));
+                Dispatch(batch.Select(e => _domainEventSerializer.Deserialize(e)));
             }
         }
 
-        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
+        public void Dispatch(IEnumerable<DomainEvent> events)
         {
             var context = new DefaultViewContext(_aggregateRootRepository, _domainTypeNameMapper, events);
 

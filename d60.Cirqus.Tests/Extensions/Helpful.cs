@@ -3,7 +3,6 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Config;
 using d60.Cirqus.Config.Configurers;
 using d60.Cirqus.Events;
-using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Stubs;
 using d60.Cirqus.Views;
@@ -24,7 +23,7 @@ namespace d60.Cirqus.Tests.Extensions
             
             builder.Register<IEventStore>(c =>
             {
-                var inMemoryEventStore = new InMemoryEventStore(c.Get<IDomainEventSerializer>());
+                var inMemoryEventStore = new InMemoryEventStore();
                 taskCompletionSource.SetResult(inMemoryEventStore);
                 return inMemoryEventStore;
             });

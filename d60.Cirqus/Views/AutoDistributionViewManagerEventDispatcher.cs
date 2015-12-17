@@ -158,14 +158,14 @@ namespace d60.Cirqus.Views
             EmitHeartbeat(false);
         }
 
-        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
+        public void Dispatch(IEnumerable<DomainEvent> events)
         {
             if (_eventDispatcher == null)
             {
                 throw new InvalidOperationException("Attempted to dispatch to AutoDistributionViewManagerEventDispatcher but no ViewManagerEventDispatcherWasRegistered");
             }
 
-            _eventDispatcher.Dispatch(eventStore, events);
+            _eventDispatcher.Dispatch(events);
         }
 
         public void Dispose()

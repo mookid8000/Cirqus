@@ -12,7 +12,7 @@ namespace d60.Cirqus.Views
         {
         }
 
-        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
+        public void Dispatch(IEnumerable<DomainEvent> events)
         {
         }
     }

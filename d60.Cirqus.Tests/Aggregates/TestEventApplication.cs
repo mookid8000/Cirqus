@@ -137,7 +137,7 @@ namespace d60.Cirqus.Tests.Aggregates
 
         DefaultAggregateRootRepository CreateAggregateRootRepository()
         {
-            var inMemoryEventStore = new InMemoryEventStore(_domainEventSerializer);
+            var inMemoryEventStore = new InMemoryEventStore();
 
             return new DefaultAggregateRootRepository(inMemoryEventStore, _domainEventSerializer, _defaultDomainTypeNameMapper);
         }

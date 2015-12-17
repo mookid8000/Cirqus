@@ -73,12 +73,12 @@ namespace d60.Cirqus.Diagnostics
                 _innerEventDispatcher.Initialize(eventStore, purgeExistingViews);
             }
 
-            public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
+            public void Dispatch(IEnumerable<DomainEvent> events)
             {
                 var stopwatch = Stopwatch.StartNew();
                 try
                 {
-                    _innerEventDispatcher.Dispatch(eventStore, events);
+                    _innerEventDispatcher.Dispatch(events);
                 }
                 finally
                 {

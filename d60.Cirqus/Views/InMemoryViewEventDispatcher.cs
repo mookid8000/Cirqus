@@ -65,10 +65,10 @@ namespace d60.Cirqus.Views
 
         void Dispatch(IEventStore eventStore, IEnumerable<EventData> events)
         {
-            Dispatch(eventStore, events.Select(e => _domainEventSerializer.Deserialize(e)));
+            Dispatch(events.Select(e => _domainEventSerializer.Deserialize(e)));
         }
 
-        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
+        public void Dispatch(IEnumerable<DomainEvent> events)
         {
             if (_stopped) return;
 

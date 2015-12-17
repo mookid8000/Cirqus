@@ -8,7 +8,6 @@ using d60.Cirqus.Config;
 using d60.Cirqus.Diagnostics;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
-using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Views.ViewManagers;
 using NUnit.Framework;
@@ -26,7 +25,7 @@ namespace d60.Cirqus.Tests.Diagnostics
 
             var commandProcessor = CommandProcessor.With()
                 .Logging(l => l.UseConsole(minLevel:Logger.Level.Warn))
-                .EventStore(e => e.Register<IEventStore>(c => new SlowWrapper(new InMemoryEventStore(c.Get<IDomainEventSerializer>()))))
+                .EventStore(e => e.Register<IEventStore>(c => new SlowWrapper(new InMemoryEventStore())))
                 .EventDispatcher(e => e.UseViewManagerEventDispatcher().WithWaitHandle(waitHandle))
                 .Options(o => o.AddProfiler(profilero))
                 .Create();

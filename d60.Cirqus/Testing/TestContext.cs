@@ -139,7 +139,8 @@ namespace d60.Cirqus.Testing
             get
             {
                 return _eventStore
-                    .Select(e => e.GetAggregateRootId()).Distinct()
+                    .Stream()
+                    .Select(e => _domainEventSerializer.Deserialize(e).GetAggregateRootId()).Distinct()
                     .Select(aggregateRootId =>
                     {
                         var firstEvent = _eventStore.Load(aggregateRootId).First();
@@ -227,7 +228,7 @@ namespace d60.Cirqus.Testing
 
             _eventStore.Save(Guid.NewGuid(), eventData);
 
-            _eventDispatcher.Dispatch(_eventStore, domainEvents);
+            _eventDispatcher.Dispatch(domainEvents);
 
             var result = new CommandProcessingResultWithEvents(domainEvents);
 
