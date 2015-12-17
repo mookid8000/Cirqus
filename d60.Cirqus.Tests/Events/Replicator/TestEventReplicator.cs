@@ -59,6 +59,7 @@ namespace d60.Cirqus.Tests.Events.Replicator
 
             // assert
             var greeting = string.Join(" ", destination
+                .Select(x => serializer.Deserialize(x))
                 .OfType<RecognizableEvent>()
                 .Select(e => e.Id));
 
