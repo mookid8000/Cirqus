@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Tests.Extensions;
 using NUnit.Framework;
@@ -27,10 +28,12 @@ namespace d60.Cirqus.Tests.Aggregates
         [Test]
         public void InvokesCreatedHookWhenAggregateRootIsFirstCreated()
         {
+            var domainEventSerializer = new JsonDomainEventSerializer();
+
             _commandProcessor.ProcessCommand(new MakeRootDoSomething("id1"));
 
             var expectedSequenceOfEvents = new[] { typeof(RootCreated), typeof(RootDidSomething) };
-            var actualSequenceOfEvents = _eventStoreTask.Result.Select(e => e.GetType()).ToArray();
+            var actualSequenceOfEvents = _eventStoreTask.Result.Select(e => domainEventSerializer.Deserialize(e).GetType()).ToArray();
 
             Assert.That(actualSequenceOfEvents, Is.EqualTo(expectedSequenceOfEvents));
         }
@@ -39,6 +42,7 @@ namespace d60.Cirqus.Tests.Aggregates
         public void InvokesCreatedHookWhenAggregateRootIsFirstCreatedAndNeverAgain()
         {
             // arrange
+            var domainEventSerializer = new JsonDomainEventSerializer();
 
             // act
             _commandProcessor.ProcessCommand(new MakeRootDoSomething("rootid"));
@@ -53,7 +57,7 @@ namespace d60.Cirqus.Tests.Aggregates
                 typeof(RootDidSomething), 
                 typeof(RootDidSomething)
             };
-            var actualSequenceOfEvents = _eventStoreTask.Result.Select(e => e.GetType()).ToArray();
+            var actualSequenceOfEvents = _eventStoreTask.Result.Select(e => domainEventSerializer.Deserialize(e).GetType()).ToArray();
 
             Assert.That(actualSequenceOfEvents, Is.EqualTo(expectedSequenceOfEvents));
         }
