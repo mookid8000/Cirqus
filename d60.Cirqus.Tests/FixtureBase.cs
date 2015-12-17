@@ -30,6 +30,11 @@ namespace d60.Cirqus.Tests
             DoSetUp();
         }
 
+        protected void SetLogLevel(Logger.Level newLogLevel)
+        {
+            CirqusLoggerFactory.Current = new ConsoleLoggerFactory(minLevel: newLogLevel);
+        }
+
         protected TDisposable RegisterForDisposal<TDisposable>(TDisposable disposable) where TDisposable : IDisposable
         {
             _stuffToDispose.Add(disposable);
@@ -62,7 +67,7 @@ namespace d60.Cirqus.Tests
         protected void TakeTime(string description, Action action, TimerCallback periodicCallback = null)
         {
             Console.WriteLine("Begin: {0}", description);
-            
+
             var stopwatch = Stopwatch.StartNew();
             var lastCallback = DateTime.UtcNow;
 
@@ -87,7 +92,7 @@ namespace d60.Cirqus.Tests
         protected async Task TakeTimeAsync(string description, Func<Task> action, TimerCallback periodicCallback = null)
         {
             Console.WriteLine("Begin: {0}", description);
-            
+
             var stopwatch = Stopwatch.StartNew();
 
             using (var timer = new Timer())
