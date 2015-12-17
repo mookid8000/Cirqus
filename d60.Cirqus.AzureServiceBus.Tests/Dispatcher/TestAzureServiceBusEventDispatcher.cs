@@ -95,13 +95,12 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Dispatcher
 
         public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
         {
-            _stuffThatHappened.Add($"Initialized with {eventStore} (purge: {purgeExistingViews})");
+            _stuffThatHappened.Add(string.Format("Initialized with {0} (purge: {1})", eventStore, purgeExistingViews));
         }
 
         public void Dispatch(IEnumerable<DomainEvent> events)
         {
-            _stuffThatHappened.Add(
-                $"Dispatched events: {string.Join(", ", events.Select(e => e.GetGlobalSequenceNumber()))}");
+            _stuffThatHappened.Add(string.Format("Dispatched events: {0}", string.Join(", ", events.Select(e => e.GetGlobalSequenceNumber()))));
 
             _resetEvent.Set();
         }
