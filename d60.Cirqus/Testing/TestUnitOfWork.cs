@@ -76,7 +76,7 @@ namespace d60.Cirqus.Testing
 
             _wasCommitted = true;
 
-            _eventDispatcher.Dispatch(_eventStore, domainEvents);
+            _eventDispatcher.Dispatch(domainEvents);
 
             Committed();
         }

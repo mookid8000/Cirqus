@@ -13,7 +13,7 @@ namespace d60.Cirqus.Tests.Stubs
             Console.WriteLine("Ignoring {0} events", eventStore.Stream().Count());
         }
 
-        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
+        public void Dispatch(IEnumerable<DomainEvent> events)
         {
             foreach (var e in events)
             {

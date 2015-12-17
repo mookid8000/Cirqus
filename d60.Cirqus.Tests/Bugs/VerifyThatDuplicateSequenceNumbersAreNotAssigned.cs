@@ -16,8 +16,6 @@ namespace d60.Cirqus.Tests.Bugs
     [TestFixture, Description("Verify bug in being able to correctly load active aggregate roots from the current unit of work")]
     public class VerifyThatDuplicateSequenceNumbersAreNotAssigned : FixtureBase
     {
-        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
-
         [Test, Category(TestCategories.MongoDb)]
         public void NoProblemoWithRealSetup()
         {

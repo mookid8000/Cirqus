@@ -20,7 +20,7 @@ namespace d60.Cirqus.Tests.Aggregates
 
         protected override void DoSetUp()
         {
-            _eventStore = new InMemoryEventStore(_domainEventSerializer);
+            _eventStore = new InMemoryEventStore();
             Func<Type, AggregateRoot> aggregateRootFactoryMethod = t =>
                                                                    {
                                                                        Assert.AreEqual(typeof(Root), t);

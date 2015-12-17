@@ -17,6 +17,6 @@ namespace d60.Cirqus.Views
         /// <summary>
         /// Will be called with new events after each unit of work has been successfully committed to the event store
         /// </summary>
-        void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events);
+        void Dispatch(IEnumerable<DomainEvent> events);
     }
 }

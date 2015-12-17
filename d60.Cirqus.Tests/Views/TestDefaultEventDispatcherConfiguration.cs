@@ -1,7 +1,6 @@
 ﻿using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
-using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using NUnit.Framework;
 
@@ -14,7 +13,7 @@ namespace d60.Cirqus.Tests.Views
         public void WorkWhenSpecifyingMinimalConfiguration()
         {
             using (var commandProcessor = CommandProcessor.With()
-                .EventStore(e => e.Register<IEventStore>(c => new InMemoryEventStore(c.Get<IDomainEventSerializer>())))
+                .EventStore(e => e.Register<IEventStore>(c => new InMemoryEventStore()))
                 .Create())
             {
                 commandProcessor.ProcessCommand(new Commando("id"));
@@ -25,7 +24,7 @@ namespace d60.Cirqus.Tests.Views
         public void WorkWhenSpecifyingAggregateRootRepository()
         {
             using (var commandProcessor = CommandProcessor.With()
-                .EventStore(e => e.Register<IEventStore>(c => new InMemoryEventStore(c.Get<IDomainEventSerializer>())))
+                .EventStore(e => e.Register<IEventStore>(c => new InMemoryEventStore()))
                 .Create())
             {
                 commandProcessor.ProcessCommand(new Commando("id"));

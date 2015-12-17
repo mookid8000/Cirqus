@@ -134,7 +134,7 @@ namespace d60.Cirqus
                 _logger.Debug("Delivering {0} events to the dispatcher", emittedDomainEvents.Count);
 
                 // when we come to this place, we deliver the events to the view manager
-                _eventDispatcher.Dispatch(_eventStore, emittedDomainEvents);
+                _eventDispatcher.Dispatch(emittedDomainEvents);
             }
             catch (Exception exception)
             {

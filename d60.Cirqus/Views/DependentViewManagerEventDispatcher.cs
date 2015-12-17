@@ -218,7 +218,7 @@ namespace d60.Cirqus.Views
 
         class Work { }
 
-        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
+        public void Dispatch(IEnumerable<DomainEvent> events)
         {
             _work.Enqueue(new Work());
         }

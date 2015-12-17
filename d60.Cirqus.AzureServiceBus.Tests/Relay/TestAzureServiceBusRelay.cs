@@ -30,7 +30,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
 
             _commandProcessor = CommandProcessor.With()
                 .Logging(l => l.UseConsole(minLevel: Logger.Level.Debug))
-                .EventStore(e => e.Register<IEventStore>(c => new InMemoryEventStore(c.Get<IDomainEventSerializer>())))
+                .EventStore(e => e.Register<IEventStore>(c => new InMemoryEventStore()))
                 .EventDispatcher(e => e.UseAzureServiceBusRelayEventDispatcher("cirqus", servicePath, TestAzureHelper.KeyName, TestAzureHelper.SharedAccessKey))
                 .Create();
 

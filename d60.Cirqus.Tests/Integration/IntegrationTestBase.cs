@@ -16,7 +16,6 @@ namespace d60.Cirqus.Tests.Integration
 {
     public abstract class IntegrationTestBase : FixtureBase
     {
-        readonly JsonDomainEventSerializer _domainEventSerializer = new JsonDomainEventSerializer();
         MongoDatabase _mongoDatabase;
 
         protected override void DoSetUp()
@@ -42,7 +41,7 @@ namespace d60.Cirqus.Tests.Integration
             switch (eventStoreOption)
             {
                 case EventStoreOption.InMemory:
-                    return new InMemoryEventStore(_domainEventSerializer);
+                    return new InMemoryEventStore();
 
                 case EventStoreOption.MongoDb:
                     return new MongoDbEventStore(GetMongoDb(), "Events");

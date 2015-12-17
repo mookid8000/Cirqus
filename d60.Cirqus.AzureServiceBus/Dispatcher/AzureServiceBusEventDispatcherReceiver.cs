@@ -49,7 +49,7 @@ namespace d60.Cirqus.AzureServiceBus.Dispatcher
 
                     var notification = message.GetBody<DispatchNotification>();
 
-                    _innerEventDispatcher.Dispatch(_eventStore, _serializer.Deserialize(notification.DomainEvents));
+                    _innerEventDispatcher.Dispatch(_serializer.Deserialize(notification.DomainEvents));
                 }
                 catch (Exception e)
                 {

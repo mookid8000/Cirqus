@@ -23,7 +23,7 @@ namespace d60.Cirqus.AzureServiceBus.Dispatcher
             // do nothing
         }
 
-        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
+        public void Dispatch(IEnumerable<DomainEvent> events)
         {
             var domainEvents = events.ToList();
 

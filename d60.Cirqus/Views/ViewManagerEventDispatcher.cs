@@ -170,9 +170,8 @@ namespace d60.Cirqus.Views
             _worker.Start();
         }
 
-        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
+        public void Dispatch(IEnumerable<DomainEvent> events)
         {
-            if (eventStore == null) throw new ArgumentNullException("eventStore");
             if (events == null) throw new ArgumentNullException("events");
             var list = events.ToList();
 

@@ -6,7 +6,6 @@ using d60.Cirqus.AzureServiceBus.Dispatcher;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
-using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using d60.Cirqus.Views;
 using NUnit.Framework;
@@ -27,7 +26,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Dispatcher
             _stuffThatHappened = new List<string>();
             _resetEvent = new AutoResetEvent(false);
 
-            _eventStore = new InMemoryEventStore(new JsonDomainEventSerializer());
+            _eventStore = new InMemoryEventStore();
 
             var topicName = TestAzureHelper.GetTopicName("cirqus");
             var subscriptionName = TestAzureHelper.GetSubscriptionName("testsubscriber");
@@ -57,7 +56,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Dispatcher
         {
             _receiver.Initialize();
 
-            _sender.Dispatch(_eventStore, new[] { AnEvent(0) });
+            _sender.Dispatch(new[] { AnEvent(0) });
 
             WaitResetEvent();
 
@@ -96,12 +95,13 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Dispatcher
 
         public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
         {
-            _stuffThatHappened.Add(string.Format("Initialized with {0} (purge: {1})", eventStore, purgeExistingViews));
+            _stuffThatHappened.Add($"Initialized with {eventStore} (purge: {purgeExistingViews})");
         }
 
-        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
+        public void Dispatch(IEnumerable<DomainEvent> events)
         {
-            _stuffThatHappened.Add(string.Format("Dispatched with {0} - events: {1}", eventStore, string.Join(", ", events.Select(e => e.GetGlobalSequenceNumber()))));
+            _stuffThatHappened.Add(
+                $"Dispatched events: {string.Join(", ", events.Select(e => e.GetGlobalSequenceNumber()))}");
 
             _resetEvent.Set();
         }

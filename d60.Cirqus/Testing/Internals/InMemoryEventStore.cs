@@ -6,23 +6,16 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
-using d60.Cirqus.Serialization;
 
 namespace d60.Cirqus.Testing.Internals
 {
-    public class InMemoryEventStore : IEventStore, IEnumerable<DomainEvent>
+    public class InMemoryEventStore : IEventStore, IEnumerable<EventData>
     {
-        readonly IDomainEventSerializer _domainEventSerializer;
         readonly HashSet<string> _idAndSeqNoTuples = new HashSet<string>();
         readonly List<EventBatch> _savedEventBatches = new List<EventBatch>();
         readonly object _lock = new object();
 
         long _globalSequenceNumber;
-
-        public InMemoryEventStore(IDomainEventSerializer domainEventSerializer)
-        {
-            _domainEventSerializer = domainEventSerializer;
-        }
 
         public void Save(Guid batchId, IEnumerable<EventData> events)
         {
@@ -115,19 +108,6 @@ namespace d60.Cirqus.Testing.Internals
             return _globalSequenceNumber;
         }
 
-        public IEnumerator<DomainEvent> GetEnumerator()
-        {
-            lock (_lock)
-            {
-                var clone = _savedEventBatches
-                    .SelectMany(b => b.Events)
-                    .Select(e => _domainEventSerializer.Deserialize(e))
-                    .ToList();
-
-                return clone.GetEnumerator();
-            }
-        }
-
         public long GetNextSeqNo(string aggregateRootId)
         {
             lock (_lock)
@@ -154,6 +134,11 @@ namespace d60.Cirqus.Testing.Internals
             Array.Copy(data, newData, data.Length);
             
             return EventData.FromMetadata(newMeta, newData);
+        }
+
+        public IEnumerator<EventData> GetEnumerator()
+        {
+            return Stream().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

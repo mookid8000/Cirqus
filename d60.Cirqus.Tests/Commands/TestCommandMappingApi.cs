@@ -12,7 +12,6 @@ namespace d60.Cirqus.Tests.Commands
     [TestFixture]
     public class TestCommandMappingApi : FixtureBase
     {
-        readonly JsonDomainEventSerializer _serializer = new JsonDomainEventSerializer();
         ICommandProcessor _realCommandProcessor;
         TestContext _fakeCommandProcessor;
 
@@ -45,7 +44,7 @@ namespace d60.Cirqus.Tests.Commands
                 });
 
             _realCommandProcessor = CommandProcessor.With()
-                .EventStore(e => e.Register<IEventStore>(c => new InMemoryEventStore(_serializer)))
+                .EventStore(e => e.Register<IEventStore>(c => new InMemoryEventStore()))
                 .Options(o => o.AddCommandMappings(commandMappings))
                 .Create();
 

@@ -4,7 +4,6 @@ using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
-using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using NUnit.Framework;
 using TestContext = d60.Cirqus.Testing.TestContext;
@@ -23,7 +22,7 @@ namespace d60.Cirqus.Tests.Bugs
             _commandProcessor = CommandProcessor.With()
                 .EventStore(e => e.Register(c =>
                 {
-                    _inMemoryEventStore = new InMemoryEventStore(c.Get<IDomainEventSerializer>());
+                    _inMemoryEventStore = new InMemoryEventStore();
                     return _inMemoryEventStore;
                 }))
                 .Create();

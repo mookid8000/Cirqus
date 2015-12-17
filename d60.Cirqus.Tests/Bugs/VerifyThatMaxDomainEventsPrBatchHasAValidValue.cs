@@ -26,7 +26,7 @@ namespace d60.Cirqus.Tests.Bugs
             var viewManager1 = new Mock<IViewManager>().Object;
             var viewManager2 = new Mock<IViewManager>().Object;
             var domainSerializer = new Mock<IDomainEventSerializer>().Object;
-            var eventStore = new InMemoryEventStore(domainSerializer);
+            var eventStore = new InMemoryEventStore();
             var aggregateRootRepo = new Mock<IAggregateRootRepository>().Object;
             var domainTypemapper = new Mock<IDomainTypeNameMapper>().Object;
             //act

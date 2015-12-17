@@ -53,7 +53,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             _serviceHost.Open();
         }
 
-        public void Dispatch(IEventStore eventStore, IEnumerable<DomainEvent> events)
+        public void Dispatch(IEnumerable<DomainEvent> events)
         {
         }
 

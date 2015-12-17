@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Events;
-using d60.Cirqus.Serialization;
 using d60.Cirqus.Testing.Internals;
 using NUnit.Framework;
 
@@ -16,7 +15,7 @@ namespace d60.Cirqus.Tests.Events
         [SetUp]
         public void Setup()
         {
-            _store = new TrackingEventStore(new InMemoryEventStore(new JsonDomainEventSerializer()));
+            _store = new TrackingEventStore(new InMemoryEventStore());
         }
 
         [Test]
