@@ -350,17 +350,13 @@ namespace d60.Cirqus.Views
                 .Select(e => _domainEventSerializer.Deserialize(e))
                 .ToList();
 
-            var context = new DefaultViewContext(_aggregateRootRepository, _domainTypeNameMapper, eventList);
-            
-            foreach (var kvp in _viewContextItems)
-            {
-                context.Items[kvp.Key] = kvp.Value;
-            }
-            
             foreach (var viewManager in viewManagers)
             {
                 var thisParticularPosition = positions[viewManager].Position;
                 if (thisParticularPosition >= eventList.Max(e => e.GetGlobalSequenceNumber())) continue;
+
+                var context = new DefaultViewContext(_aggregateRootRepository, _domainTypeNameMapper, eventList);
+                _viewContextItems.InsertInto(context.Items);
 
                 _logger.Debug("Dispatching batch of {0} events to {1}", eventList.Count, viewManager);
 

@@ -39,13 +39,90 @@ namespace d60.Cirqus.MongoDb.Events
 
         public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
         {
-            var criteria = Query.GTE(GlobalSeqNoDocPath, globalSequenceNumber);
+            var lowerGlobalSequenceNumber = globalSequenceNumber;
 
-            return _eventBatches.Find(criteria)
-                .SelectMany(b => b.Events)
-                .OrderBy(e => e.GlobalSequenceNumber)
-                .Where(e => e.GlobalSequenceNumber >= globalSequenceNumber)
-                .Select(MongoEventToEvent);
+            while (true)
+            {
+                var criteria = Query.GTE(GlobalSeqNoDocPath, lowerGlobalSequenceNumber);
+
+                var eventBatch = _eventBatches.Find(criteria)
+                    .SetSortOrder(SortBy.Ascending(GlobalSeqNoDocPath))
+                    .SetLimit(1000)
+                    .SelectMany(b => b.Events.OrderBy(e => e.GlobalSequenceNumber))
+                    .Where(e => e.GlobalSequenceNumber >= lowerGlobalSequenceNumber)
+                    .Select(MongoEventToEvent)
+                    .ToList();
+
+                foreach (var e in eventBatch)
+                {
+                    yield return e;
+                }
+
+                if (!eventBatch.Any()) break;
+
+                lowerGlobalSequenceNumber = eventBatch.Max(e => e.GetGlobalSequenceNumber()) + 1;
+            }
+        }
+
+        public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
+        {
+            // aggregation framework is extremely slow - don't use it (for this)
+            //var args = new AggregateArgs
+            //{
+            //    Pipeline = new[]
+            //    {
+            //        new BsonDocument {{"$unwind", "$Events"}},
+            //        new BsonDocument
+            //        {
+            //            {
+            //                "$match", new BsonDocument
+            //                {
+            //                    {"Events.AggregateRootId", aggregateRootId},
+            //                    {"Events.SequenceNumber", new BsonDocument {{"$gte", firstSeq}}},
+            //                }
+            //            }
+            //        },
+            //        new BsonDocument {{"$sort", new BsonDocument {{"Events.SequenceNumber", 1}}}}
+            //    }
+            //};
+
+            //return _eventBatches.Aggregate(args)
+            //    .Select(result =>
+            //    {
+            //        var bsonValue = result["Events"];
+            //        var asBsonDocument = bsonValue.AsBsonDocument;
+            //        return BsonSerializer.Deserialize<MongoEvent>(asBsonDocument);
+            //    })
+            //    .Select(MongoEventToEvent);
+
+            var lowerSequenceNumber = firstSeq;
+
+            while (true)
+            {
+                var eventCriteria = Query.And(Query.EQ("AggregateRootId", aggregateRootId),
+                    Query.GTE("SequenceNumber", lowerSequenceNumber));
+
+                var criteria = Query.ElemMatch("Events", eventCriteria);
+
+                var eventBatch = _eventBatches.Find(criteria)
+                    .SetSortOrder(SortBy.Ascending(GlobalSeqNoDocPath))
+                    .SetLimit(1000)
+                    .SelectMany(b => b.Events
+                        .Where(e => e.AggregateRootId == aggregateRootId)
+                        .OrderBy(e => e.SequenceNumber))
+                    .Where(e => e.SequenceNumber >= lowerSequenceNumber)
+                    .Select(MongoEventToEvent)
+                    .ToList();
+
+                foreach (var e in eventBatch)
+                {
+                    yield return e;
+                }
+
+                if (!eventBatch.Any()) break;
+
+                lowerSequenceNumber = eventBatch.Max(e => e.GetSequenceNumber()) + 1;
+            }
         }
 
         public long GetNextGlobalSequenceNumber()
@@ -167,48 +244,6 @@ namespace d60.Cirqus.MongoDb.Events
                 metadata[kvp.Key] = kvp.Value;
             }
             return metadata;
-        }
-
-        public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
-        {
-            // aggregation framework is extremely slow - don't use it (for this)
-            //var args = new AggregateArgs
-            //{
-            //    Pipeline = new[]
-            //    {
-            //        new BsonDocument {{"$unwind", "$Events"}},
-            //        new BsonDocument
-            //        {
-            //            {
-            //                "$match", new BsonDocument
-            //                {
-            //                    {"Events.AggregateRootId", aggregateRootId},
-            //                    {"Events.SequenceNumber", new BsonDocument {{"$gte", firstSeq}}},
-            //                }
-            //            }
-            //        },
-            //        new BsonDocument {{"$sort", new BsonDocument {{"Events.SequenceNumber", 1}}}}
-            //    }
-            //};
-
-            //return _eventBatches.Aggregate(args)
-            //    .Select(result =>
-            //    {
-            //        var bsonValue = result["Events"];
-            //        var asBsonDocument = bsonValue.AsBsonDocument;
-            //        return BsonSerializer.Deserialize<MongoEvent>(asBsonDocument);
-            //    })
-            //    .Select(MongoEventToEvent);
-
-            var criteria = Query.And(
-                Query.EQ(AggregateRootIdDocPath, aggregateRootId),
-                Query.GTE(SeqNoDocPath, firstSeq));
-
-            return _eventBatches.Find(criteria)
-                .SelectMany(b => b.Events)
-                .OrderBy(e => e.GlobalSequenceNumber)
-                .Where(e => e.SequenceNumber >= firstSeq && e.AggregateRootId == aggregateRootId)
-                .Select(MongoEventToEvent);
         }
 
         EventData MongoEventToEvent(MongoEvent e)

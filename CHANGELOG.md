@@ -735,10 +735,11 @@
 
 * Making InMemoryEventStore and InMemoryUnitOfWork testing tools public to ease implementing custom event dispatchers
 
-## 0.63.16
+## 0.64.0
 
 * Fixed `Kind` of `DateTime` retrieved by `MsSqlViewManager` to be UTC because that's what it is. The really short version of the description of this problem is: Use `DateTimeOffset`s instead. They are explicit about the fact that they are just a UTC timestamp.
 * Added Sunshine Scenario Aggregate Root Load Caching mechanism in `DefaultViewContext` which can provide a nice acceleration in Sunshine Scenarios.
+* Updated internal Newtonsoft JSON serializer to 7.0.1
 
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund

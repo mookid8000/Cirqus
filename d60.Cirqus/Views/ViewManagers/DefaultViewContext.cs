@@ -6,6 +6,7 @@ using d60.Cirqus.Commands;
 using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.Logging;
 
 namespace d60.Cirqus.Views.ViewManagers
 {
@@ -14,24 +15,37 @@ namespace d60.Cirqus.Views.ViewManagers
     /// </summary>
     public class DefaultViewContext : IViewContext, IUnitOfWork
     {
+        static Logger _logger;
+
+        static DefaultViewContext()
+        {
+            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+        }
+
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly List<DomainEvent> _eventBatch;
         readonly RealUnitOfWork _realUnitOfWork;
 
+        /// <summary>
+        /// Creates the view context with the given repository and type name mapper, storing the given event batch to be able to look up events in case it could make sense
+        /// </summary>
         public DefaultViewContext(IAggregateRootRepository aggregateRootRepository, IDomainTypeNameMapper domainTypeNameMapper, IEnumerable<DomainEvent> eventBatch)
         {
             Items = new Dictionary<string, object>();
-
             _aggregateRootRepository = aggregateRootRepository;
-
-            _eventBatch = eventBatch.ToList();
-            _eventBatch.Sort((e1, e2) => e1.GetGlobalSequenceNumber().CompareTo(e2.GetGlobalSequenceNumber()));
-
+            _eventBatch = eventBatch.OrderBy(e => e.GetGlobalSequenceNumber()).ToList();
             _realUnitOfWork = new RealUnitOfWork(_aggregateRootRepository, domainTypeNameMapper);
         }
 
         public bool Exists(string aggregateRootId, long globalSequenceNumberCutoff)
         {
+            var cachedInstance = GetFromCacheOrNull<AggregateRoot>(aggregateRootId, globalSequenceNumberCutoff);
+
+            if (cachedInstance != null)
+            {
+                return true;
+            }
+
             return _realUnitOfWork.Exists(aggregateRootId, globalSequenceNumberCutoff);
         }
 
@@ -48,8 +62,21 @@ namespace d60.Cirqus.Views.ViewManagers
         {
             var rootFromCache = GetFromCacheOrNull<TAggregateRoot>(aggregateRootId, globalSequenceNumber);
 
-            if (rootFromCache != null) return rootFromCache;
+            if (rootFromCache != null)
+            {
+                return rootFromCache;
+            }
 
+            var aggregateRoot = LoadAggregateRoot<TAggregateRoot>(aggregateRootId, globalSequenceNumber);
+
+            _cachedRoots[aggregateRootId] = new CachedRoot(aggregateRoot, globalSequenceNumber);
+
+            return aggregateRoot as TAggregateRoot;
+        }
+
+        AggregateRoot LoadAggregateRoot<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber)
+            where TAggregateRoot : class
+        {
             var aggregateRootInfo = _aggregateRootRepository
                 .Get<TAggregateRoot>(aggregateRootId, this, maxGlobalSequenceNumber: globalSequenceNumber);
 
@@ -57,10 +84,7 @@ namespace d60.Cirqus.Views.ViewManagers
 
             var frozen = new FrozenAggregateRootService(aggregateRootInfo, _realUnitOfWork);
             aggregateRoot.UnitOfWork = frozen;
-
-            _cachedRoots[aggregateRootId] = new CachedRoot(aggregateRoot, globalSequenceNumber);
-
-            return aggregateRoot as TAggregateRoot;
+            return aggregateRoot;
         }
 
         TAggregateRoot GetFromCacheOrNull<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : class
@@ -76,7 +100,7 @@ namespace d60.Cirqus.Views.ViewManagers
 
             if (entry.IsOk)
             {
-                return (TAggregateRoot) entry.AggregateRoot;
+                return (TAggregateRoot)entry.AggregateRoot;
             }
 
             return null;
@@ -85,7 +109,6 @@ namespace d60.Cirqus.Views.ViewManagers
         class CachedRoot
         {
             readonly AggregateRootInfo _aggregateRootInfo;
-            readonly string _id;
             long _globalSequenceNumber;
 
             public CachedRoot(object aggregateRoot, long globalSequenceNumber)
@@ -110,22 +133,41 @@ namespace d60.Cirqus.Views.ViewManagers
                 // don't do anything if the event is in the past
                 if (globalSequenceNumberFromEvent <= _globalSequenceNumber) return;
 
-                // only apply event if it's ours...
-                if (domainEvent.GetAggregateRootId() != _id) return;
-
-                var sequenceNumberFromEvent = domainEvent.GetSequenceNumber();
-
-                var expectedNextSequenceNumber = _aggregateRootInfo.SequenceNumber + 1;
-
-                if (expectedNextSequenceNumber != sequenceNumberFromEvent)
+                // if this entry is a future version of the requested version, it's not ok.... sorry!
+                if (_globalSequenceNumber > globalSequenceNumber)
                 {
                     IsOk = false;
                     return;
                 }
 
-                _aggregateRootInfo.Apply(domainEvent, realUnitOfWork);
+                // only apply event if it's ours...
+                if (domainEvent.GetAggregateRootId() != _aggregateRootInfo.Id)
+                {
+                    return;
+                }
 
-                _globalSequenceNumber = globalSequenceNumberFromEvent;
+                try
+                {
+                    var sequenceNumberFromEvent = domainEvent.GetSequenceNumber();
+                    var expectedNextSequenceNumber = _aggregateRootInfo.SequenceNumber + 1;
+
+                    if (expectedNextSequenceNumber != sequenceNumberFromEvent)
+                    {
+                        IsOk = false;
+                        return;
+                    }
+
+                    _aggregateRootInfo.Apply(domainEvent, realUnitOfWork);
+
+                    _globalSequenceNumber = globalSequenceNumberFromEvent;
+                }
+                catch (Exception exception)
+                {
+                    _logger.Warn(exception, "Got an error while bringing cache entry for {0} up-to-date to {1}",
+                        _aggregateRootInfo.Id, globalSequenceNumber);
+
+                    IsOk = false;
+                }
             }
         }
 

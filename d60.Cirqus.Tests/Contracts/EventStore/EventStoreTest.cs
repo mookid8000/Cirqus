@@ -355,10 +355,10 @@ namespace d60.Cirqus.Tests.Contracts.EventStore
             var allEventsForAgg2 = _eventStore.Load("agg2").ToList();
 
             // assert
-            Assert.That(allEventsForAgg1.Count, Is.EqualTo(4));
+            Assert.That(allEventsForAgg1.Count, Is.EqualTo(4), "Expected to get events 0, 1, 3, 4, but got only {0}", string.Join(", ", allEventsForAgg1.Select(e => e.GetGlobalSequenceNumber())));
             Assert.That(allEventsForAgg1.GetSeq(), Is.EqualTo(new[] { 0, 1, 3, 4 }));
 
-            Assert.That(allEventsForAgg2.Count, Is.EqualTo(2));
+            Assert.That(allEventsForAgg2.Count, Is.EqualTo(2), "Expected to get events 2, 5 but got only {0}", string.Join(", ", allEventsForAgg2.Select(e => e.GetGlobalSequenceNumber())));
             Assert.That(allEventsForAgg2.GetSeq(), Is.EqualTo(new[] { 2, 5 }));
         }
 

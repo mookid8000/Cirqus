@@ -8,6 +8,14 @@ namespace d60.Cirqus.Extensions
     /// </summary>
     public static class DictionaryExtensions
     {
+        public static void InsertInto<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, IDictionary<TKey, TValue> otherDictionary)
+        {
+            foreach (var kvp in dictionary)
+            {
+                otherDictionary[kvp.Key] = kvp.Value;
+            }
+        }
+
         /// <summary>
         /// Gets the value from 
         /// </summary>
