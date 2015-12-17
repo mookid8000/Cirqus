@@ -35,7 +35,7 @@ namespace d60.Cirqus.MsSql.Views
                 {typeof (decimal?), Tuple.Create(SqlDbType.Decimal, "12,5")},
 
                 {typeof (string), Tuple.Create(SqlDbType.NVarChar, "max")},
-                
+
                 {typeof (List<string>), Tuple.Create(SqlDbType.NVarChar, "max")},
                 {typeof (List<int>), Tuple.Create(SqlDbType.NVarChar, "max")},
                 {typeof (List<double>), Tuple.Create(SqlDbType.NVarChar, "max")},
@@ -43,7 +43,7 @@ namespace d60.Cirqus.MsSql.Views
                 {typeof (HashSet<string>), Tuple.Create(SqlDbType.NVarChar, "max")},
                 {typeof (HashSet<int>), Tuple.Create(SqlDbType.NVarChar, "max")},
                 {typeof (string[]), Tuple.Create(SqlDbType.NVarChar, "max")},
-                
+
                 {typeof (DateTime), Tuple.Create(SqlDbType.DateTime2, "")},
                 {typeof (DateTimeOffset), Tuple.Create(SqlDbType.DateTimeOffset, "")},
                 {typeof (TimeSpan), Tuple.Create(SqlDbType.BigInt, "")},
@@ -100,8 +100,8 @@ namespace d60.Cirqus.MsSql.Views
             {
                 var propertyTypeToLookAt = propertyInfo.PropertyType;
 
-                if (propertyTypeToLookAt.IsGenericType 
-                    && propertyTypeToLookAt.GetGenericTypeDefinition() == typeof (Nullable<>))
+                if (propertyTypeToLookAt.IsGenericType
+                    && propertyTypeToLookAt.GetGenericTypeDefinition() == typeof(Nullable<>))
                 {
                     propertyTypeToLookAt = propertyTypeToLookAt.GetGenericArguments().Single();
                 }
@@ -157,7 +157,9 @@ namespace d60.Cirqus.MsSql.Views
                 // -- SPECIAL PRIMITIVES --------------------------------------------------
                 else if (propertyTypeToLookAt == typeof(DateTime))
                 {
-                    valueToSet = value;
+                    var dateTime = (DateTime)value;
+
+                    valueToSet = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour, dateTime.Minute, dateTime.Second, dateTime.Millisecond, DateTimeKind.Utc);
                 }
                 else if (propertyTypeToLookAt == typeof(DateTimeOffset))
                 {
@@ -170,7 +172,7 @@ namespace d60.Cirqus.MsSql.Views
                 }
                 else if (propertyTypeToLookAt == typeof(Guid))
                 {
-                    valueToSet = (Guid) value;
+                    valueToSet = (Guid)value;
                 }
                 else
                 {
@@ -267,7 +269,7 @@ namespace d60.Cirqus.MsSql.Views
         }
     }
 
-    class   Prop
+    class Prop
     {
         public bool IsPrimaryKey
         {

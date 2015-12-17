@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.MsSql.Views;
@@ -61,7 +62,10 @@ namespace d60.Cirqus.Tests.MsSql
             Assert.That(view.ArrayOfStrings, Is.EqualTo(new[] { "hej", "med", "dig", "min", "ven" }));
             
             Assert.That(view.DateTime, Is.EqualTo(new DateTime(1979, 3, 19, 13, 00, 00, DateTimeKind.Utc)));
+            Assert.That(view.DateTime.Kind, Is.EqualTo(DateTimeKind.Utc));
+
             Assert.That(view.DateTimeOffset, Is.EqualTo(new DateTimeOffset(1979, 3, 19, 14, 00, 00, TimeSpan.FromHours(1))));
+
             Assert.That(view.TimeSpan, Is.EqualTo(new TimeSpan(2, 15, 20)));
 
             Assert.That(string.Join(" ", view.JustSomethingComplex.Children.Select(c => c.Message)), Is.EqualTo("oh my god"));
@@ -126,7 +130,9 @@ namespace d60.Cirqus.Tests.MsSql
                 ArrayOfStrings = new[] { "hej", "med", "dig", "min", "ven" };
 
                 DateTime = new DateTime(1979, 3, 19, 14, 00, 00, DateTimeKind.Local);
+
                 DateTimeOffset = new DateTimeOffset(1979, 3, 19, 14, 00, 00, TimeSpan.FromHours(1));
+
                 TimeSpan = new TimeSpan(2, 15, 20);
 
                 JustSomethingComplex = new SomethingComplex
