@@ -249,9 +249,6 @@ namespace d60.Cirqus.Testing
                 var jActual = Context.EventSerializer.Serialize(actual);
                 var jExpected = Context.EventSerializer.Serialize(expected);
 
-                //var jActual = JObject.FromObject(actual, JsonSerializer.Create(settings));
-                //var jExpected = JObject.FromObject(expected, JsonSerializer.Create(settings));
-
                 Assert(
                     actual.GetAggregateRootId().Equals(id) && jActual.Data.SequenceEqual(jExpected.Data),
                     () => formatter.Write(expected, new EventFormatter(formatter)).NewLine(),
