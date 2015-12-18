@@ -24,9 +24,9 @@ namespace d60.Cirqus.Views
             _eventDispatchers = eventDispatchers.ToList();
         }
 
-        public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
+        public void Initialize(bool purgeExistingViews = false)
         {
-            _eventDispatchers.ForEach(d => d.Initialize(eventStore, purgeExistingViews));
+            _eventDispatchers.ForEach(d => d.Initialize(purgeExistingViews));
         }
 
         public void Dispatch(IEnumerable<DomainEvent> events)

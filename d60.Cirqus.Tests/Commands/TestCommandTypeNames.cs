@@ -20,7 +20,8 @@ namespace d60.Cirqus.Tests.Commands
         {
             _commandProcessor = CommandProcessor.With()
                 .EventStore(e => _eventStore = e.UseInMemoryEventStore())
-                .EventDispatcher(e => e.UseEventDispatcher(c => new ConsoleOutEventDispatcher()))
+                .EventDispatcher(e => e.UseEventDispatcher(c => 
+                    new ConsoleOutEventDispatcher(c.Get<IEventStore>())))
                 .Options(o =>
                 {
                     o.AddCommandTypeNameToMetadata();

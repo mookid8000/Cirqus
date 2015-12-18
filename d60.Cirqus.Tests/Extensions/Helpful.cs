@@ -33,7 +33,7 @@ namespace d60.Cirqus.Tests.Extensions
 
         internal static void UseConsoleOutEventDispatcher(this EventDispatcherConfigurationBuilder builder)
         {
-            builder.RegisterInstance<IEventDispatcher>(new ConsoleOutEventDispatcher());
+            builder.UseEventDispatcher(c => new ConsoleOutEventDispatcher(c.Get<IEventStore>()));
         }
     }
 }

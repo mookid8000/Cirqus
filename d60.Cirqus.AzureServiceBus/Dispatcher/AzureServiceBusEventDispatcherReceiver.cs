@@ -33,7 +33,7 @@ namespace d60.Cirqus.AzureServiceBus.Dispatcher
 
         public void Initialize(bool purgeExistingViews = false)
         {
-            _innerEventDispatcher.Initialize(_eventStore, purgeExistingViews: purgeExistingViews);
+            _innerEventDispatcher.Initialize(purgeExistingViews);
 
             _workerThread.Start();
         }

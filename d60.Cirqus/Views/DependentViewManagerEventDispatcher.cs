@@ -205,7 +205,7 @@ namespace d60.Cirqus.Views
             return sequenceNumberToCatchUpTo;
         }
 
-        public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
+        public void Initialize(bool purgeExistingViews = false)
         {
             _work.Enqueue(new Work());
             _workerThread.Start();

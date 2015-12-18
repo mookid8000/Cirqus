@@ -157,13 +157,12 @@ namespace d60.Cirqus.Views
             }
         }
 
-        public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
+        public void Initialize(bool purgeExistingViews = false)
         {
-            if (eventStore == null) throw new ArgumentNullException("eventStore");
             _logger.Info("Initializing event dispatcher with view managers: {0}", string.Join(", ", _viewManagers));
 
             _logger.Debug("Initiating immediate full catchup");
-            _work.Enqueue(PieceOfWork.FullCatchUp(purgeExistingViews: purgeExistingViews));
+            _work.Enqueue(PieceOfWork.FullCatchUp(purgeExistingViews));
 
             _logger.Debug("Starting automatic catchup timer with {0} ms interval", _automaticCatchUpTimer.Interval);
             _automaticCatchUpTimer.Start();

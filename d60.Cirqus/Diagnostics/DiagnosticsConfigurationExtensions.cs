@@ -68,9 +68,9 @@ namespace d60.Cirqus.Diagnostics
                 _operationProfiler = operationProfiler;
             }
 
-            public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
+            public void Initialize(bool purgeExistingViews = false)
             {
-                _innerEventDispatcher.Initialize(eventStore, purgeExistingViews);
+                _innerEventDispatcher.Initialize(purgeExistingViews);
             }
 
             public void Dispatch(IEnumerable<DomainEvent> events)

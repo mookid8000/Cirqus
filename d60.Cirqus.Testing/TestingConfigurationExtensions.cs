@@ -22,6 +22,7 @@ namespace d60.Cirqus.Testing
                 context.AddChildContext(viewManagerContext);
 
                 var eventDispatcher = new SynchronousViewManagerEventDispatcher(
+                    context.Get<IEventStore>(),
                     context.Get<IAggregateRootRepository>(),
                     context.Get<IDomainEventSerializer>(),
                     context.Get<IDomainTypeNameMapper>(),

@@ -19,6 +19,7 @@ namespace d60.Cirqus.Testing
     public class SynchronousViewManagerEventDispatcher : IEventDispatcher
     {
         readonly List<IViewManager> viewManagers;
+        readonly IEventStore _eventStore;
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IDomainEventSerializer _domainEventSerializer;
         readonly IDomainTypeNameMapper _domainTypeNameMapper;
@@ -26,6 +27,7 @@ namespace d60.Cirqus.Testing
         readonly Logger _logger = CirqusLoggerFactory.Current.GetCurrentClassLogger();
 
         public SynchronousViewManagerEventDispatcher(
+            IEventStore eventStore,
             IAggregateRootRepository aggregateRootRepository,
             IDomainEventSerializer domainEventSerializer,
             IDomainTypeNameMapper domainTypeNameMapper,
@@ -33,6 +35,7 @@ namespace d60.Cirqus.Testing
         {
             this.viewManagers = viewManagers.ToList();
 
+            _eventStore = eventStore;
             _aggregateRootRepository = aggregateRootRepository;
             _domainEventSerializer = domainEventSerializer;
             _domainTypeNameMapper = domainTypeNameMapper;
@@ -48,9 +51,9 @@ namespace d60.Cirqus.Testing
             }
         }
 
-        public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
+        public void Initialize(bool purgeExistingViews = false)
         {
-            foreach (var batch in eventStore.Stream().Batch(1000))
+            foreach (var batch in _eventStore.Stream().Batch(1000))
             {
                 Dispatch(batch.Select(e => _domainEventSerializer.Deserialize(e)));
             }

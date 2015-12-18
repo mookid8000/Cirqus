@@ -47,7 +47,7 @@ namespace d60.Cirqus.AzureServiceBus.Relay
             Dispose(false);
         }
 
-        public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
+        public void Initialize(bool purgeExistingViews = false)
         {
             _logger.Info("Opening connection");
             _serviceHost.Open();

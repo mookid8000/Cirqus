@@ -24,7 +24,8 @@ namespace d60.Cirqus.Tests.Bugs
 
             var commandProcessor = CommandProcessor.With()
                 .EventStore(e => e.Register<IEventStore>(c => eventStore))
-                .EventDispatcher(e => e.Register<IEventDispatcher>(c => new ConsoleOutEventDispatcher()))
+                .EventDispatcher(e => e.Register<IEventDispatcher>(c => 
+                    new ConsoleOutEventDispatcher(eventStore)))
                 .Create();
 
             RegisterForDisposal(commandProcessor);

@@ -12,7 +12,7 @@ namespace d60.Cirqus.Views
         /// Will be called at startup, before new events will be dispatched. Allows for the dispatcher to 
         /// catch up if it feels like it.
         /// </summary>
-        void Initialize(IEventStore eventStore, bool purgeExistingViews = false);
+        void Initialize(bool purgeExistingViews = false);
 
         /// <summary>
         /// Will be called with new events after each unit of work has been successfully committed to the event store

@@ -18,7 +18,7 @@ namespace d60.Cirqus.AzureServiceBus.Dispatcher
             _topicClient = TopicClient.CreateFromConnectionString(connectionString, topicName);
         }
 
-        public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
+        public void Initialize(bool purgeExistingViews = false)
         {
             // do nothing
         }

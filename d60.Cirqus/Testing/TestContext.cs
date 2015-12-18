@@ -272,7 +272,7 @@ namespace d60.Cirqus.Testing
         {
             if (!_initialized)
             {
-                _eventDispatcher.Initialize(_eventStore, purgeExistingViews: true);
+                _eventDispatcher.Initialize(purgeExistingViews: true);
                 _initialized = true;
             }
         }

@@ -18,6 +18,7 @@ namespace d60.Cirqus.Views
     /// </summary>
     public class InMemoryViewEventDispatcher<TViewInstance> : IEventDispatcher where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
+        private readonly IEventStore _eventStore;
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IDomainEventSerializer _domainEventSerializer;
         readonly IDomainTypeNameMapper _domainTypeNameMapper;
@@ -28,8 +29,13 @@ namespace d60.Cirqus.Views
 
         bool _stopped;
 
-        public InMemoryViewEventDispatcher(IAggregateRootRepository aggregateRootRepository, IDomainEventSerializer domainEventSerializer, IDomainTypeNameMapper domainTypeNameMapper)
+        public InMemoryViewEventDispatcher(
+            IEventStore eventStore,
+            IAggregateRootRepository aggregateRootRepository, 
+            IDomainEventSerializer domainEventSerializer, 
+            IDomainTypeNameMapper domainTypeNameMapper)
         {
+            _eventStore = eventStore;
             _aggregateRootRepository = aggregateRootRepository;
             _domainEventSerializer = domainEventSerializer;
             _domainTypeNameMapper = domainTypeNameMapper;
@@ -41,7 +47,7 @@ namespace d60.Cirqus.Views
         /// </summary>
         public bool SkipInitialization { get; set; }
 
-        public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
+        public void Initialize(bool purgeExistingViews = false)
         {
             if (SkipInitialization)
             {
@@ -51,7 +57,7 @@ namespace d60.Cirqus.Views
 
             _logger.Info("Initializing in-mem view event dispatcher for {0}", typeof (TViewInstance));
 
-            foreach (var batch in eventStore.Stream().Batch(1000))
+            foreach (var batch in _eventStore.Stream().Batch(1000))
             {
                 if (_stopped)
                 {
@@ -59,11 +65,11 @@ namespace d60.Cirqus.Views
                     return;
                 }
 
-                Dispatch(eventStore, batch);
+                Dispatch(batch);
             }
         }
 
-        void Dispatch(IEventStore eventStore, IEnumerable<EventData> events)
+        void Dispatch(IEnumerable<EventData> events)
         {
             Dispatch(events.Select(e => _domainEventSerializer.Deserialize(e)));
         }

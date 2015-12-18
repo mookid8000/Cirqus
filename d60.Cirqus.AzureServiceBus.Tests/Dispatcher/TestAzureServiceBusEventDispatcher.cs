@@ -93,9 +93,9 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Dispatcher
             Console.WriteLine("done!");
         }
 
-        public void Initialize(IEventStore eventStore, bool purgeExistingViews = false)
+        public void Initialize(bool purgeExistingViews = false)
         {
-            _stuffThatHappened.Add(string.Format("Initialized with {0} (purge: {1})", eventStore, purgeExistingViews));
+            _stuffThatHappened.Add(string.Format("Initialized (purge: {0})", purgeExistingViews));
         }
 
         public void Dispatch(IEnumerable<DomainEvent> events)

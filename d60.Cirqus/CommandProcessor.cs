@@ -71,7 +71,7 @@ namespace d60.Cirqus
         public CommandProcessor Initialize()
         {
             _logger.Info("Initializing event dispatcher");
-            _eventDispatcher.Initialize(_eventStore, Options.PurgeExistingViews);
+            _eventDispatcher.Initialize(Options.PurgeExistingViews);
             return this;
         }
 

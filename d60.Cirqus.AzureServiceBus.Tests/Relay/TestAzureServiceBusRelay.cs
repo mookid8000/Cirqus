@@ -50,7 +50,7 @@ namespace d60.Cirqus.AzureServiceBus.Tests.Relay
             RegisterForDisposal(eventDispatcher);
 
             eventDispatcher.AddViewManager(_viewManager);
-            eventDispatcher.Initialize(_eventStoreProxy);
+            eventDispatcher.Initialize();
         }
 
         protected override void DoTearDown()
