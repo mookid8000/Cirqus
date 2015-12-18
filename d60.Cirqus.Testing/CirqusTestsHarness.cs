@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
 using System.Text;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
@@ -12,7 +10,6 @@ using d60.Cirqus.Extensions;
 using d60.Cirqus.Identity;
 using EnergyProjects.Tests.Utils;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
 namespace d60.Cirqus.Testing

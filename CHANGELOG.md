@@ -741,6 +741,11 @@
 * Added Sunshine Scenario Aggregate Root Load Caching mechanism in `DefaultViewContext` which can provide a nice acceleration in Sunshine Scenarios.
 * Updated internal Newtonsoft JSON serializer to 7.0.1
 
+## 0.64.1
+
+* Clean up of the EventDispatcher interface
+* Use the configured DomainEventSerializer in the testing tools
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis
