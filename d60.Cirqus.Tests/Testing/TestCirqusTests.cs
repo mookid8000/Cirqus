@@ -75,6 +75,26 @@ Then:
         }
 
         [Test]
+        public void GivenWhenThenDiff()
+        {
+            Emit(NewId<RootA>(), new EventA1());
+
+            When(new CommandResultingInA3 { Id = Id<RootA>() });
+
+            Should.Throw<AssertionException>(() =>
+                Then(NewId<RootA>(), new EventA3
+                {
+                    Content = "asger"
+                }));
+
+            writer.Buffer.Trim().ShouldContain(
+@"
+-   ""Content"": null
++   ""Content"": ""asger""
+");
+        }
+
+        [Test]
         public void GivenWithImplicitId()
         {
             Emit(NewId<RootA>(), new EventA1());
@@ -276,7 +296,7 @@ Then:
                 .Message.ShouldBe("hej");
         }
 
-        public class RootA : AggregateRoot, IEmit<EventA1>, IEmit<EventA2>
+        public class RootA : AggregateRoot, IEmit<EventA1>, IEmit<EventA2>, IEmit<EventA3>
         {
             public void DoA1()
             {
@@ -288,6 +308,11 @@ Then:
                 Emit(new EventA2());
             }
 
+            public void DoA3()
+            {
+                Emit(new EventA3());
+            }
+
             public void Apply(EventA1 e)
             {
 
@@ -297,17 +322,15 @@ Then:
             {
 
             }
+
+            public void Apply(EventA3 e)
+            {
+                
+            }
         }
 
         public class RootAExtended : RootA
         {
-
-            public void DoA3()
-            {
-                Emit(new EventA1());
-                Emit(new EventA2());
-            }
-
         }
 
         public class EventA1 : DomainEvent<RootA>
@@ -316,7 +339,11 @@ Then:
 
         public class EventA2 : DomainEvent<RootA>
         {
+        }
 
+        public class EventA3 : DomainEvent<RootA>
+        {
+            public string Content { get; set; }
         }
 
         public class CommandResultingInOneEvent : ExecutableCommand
@@ -344,6 +371,16 @@ Then:
                 var rootA = context.Load<RootA>(Id);
                 rootA.DoA2();
                 rootA.DoA2();
+            }
+        }
+
+        public class CommandResultingInA3 : ExecutableCommand
+        {
+            public string Id { get; set; }
+
+            public override void Execute(ICommandContext context)
+            {
+                context.Load<RootA>(Id).DoA3();
             }
         }
 

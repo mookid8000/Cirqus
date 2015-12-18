@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
+using System.Text;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Config.Configurers;
@@ -26,7 +27,6 @@ namespace d60.Cirqus.Testing
 
         IOptionalConfiguration<TestContext> configuration;
         IEnumerable<DomainEvent> results;
-        JsonSerializerSettings settings;
 
         protected TestContext Context { get; private set; }
         protected Action<DomainEvent> OnEvent = x => { };
@@ -35,13 +35,6 @@ namespace d60.Cirqus.Testing
         protected void Begin(IWriter writer)
         {
             ids = new Stack<Id>();
-
-            settings = new JsonSerializerSettings
-            {
-                ContractResolver = new ContractResolver(),
-                TypeNameHandling = TypeNameHandling.Objects,
-                Formatting = Formatting.Indented,
-            };
 
             formatter = new TextFormatter(writer);
 
@@ -253,11 +246,14 @@ namespace d60.Cirqus.Testing
 
                 expected.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id;
 
-                var jActual = JObject.FromObject(actual, JsonSerializer.Create(settings));
-                var jExpected = JObject.FromObject(expected, JsonSerializer.Create(settings));
+                var jActual = Context.EventSerializer.Serialize(actual);
+                var jExpected = Context.EventSerializer.Serialize(expected);
+
+                //var jActual = JObject.FromObject(actual, JsonSerializer.Create(settings));
+                //var jExpected = JObject.FromObject(expected, JsonSerializer.Create(settings));
 
                 Assert(
-                    actual.GetAggregateRootId().Equals(id) && JToken.DeepEquals(jActual, jExpected),
+                    actual.GetAggregateRootId().Equals(id) && jActual.Data.SequenceEqual(jExpected.Data),
                     () => formatter.Write(expected, new EventFormatter(formatter)).NewLine(),
                     () =>
                     {
@@ -265,8 +261,13 @@ namespace d60.Cirqus.Testing
                             .Indent().Write(actual, new EventFormatter(formatter)).Unindent()
                             .EndBlock();
 
+                        if (!jActual.IsJson() || !jExpected.IsJson()) return;
+
                         var differ = new Differ();
-                        var diffs = differ.LineByLine(jActual.ToString(), jExpected.ToString());
+                        var diffs = differ.LineByLine(
+                            Encoding.UTF8.GetString(jActual.Data), 
+                            Encoding.UTF8.GetString(jExpected.Data));
+
                         var diff = differ.PrettyLineByLine(diffs);
 
                         formatter

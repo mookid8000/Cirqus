@@ -52,6 +52,11 @@ namespace d60.Cirqus.Testing
             return With().Create();
         }
 
+        public IDomainEventSerializer EventSerializer
+        {
+            get { return _domainEventSerializer; }
+        }
+
         internal event Action Disposed = delegate { };
         internal bool Asynchronous { get; set; }
 
