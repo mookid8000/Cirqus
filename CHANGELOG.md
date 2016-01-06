@@ -253,7 +253,8 @@ fectively dependency-less core assembly - just how it's supposed to be
 wLocator` that allows for implementing `IGetViewIdsFor<TDomainEvent>
         ` where `TDomainEven
     t` is a domain event or an interface - makes view ID mapping really neat in some situations.
-
+
+
         ## 0.21.0
         This is a big update that completes
     the transition tothe new, vastly improved view managers and makes a load of stuff much more consi
@@ -369,12 +370,14 @@ way of purging data - it's slow, but it cascades to tables with FK constraints a
 `
 ## 0
         .26.3
-
+
+
 * Re-publishing because silly NuGet.org failed in the middle of uploading 0.26.2
 ## 0.27.0
 * Moved `TestContext` into cor
         e because it's just easier that way
-
+
+
 ## 0.28.
         0
 
@@ -391,7 +394,8 @@ ave a trail of non-disconnected should-have-been-orphans in the database)
 ed event store implementation
 * Include view positions in timeout exceptio
         n when `TestContext` is waiting for views to catch up
-
+
+
 ## 0.31.0
 * Removed MongoDB dep from nuspec (it didn't actually depend
         on it anyway, since it was merge in)
@@ -866,6 +870,10 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 ## 0.64.2
 
 * Better logging in the event replicator - will now periodically log stats on how many events have been replicated
+
+## 0.64.3
+
+* Made MongoDB event store less eager to fetch data - basically leaves batching to the driver, while still keeping a tight grip on overall paging of the result set
 
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund

@@ -7,7 +7,6 @@ using d60.Cirqus.Exceptions;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 
@@ -43,24 +42,29 @@ namespace d60.Cirqus.MongoDb.Events
 
             while (true)
             {
+                var lowerGlobalSequenceNumberInQuery = lowerGlobalSequenceNumber; //< avoid "access to modified closure"
                 var criteria = Query.GTE(GlobalSeqNoDocPath, lowerGlobalSequenceNumber);
 
                 var eventBatch = _eventBatches.Find(criteria)
                     .SetSortOrder(SortBy.Ascending(GlobalSeqNoDocPath))
                     .SetLimit(1000)
                     .SelectMany(b => b.Events.OrderBy(e => e.GlobalSequenceNumber))
-                    .Where(e => e.GlobalSequenceNumber >= lowerGlobalSequenceNumber)
-                    .Select(MongoEventToEvent)
-                    .ToList();
+                    .Where(e => e.GlobalSequenceNumber >= lowerGlobalSequenceNumberInQuery)
+                    .Select(MongoEventToEvent);
+
+                var hadEvents = false;
+                var maxGlobalSequenceNumberInBatch = -1L;
 
                 foreach (var e in eventBatch)
                 {
+                    hadEvents = true;
                     yield return e;
+                    maxGlobalSequenceNumberInBatch = e.GetGlobalSequenceNumber();
                 }
 
-                if (!eventBatch.Any()) break;
+                if (!hadEvents) break;
 
-                lowerGlobalSequenceNumber = eventBatch.Max(e => e.GetGlobalSequenceNumber()) + 1;
+                lowerGlobalSequenceNumber = maxGlobalSequenceNumberInBatch + 1;
             }
         }
 
@@ -104,24 +108,29 @@ namespace d60.Cirqus.MongoDb.Events
 
                 var criteria = Query.ElemMatch("Events", eventCriteria);
 
+                var lowerSequenceNumberInQuery = lowerSequenceNumber;
                 var eventBatch = _eventBatches.Find(criteria)
                     .SetSortOrder(SortBy.Ascending(GlobalSeqNoDocPath))
                     .SetLimit(1000)
                     .SelectMany(b => b.Events
                         .Where(e => e.AggregateRootId == aggregateRootId)
                         .OrderBy(e => e.SequenceNumber))
-                    .Where(e => e.SequenceNumber >= lowerSequenceNumber)
-                    .Select(MongoEventToEvent)
-                    .ToList();
+                    .Where(e => e.SequenceNumber >= lowerSequenceNumberInQuery)
+                    .Select(MongoEventToEvent);
+
+                var hadEvents = false;
+                var maxSequenceNumberInBatch = -1L;
 
                 foreach (var e in eventBatch)
                 {
+                    hadEvents = true;
                     yield return e;
+                    maxSequenceNumberInBatch = e.GetSequenceNumber();
                 }
 
-                if (!eventBatch.Any()) break;
+                if (!hadEvents) break;
 
-                lowerSequenceNumber = eventBatch.Max(e => e.GetSequenceNumber()) + 1;
+                lowerSequenceNumber = maxSequenceNumberInBatch + 1;
             }
         }
 
