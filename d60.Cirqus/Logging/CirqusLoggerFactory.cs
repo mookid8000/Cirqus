@@ -69,14 +69,9 @@ namespace d60.Cirqus.Logging
         [MethodImpl(MethodImplOptions.NoInlining)]
         public Logger GetCurrentClassLogger()
         {
-            for (var frames = 0;; frames++)
-            {
-                var type = new StackFrame(frames).GetMethod().DeclaringType;
+            var type = new StackFrame(1).GetMethod().DeclaringType;
 
-                if (type == typeof (CirqusLoggerFactory)) continue;
-
-                return _current.GetLogger(type);
-            }
+            return _current.GetLogger(type?.ReflectedType ?? typeof(Logger));
         }
 
         /// <summary>
