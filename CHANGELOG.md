@@ -879,6 +879,10 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 
 * Added logging in the `Retryer` so it is possible to see how many times commands are retried
 
+## 0.64.5
+
+* Added support for testing events not emitted by an aggregate root
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis
