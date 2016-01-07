@@ -98,7 +98,7 @@ Then:
         public void GivenWithImplicitId()
         {
             Emit(NewId<RootA>(), new EventA1());
-            Emit<RootA>(new EventA2());
+            Emit(Id<RootA>(), new EventA2());
 
             var history = Context.History.ToList();
             Assert.AreEqual(Id<RootA>().ToString(), history[0].GetAggregateRootId());
@@ -170,8 +170,8 @@ Then:
         {
             Emit(NewId<RootAExtended>(), new EventA1());
             
-            Assert.Throws<InvalidOperationException>(() => Emit<RootA>(new EventA2()))
-                .Message.ShouldBe("Can not get latest RootA id, since none exists.");
+            Assert.Throws<IndexOutOfRangeException>(() => Id<RootA>())
+                .Message.ShouldBe("Could not find Id<RootA> with index 1");
         }
 
         [Test]
@@ -296,6 +296,19 @@ Then:
                 .Message.ShouldBe("hej");
         }
 
+        [Test]
+        public void EmitToAnyStream()
+        {
+            KeyFormat.For<object>("stream-*");
+
+            Emit<object>("stream-id", new EventWithNoRoot());
+
+            var @event = Context.History.Single();
+            @event.ShouldBeOfType<EventWithNoRoot>();
+            @event.Meta[DomainEvent.MetadataKeys.AggregateRootId].ShouldBe("stream-id");
+            @event.Meta[DomainEvent.MetadataKeys.Owner].ShouldBe("System.Object, mscorlib");
+        }
+
         public class RootA : AggregateRoot, IEmit<EventA1>, IEmit<EventA2>, IEmit<EventA3>
         {
             public void DoA1()
@@ -344,6 +357,11 @@ Then:
         public class EventA3 : DomainEvent<RootA>
         {
             public string Content { get; set; }
+        }
+
+        public class EventWithNoRoot : DomainEvent
+        {
+            
         }
 
         public class CommandResultingInOneEvent : ExecutableCommand

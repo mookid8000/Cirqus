@@ -73,12 +73,12 @@ namespace d60.Cirqus.Testing
             Emit(Latest<T>(), events);
         }
 
-        protected void Emit<T>(string id, params DomainEvent[] events) where T : AggregateRoot
+        protected void Emit<T>(string id, params DomainEvent[] events)
         {
             Emit(Identity.Id<T>.Parse(id), events);
         }
 
-        protected void Emit<T>(Id<T> id, params DomainEvent[] events) where T : AggregateRoot
+        protected void Emit<T>(Id<T> id, params DomainEvent[] events)
         {
             foreach (var @event in events)
             {
@@ -86,16 +86,9 @@ namespace d60.Cirqus.Testing
             }
         }
 
-        void Emit<T>(Id<T> id, DomainEvent @event) where T : AggregateRoot
+        void Emit<T>(Id<T> id, DomainEvent @event)
         {
             EnsureContext();
-
-            var closedGeneric = TryGetClosedGenericTypeByOpenGeneric(@event.GetType(), typeof(DomainEvent<>));
-            if (closedGeneric == null || !closedGeneric.GetGenericArguments()[0].IsAssignableFrom(typeof(T)))
-            {
-                throw new InvalidOperationException(string.Format(
-                    "Event {0} is not emittable from root of type {1}", @event, typeof(T)));
-            }
 
             TryRegisterId(id);
 
