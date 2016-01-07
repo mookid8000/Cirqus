@@ -875,6 +875,10 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 
 * Made MongoDB event store less eager to fetch data - basically leaves batching to the driver, while still keeping a tight grip on overall paging of the result set
 
+## 0.64.4
+
+* Added logging in the `Retryer` so it is possible to see how many times commands are retried
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis
