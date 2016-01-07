@@ -1,5 +1,4 @@
-﻿using System;
-using d60.Cirqus.Logging;
+﻿using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.Tests.Contracts.Views.Factories;
 using d60.Cirqus.Tests.Contracts.Views.Models.ObjectGraph;

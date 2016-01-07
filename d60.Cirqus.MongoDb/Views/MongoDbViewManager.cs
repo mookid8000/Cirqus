@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
@@ -9,6 +10,7 @@ using d60.Cirqus.Extensions;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 
@@ -137,11 +139,28 @@ namespace d60.Cirqus.MongoDb.Views
             Interlocked.Exchange(ref _cachedPosition, newPosition);
         }
 
+        class LoadedViewInstance
+        {
+            public TViewInstance ViewInstance { get; }
+
+            public LoadedViewInstance(TViewInstance viewInstance)
+            {
+                ViewInstance = viewInstance;
+            }
+
+            public bool Failed { get; private set; }
+
+            public void MarkAsFailed()
+            {
+                Failed = true;
+            }
+        }
+
         public override void Dispatch(IViewContext viewContext, IEnumerable<DomainEvent> batch, IViewManagerProfiler viewManagerProfiler)
         {
             if (_purging) return;
 
-            var cachedViewInstances = new Dictionary<string, TViewInstance>();
+            var cachedViewInstances = new Dictionary<string, LoadedViewInstance>();
 
             var eventList = batch.ToList();
 
@@ -165,7 +184,16 @@ namespace d60.Cirqus.MongoDb.Views
                 {
                     var viewInstance = cachedViewInstances[viewId] = GetOrCreateViewInstance(viewId, cachedViewInstances);
 
-                    _dispatcherHelper.DispatchToView(viewContext, e, viewInstance);
+                    if (viewInstance.Failed) continue;
+
+                    try
+                    {
+                        _dispatcherHelper.DispatchToView(viewContext, e, viewInstance.ViewInstance);
+                    }
+                    catch (Exception)
+                    {
+                        viewInstance.MarkAsFailed();
+                    }
                 }
 
                 viewManagerProfiler.RegisterTimeSpent(this, e, stopwatch.Elapsed);
@@ -173,32 +201,57 @@ namespace d60.Cirqus.MongoDb.Views
 
             FlushCacheToDatabase(cachedViewInstances);
 
-            RaiseUpdatedEventFor(cachedViewInstances.Values);
+            RaiseUpdatedEventFor(cachedViewInstances.Values.Where(v => !v.Failed).Select(v => v.ViewInstance));
 
             UpdatePersistentCache(eventList.Max(e => e.GetGlobalSequenceNumber()));
         }
 
-        void FlushCacheToDatabase(Dictionary<string, TViewInstance> cachedViewInstances)
+        void FlushCacheToDatabase(Dictionary<string, LoadedViewInstance> cachedViewInstances)
         {
-            if (!cachedViewInstances.Any()) return;
+            var viewInstancesToSave = cachedViewInstances.Values
+                .Where(v => !v.Failed)
+                .Select(v => v.ViewInstance)
+                .ToList();
 
-            _logger.Debug("Flushing {0} view instances to '{1}'", cachedViewInstances.Values.Count, _viewCollection.Name);
-
-            foreach (var viewInstance in cachedViewInstances.Values)
+            if (viewInstancesToSave.Any())
             {
-                _viewCollection.Save(viewInstance);
+                _logger.Debug("Flushing {0} view instances to '{1}'", viewInstancesToSave.Count, _viewCollection.Name);
+
+                foreach (var viewInstance in viewInstancesToSave)
+                {
+                    _viewCollection.Save(viewInstance);
+                }
+            }
+
+            var idsOfViewsToMarkAsFailed = cachedViewInstances.Values
+                .Where(v => v.Failed)
+                .Select(v => v.ViewInstance.Id)
+                .ToList();
+
+            if (idsOfViewsToMarkAsFailed.Any() && typeof(ICanFailIndividually).IsAssignableFrom(typeof(TViewInstance)))
+            {
+                _logger.Debug("Marking {0} view instances as failed: {1}", idsOfViewsToMarkAsFailed.Count, string.Join(", ", idsOfViewsToMarkAsFailed));
+
+                var failedViewInstancesCache = new Dictionary<string, LoadedViewInstance>();
+
+                foreach (var viewId in idsOfViewsToMarkAsFailed)
+                {
+                    var viewInstance = GetOrCreateViewInstance(viewId, failedViewInstancesCache);
+                    ((ICanFailIndividually) viewInstance.ViewInstance).Failed = true;
+                    _viewCollection.Save(viewInstance);
+                }
             }
         }
 
-        TViewInstance GetOrCreateViewInstance(string viewId, Dictionary<string, TViewInstance> cachedViewInstances)
+        LoadedViewInstance GetOrCreateViewInstance(string viewId, Dictionary<string, LoadedViewInstance> cachedViewInstances)
         {
-            TViewInstance instanceToReturn;
+            LoadedViewInstance instanceToReturn;
 
             if (cachedViewInstances.TryGetValue(viewId, out instanceToReturn))
                 return instanceToReturn;
 
-            instanceToReturn = _viewCollection.FindOneById(viewId)
-                               ?? _dispatcherHelper.CreateNewInstance(viewId);
+            instanceToReturn = new LoadedViewInstance(_viewCollection.FindOneById(viewId)
+                               ?? _dispatcherHelper.CreateNewInstance(viewId));
 
             return instanceToReturn;
         }

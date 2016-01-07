@@ -25,6 +25,7 @@ namespace d60.Cirqus.Views.ViewManagers
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly List<DomainEvent> _eventBatch;
         readonly RealUnitOfWork _realUnitOfWork;
+        readonly Dictionary<string, CachedRoot> _cachedRoots = new Dictionary<string, CachedRoot>();
 
         /// <summary>
         /// Creates the view context with the given repository and type name mapper, storing the given event batch to be able to look up events in case it could make sense
@@ -55,8 +56,6 @@ namespace d60.Cirqus.Views.ViewManagers
         }
 
         public event Action Committed;
-
-        readonly Dictionary<string, CachedRoot> _cachedRoots = new Dictionary<string, CachedRoot>();
 
         public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : class
         {
