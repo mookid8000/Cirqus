@@ -8,27 +8,36 @@ namespace d60.Cirqus.Tests.Logging
     [TestFixture]
     public class TestCirqusLoggerFactory
     {
-        static Logger _logger;
-
-        static TestCirqusLoggerFactory()
-        {
-            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
-        }
-
         [Test]
         public void LogsWithTheRightType()
         {
             // arrange
             var hasListOfLogStatements = new ListLoggerFactory();
             CirqusLoggerFactory.Current = hasListOfLogStatements;
+            var loggingClass = new LoggingClass();
 
             // act
-            _logger.Info("Woot!");
+            loggingClass.LogSomething();
 
             // assert
             var line = hasListOfLogStatements.LoggedLines.Single();
 
-            Assert.That(line.OwnerType, Is.EqualTo(typeof(TestCirqusLoggerFactory)));
+            Assert.That(line.OwnerType, Is.EqualTo(typeof(LoggingClass)));
+        }
+    }
+
+    class LoggingClass
+    {
+        static Logger _logger;
+
+        static LoggingClass()
+        {
+            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+        }
+
+        public void LogSomething()
+        {
+            _logger.Info("Woot!");
         }
     }
 }

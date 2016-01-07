@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using d60.Cirqus.Logging;
 
 namespace d60.Cirqus.Config
 {
@@ -9,6 +10,13 @@ namespace d60.Cirqus.Config
     /// </summary>
     public class Retryer
     {
+        static Logger _logger;
+
+        static Retryer()
+        {
+            CirqusLoggerFactory.Changed += f => _logger = f.GetCurrentClassLogger();
+        }
+
         /// <summary>
         /// ThreadStatic because <see cref="Random"/> is not reentrant
         /// </summary>
@@ -50,11 +58,17 @@ namespace d60.Cirqus.Config
 
                     if (caughtExceptions.Count >= maxRetries)
                     {
-                        throw new AggregateException(string.Format("Could not complete the call (retried {0} times)", maxRetries), caughtExceptions);
+                        throw new AggregateException(
+                            string.Format("Could not complete the call (retried {0} times)", maxRetries),
+                            caughtExceptions);
                     }
 
+                    var millisecondsTimeout = NextRandom(10)*10;
+
+                    _logger.Info("Attempt {0} failed: {1} - will retry in {2} ms", caughtExceptions.Count, exception, millisecondsTimeout);
+
                     retry = true;
-                    Thread.Sleep(NextRandom(200));
+                    Thread.Sleep(millisecondsTimeout);
                 }
             } while (retry);
         }

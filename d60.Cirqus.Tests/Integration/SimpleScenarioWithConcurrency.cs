@@ -5,11 +5,8 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.MongoDb.Config;
-using d60.Cirqus.MongoDb.Events;
-using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.Extensions;
 using d60.Cirqus.Tests.MongoDb;
-using d60.Cirqus.Tests.Stubs;
 using MongoDB.Driver;
 using NUnit.Framework;
 
