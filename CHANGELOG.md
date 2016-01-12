@@ -883,6 +883,11 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 
 * Added support for testing events not emitted by an aggregate root
 
+## 0.64.6
+
+* Added IDomainEvent as an interface for DomainEvent to enable subscription by custom interfaces while still having access to Meta and ensuring that we are actually dealing with an event (intersection types ala TypeScript would have solved this so elegantly)
+* Added an AfterEmit callback to the test harness and renamed the others to a consistent Before/After naming scheme
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis
