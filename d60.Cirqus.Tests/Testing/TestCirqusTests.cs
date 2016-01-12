@@ -199,7 +199,7 @@ Then:
         public void EmitWithHook()
         {
             var flag = false;
-            OnEvent += x => flag = true;
+            BeforeEmit += x => flag = true;
 
             var id = Guid.NewGuid().ToString();
             Emit<RootA>(id, new EventA1());
@@ -211,7 +211,7 @@ Then:
         public void WhenWithHook()
         {
             var flag = false;
-            OnCommand += x => flag = true;
+            BeforeExecute += x => flag = true;
 
             var id = Guid.NewGuid().ToString();
             Emit<RootA>(id, new EventA1());

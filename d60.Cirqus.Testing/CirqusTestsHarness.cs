@@ -26,8 +26,9 @@ namespace d60.Cirqus.Testing
         IEnumerable<DomainEvent> results;
 
         protected TestContext Context { get; private set; }
-        protected Action<DomainEvent> OnEvent = x => { };
-        protected Action<Command> OnCommand = x => { };
+        protected Action<DomainEvent> BeforeEmit = x => { };
+        protected Action<DomainEvent> AfterEmit = x => { };
+        protected Action<Command> BeforeExecute = x => { };
 
         protected void Begin(IWriter writer)
         {
@@ -90,13 +91,15 @@ namespace d60.Cirqus.Testing
         {
             EnsureContext();
 
-            TryRegisterId(id);
-
             @event.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id.ToString();
 
-            OnEvent(@event);
+            BeforeEmit(@event);
+
+            TryRegisterId(id);
 
             Context.Save(typeof(T), @event);
+
+            AfterEmit(@event);
 
             formatter
                 .Block("Given that:")
@@ -109,7 +112,7 @@ namespace d60.Cirqus.Testing
         {
             EnsureContext();
 
-            OnCommand(command);
+            BeforeExecute(command);
 
             formatter
                 .Block("When users:")
