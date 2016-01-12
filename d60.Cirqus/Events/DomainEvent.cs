@@ -6,10 +6,10 @@ using d60.Cirqus.Numbers;
 namespace d60.Cirqus.Events
 {
     /// <summary>
-    /// Base class of all domain events. Has a collection of metadata and
+    /// Base class of all domain events
     /// </summary>
     [Serializable]
-    public abstract class DomainEvent
+    public abstract class DomainEvent : IDomainEvent
     {
         /// <summary>
         /// Provides the keys of various predefined metadata elements with special meaning

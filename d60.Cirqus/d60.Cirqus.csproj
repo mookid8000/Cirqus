@@ -55,6 +55,7 @@
     <Compile Include="Config\Configurers\ConfigurationBuilder.cs" />
     <Compile Include="Config\Configurers\ViewManagerEventDispatcherConfiguationBuilder.cs" />
     <Compile Include="Events\DisplayAttribute.cs" />
+    <Compile Include="Events\IDomainEvent.cs" />
     <Compile Include="Exceptions\AggregateRootNotFoundException.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />

@@ -10,7 +10,7 @@ namespace d60.Cirqus.Extensions
         /// <summary>
         /// Gets the aggregate root ID from the domain event
         /// </summary>
-        public static string GetAggregateRootId(this DomainEvent domainEvent, bool throwIfNotFound = true)
+        public static string GetAggregateRootId(this IDomainEvent domainEvent, bool throwIfNotFound = true)
         {
             return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.AggregateRootId, value => value, throwIfNotFound);
         }
@@ -18,7 +18,7 @@ namespace d60.Cirqus.Extensions
         /// <summary>
         /// Gets the batch ID from the domain event
         /// </summary>
-        public static Guid GetBatchId(this DomainEvent domainEvent, bool throwIfNotFound = true)
+        public static Guid GetBatchId(this IDomainEvent domainEvent, bool throwIfNotFound = true)
         {
             return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.BatchId, value => new Guid(Convert.ToString(value)), throwIfNotFound);
         }
@@ -26,7 +26,7 @@ namespace d60.Cirqus.Extensions
         /// <summary>
         /// Gets the (root-local) sequence number from the domain event
         /// </summary>
-        public static long GetSequenceNumber(this DomainEvent domainEvent, bool throwIfNotFound = true)
+        public static long GetSequenceNumber(this IDomainEvent domainEvent, bool throwIfNotFound = true)
         {
             return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.SequenceNumber, Convert.ToInt64, throwIfNotFound);
         }
@@ -34,7 +34,7 @@ namespace d60.Cirqus.Extensions
         /// <summary>
         /// Gets the global sequence number from the domain event
         /// </summary>
-        public static long GetGlobalSequenceNumber(this DomainEvent domainEvent, bool throwIfNotFound = true)
+        public static long GetGlobalSequenceNumber(this IDomainEvent domainEvent, bool throwIfNotFound = true)
         {
             return GetMetadataField(domainEvent, DomainEvent.MetadataKeys.GlobalSequenceNumber, Convert.ToInt64, throwIfNotFound);
         }
@@ -44,7 +44,7 @@ namespace d60.Cirqus.Extensions
         /// header on the event. If <seealso cref="throwIfNotFound"/> is false and the header is not present, <seealso cref="DateTime.MinValue"/>
         /// is returned
         /// </summary>
-        public static DateTime GetUtcTime(this DomainEvent domainEvent, bool throwIfNotFound = true)
+        public static DateTime GetUtcTime(this IDomainEvent domainEvent, bool throwIfNotFound = true)
         {
             var timeAsString = GetMetadataField(domainEvent, DomainEvent.MetadataKeys.TimeUtc, Convert.ToString, throwIfNotFound);
 
@@ -59,7 +59,7 @@ namespace d60.Cirqus.Extensions
         }
 
 
-        static TValue GetMetadataField<TValue>(DomainEvent domainEvent, string key, Func<string, TValue> converter, bool throwIfNotFound)
+        static TValue GetMetadataField<TValue>(IDomainEvent domainEvent, string key, Func<string, TValue> converter, bool throwIfNotFound)
         {
             var metadata = domainEvent.Meta;
 
