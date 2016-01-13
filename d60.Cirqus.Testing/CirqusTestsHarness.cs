@@ -19,7 +19,7 @@ namespace d60.Cirqus.Testing
         protected const string checkmark = "\u221A";
         protected const string cross = "\u2717";
 
-        Stack<Id> ids;
+        Stack<Tuple<Type, string>> ids;
         TextFormatter formatter;
 
         IOptionalConfiguration<TestContext> configuration;
@@ -32,7 +32,7 @@ namespace d60.Cirqus.Testing
 
         protected void Begin(IWriter writer)
         {
-            ids = new Stack<Id>();
+            ids = new Stack<Tuple<Type, string>>();
 
             formatter = new TextFormatter(writer);
 
@@ -74,28 +74,28 @@ namespace d60.Cirqus.Testing
             Emit(Latest<T>(), events);
         }
 
-        protected void Emit<T>(string id, params DomainEvent[] events)
+        protected void Emit<T>(Id<T> id, params DomainEvent[] events)
         {
-            Emit(Identity.Id<T>.Parse(id), events);
+            Emit<T>((string)id, events);
         }
 
-        protected void Emit<T>(Id<T> id, params DomainEvent[] events)
+        protected void Emit<T>(string id, params DomainEvent[] events)
         {
             foreach (var @event in events)
             {
-                Emit(id, @event);
+                Emit<T>(id, @event);
             }
         }
 
-        void Emit<T>(Id<T> id, DomainEvent @event)
+        void Emit<T>(string id, DomainEvent @event)
         {
             EnsureContext();
 
-            @event.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id.ToString();
+            @event.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id;
 
             BeforeEmit(@event);
 
-            TryRegisterId(id);
+            TryRegisterId<T>(id);
 
             Context.Save(typeof(T), @event);
 
@@ -297,7 +297,7 @@ namespace d60.Cirqus.Testing
         protected Id<T> NewId<T>(params object[] args) where T : class
         {
             var id = GenerateId<T>(args);
-            TryRegisterId(id);
+            TryRegisterId<T>(id);
             return id;
         }
 
@@ -308,13 +308,13 @@ namespace d60.Cirqus.Testing
 
         protected Id<T> Id<T>(int index) where T : class
         {
-            var array = ids.OfType<Id<T>>().Reverse().ToArray();
+            var array = ids.Where(x => x.Item1 == typeof(T)).Reverse().ToArray();
             if (array.Length < index)
             {
                 throw new IndexOutOfRangeException(String.Format("Could not find Id<{0}> with index {1}", typeof(T).Name, index));
             }
 
-            return array[index - 1];
+            return Identity.Id<T>.Parse(array[index - 1].Item2);
         }
 
         protected Id<T> Latest<T>() where T : class
@@ -328,15 +328,15 @@ namespace d60.Cirqus.Testing
 
         protected bool TryGetLatest<T>(out Id<T> latest) where T : class
         {
-            var lastestOfType = ids.OfType<Id<T>>().ToList();
+            var lastestOfType = ids.FirstOrDefault(x => x.Item1 == typeof(T));
 
-            if (!lastestOfType.Any())
+            if (lastestOfType == null)
             {
                 latest = default(Id<T>);
                 return false;
             }
                 
-            latest = lastestOfType.First();
+            latest = Identity.Id<T>.Parse(lastestOfType.Item2);
             return true;
         }
 
@@ -345,21 +345,23 @@ namespace d60.Cirqus.Testing
             return Identity.Id<T>.New(args);
         }
 
-        void TryRegisterId<T>(Id<T> id)
+        void TryRegisterId<T>(string id)
         {
-            var candidate = ids.SingleOrDefault(x => x.Equals(id));
+            var candidate = ids.SingleOrDefault(x => x.Item1.IsAssignableFrom(typeof(T)));
+
+            var newId = Tuple.Create(typeof(T), id);
 
             if (candidate == null)
             {
-                ids.Push(id);
+                ids.Push(newId);
                 return;
             }
 
-            if (!id.ForType.IsAssignableFrom(candidate.ForType))
+            if (!newId.Item1.IsAssignableFrom(candidate.Item1))
             {
                 throw new InvalidOperationException(string.Format(
                     "You tried to register a new id '{0}' for type '{1}', but the id already exist and is for non-compatible type '{2}'", 
-                    id, id.ForType, candidate.ForType));
+                    id, newId.Item1, candidate.Item1));
             }
         }
 
@@ -396,31 +398,6 @@ namespace d60.Cirqus.Testing
                 onFail();
 
                 Fail();
-            }
-        }
-
-        static Type TryGetClosedGenericTypeByOpenGeneric(Type subject, Type openGenericType)
-        {
-            while (subject != null && subject != typeof(object))
-            {
-                var current = subject.IsGenericType ? subject.GetGenericTypeDefinition() : subject;
-                if (openGenericType == current) return subject;
-                
-                subject = subject.BaseType;
-            }
-            
-            return null;
-        }
-        
-        class ContractResolver : DefaultContractResolver
-        {
-            protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
-            {
-                var jsonProperties = base.CreateProperties(type, memberSerialization)
-                    .Where(property => property.DeclaringType != typeof(DomainEvent) && property.PropertyName != "Meta")
-                    .ToList();
-
-                return jsonProperties;
             }
         }
     }
