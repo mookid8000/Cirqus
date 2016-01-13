@@ -347,7 +347,7 @@ namespace d60.Cirqus.Testing
 
         void TryRegisterId<T>(string id)
         {
-            var candidate = ids.SingleOrDefault(x => x.Item1.IsAssignableFrom(typeof(T)));
+            var candidate = ids.SingleOrDefault(x => x.Item1.IsAssignableFrom(typeof(T)) && x.Item2 == id);
 
             var newId = Tuple.Create(typeof(T), id);
 

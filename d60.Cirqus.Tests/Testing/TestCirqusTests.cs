@@ -309,6 +309,18 @@ Then:
             @event.Meta[DomainEvent.MetadataKeys.Owner].ShouldBe("System.Object, mscorlib");
         }
 
+        [Test]
+        public void MultipleIdsOfSameType()
+        {
+            var id1 = NewId<RootA>();
+            var id2 = NewId<RootA>();
+            var id3 = NewId<RootA>();
+
+            Id<RootA>(1).ShouldBe(id1);
+            Id<RootA>(2).ShouldBe(id2);
+            Id<RootA>(3).ShouldBe(id3);
+        }
+
         public class RootA : AggregateRoot, IEmit<EventA1>, IEmit<EventA2>, IEmit<EventA3>
         {
             public void DoA1()

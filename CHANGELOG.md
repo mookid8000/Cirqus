@@ -892,6 +892,10 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 
 * fixing api for CirqusTestHarness, so a typed id is not required
 
+## 0.64.8
+
+* fixing error in last change
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis
