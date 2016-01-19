@@ -321,6 +321,30 @@ Then:
             Id<RootA>(3).ShouldBe(id3);
         }
 
+        [Test]
+        public void ThenWhenWithCorrectType()
+        {
+            var id = Guid.NewGuid().ToString();
+
+            Emit<RootA>(id, new EventA1());
+
+            When(new CommandResultingInOneEvent { Id = id });
+
+            Then(id, new EventA2());
+        }
+
+        [Test]
+        public void ThenWhenWithTypeMismatch()
+        {
+            var id = Guid.NewGuid().ToString();
+
+            Emit<RootA>(id, new EventA1());
+
+            When(new CommandResultingInOneEvent { Id = id });
+
+            Should.Throw<AssertionException>(() => Then(id, new EventA3()));
+        }
+
         public class RootA : AggregateRoot, IEmit<EventA1>, IEmit<EventA2>, IEmit<EventA3>
         {
             public void DoA1()

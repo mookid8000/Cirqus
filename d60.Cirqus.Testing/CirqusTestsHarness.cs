@@ -69,7 +69,7 @@ namespace d60.Cirqus.Testing
 
         protected abstract void Fail();
 
-        protected void Emit<T>(params DomainEvent[] events) where T : AggregateRoot
+        protected void Emit<T>(params DomainEvent[] events) where T:class
         {
             Emit(Latest<T>(), events);
         }
@@ -208,17 +208,17 @@ namespace d60.Cirqus.Testing
             results = results.Skip(1);
         }
 
-        protected void Then<T>(params DomainEvent[] events) where T : AggregateRoot
+        protected void Then<T>(params DomainEvent[] events) where T : class
         {
             Then(Latest<T>(), events);
         }
 
-        protected void Then<T>(string id, params DomainEvent[] events) where T : AggregateRoot
+        protected void Then<T>(Id<T> id, params DomainEvent[] events)
         {
-            Then(Identity.Id<T>.Parse(id), events);
+            Then((string)id, events);
         }
 
-        protected void Then<T>(Id<T> id, params DomainEvent[] events) where T : AggregateRoot
+        protected void Then(string id, params DomainEvent[] events)
         {
             if (events.Length == 0) return;
 
@@ -243,7 +243,9 @@ namespace d60.Cirqus.Testing
                 var jExpected = Context.EventSerializer.Serialize(expected);
 
                 Assert(
-                    actual.GetAggregateRootId().Equals(id) && jActual.Data.SequenceEqual(jExpected.Data),
+                    actual.GetAggregateRootId().Equals(id) && 
+                    actual.GetType() == expected.GetType() &&
+                    jActual.Data.SequenceEqual(jExpected.Data),
                     () => formatter.Write(expected, new EventFormatter(formatter)).NewLine(),
                     () =>
                     {

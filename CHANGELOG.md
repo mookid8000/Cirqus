@@ -896,6 +896,10 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 
 * fixing error in last change
 
+## 0.64.9
+
+* fixing "then" of testing tools to support testing of non aggregate root streams
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis
