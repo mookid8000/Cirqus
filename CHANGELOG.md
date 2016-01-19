@@ -900,6 +900,10 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 
 * fixing "then" of testing tools to support testing of non aggregate root streams
 
+## 0.64.10
+
+* Asserting on events without When()-call
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis

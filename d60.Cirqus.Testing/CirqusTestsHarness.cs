@@ -23,6 +23,7 @@ namespace d60.Cirqus.Testing
         TextFormatter formatter;
 
         IOptionalConfiguration<TestContext> configuration;
+        List<long> arrangedEvents;
         IEnumerable<DomainEvent> results;
 
         protected TestContext Context { get; private set; }
@@ -33,6 +34,8 @@ namespace d60.Cirqus.Testing
         protected void Begin(IWriter writer)
         {
             ids = new Stack<Tuple<Type, string>>();
+            arrangedEvents = new List<long>();
+            results = null;
 
             formatter = new TextFormatter(writer);
 
@@ -98,6 +101,8 @@ namespace d60.Cirqus.Testing
             TryRegisterId<T>(id);
 
             Context.Save(typeof(T), @event);
+
+            arrangedEvents.Add(@event.GetGlobalSequenceNumber());
 
             AfterEmit(@event);
 
@@ -226,6 +231,11 @@ namespace d60.Cirqus.Testing
 
             foreach (var expected in events)
             {
+                if (results == null)
+                {
+                    results = Context.History.Where(x => !arrangedEvents.Contains(x.GetGlobalSequenceNumber()));
+                }
+
                 var actual = results.FirstOrDefault();
 
                 if (actual == null)
