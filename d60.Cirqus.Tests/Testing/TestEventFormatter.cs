@@ -10,15 +10,14 @@ namespace d60.Cirqus.Tests.Testing
     {
         EventFormatter eventFormatter;
         TestWriter writer;
+        TextFormatter textFormatter;
 
         [SetUp]
         public void Setup()
         {
             writer = new TestWriter();
-            eventFormatter =
-                new EventFormatter(
-                    new TextFormatter(
-                        writer));
+            textFormatter = new TextFormatter(writer);
+            eventFormatter = new EventFormatter(textFormatter);
         }
 
         [Test]
@@ -26,7 +25,8 @@ namespace d60.Cirqus.Tests.Testing
         {
             var @event = new SomeEventWithNoProps();
             eventFormatter.Format(null, @event);
-            Assert.AreEqual("SomeEventWithNoProps", writer.Buffer);
+            textFormatter.NewLine();
+            Assert.AreEqual("SomeEventWithNoProps\r\n", writer.Buffer);
         }
 
         [Test]
@@ -39,9 +39,11 @@ namespace d60.Cirqus.Tests.Testing
             };
 
             eventFormatter.Format(null, @event);
+            textFormatter.NewLine();
             Assert.AreEqual(@"SomeEvent
   NoHayBanda: llorando
-  OleOgLone: 2", 
+  OleOgLone: 2
+", 
   writer.Buffer);
         }
 

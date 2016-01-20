@@ -12,7 +12,7 @@ namespace d60.Cirqus.xUnit
             this.output = output;
         }
 
-        public void Write(string text)
+        public void WriteLine(string text)
         {
             output.WriteLine(text);
         }

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
@@ -27,9 +26,6 @@ namespace d60.Cirqus.Testing
         {
             template = template ?? @event.GetType().Name;
 
-            foreach (var match in new Regex(@"\{[^\}]\}+").Matches(template).OfType<Match>()) {}
-
-            var extras = new Dictionary<string, object>();
             var unused = new Dictionary<string, string>();
 
             var metaProperty = @event.GetType().GetProperty("Meta", typeof (Metadata));
@@ -38,17 +34,15 @@ namespace d60.Cirqus.Testing
                 var metadata = (Metadata) metaProperty.GetValue(@event);
                 if (metadata.ContainsKey(DomainEvent.MetadataKeys.AggregateRootId))
                 {
-                    extras.Add("Id", metadata[DomainEvent.MetadataKeys.AggregateRootId]);
+                    template += " (" + metadata[DomainEvent.MetadataKeys.AggregateRootId] + ")";
                 }
             }
 
             var result = template;
-            foreach (var property in extras
-                .Select(property => new {Name = property.Key, property.Value})
-                .Concat(@event.GetType()
+            foreach (var property in @event.GetType()
                     .GetProperties(BindingFlags.Instance | BindingFlags.Public)
                     .Where(x => x.Name != "Meta")
-                    .Select(property => new {property.Name, Value = property.GetValue(@event)})))
+                    .Select(property => new {property.Name, Value = property.GetValue(@event)}))
             {
                 var placeholder = "{" + property.Name + "}";
                 var value = property.Value != null ? property.Value.ToString() : "null";
@@ -87,6 +81,7 @@ namespace d60.Cirqus.Testing
         int cursor;
         int margin;
         string current;
+        string buffer = "";
 
         public TextFormatter(IWriter writer)
         {
@@ -112,7 +107,8 @@ namespace d60.Cirqus.Testing
         {
             cursor = 0;
             margin++;
-            writer.Write("\r\n");
+            writer.WriteLine(buffer);
+            buffer = "";
             return this;
         }
 
@@ -126,12 +122,12 @@ namespace d60.Cirqus.Testing
         {
             if (cursor == 0)
             {
-                writer.Write(string.Join("", Enumerable.Repeat(indent, indentation)));
+                buffer += string.Join("", Enumerable.Repeat(indent, indentation));
             }
 
             margin = 0;
             cursor += str.Length;
-            writer.Write(str);
+            buffer += str;
             return this;
         }
 

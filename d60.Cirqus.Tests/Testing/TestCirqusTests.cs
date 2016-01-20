@@ -29,12 +29,12 @@ namespace d60.Cirqus.Tests.Testing
         [Test]
         public void FormatsGiven()
         {
-            Emit(NewId<RootA>(), new EventA1());
+            Emit(NewId<RootA>(), new EventA3 { Content = "megaoksen" });
 
             Assert.AreEqual(string.Format(
 @"Given that:
-  EventA1
-    Id: {0}
+  EventA3 ({0})
+    Content: megaoksen
 
 ", Id<RootA>()), writer.Buffer);
         }
@@ -50,16 +50,14 @@ namespace d60.Cirqus.Tests.Testing
 
             Assert.AreEqual(string.Format(
 @"Given that:
-  EventA1
-    Id: {0}
+  EventA1 ({0})
 
 When users:
   CommandResultingInOneEvent
     Id: {0}
 
 Then:
-  √ EventA2
-      Id: {0}
+  √ EventA2 ({0})
 
 ", Id<RootA>()), writer.Buffer);
         }
@@ -358,13 +356,31 @@ Then:
         }
 
         [Test]
-        public void ThenWithoutWhenWithError()
+        public void ThenWithoutWhenWithDifference()
         {
             var id = Guid.NewGuid().ToString();
 
             Emit<RootA>(id, new EventA1());
 
-            Should.Throw<AssertionException>(() => Then(id, new EventA1()));
+            Context.Save(id, new EventA3
+            {
+                Content = "asger"
+            });
+
+            Should.Throw<AssertionException>(() => Then(id, new EventA3
+            {
+                Content = "karin"
+            }));
+        }
+
+        [Test]
+        public void ThenWithoutWhenWithNothingEmitted()
+        {
+            var id = Guid.NewGuid().ToString();
+
+            Emit<RootA>(id, new EventA1());
+
+            Should.Throw<AssertionException>(() => Then(id, new EventA2()));
         }
 
         public class RootA : AggregateRoot, IEmit<EventA1>, IEmit<EventA2>, IEmit<EventA3>

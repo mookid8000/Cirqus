@@ -12,10 +12,10 @@ namespace d60.Cirqus.Tests.Testing
 
         public string Buffer { get; private set; }
 
-        public void Write(string text)
+        public void WriteLine(string text)
         {
-            Buffer += text;
-            Console.Write(text);
+            Buffer += text + "\r\n";
+            Console.WriteLine(text);
         }
     }
 }

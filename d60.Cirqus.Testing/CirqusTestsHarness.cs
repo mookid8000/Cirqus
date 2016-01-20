@@ -264,7 +264,7 @@ namespace d60.Cirqus.Testing
                             .EndBlock();
 
                         if (!jActual.IsJson() || !jExpected.IsJson()) return;
-
+                        
                         var differ = new Differ();
                         var diffs = differ.LineByLine(
                             Encoding.UTF8.GetString(jActual.Data), 
@@ -275,7 +275,7 @@ namespace d60.Cirqus.Testing
                         formatter
                             .NewLine().NewLine()
                             .Write("Diff:").NewLine()
-                            .Write(diff);
+                            .Write(diff).NewLine();
                     });
 
                 // consume events
