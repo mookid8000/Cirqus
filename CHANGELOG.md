@@ -908,6 +908,10 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 
 * Fixing xunit test output to work for xunit 2.0
 
+## 0.64.12
+
+* Asserting on events by type only without When()-call
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis

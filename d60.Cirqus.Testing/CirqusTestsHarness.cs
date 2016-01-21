@@ -200,6 +200,11 @@ namespace d60.Cirqus.Testing
 
         protected void Then<T>() where T : DomainEvent
         {
+            if (results == null)
+            {
+                results = Context.History.Where(x => !arrangedEvents.Contains(x.GetGlobalSequenceNumber()));
+            }
+
             var next = results.FirstOrDefault();
 
             formatter.Block("Then:");

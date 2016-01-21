@@ -383,6 +383,20 @@ Then:
             Should.Throw<AssertionException>(() => Then(id, new EventA2()));
         }
 
+        [Test]
+        public void ShallowThenWithoutWhen()
+        {
+            var id = Guid.NewGuid().ToString();
+
+            Emit<RootA>(id, new EventA1());
+
+            Context.Save(id, new EventA2());
+            Context.Save(id, new EventA3());
+
+            Then<EventA2>();
+            Then<EventA3>();
+        }
+
         public class RootA : AggregateRoot, IEmit<EventA1>, IEmit<EventA2>, IEmit<EventA3>
         {
             public void DoA1()
