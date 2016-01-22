@@ -22,7 +22,6 @@ namespace d60.Cirqus.Testing
         Stack<Tuple<Type, string>> ids;
         TextFormatter formatter;
 
-        IOptionalConfiguration<TestContext> configuration;
         List<long> arrangedEvents;
         IEnumerable<DomainEvent> results;
 
@@ -39,9 +38,7 @@ namespace d60.Cirqus.Testing
 
             formatter = new TextFormatter(writer);
 
-            configuration = TestContext.With();
-
-            Context = null;
+            Context = TestContext.Create();
         }
 
         protected void End(bool isInExceptionalState)
@@ -55,18 +52,8 @@ namespace d60.Cirqus.Testing
 
         protected void Configure(Action<IOptionalConfiguration<TestContext>> configurator)
         {
-            if (Context != null)
-            {
-                throw new InvalidOperationException("You must call configure before first invocation of Emit() og When().");
-            }
-
+            var configuration = TestContext.With();
             configurator(configuration);
-        }
-
-        void EnsureContext()
-        {
-            if (Context != null) return;
-
             Context = configuration.Create();
         }
 
@@ -92,8 +79,6 @@ namespace d60.Cirqus.Testing
 
         void Emit<T>(string id, DomainEvent @event)
         {
-            EnsureContext();
-
             @event.Meta[DomainEvent.MetadataKeys.AggregateRootId] = id;
 
             BeforeEmit(@event);
@@ -115,8 +100,6 @@ namespace d60.Cirqus.Testing
 
         protected void When(ExecutableCommand command)
         {
-            EnsureContext();
-
             BeforeExecute(command);
 
             formatter
