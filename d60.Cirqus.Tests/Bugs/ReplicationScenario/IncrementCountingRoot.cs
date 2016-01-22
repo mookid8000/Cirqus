@@ -1,6 +1,6 @@
 ﻿using d60.Cirqus.Commands;
 
-namespace d60.Cirqus.Tests.Bugs.Scenario
+namespace d60.Cirqus.Tests.Bugs.ReplicationScenario
 {
     public class IncrementCountingRoot : Command<CountingRoot>
     {

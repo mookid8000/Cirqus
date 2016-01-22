@@ -3,7 +3,7 @@ using d60.Cirqus.Extensions;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
 
-namespace d60.Cirqus.Tests.Bugs.Scenario
+namespace d60.Cirqus.Tests.Bugs.ReplicationScenario
 {
     public class CountingRootView : IViewInstance<InstancePerAggregateRootLocator>, ISubscribeTo<CountingRootIncremented>
     {

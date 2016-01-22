@@ -13,7 +13,7 @@ using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Views;
 using NUnit.Framework;
 
-namespace d60.Cirqus.Tests.Bugs.Scenario
+namespace d60.Cirqus.Tests.Bugs.ReplicationScenario
 {
     [TestFixture]
     [Description(@"Verifies a pretty finicky scenario where WE THOUGHT THAT delayed replication could accidentally lead to loading an old aggregate root.
