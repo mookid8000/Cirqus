@@ -912,6 +912,10 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 
 * Asserting on events by type only without When()-call
 
+## 0.64.13
+
+* Exposed event store on test context
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis

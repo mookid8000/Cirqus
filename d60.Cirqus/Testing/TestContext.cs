@@ -57,6 +57,11 @@ namespace d60.Cirqus.Testing
             get { return _domainEventSerializer; }
         }
 
+        public IEventStore EventStore
+        {
+            get { return _eventStore; }
+        }
+
         internal event Action Disposed = delegate { };
         internal bool Asynchronous { get; set; }
 
