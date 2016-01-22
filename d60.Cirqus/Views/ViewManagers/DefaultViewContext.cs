@@ -80,11 +80,9 @@ namespace d60.Cirqus.Views.ViewManagers
             var aggregateRootInfo = _aggregateRootRepository
                 .Get<TAggregateRoot>(aggregateRootId, this, maxGlobalSequenceNumber: globalSequenceNumber);
 
-            var aggregateRoot = aggregateRootInfo;
-
             var frozen = new FrozenAggregateRootService(aggregateRootInfo, _realUnitOfWork);
-            aggregateRoot.UnitOfWork = frozen;
-            return aggregateRoot;
+            aggregateRootInfo.UnitOfWork = frozen;
+            return aggregateRootInfo;
         }
 
         TAggregateRoot GetFromCacheOrNull<TAggregateRoot>(string aggregateRootId, long globalSequenceNumber) where TAggregateRoot : class
