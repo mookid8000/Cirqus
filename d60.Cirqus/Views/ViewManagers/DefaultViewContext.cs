@@ -54,7 +54,7 @@ namespace d60.Cirqus.Views.ViewManagers
             return _realUnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff, createIfNotExists);
         }
 
-        public event Action Committed;
+        public event Action<IEnumerable<DomainEvent>> Committed;
 
         readonly Dictionary<string, CachedRoot> _cachedRoots = new Dictionary<string, CachedRoot>();
 
@@ -239,7 +239,7 @@ namespace d60.Cirqus.Views.ViewManagers
                 return _realUnitOfWork.Get<TAggregateRoot>(aggregateRootId, globalSequenceNumberCutoff, createIfNotExists: false);
             }
 
-            public event Action Committed;
+            public event Action<IEnumerable<DomainEvent>> Committed;
         }
 
         public DomainEvent CurrentEvent { get; set; }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using d60.Cirqus.Aggregates;
 
 namespace d60.Cirqus.Events
@@ -28,6 +29,6 @@ namespace d60.Cirqus.Events
         /// </summary>
         AggregateRoot Get<TAggregateRoot>(string aggregateRootId, long globalSequenceNumberCutoff, bool createIfNotExists);
 
-        event Action Committed;
+        event Action<IEnumerable<DomainEvent>> Committed;
     }
 }

@@ -55,5 +55,10 @@ namespace d60.Cirqus.Aggregates
                 Instance.UnitOfWork = previousUnitOfWork;
             }
         }
+
+        public void SetUnitOfWork(IUnitOfWork unitOfWork)
+        {
+            Instance.UnitOfWork = unitOfWork;
+        }
     }
 }

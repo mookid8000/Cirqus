@@ -35,6 +35,6 @@ namespace d60.Cirqus.Tests.Stubs
             return _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, this, globalSequenceNumberCutoff);
         }
 
-        public event Action Committed;
+        public event Action<IEnumerable<DomainEvent>> Committed;
     }
 }

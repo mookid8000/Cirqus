@@ -15,7 +15,7 @@ namespace d60.Cirqus.Snapshotting
             _aggregateRootRepository = aggregateRootRepository;
         }
 
-        public AggregateRoot Get<TAggregateRoot>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = Int64.MaxValue, bool createIfNotExists = false)
+        public AggregateRoot Get<TAggregateRoot>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false)
         {
             if (maxGlobalSequenceNumber < long.MaxValue)
             {
@@ -28,11 +28,11 @@ namespace d60.Cirqus.Snapshotting
 
             if (_cache.TryRemove(aggregateRootId, out info))
             {
-                Console.WriteLine("HIT! {0}", aggregateRootId);
+                //Console.WriteLine("HIT! {0}", aggregateRootId);
 
-                unitOfWork.Committed += () =>
+                unitOfWork.Committed += e =>
                 {
-                    Console.WriteLine("put {0}", aggregateRootId);
+                    //Console.WriteLine("put {0}", aggregateRootId);
                     _cache.TryAdd(aggregateRootId, info);
                 };
 
@@ -41,16 +41,16 @@ namespace d60.Cirqus.Snapshotting
 
             var instance = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber, createIfNotExists);
 
-            unitOfWork.Committed += () =>
+            unitOfWork.Committed += e =>
             {
-                Console.WriteLine("put {0}", aggregateRootId);
+                //Console.WriteLine("put {0}", aggregateRootId);
                 _cache.TryAdd(aggregateRootId, new AggregateRootInfo(instance));
             };
 
             return instance;
         }
 
-        public bool Exists(string aggregateRootId, long maxGlobalSequenceNumber = Int64.MaxValue)
+        public bool Exists(string aggregateRootId, long maxGlobalSequenceNumber = long.MaxValue)
         {
             return _aggregateRootRepository.Exists(aggregateRootId, maxGlobalSequenceNumber);
         }

@@ -112,7 +112,7 @@ namespace d60.Cirqus
 
                     _eventStore.Save(batchId, eventData);
 
-                    unitOfWork.RaiseCommitted();
+                    unitOfWork.RaiseCommitted(eventsFromThisUnitOfWork);
 
                     emittedDomainEvents.AddRange(eventsFromThisUnitOfWork);
 

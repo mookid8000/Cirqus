@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Config;
 using d60.Cirqus.Events;
@@ -69,7 +67,7 @@ namespace d60.Cirqus.Commands
             return aggregateRoot;
         }
 
-        public event Action Committed;
+        public event Action<IEnumerable<DomainEvent>>  Committed;
 
         AggregateRoot GetAggregateRootFromCache(string aggregateRootId, long globalSequenceNumberCutoff)
         {
@@ -84,13 +82,13 @@ namespace d60.Cirqus.Commands
             return aggregateRoot;
         }
 
-        public void RaiseCommitted()
+        public void RaiseCommitted(IEnumerable<DomainEvent> eventsFromThisUnitOfWork)
         {
             var committed = Committed;
 
             if (committed != null)
             {
-                committed();
+                committed(eventsFromThisUnitOfWork);
             }
         }
     }

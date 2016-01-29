@@ -62,6 +62,7 @@
     <Compile Include="Logging\Debug\DebugLogger.cs" />
     <Compile Include="Logging\Debug\DebugLoggerFactory.cs" />
     <Compile Include="Serialization\CachingDomainEventSerializerDecorator.cs" />
+    <Compile Include="Snapshotting\EnableSnapshotsAttribute.cs" />
     <Compile Include="Snapshotting\NewSimpleSnapshottingAggregateRootRepositoryDecorator.cs" />
     <Compile Include="Testing\TestContextConfigurationBuilder.cs" />
     <Compile Include="Config\CustomizableDomainTypeNameMapper.cs" />
@@ -190,6 +191,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Snapshotting\New\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
