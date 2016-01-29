@@ -22,7 +22,6 @@ namespace d60.Cirqus.MongoDb
 
                 return new NewSnapshottingAggregateRootRepositoryDecorator(aggregateRootRepository, eventStore, domainEventSerializer, collectionName, database);
             });
-
         }
     }
 
@@ -40,6 +39,13 @@ namespace d60.Cirqus.MongoDb
             _eventStore = eventStore;
             _domainEventSerializer = domainEventSerializer;
             _snapshots = database.GetCollection<NewSnapshot>(collectionName);
+
+            var indexKeys = IndexKeys
+                .Ascending("AggregateRootId")
+                .Ascending("Version")
+                .Descending("ValidFromGlobalSequenceNumber");
+
+            _snapshots.CreateIndex(indexKeys);
         }
 
         public AggregateRoot Get<TAggregateRoot>(string aggregateRootId, IUnitOfWork unitOfWork, long maxGlobalSequenceNumber = long.MaxValue, bool createIfNotExists = false)

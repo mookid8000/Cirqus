@@ -28,7 +28,7 @@ namespace d60.Cirqus.Tests.Snapshotting
         }
 
         [TestCase(false, 200)]
-        [TestCase(true, 200)]
+        [TestCase(true, 10000)]
         public void RunTest(bool enableSnapshotting, int numberOfCommandsToProcess)
         {
             var handleTimes = new ConcurrentQueue<DispatchStats>();
