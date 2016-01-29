@@ -7,6 +7,7 @@ using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.MongoDb;
 using d60.Cirqus.MongoDb.Config;
+using d60.Cirqus.MongoDb.Snapshotting;
 using d60.Cirqus.MongoDb.Views;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Snapshotting.Models;
@@ -93,7 +94,7 @@ namespace d60.Cirqus.Tests.Snapshotting
                     {
                         Console.WriteLine("Enabling snapshotting");
 
-                        o.EnableSnapshotting(_database, "Snapshots");
+                        o.EnableExperimentalMongoDbSnapshotting(_database, "Snapshots");
                     }
                 })
                 .Create();

@@ -1,6 +1,6 @@
-﻿using System.Linq;
+using System;
+using System.Linq;
 using d60.Cirqus.Aggregates;
-using d60.Cirqus.Config.Configurers;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
 using d60.Cirqus.Serialization;
@@ -8,24 +8,9 @@ using d60.Cirqus.Snapshotting;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 
-namespace d60.Cirqus.MongoDb
+namespace d60.Cirqus.MongoDb.Snapshotting
 {
-    public static class NewSnapshottingConfigurationExtensions
-    {
-        public static void EnableSnapshotting(this OptionsConfigurationBuilder builder, MongoDatabase database, string collectionName)
-        {
-            builder.Decorate<IAggregateRootRepository>(c =>
-            {
-                var aggregateRootRepository = c.Get<IAggregateRootRepository>();
-                var eventStore = c.Get<IEventStore>();
-                var domainEventSerializer = c.Get<IDomainEventSerializer>();
-
-                return new NewSnapshottingAggregateRootRepositoryDecorator(aggregateRootRepository, eventStore, domainEventSerializer, collectionName, database);
-            });
-        }
-    }
-
-    public class NewSnapshottingAggregateRootRepositoryDecorator : IAggregateRootRepository
+    class NewSnapshottingAggregateRootRepositoryDecorator : IAggregateRootRepository
     {
         readonly IAggregateRootRepository _aggregateRootRepository;
         readonly IEventStore _eventStore;
@@ -70,6 +55,8 @@ namespace d60.Cirqus.MongoDb
 
             if (matchingSnapshot != null)
             {
+                UpdateTimeOfLastUsage(matchingSnapshot);
+
                 var preparedInstance = PrepareFromSnapshot(matchingSnapshot, maxGlobalSequenceNumber, unitOfWork);
                 var sequenceNumberOfPreparedInstance = new AggregateRootInfo(preparedInstance).SequenceNumber;
 
@@ -84,6 +71,14 @@ namespace d60.Cirqus.MongoDb
             OnCommitted(aggregateRootId, unitOfWork, aggregateRootInstance, checkedOutSequenceNumber, snapshotAttribute);
 
             return aggregateRootInstance;
+        }
+
+        void UpdateTimeOfLastUsage(NewSnapshot matchingSnapshot)
+        {
+            var query = Query.EQ("Id", matchingSnapshot.Id);
+            var update = Update.Set("LastUsedUtc", DateTime.UtcNow);
+
+            _snapshots.Update(query, update, UpdateFlags.None, WriteConcern.Unacknowledged);
         }
 
         static EnableSnapshotsAttribute GetSnapshotAttribute<TAggregateRoot>()
@@ -143,11 +138,16 @@ namespace d60.Cirqus.MongoDb
 
         class NewSnapshot
         {
+            public NewSnapshot()
+            {
+                LastUsedUtc = DateTime.UtcNow;
+            }
             public string Id { get; set; }
             public string AggregateRootId { get; set; }
             public string Data { get; set; }
             public long ValidFromGlobalSequenceNumber { get; set; }
             public int Version { get; set; }
+            public DateTime LastUsedUtc { get; set; }
         }
     }
 }
