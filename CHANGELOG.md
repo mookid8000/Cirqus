@@ -916,6 +916,10 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 
 * Exposed event store on test context
 
+## 0.64.14
+
+* Added new experimental aggregate root snapshotting mechanism to MongoDB package (can easily be extended to other storages if it turns out to be good)
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis
