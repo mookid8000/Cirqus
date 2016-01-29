@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using d60.Cirqus.Aggregates;
 using d60.Cirqus.Events;
@@ -68,6 +69,8 @@ namespace d60.Cirqus.MongoDb.Snapshotting
             var aggregateRootInstance = _aggregateRootRepository.Get<TAggregateRoot>(aggregateRootId, unitOfWork, maxGlobalSequenceNumber, createIfNotExists);
             var checkedOutSequenceNumber = new AggregateRootInfo(aggregateRootInstance).SequenceNumber;
 
+            SaveSnapshot(aggregateRootId, aggregateRootInstance, checkedOutSequenceNumber, snapshotAttribute, maxGlobalSequenceNumber);
+
             OnCommitted(aggregateRootId, unitOfWork, aggregateRootInstance, checkedOutSequenceNumber, snapshotAttribute);
 
             return aggregateRootInstance;
@@ -93,21 +96,26 @@ namespace d60.Cirqus.MongoDb.Snapshotting
         {
             unitOfWork.Committed += eventBatch =>
             {
-                var info = new AggregateRootInfo(aggregateRootInstance);
-                var currentSequenceNumber = info.SequenceNumber;
-                if (currentSequenceNumber == checkedOutSequenceNumber) return;
-
-                var serializedInstance = _sturdylizer.SerializeObject(info.Instance);
-
-                _snapshots.Save(new NewSnapshot
-                {
-                    Id = string.Format("{0}/{1}", aggregateRootId, currentSequenceNumber),
-                    AggregateRootId = aggregateRootId,
-                    Data = serializedInstance,
-                    ValidFromGlobalSequenceNumber = eventBatch.Max(e => e.GetGlobalSequenceNumber()),
-                    Version = snapshotAttribute.Version
-                });
+                SaveSnapshot(aggregateRootId, aggregateRootInstance, checkedOutSequenceNumber, snapshotAttribute, eventBatch.Max(e => e.GetGlobalSequenceNumber()));
             };
+        }
+
+        void SaveSnapshot(string aggregateRootId, AggregateRoot aggregateRootInstance, long checkedOutSequenceNumber, EnableSnapshotsAttribute snapshotAttribute, long validFromGlobalSequenceNumber)
+        {
+            var info = new AggregateRootInfo(aggregateRootInstance);
+            var currentSequenceNumber = info.SequenceNumber;
+            if (currentSequenceNumber == checkedOutSequenceNumber) return;
+
+            var serializedInstance = _sturdylizer.SerializeObject(info.Instance);
+
+            _snapshots.Save(new NewSnapshot
+            {
+                Id = string.Format("{0}/{1}", aggregateRootId, currentSequenceNumber),
+                AggregateRootId = aggregateRootId,
+                Data = serializedInstance,
+                ValidFromGlobalSequenceNumber = validFromGlobalSequenceNumber,
+                Version = snapshotAttribute.Version
+            });
         }
 
         AggregateRoot PrepareFromSnapshot(NewSnapshot matchingSnapshot, long maxGlobalSequenceNumber, IUnitOfWork unitOfWork)
