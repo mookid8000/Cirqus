@@ -928,6 +928,10 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 
 * Tweaked the new MongoDB snapshotting again
 
+## 0.65.0
+
+* Changed new snapshot configuration API to enable other snapshot storages via the `ISnapshotStore` abstraction
+
 
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund

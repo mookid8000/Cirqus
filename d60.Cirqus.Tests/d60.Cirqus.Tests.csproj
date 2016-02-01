@@ -250,7 +250,6 @@
     <Compile Include="Snapshotting\Models\Root.cs" />
     <Compile Include="Snapshotting\TestCachingAggregateRootRepositoryDecorator.cs" />
     <Compile Include="Snapshotting\TestNewNewSnapshotting.cs" />
-    <Compile Include="Snapshotting\TestNewSnapshotting.cs" />
     <Compile Include="SqlTestHelperBase.cs" />
     <Compile Include="MsSql\MsSqlTestHelper.cs" />
     <Compile Include="Playground\TestTypeHashCodes.cs" />

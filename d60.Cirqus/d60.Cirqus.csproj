@@ -63,7 +63,10 @@
     <Compile Include="Logging\Debug\DebugLoggerFactory.cs" />
     <Compile Include="Serialization\CachingDomainEventSerializerDecorator.cs" />
     <Compile Include="Snapshotting\EnableSnapshotsAttribute.cs" />
-    <Compile Include="Snapshotting\NewSimpleSnapshottingAggregateRootRepositoryDecorator.cs" />
+    <Compile Include="Snapshotting\New\ISnapshotStore.cs" />
+    <Compile Include="Snapshotting\New\NewSnapshottingAggregateRootRepositoryDecorator.cs" />
+    <Compile Include="Snapshotting\New\Snapshot.cs" />
+    <Compile Include="Snapshotting\New\SnapshottingConfigurationExtensions.cs" />
     <Compile Include="Testing\TestContextConfigurationBuilder.cs" />
     <Compile Include="Config\CustomizableDomainTypeNameMapper.cs" />
     <Compile Include="Config\DefaultDomainTypeNameMapper.cs" />
@@ -192,9 +195,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Snapshotting\New\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

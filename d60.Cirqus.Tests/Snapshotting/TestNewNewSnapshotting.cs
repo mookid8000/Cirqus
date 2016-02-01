@@ -13,6 +13,7 @@ using d60.Cirqus.MongoDb.Snapshotting;
 using d60.Cirqus.MongoDb.Views;
 using d60.Cirqus.Numbers;
 using d60.Cirqus.Serialization;
+using d60.Cirqus.Snapshotting.New;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Snapshotting.Models;
 using d60.Cirqus.Views;
@@ -75,9 +76,9 @@ namespace d60.Cirqus.Tests.Snapshotting
 
         [TestCase(false, 5000)]
         [TestCase(true, 5000)]
-        public void RunEventReplayingTest(bool enableSnapshotting, int numberOfCommandsToProcess)
+        public void RunEventReplayingTest(bool enableSnapshotting, int numberOfEventsToGenerate)
         {
-            SaveEvents(numberOfCommandsToProcess, "bimse!");
+            SaveEvents(numberOfEventsToGenerate, "bimse!");
 
             var handleTimes = new ConcurrentQueue<DispatchStats>();
             var viewManager = CreateViewManager();
@@ -91,7 +92,7 @@ namespace d60.Cirqus.Tests.Snapshotting
             viewManager.WaitUntilProcessed(lastResult, TimeSpan.FromMinutes(5)).Wait();
 
             Console.WriteLine();
-            Console.WriteLine("Processing {0} events took {1:0.0} s in total", numberOfCommandsToProcess, stopwatch.Elapsed.TotalSeconds);
+            Console.WriteLine("Processing {0} events took {1:0.0} s in total", numberOfEventsToGenerate, stopwatch.Elapsed.TotalSeconds);
             Console.WriteLine();
 
             var stats = handleTimes
@@ -105,13 +106,31 @@ namespace d60.Cirqus.Tests.Snapshotting
                 .Select(time =>
                 {
                     var timeString = time.Elapsed.TotalSeconds.ToString("0.00").PadLeft(8);
-                    var bar = new string('=', (int)(100.0 * (time.Elapsed.TotalSeconds / maxTime.TotalSeconds)));
+                    var bar = GetBar(time, maxTime);
 
                     return string.Concat(timeString, ": ", bar);
                 }));
 
             Console.WriteLine(statsLines);
             Console.WriteLine("0.00 - {0:0.00} s", maxTime.TotalSeconds);
+        }
+
+        static string GetBar(DispatchStats time, TimeSpan maxTime)
+        {
+            const double maxLength = 100.0;
+
+            var maxTimeSeconds = maxTime.TotalSeconds;
+            var elapsedSeconds = time.Elapsed.TotalSeconds;
+
+            var factor = elapsedSeconds / maxTimeSeconds;
+
+            if (factor < 0)
+            {
+                Console.WriteLine("WTF?!?!?!");
+                return "";
+            }
+
+            return new string('=', (int)(maxLength * factor));
         }
 
         CommandProcessingResult GetLastResult()
@@ -180,7 +199,7 @@ namespace d60.Cirqus.Tests.Snapshotting
                     {
                         Console.WriteLine("Enabling snapshotting");
 
-                        o.EnableExperimentalMongoDbSnapshotting(_database, "Snapshots");
+                        o.EnableSnapshotting(s => s.UseMongoDb(_database, "GoodSnaps"));
                     }
                 })
                 .Create();
