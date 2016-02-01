@@ -6,8 +6,15 @@ using d60.Cirqus.Serialization;
 
 namespace d60.Cirqus.Snapshotting.New
 {
+    /// <summary>
+    /// Configuration extensions for enabling aggregate root snapshots
+    /// </summary>
     public static class SnapshottingConfigurationExtensions
     {
+        /// <summary>
+        /// Enables aggregate root snapshotting. When enabled, aggregate roots can be snapped by applying a <see cref="EnableSnapshotsAttribute"/> to them,
+        /// using the <see cref="EnableSnapshotsAttribute.Version"/> property to leave old snapshots behind.
+        /// </summary>
         public static void EnableSnapshotting(this OptionsConfigurationBuilder builder, Action<SnapshottingConfigurationBuilder> configureSnapshotting)
         {
             configureSnapshotting(new SnapshottingConfigurationBuilder(builder));
@@ -21,26 +28,6 @@ namespace d60.Cirqus.Snapshotting.New
 
                 return new NewSnapshottingAggregateRootRepositoryDecorator(aggregateRootRepository, eventStore, domainEventSerializer, snapshotStore);
             });
-        }
-    }
-
-    public class SnapshottingConfigurationBuilder
-    {
-        readonly OptionsConfigurationBuilder _optionsConfigurationBuilder;
-
-        public SnapshottingConfigurationBuilder(OptionsConfigurationBuilder optionsConfigurationBuilder)
-        {
-            _optionsConfigurationBuilder = optionsConfigurationBuilder;
-        }
-
-        public void Register(Func<ResolutionContext, ISnapshotStore> factory)
-        {
-            _optionsConfigurationBuilder.Register(factory);
-        }
-
-        public void Decorate(Func<ResolutionContext, ISnapshotStore> factory)
-        {
-            _optionsConfigurationBuilder.Decorate(factory);
         }
     }
 }

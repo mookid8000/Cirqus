@@ -5,6 +5,8 @@ using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.MongoDb.Logging;
+using d60.Cirqus.MongoDb.Snapshotting;
+using d60.Cirqus.Snapshotting.New;
 using MongoDB.Driver;
 
 namespace d60.Cirqus.MongoDb.Config
@@ -64,6 +66,35 @@ namespace d60.Cirqus.MongoDb.Config
             if (logCollectionName == null) throw new ArgumentNullException("logCollectionName");
 
             UseMongoDbLoggerFactory(database, logCollectionName);
+        }
+
+        /// <summary>
+        /// Configures Cirqus to use MongoDB to store aggregate root snapshots in the <paramref name="collectionName"/> collection in the specified MongoDB database.
+        /// </summary>
+        public static void UseMongoDb(this SnapshottingConfigurationBuilder builder, MongoDatabase database, string collectionName)
+        {
+            if (builder == null) throw new ArgumentNullException("builder");
+            if (database == null) throw new ArgumentNullException("database");
+            if (collectionName == null) throw new ArgumentNullException("collectionName");
+
+            builder.Register(c => new MongoDbSnapshotStore(database, collectionName));
+        }
+
+        /// <summary>
+        /// Configures Cirqus to use MongoDB to store aggregate root snapshots in the <paramref name="collectionName"/> collection in the database specified by the <paramref name="mongoDbConnectionString"/> connection string.
+        /// </summary>
+        public static void UseMongoDb(this SnapshottingConfigurationBuilder builder, string mongoDbConnectionString, string collectionName)
+        {
+            if (builder == null) throw new ArgumentNullException("builder");
+            if (mongoDbConnectionString == null) throw new ArgumentNullException("mongoDbConnectionString");
+            if (collectionName == null) throw new ArgumentNullException("collectionName");
+
+            var mongoUrl = GetMongoUrl(mongoDbConnectionString);
+
+            var database = new MongoClient(mongoUrl).GetServer()
+                .GetDatabase(mongoUrl.DatabaseName);
+
+            builder.Register(c => new MongoDbSnapshotStore(database, collectionName));
         }
 
         static void UseMongoDbLoggerFactory(MongoDatabase database, string logCollectionName)
