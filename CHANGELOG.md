@@ -920,6 +920,15 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 
 * Added new experimental aggregate root snapshotting mechanism to MongoDB package (can easily be extended to other storages if it turns out to be good)
 
+## 0.64.15
+
+* Tweaked the new MongoDB snapshotting
+
+## 0.64.16
+
+* Tweaked the new MongoDB snapshotting again
+
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis

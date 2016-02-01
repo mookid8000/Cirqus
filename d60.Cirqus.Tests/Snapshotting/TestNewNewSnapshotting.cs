@@ -3,12 +3,16 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using d60.Cirqus.Config;
+using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
-using d60.Cirqus.MongoDb;
 using d60.Cirqus.MongoDb.Config;
+using d60.Cirqus.MongoDb.Events;
 using d60.Cirqus.MongoDb.Snapshotting;
 using d60.Cirqus.MongoDb.Views;
+using d60.Cirqus.Numbers;
+using d60.Cirqus.Serialization;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Snapshotting.Models;
 using d60.Cirqus.Views;
@@ -28,9 +32,9 @@ namespace d60.Cirqus.Tests.Snapshotting
             CirqusLoggerFactory.Current = new ConsoleLoggerFactory(Logger.Level.Warn);
         }
 
-        [TestCase(false, 200)]
-        [TestCase(true, 200)]
-        public void RunTest(bool enableSnapshotting, int numberOfCommandsToProcess)
+        [TestCase(false, 1000)]
+        [TestCase(true, 1000)]
+        public void RunCommandProcessingTest(bool enableSnapshotting, int numberOfCommandsToProcess)
         {
             var handleTimes = new ConcurrentQueue<DispatchStats>();
             var viewManager = CreateViewManager();
@@ -42,17 +46,21 @@ namespace d60.Cirqus.Tests.Snapshotting
                 .Select(i => commandProcessor.ProcessCommand(new IncrementRoot("bimse!")))
                 .Last();
 
-            viewManager.WaitUntilProcessed(lastResult, TimeSpan.FromMinutes(2)).Wait();
+            Console.WriteLine("Waiting for views to catch up to {0}", lastResult);
+            viewManager.WaitUntilProcessed(lastResult, TimeSpan.FromMinutes(5)).Wait();
 
             Console.WriteLine();
             Console.WriteLine("Processing {0} commands took {1:0.0} s in total", numberOfCommandsToProcess, stopwatch.Elapsed.TotalSeconds);
             Console.WriteLine();
 
-            var maxTime = handleTimes.Max(t => t.Elapsed);
-
-            var statsLines = string.Join(Environment.NewLine, handleTimes
+            var stats = handleTimes
                 .GroupBy(l => RoundToSeconds(l, TimeSpan.FromSeconds(10)))
                 .Select(g => new DispatchStats(g.Key, TimeSpan.FromSeconds(g.Average(e => e.Elapsed.TotalSeconds))))
+                .ToList();
+
+            var maxTime = stats.Max(t => t.Elapsed);
+
+            var statsLines = string.Join(Environment.NewLine, stats
                 .Select(time =>
                 {
                     var timeString = time.Elapsed.TotalSeconds.ToString("0.00").PadLeft(8);
@@ -65,11 +73,89 @@ namespace d60.Cirqus.Tests.Snapshotting
             Console.WriteLine("0.00 - {0:0.00} s", maxTime.TotalSeconds);
         }
 
+        [TestCase(false, 5000)]
+        [TestCase(true, 5000)]
+        public void RunEventReplayingTest(bool enableSnapshotting, int numberOfCommandsToProcess)
+        {
+            SaveEvents(numberOfCommandsToProcess, "bimse!");
+
+            var handleTimes = new ConcurrentQueue<DispatchStats>();
+            var viewManager = CreateViewManager();
+            CreateCommandProcessor(enableSnapshotting, viewManager, handleTimes);
+
+            var stopwatch = Stopwatch.StartNew();
+
+            var lastResult = GetLastResult();
+
+            Console.WriteLine("Waiting for views to catch up to {0}", lastResult);
+            viewManager.WaitUntilProcessed(lastResult, TimeSpan.FromMinutes(5)).Wait();
+
+            Console.WriteLine();
+            Console.WriteLine("Processing {0} events took {1:0.0} s in total", numberOfCommandsToProcess, stopwatch.Elapsed.TotalSeconds);
+            Console.WriteLine();
+
+            var stats = handleTimes
+                .GroupBy(l => RoundToSeconds(l, TimeSpan.FromSeconds(1)))
+                .Select(g => new DispatchStats(g.Key, TimeSpan.FromSeconds(g.Average(e => e.Elapsed.TotalSeconds))))
+                .ToList();
+
+            var maxTime = stats.Max(t => t.Elapsed);
+
+            var statsLines = string.Join(Environment.NewLine, stats
+                .Select(time =>
+                {
+                    var timeString = time.Elapsed.TotalSeconds.ToString("0.00").PadLeft(8);
+                    var bar = new string('=', (int)(100.0 * (time.Elapsed.TotalSeconds / maxTime.TotalSeconds)));
+
+                    return string.Concat(timeString, ": ", bar);
+                }));
+
+            Console.WriteLine(statsLines);
+            Console.WriteLine("0.00 - {0:0.00} s", maxTime.TotalSeconds);
+        }
+
+        CommandProcessingResult GetLastResult()
+        {
+            var eventStore = new MongoDbEventStore(_database, "Events");
+            var nextGlobalSequenceNumber = eventStore.GetNextGlobalSequenceNumber();
+            var lastGlobalSequenceNumber = nextGlobalSequenceNumber - 1;
+            return CommandProcessingResult.WithNewPosition(lastGlobalSequenceNumber);
+        }
+
+        void SaveEvents(int numberOfCommandsToProcess, string aggregateRootId)
+        {
+            var eventStore = new MongoDbEventStore(_database, "Events");
+            var serializer = new JsonDomainEventSerializer();
+            var typeNameMapper = new DefaultDomainTypeNameMapper();
+
+            Enumerable.Range(0, numberOfCommandsToProcess)
+                .ToList()
+                .ForEach(number =>
+                {
+                    var domainEvents = new[]
+                    {
+                        new RootGotNewNumber(number)
+                        {
+                            Meta =
+                            {
+                                {DomainEvent.MetadataKeys.AggregateRootId, aggregateRootId},
+                                {DomainEvent.MetadataKeys.SequenceNumber, number.ToString()},
+                                {DomainEvent.MetadataKeys.TimeUtc, Time.UtcNow().ToString("u")},
+                                {DomainEvent.MetadataKeys.Type, typeNameMapper.GetName(typeof(RootGotNewNumber))},
+                                {DomainEvent.MetadataKeys.Owner, typeNameMapper.GetName(typeof(Root))},
+                            }
+                        }
+                    };
+
+                    eventStore.Save(Guid.NewGuid(), domainEvents.Select(e => serializer.Serialize(e)));
+                });
+        }
+
         DateTime RoundToSeconds(DispatchStats dispatchStats, TimeSpan resolution)
         {
             var oneSecond = resolution.Ticks;
-            var number = dispatchStats.Time.Ticks/oneSecond;
-            return new DateTime(number*oneSecond);
+            var number = dispatchStats.Time.Ticks / oneSecond;
+            return new DateTime(number * oneSecond);
         }
 
         IViewManager CreateViewManager()
