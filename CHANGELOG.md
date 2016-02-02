@@ -937,6 +937,10 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 * Refined API of `ISnapshotStore` and introduced simple in-mem snapshot store
 * Made snapshotter do another snapshot after preparation if the preparation 
 
+## 0.66.1
+
+* Further optimization of fast-track: Avoid serializer roundtrip when possible
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis
