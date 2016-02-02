@@ -278,7 +278,7 @@
     <Compile Include="Views\Distribution\Model\SomeRootView.cs" />
     <Compile Include="Views\Distribution\TestAutomaticViewManagerDistribution.cs" />
     <Compile Include="Views\Distribution\TestMongoDbAutoDistributionPersistence.cs" />
-    <Compile Include="Views\NewViewManager\TestViewManagerEventDispatcher - Copy.cs" />
+    <Compile Include="Views\NewViewManager\TestViewManagerEventDispatcherWithOptimization.cs" />
     <Compile Include="Views\NewViewManager\Views\AllPotatoesView.cs" />
     <Compile Include="Views\NewViewManager\Events\BaptizedSomeone.cs" />
     <Compile Include="Views\NewViewManager\Commands\BitePotato.cs" />

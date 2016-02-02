@@ -120,7 +120,7 @@ namespace d60.Cirqus.Views
         public void SetContextItems(IDictionary<string, object> contextItems)
         {
             if (contextItems == null) throw new ArgumentNullException("contextItems");
-            
+
             foreach (var kvp in contextItems)
             {
                 _viewContextItems[kvp.Key] = kvp.Value;
@@ -308,12 +308,12 @@ namespace d60.Cirqus.Views
             // if we've already been there, don't do anything
             if (lowestSequenceNumberSuccessfullyProcessed >= sequenceNumberToCatchUpTo) return;
 
-            // if we can dispatch events directly, we do it now
-            if (events.Any() && lowestSequenceNumberSuccessfullyProcessed >= events.First().GetGlobalSequenceNumber() - 1)
-            {
-                var serializedEvents = events.Select(e => _domainEventSerializer.Serialize(e));
+            // Fast-track events if possible: If we can dispatch events directly, we do it now
+            var nextSequenceNumberInLineForFastTrackDispatch = lowestSequenceNumberSuccessfullyProcessed + 1;
 
-                DispatchBatchToViewManagers(viewManagers, serializedEvents, positions);
+            if (events.Any() && nextSequenceNumberInLineForFastTrackDispatch == events.First().GetGlobalSequenceNumber())
+            {
+                DispatchBatchToViewManagers(viewManagers, events, positions);
 
                 lowestSequenceNumberSuccessfullyProcessed = events.Last().GetGlobalSequenceNumber();
 
@@ -321,7 +321,7 @@ namespace d60.Cirqus.Views
                 if (lowestSequenceNumberSuccessfullyProcessed >= sequenceNumberToCatchUpTo) return;
             }
 
-            // ok, we must replay - start from here:
+            // Regular dispatch: We must replay - start from here:
             var sequenceNumberToReplayFrom = lowestSequenceNumberSuccessfullyProcessed + 1;
 
             foreach (var batch in eventStore.Stream(sequenceNumberToReplayFrom).Batch(MaxDomainEventsPerBatch))
@@ -348,6 +348,11 @@ namespace d60.Cirqus.Views
                 .Select(e => _domainEventSerializer.Deserialize(e))
                 .ToList();
 
+            DispatchBatchToViewManagers(viewManagers, eventList, positions);
+        }
+
+        void DispatchBatchToViewManagers(IEnumerable<IViewManager> viewManagers, List<DomainEvent> eventList, Dictionary<IViewManager, Pos> positions)
+        {
             foreach (var viewManager in viewManagers)
             {
                 var thisParticularPosition = positions[viewManager].Position;
