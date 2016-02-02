@@ -9,10 +9,10 @@ using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
 using d60.Cirqus.MongoDb.Config;
 using d60.Cirqus.MongoDb.Events;
-using d60.Cirqus.MongoDb.Snapshotting;
 using d60.Cirqus.MongoDb.Views;
 using d60.Cirqus.Numbers;
 using d60.Cirqus.Serialization;
+using d60.Cirqus.Snapshotting;
 using d60.Cirqus.Snapshotting.New;
 using d60.Cirqus.Tests.MongoDb;
 using d60.Cirqus.Tests.Snapshotting.Models;
@@ -65,7 +65,9 @@ namespace d60.Cirqus.Tests.Snapshotting
                 .Select(time =>
                 {
                     var timeString = time.Elapsed.TotalSeconds.ToString("0.00").PadLeft(8);
-                    var bar = new string('=', (int)(100.0 * (time.Elapsed.TotalSeconds / maxTime.TotalSeconds)));
+                    var bar = maxTime.TotalSeconds > 0.0000001
+                        ? new string('=', (int)(100.0 * (time.Elapsed.TotalSeconds / maxTime.TotalSeconds)))
+                        : "";
 
                     return string.Concat(timeString, ": ", bar);
                 }));
@@ -100,7 +102,7 @@ namespace d60.Cirqus.Tests.Snapshotting
                 .Select(g => new DispatchStats(g.Key, TimeSpan.FromSeconds(g.Average(e => e.Elapsed.TotalSeconds))))
                 .ToList();
 
-            var maxTime = stats.Max(t => t.Elapsed);
+            var maxTime = stats.Any() ? stats.Max(t => t.Elapsed) : TimeSpan.Zero;
 
             var statsLines = string.Join(Environment.NewLine, stats
                 .Select(time =>
@@ -118,6 +120,8 @@ namespace d60.Cirqus.Tests.Snapshotting
         static string GetBar(DispatchStats time, TimeSpan maxTime)
         {
             const double maxLength = 100.0;
+
+            if (maxTime == TimeSpan.Zero) return "";
 
             var maxTimeSeconds = maxTime.TotalSeconds;
             var elapsedSeconds = time.Elapsed.TotalSeconds;
@@ -200,6 +204,7 @@ namespace d60.Cirqus.Tests.Snapshotting
                         Console.WriteLine("Enabling snapshotting");
 
                         o.EnableSnapshotting(s => s.UseMongoDb(_database, "GoodSnaps"));
+                        //o.EnableSnapshotting(s => s.UseInMemorySnapshotStore());
                     }
                 })
                 .Create();

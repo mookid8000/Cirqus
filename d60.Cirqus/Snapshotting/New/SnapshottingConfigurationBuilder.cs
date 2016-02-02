@@ -13,6 +13,22 @@ namespace d60.Cirqus.Snapshotting.New
         internal SnapshottingConfigurationBuilder(OptionsConfigurationBuilder optionsConfigurationBuilder)
         {
             _optionsConfigurationBuilder = optionsConfigurationBuilder;
+
+            PreparationThreshold = TimeSpan.FromSeconds(0.5);
+        }
+
+        internal TimeSpan PreparationThreshold
+        {
+            get; set;
+        }
+
+        /// <summary>
+        /// Sets the threshold for the time elapsed during preparation after which a new snapshot will be immediately created
+        /// </summary>
+        public SnapshottingConfigurationBuilder SetPreparationThreshold(TimeSpan threshold)
+        {
+            PreparationThreshold = threshold;
+            return this;
         }
 
         /// <summary>

@@ -62,7 +62,9 @@
     <Compile Include="Logging\Debug\DebugLogger.cs" />
     <Compile Include="Logging\Debug\DebugLoggerFactory.cs" />
     <Compile Include="Serialization\CachingDomainEventSerializerDecorator.cs" />
+    <Compile Include="Snapshotting\InMemorySnapshotStore.cs" />
     <Compile Include="Snapshotting\EnableSnapshotsAttribute.cs" />
+    <Compile Include="Snapshotting\InMemSnapshotConfigEx.cs" />
     <Compile Include="Snapshotting\New\ISnapshotStore.cs" />
     <Compile Include="Snapshotting\New\NewSnapshottingAggregateRootRepositoryDecorator.cs" />
     <Compile Include="Snapshotting\New\Snapshot.cs" />

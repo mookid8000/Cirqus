@@ -932,6 +932,10 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 
 * Changed new snapshot configuration API to enable other snapshot storages via the `ISnapshotStore` abstraction
 
+## 0.66.0
+
+* Refined API of `ISnapshotStore` and introduced simple in-mem snapshot store
+* Made snapshotter do another snapshot after preparation if the preparation 
 
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund

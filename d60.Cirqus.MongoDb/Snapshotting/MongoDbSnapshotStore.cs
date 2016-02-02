@@ -25,7 +25,7 @@ namespace d60.Cirqus.MongoDb.Snapshotting
             _snapshots.CreateIndex(indexKeys);
         }
 
-        public Snapshot TryGetSnapshot<TAggregateRoot>(string aggregateRootId, long maxGlobalSequenceNumber)
+        public Snapshot LoadSnapshot<TAggregateRoot>(string aggregateRootId, long maxGlobalSequenceNumber)
         {
             var snapshotAttribute = GetSnapshotAttribute<TAggregateRoot>();
 
@@ -54,7 +54,7 @@ namespace d60.Cirqus.MongoDb.Snapshotting
             {
                 var instance = _sturdylizer.DeserializeObject(matchingSnapshot.Data);
                 UpdateTimeOfLastUsage(matchingSnapshot);
-                return new Snapshot(matchingSnapshot.ValidFromGlobalSequenceNumber, matchingSnapshot.AggregateRootId, instance);
+                return new Snapshot(matchingSnapshot.ValidFromGlobalSequenceNumber, instance);
             }
             catch(Exception)
             {
@@ -62,18 +62,15 @@ namespace d60.Cirqus.MongoDb.Snapshotting
             }
         }
 
-        public void SaveSnapshot<TAggregateRoot>(string aggregateRootId, AggregateRoot aggregateRootInstance, long checkedOutSequenceNumber, bool instanceIsBasedOnSnapshot, long validFromGlobalSequenceNumber)
+        public void SaveSnapshot<TAggregateRoot>(string aggregateRootId, AggregateRoot aggregateRootInstance, long validFromGlobalSequenceNumber)
         {
             var snapshotAttribute = GetSnapshotAttribute(aggregateRootInstance.GetType());
             var info = new AggregateRootInfo(aggregateRootInstance);
-            var currentSequenceNumber = info.SequenceNumber;
-            if (instanceIsBasedOnSnapshot && currentSequenceNumber == checkedOutSequenceNumber) return;
-
             var serializedInstance = _sturdylizer.SerializeObject(info.Instance);
 
             _snapshots.Insert(new NewSnapshot
             {
-                Id = string.Format("{0}/{1}", aggregateRootId, currentSequenceNumber),
+                Id = string.Format("{0}/{1}", aggregateRootId, info.SequenceNumber),
                 AggregateRootId = aggregateRootId,
                 Data = serializedInstance,
                 ValidFromGlobalSequenceNumber = validFromGlobalSequenceNumber,

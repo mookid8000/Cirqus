@@ -17,7 +17,9 @@ namespace d60.Cirqus.Snapshotting.New
         /// </summary>
         public static void EnableSnapshotting(this OptionsConfigurationBuilder builder, Action<SnapshottingConfigurationBuilder> configureSnapshotting)
         {
-            configureSnapshotting(new SnapshottingConfigurationBuilder(builder));
+            var snapshottingConfigurationBuilder = new SnapshottingConfigurationBuilder(builder);
+
+            configureSnapshotting(snapshottingConfigurationBuilder);
 
             builder.Decorate<IAggregateRootRepository>(c =>
             {
@@ -26,7 +28,9 @@ namespace d60.Cirqus.Snapshotting.New
                 var domainEventSerializer = c.Get<IDomainEventSerializer>();
                 var snapshotStore = c.Get<ISnapshotStore>();
 
-                return new NewSnapshottingAggregateRootRepositoryDecorator(aggregateRootRepository, eventStore, domainEventSerializer, snapshotStore);
+                var threshold = snapshottingConfigurationBuilder.PreparationThreshold;
+
+                return new NewSnapshottingAggregateRootRepositoryDecorator(aggregateRootRepository, eventStore, domainEventSerializer, snapshotStore, threshold);
             });
         }
     }
