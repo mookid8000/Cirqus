@@ -27,14 +27,39 @@ namespace d60.Cirqus.Tests.MsSql
             _globalSequenceNumber = 0;
         }
 
-        [TestCase(10000)]
+        [TestCase(100000)]
         public void CheckReadPerformance(int numberOfEvents)
         {
             var stopwatch = Stopwatch.StartNew();
             WriteEvents(numberOfEvents);
             var seconds = stopwatch.Elapsed.TotalSeconds;
 
-            Console.WriteLine("Writing {0} events tooke {1:0.0} s - that's {2:0.0} events/s", numberOfEvents, seconds, numberOfEvents / seconds);
+            Console.WriteLine("Writing {0} events took {1:0.0} s - that's {2:0.0} events/s", numberOfEvents, seconds, numberOfEvents / seconds);
+
+            var measuredSeconds = new List<Tuple<double, int>>();
+
+            100.Times(() =>
+            {
+                var readStopwatch = Stopwatch.StartNew();
+                var randomAggregateRootId = GetRandomAggregateRootId();
+
+                var events = _eventStore.Load(randomAggregateRootId).ToList();
+
+                measuredSeconds.Add(Tuple.Create(readStopwatch.Elapsed.TotalSeconds, events.Count));
+            });
+
+            Console.WriteLine("Reading entire root event stream took {0:0.0} for {1:0.0} events - that's {2:0.0} events/s (AVG)",
+                measuredSeconds.Average(a => a.Item1), measuredSeconds.Average(a => a.Item2), measuredSeconds.Average(a => a.Item2)/measuredSeconds.Average(a => a.Item1));
+
+            var streamStopwatch = Stopwatch.StartNew();
+            var counter = 0;
+            foreach (var e in _eventStore.Stream())
+            {
+                counter++;
+            }
+            var totalSeconds = streamStopwatch.Elapsed.TotalSeconds;
+            Console.WriteLine("Streaming all events took {0:0.0} s for {1} events - that's {2:0.0} events/s",
+                totalSeconds, counter, counter/ totalSeconds);
         }
 
         void WriteEvents(int numberOfEvents)

@@ -184,7 +184,7 @@ s.DataParameter));
                         cmd.Transaction = tx;
                         cmd.CommandText = string.Format(@"
 
-SELECT [meta],[data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo ORDER BY [seqNo]
+SELECT [meta],[data] FROM [{0}] WITH (NOLOCK) WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqNo ORDER BY [seqNo]
 
 ", _tableName);
                         cmd.Parameters.Add("aggId", SqlDbType.VarChar).Value = aggregateRootId;
@@ -226,7 +226,7 @@ SELECT [meta],[data] FROM [{0}] WHERE [aggId] = @aggId AND [seqNo] >= @firstSeqN
                         cmd.Transaction = tx;
                         cmd.CommandText = string.Format(@"
 
-SELECT [meta],[data] FROM [{0}] WHERE [globSeqNo] >= @cutoff ORDER BY [globSeqNo]
+SELECT [meta],[data] FROM [{0}] WITH (NOLOCK) WHERE [globSeqNo] >= @cutoff ORDER BY [globSeqNo]
 
 ", _tableName);
 
