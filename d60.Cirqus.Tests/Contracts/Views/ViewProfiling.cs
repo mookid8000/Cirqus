@@ -19,6 +19,7 @@ namespace d60.Cirqus.Tests.Contracts.Views
     public class ViewProfiling<TFactory> : FixtureBase where TFactory : AbstractViewManagerFactory, new()
     {
         TFactory _factory;
+        readonly TimeSpan _acceptedTolerance = TimeSpan.FromMilliseconds(200);
 
         protected override void DoSetUp()
         {
@@ -44,11 +45,9 @@ namespace d60.Cirqus.Tests.Contracts.Views
 
         void AssertThat(TimeSpan actualDuration, int approximateExpectedDurationMilliseconds)
         {
-            var lowerBound = TimeSpan.FromMilliseconds(approximateExpectedDurationMilliseconds)
-                - TimeSpan.FromMilliseconds(100);
+            var lowerBound = TimeSpan.FromMilliseconds(approximateExpectedDurationMilliseconds) - _acceptedTolerance;
 
-            var upperBound = TimeSpan.FromMilliseconds(approximateExpectedDurationMilliseconds)
-                + TimeSpan.FromMilliseconds(100);
+            var upperBound = TimeSpan.FromMilliseconds(approximateExpectedDurationMilliseconds) + _acceptedTolerance;
 
             Assert.That(actualDuration, Is.GreaterThan(lowerBound));
             Assert.That(actualDuration, Is.LessThan(upperBound));
