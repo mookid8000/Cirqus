@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
+using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
 using Newtonsoft.Json;
 
@@ -57,12 +58,28 @@ namespace d60.Cirqus.MsSql.Events
 
                         EventValidation.ValidateBatchIntegrity(batchId, eventList);
 
-                        foreach (var @event in eventList)
+                        foreach (var batch in eventList.Batch(10))
                         {
+                            var commandInfo = batch
+                                .Select((@event, index) => new
+                                {
+                                    AggregateRootId = @event.Meta[DomainEvent.MetadataKeys.AggregateRootId],
+                                    AggregateRootIdParameter = string.Format("aggId{0}", index),
+                                    SequenceNumber = @event.Meta[DomainEvent.MetadataKeys.SequenceNumber],
+                                    SequenceNumberParameter = string.Format("seqNo{0}", index),
+                                    GlobalSequenceNumber = @event.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber],
+                                    GlobalSequenceNumberParameter = string.Format("globSeqNo{0}", index),
+                                    Meta = JsonConvert.SerializeObject(@event.Meta),
+                                    MetaParameter = string.Format("meta{0}", index),
+                                    Data = @event.Data,
+                                    DataParameter = string.Format("data{0}", index),
+                                })
+                                .ToList();
+
                             using (var cmd = conn.CreateCommand())
                             {
                                 cmd.Transaction = tx;
-                                cmd.CommandText = string.Format(@"
+                                var sqlStatements = commandInfo.Select(s => string.Format(@"
 
 INSERT INTO [{0}] (
     [batchId],
@@ -73,23 +90,68 @@ INSERT INTO [{0}] (
     [data]
 ) VALUES (
     @batchId,
-    @aggId,
-    @seqNo,
-    @globSeqNo,
-    @meta,
-    @data
+    @{1},
+    @{2},
+    @{3},
+    @{4},
+    @{5}
 )
 
-", _tableName);
+",
+_tableName, 
+s.AggregateRootIdParameter,
+s.SequenceNumberParameter,
+s.GlobalSequenceNumberParameter,
+s.MetaParameter,
+s.DataParameter));
+
+                                cmd.CommandText = string.Join(Environment.NewLine, sqlStatements);
+
                                 cmd.Parameters.Add("batchId", SqlDbType.UniqueIdentifier).Value = batchId;
-                                cmd.Parameters.Add("aggId", SqlDbType.NVarChar).Value = @event.Meta[DomainEvent.MetadataKeys.AggregateRootId];
-                                cmd.Parameters.Add("seqNo", SqlDbType.BigInt).Value = @event.Meta[DomainEvent.MetadataKeys.SequenceNumber];
-                                cmd.Parameters.Add("globSeqNo", SqlDbType.BigInt).Value = @event.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber];
-                                cmd.Parameters.Add("meta", SqlDbType.NVarChar).Value = JsonConvert.SerializeObject(@event.Meta);
-                                cmd.Parameters.Add("data", SqlDbType.VarBinary).Value = @event.Data;
+
+                                foreach (var info in commandInfo)
+                                {
+                                    cmd.Parameters.Add(info.AggregateRootIdParameter, SqlDbType.NVarChar).Value = info.AggregateRootId;
+                                    cmd.Parameters.Add(info.SequenceNumberParameter, SqlDbType.BigInt).Value = info.SequenceNumber;
+                                    cmd.Parameters.Add(info.GlobalSequenceNumberParameter, SqlDbType.BigInt).Value = info.GlobalSequenceNumber;
+                                    cmd.Parameters.Add(info.MetaParameter, SqlDbType.NVarChar).Value = info.Meta;
+                                    cmd.Parameters.Add(info.DataParameter, SqlDbType.VarBinary).Value = info.Data;
+                                }
 
                                 cmd.ExecuteNonQuery();
                             }
+
+                            //using (var cmd = conn.CreateCommand())
+//                            {
+//                                cmd.Transaction = tx;
+//                                cmd.CommandText = string.Format(@"
+
+//INSERT INTO [{0}] (
+//    [batchId],
+//    [aggId],
+//    [seqNo],
+//    [globSeqNo],
+//    [meta],
+//    [data]
+//) VALUES (
+//    @batchId,
+//    @aggId,
+//    @seqNo,
+//    @globSeqNo,
+//    @meta,
+//    @data
+//)
+
+//", _tableName);
+//                                cmd.Parameters.Add("batchId", SqlDbType.UniqueIdentifier).Value = batchId;
+//                                cmd.Parameters.Add("aggId", SqlDbType.NVarChar).Value = @event.Meta[DomainEvent.MetadataKeys.AggregateRootId];
+//                                cmd.Parameters.Add("seqNo", SqlDbType.BigInt).Value = @event.Meta[DomainEvent.MetadataKeys.SequenceNumber];
+//                                cmd.Parameters.Add("globSeqNo", SqlDbType.BigInt).Value = @event.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber];
+//                                cmd.Parameters.Add("meta", SqlDbType.NVarChar).Value = JsonConvert.SerializeObject(@event.Meta);
+//                                cmd.Parameters.Add("data", SqlDbType.VarBinary).Value = @event.Data;
+
+//                                cmd.ExecuteNonQuery();
+//                            }
                         }
 
                         tx.Commit();
