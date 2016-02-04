@@ -127,20 +127,23 @@ namespace d60.Cirqus.Aggregates
         {
             // tried caching here with a (aggRootType, eventType) lookup in two levels of concurrent dictionaries.... didn't provide significant perf boost
 
-            var applyMethod = GetType().GetMethod("Apply", new[] { e.GetType() });
+            var aggregateRootType = GetType();
+            var domainEventType = e.GetType();
+
+            var applyMethod = aggregateRootType.GetMethod("Apply", new[] { domainEventType });
 
             if (applyMethod == null)
             {
                 throw new ApplicationException(
-                    string.Format("Could not find appropriate Apply method - expects a method with a public void Apply({0}) signature",
-                        e.GetType().FullName));
+                    string.Format("Could not find appropriate Apply method on {0} - expects a method with a public void Apply({1}) signature",
+                        aggregateRootType, domainEventType.FullName));
             }
 
             if (CurrentSequenceNumber + 1 != e.GetSequenceNumber())
             {
                 throw new ApplicationException(
-                    string.Format("Tried to apply event with sequence number {0} to aggregate root with ID {1} with current sequence number {2}. Expected an event with sequence number {3}.",
-                    e.GetSequenceNumber(), Id, CurrentSequenceNumber, CurrentSequenceNumber + 1));
+                    string.Format("Tried to apply event with sequence number {0} to aggregate root of type {1} with ID {2} with current sequence number {3}. Expected an event with sequence number {4}.",
+                    e.GetSequenceNumber(), aggregateRootType, Id, CurrentSequenceNumber, CurrentSequenceNumber + 1));
             }
 
             var previousReplayState = ReplayState;
