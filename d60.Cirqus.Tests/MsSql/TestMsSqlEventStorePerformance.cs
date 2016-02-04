@@ -27,7 +27,7 @@ namespace d60.Cirqus.Tests.MsSql
             _globalSequenceNumber = 0;
         }
 
-        [TestCase(100000)]
+        [TestCase(10000)]
         public void CheckReadPerformance(int numberOfEvents)
         {
             var stopwatch = Stopwatch.StartNew();

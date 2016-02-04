@@ -79,33 +79,27 @@ namespace d60.Cirqus.MsSql.Events
                             using (var cmd = conn.CreateCommand())
                             {
                                 cmd.Transaction = tx;
-                                var sqlStatements = commandInfo.Select(s => string.Format(@"
 
-INSERT INTO [{0}] (
+                                var values = commandInfo.Select(s => string.Format(@"(@batchId,@{0},@{1},@{2},@{3},@{4})",
+                                    s.AggregateRootIdParameter,
+                                    s.SequenceNumberParameter,
+                                    s.GlobalSequenceNumberParameter,
+                                    s.MetaParameter,
+                                    s.DataParameter));
+
+                                var sql =
+                                    string.Format(@"INSERT INTO [{0}] (
     [batchId],
     [aggId],
     [seqNo],
     [globSeqNo],
     [meta],
     [data]
-) VALUES (
-    @batchId,
-    @{1},
-    @{2},
-    @{3},
-    @{4},
-    @{5}
-)
+) VALUES 
+{1}", _tableName, string.Join("," + Environment.NewLine, values));
 
-",
-_tableName, 
-s.AggregateRootIdParameter,
-s.SequenceNumberParameter,
-s.GlobalSequenceNumberParameter,
-s.MetaParameter,
-s.DataParameter));
 
-                                cmd.CommandText = string.Join(Environment.NewLine, sqlStatements);
+                                cmd.CommandText = sql;
 
                                 cmd.Parameters.Add("batchId", SqlDbType.UniqueIdentifier).Value = batchId;
 
