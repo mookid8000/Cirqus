@@ -358,7 +358,14 @@ WHEN NOT MATCHED THEN
                         cmd.Parameters.AddWithValue(prop.SqlParameterName, value ?? DBNull.Value);
                     }
 
-                    cmd.ExecuteNonQuery();
+                    try
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                    catch (Exception exception)
+                    {
+                        throw new ApplicationException(string.Format("Could not update row with ID {0} in table {1}", id, _tableName), exception);
+                    }
                 }
             }
         }

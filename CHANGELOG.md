@@ -946,6 +946,10 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 * Optimization of MSSQL event store with drastically improved write performance + slightly improved read performance
 * Better error message when an event can suddenly no longer be applied to an aggregate root
 
+## 0.66.3
+
+* Better error message when MSSQL view instance upsert fails
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis
