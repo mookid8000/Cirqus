@@ -219,9 +219,14 @@ namespace d60.Cirqus.Views.ViewManagers
 
             public void AddEmittedEvent<TAggregateRoot>(AggregateRoot aggregateRoot, DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
             {
+                AddEmittedEvent(aggregateRoot.GetType(), e);
+            }
+
+            public void AddEmittedEvent(Type aggregateRootType, DomainEvent e)
+            {
                 throw new InvalidOperationException(
                     string.Format("Aggregate root {0} with ID {1} attempted to emit event {2}, but that cannot be done when the root instance is frozen! (global sequence number: {3})",
-                        typeof(TAggregateRoot), _aggregateRootInfo.Id, e, _aggregateRootInfo.GlobalSequenceNumberCutoff));
+                        aggregateRootType, _aggregateRootInfo.Id, e, _aggregateRootInfo.GlobalSequenceNumberCutoff));
             }
 
             public void AddToCache(AggregateRoot aggregateRoot, long globalSequenceNumberCutoff)
@@ -252,6 +257,11 @@ namespace d60.Cirqus.Views.ViewManagers
         }
 
         public void AddEmittedEvent<TAggregateRoot>(AggregateRoot aggregateRoot, DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
+        {
+            throw new NotImplementedException("A view context cannot be used as a unit of work when emitting events");
+        }
+
+        public void AddEmittedEvent(Type aggregateRootType, DomainEvent e)
         {
             throw new NotImplementedException("A view context cannot be used as a unit of work when emitting events");
         }

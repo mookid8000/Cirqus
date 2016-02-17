@@ -20,6 +20,11 @@ namespace d60.Cirqus.Tests.Stubs
             Console.WriteLine("Emitted: {0}", e);
         }
 
+        public void AddEmittedEvent(Type aggregateRootType, DomainEvent e)
+        {
+            Console.WriteLine("Emitted: {0}", e);
+        }
+
         public void AddToCache(AggregateRoot aggregateRoot, long globalSequenceNumberCutoff)
         {
             _cachedAggregateRoots[aggregateRoot.Id] = aggregateRoot;

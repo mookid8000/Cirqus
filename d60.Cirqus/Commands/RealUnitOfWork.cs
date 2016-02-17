@@ -33,7 +33,12 @@ namespace d60.Cirqus.Commands
 
         public void AddEmittedEvent<TAggregateRoot>(AggregateRoot aggregateRoot, DomainEvent<TAggregateRoot> e) where TAggregateRoot : AggregateRoot
         {
-            e.Meta[DomainEvent.MetadataKeys.Owner] = _typeNameMapper.GetName(aggregateRoot.GetType());
+            AddEmittedEvent(aggregateRoot.GetType(), e);
+        }
+
+        public void AddEmittedEvent(Type aggregateRootType, DomainEvent e)
+        {
+            e.Meta[DomainEvent.MetadataKeys.Owner] = _typeNameMapper.GetName(aggregateRootType);
             e.Meta[DomainEvent.MetadataKeys.Type] = _typeNameMapper.GetName(e.GetType());
 
             Events.Add(e);

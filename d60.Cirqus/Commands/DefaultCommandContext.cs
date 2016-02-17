@@ -1,5 +1,6 @@
 using System;
 using d60.Cirqus.Aggregates;
+using d60.Cirqus.Events;
 using d60.Cirqus.Exceptions;
 using d60.Cirqus.Numbers;
 
@@ -16,6 +17,10 @@ namespace d60.Cirqus.Commands
             _metadata = metadata;
         }
 
+        public IUnitOfWork UnitOfWork
+        {
+            get { return _unitOfWork; }
+        }
 
         public TAggregateRoot Create<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot
         {

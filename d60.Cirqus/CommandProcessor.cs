@@ -100,7 +100,11 @@ namespace d60.Cirqus
                 _retryer.RetryOn<ConcurrencyException>(() =>
                 {
                     var unitOfWork = new RealUnitOfWork(_aggregateRootRepository, _domainTypeNameMapper);
-                    var eventsFromThisUnitOfWork = InnerProcessCommand(unitOfWork, command).ToList();
+                    var handler = _commandMapper.GetCommandAction(command);
+
+                    handler(new DefaultCommandContext(unitOfWork, command.Meta), command);
+
+                    var eventsFromThisUnitOfWork = unitOfWork.EmittedEvents.ToList();
 
                     // if command processing yielded no events, there's no more work to do
                     if (!eventsFromThisUnitOfWork.Any()) return;
@@ -151,19 +155,6 @@ namespace d60.Cirqus
             return emittedDomainEvents.Any()
                 ? CommandProcessingResult.WithNewPosition(emittedDomainEvents.Max(e => e.GetGlobalSequenceNumber()))
                 : CommandProcessingResult.NoEvents();
-        }
-
-        IEnumerable<DomainEvent> InnerProcessCommand(RealUnitOfWork unitOfWork, Command command)
-        {
-            var handler = _commandMapper.GetCommandAction(command);
-
-            handler(new DefaultCommandContext(unitOfWork, command.Meta), command);
-
-            var emittedEvents = unitOfWork.EmittedEvents.ToList();
-
-            if (!emittedEvents.Any()) return emittedEvents;
-
-            return emittedEvents;
         }
 
         internal event Action Disposed = delegate { };

@@ -950,6 +950,10 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 
 * Better error message when MSSQL view instance upsert fails
 
+## 0.66.4
+
+* Access to UnitOfWork from ICommandContext + overload on UnitOfWork to emit events from non-aggregate root stream
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis

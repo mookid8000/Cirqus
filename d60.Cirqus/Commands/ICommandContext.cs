@@ -1,4 +1,5 @@
 ﻿using d60.Cirqus.Aggregates;
+using d60.Cirqus.Events;
 
 namespace d60.Cirqus.Commands
 {
@@ -7,6 +8,11 @@ namespace d60.Cirqus.Commands
     /// </summary>
     public interface ICommandContext
     {
+        /// <summary>
+        /// Access to current unit of work for raw event work. 
+        /// </summary>
+        IUnitOfWork UnitOfWork { get; }
+
         /// <summary>
         /// Creates an aggregate root of the given type with the given ID. Throws if an instance already exists with the given ID
         /// </summary>
