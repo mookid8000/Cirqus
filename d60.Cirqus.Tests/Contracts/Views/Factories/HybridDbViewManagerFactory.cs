@@ -23,11 +23,13 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
             var documentStore = DocumentStore.ForTesting(
                     TableMode.UseRealTables,
                     MsSqlTestHelper.ConnectionString,
-                    new LambdaHybridDbConfigurator(x =>
+                    x =>
                     {
-                        x.Document<ViewPosition>().With("Id", v => v.Id);
-                        x.Document<TViewInstance>(tableName).With("Id", v => v.Id);
-                    }));
+                        x.Document<ViewPosition>().Key(v => v.Id);
+                        x.Document<TViewInstance>(tableName).Key(v => v.Id);
+                    });
+
+            documentStore.Initialize();
 
             RegisterDisposable(documentStore);
 
