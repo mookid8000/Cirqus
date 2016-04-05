@@ -14,6 +14,8 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
 
         protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>(bool enableBatchDispatch = false)
         {
+            MsSqlTestHelper.DropTable(typeof(TViewInstance).Name + "_HybridDb");
+            MsSqlTestHelper.DropTable(typeof(TViewInstance).Name + "_Documents");
             MsSqlTestHelper.DropTable(typeof(TViewInstance).Name + "_ViewPositions");
             MsSqlTestHelper.DropTable(typeof(TViewInstance).Name + "_Views");
 
