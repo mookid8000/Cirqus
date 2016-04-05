@@ -10,23 +10,21 @@ namespace d60.Cirqus.Tests.Contracts.Views.Factories
         public HybridDbViewManagerFactory()
         {
             MsSqlTestHelper.EnsureTestDatabaseExists();
-            MsSqlTestHelper.DropTable("HybridDb");
-            MsSqlTestHelper.DropTable("ViewPosition");
         }
 
         protected override IViewManager<TViewInstance> CreateViewManager<TViewInstance>(bool enableBatchDispatch = false)
         {
-            var tableName = typeof (TViewInstance).Name + "_HybridDb";
-
-            MsSqlTestHelper.DropTable(tableName);
+            MsSqlTestHelper.DropTable(typeof(TViewInstance).Name + "_ViewPositions");
+            MsSqlTestHelper.DropTable(typeof(TViewInstance).Name + "_Views");
 
             var documentStore = DocumentStore.ForTesting(
                     TableMode.UseRealTables,
                     MsSqlTestHelper.ConnectionString,
                     x =>
                     {
+                        x.UseTableNamePrefix(typeof(TViewInstance).Name + "_");
                         x.Document<ViewPosition>().Key(v => v.Id);
-                        x.Document<TViewInstance>(tableName).Key(v => v.Id);
+                        x.Document<TViewInstance>("Views").Key(v => v.Id);
                     });
 
             documentStore.Initialize();
