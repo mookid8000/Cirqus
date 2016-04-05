@@ -99,7 +99,10 @@ namespace d60.Cirqus.HybridDb
 
                 position.Position = eventList.Max(e => e.GetGlobalSequenceNumber());
 
-                RaiseUpdatedEventFor(session.Advanced.ManagedEntities.OfType<TViewInstance>());
+                RaiseUpdatedEventFor(session.Advanced
+                    .ManagedEntities
+                    .Select(x => x.Entity)
+                    .OfType<TViewInstance>());
 
                 session.SaveChanges();
             }
