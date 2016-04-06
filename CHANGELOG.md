@@ -954,6 +954,11 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 
 * Access to UnitOfWork from ICommandContext + overload on UnitOfWork to emit events from non-aggregate root stream
 
+## 0.67.0
+
+* Updated HybridDB integration to 0.10.0
+
+
 [asgerhallas]: https://github.com/asgerhallas
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis
