@@ -178,7 +178,7 @@ INSERT INTO ""{0}"" (
                     {
                         cmd.Transaction = tx;
 
-                        cmd.CommandText = string.Format(@"SELECT ""data"", ""meta"" FROM ""{0}"" WHERE ""aggId"" = @aggId AND ""seqNo"" >= @firstSeqNo", _tableName);
+                        cmd.CommandText = string.Format(@"SELECT ""data"", ""meta"" FROM ""{0}"" WHERE ""aggId"" = @aggId AND ""seqNo"" >= @firstSeqNo ORDER BY ""seqNo""", _tableName);
                         cmd.Parameters.AddWithValue("aggId", aggregateRootId);
                         cmd.Parameters.AddWithValue("firstSeqNo", firstSeq);
 
