@@ -958,8 +958,12 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 
 * Updated HybridDB integration to 0.10.0
 
+## 0.67.1
+
+* Fixed ordering in PostgreSQL when loading events for an aggregate root - thanks [enriquein]
 
 [asgerhallas]: https://github.com/asgerhallas
+[enriquein]: https://github.com/enriquein
 [kimbirkelund]: https://github.com/kimbirkelund
 [mhertis]: https://github.com/mhertis
 [pvivera]: https://github.com/pvivera
