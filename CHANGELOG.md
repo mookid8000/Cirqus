@@ -962,6 +962,10 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 
 * Fixed ordering in PostgreSQL when loading events for an aggregate root - thanks [enriquein]
 
+## 0.68.0
+
+* Fixed MSSQL event store - avoid `WITH (NOLOCK)` because it is dangerous and fetch batches of 2000 rows
+
 [asgerhallas]: https://github.com/asgerhallas
 [enriquein]: https://github.com/enriquein
 [kimbirkelund]: https://github.com/kimbirkelund

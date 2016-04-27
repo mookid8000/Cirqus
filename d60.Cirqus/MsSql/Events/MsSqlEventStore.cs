@@ -116,36 +116,36 @@ namespace d60.Cirqus.MsSql.Events
                             }
 
                             //using (var cmd = conn.CreateCommand())
-//                            {
-//                                cmd.Transaction = tx;
-//                                cmd.CommandText = string.Format(@"
+                            //                            {
+                            //                                cmd.Transaction = tx;
+                            //                                cmd.CommandText = string.Format(@"
 
-//INSERT INTO [{0}] (
-//    [batchId],
-//    [aggId],
-//    [seqNo],
-//    [globSeqNo],
-//    [meta],
-//    [data]
-//) VALUES (
-//    @batchId,
-//    @aggId,
-//    @seqNo,
-//    @globSeqNo,
-//    @meta,
-//    @data
-//)
+                            //INSERT INTO [{0}] (
+                            //    [batchId],
+                            //    [aggId],
+                            //    [seqNo],
+                            //    [globSeqNo],
+                            //    [meta],
+                            //    [data]
+                            //) VALUES (
+                            //    @batchId,
+                            //    @aggId,
+                            //    @seqNo,
+                            //    @globSeqNo,
+                            //    @meta,
+                            //    @data
+                            //)
 
-//", _tableName);
-//                                cmd.Parameters.Add("batchId", SqlDbType.UniqueIdentifier).Value = batchId;
-//                                cmd.Parameters.Add("aggId", SqlDbType.NVarChar).Value = @event.Meta[DomainEvent.MetadataKeys.AggregateRootId];
-//                                cmd.Parameters.Add("seqNo", SqlDbType.BigInt).Value = @event.Meta[DomainEvent.MetadataKeys.SequenceNumber];
-//                                cmd.Parameters.Add("globSeqNo", SqlDbType.BigInt).Value = @event.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber];
-//                                cmd.Parameters.Add("meta", SqlDbType.NVarChar).Value = JsonConvert.SerializeObject(@event.Meta);
-//                                cmd.Parameters.Add("data", SqlDbType.VarBinary).Value = @event.Data;
+                            //", _tableName);
+                            //                                cmd.Parameters.Add("batchId", SqlDbType.UniqueIdentifier).Value = batchId;
+                            //                                cmd.Parameters.Add("aggId", SqlDbType.NVarChar).Value = @event.Meta[DomainEvent.MetadataKeys.AggregateRootId];
+                            //                                cmd.Parameters.Add("seqNo", SqlDbType.BigInt).Value = @event.Meta[DomainEvent.MetadataKeys.SequenceNumber];
+                            //                                cmd.Parameters.Add("globSeqNo", SqlDbType.BigInt).Value = @event.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber];
+                            //                                cmd.Parameters.Add("meta", SqlDbType.NVarChar).Value = JsonConvert.SerializeObject(@event.Meta);
+                            //                                cmd.Parameters.Add("data", SqlDbType.VarBinary).Value = @event.Data;
 
-//                                cmd.ExecuteNonQuery();
-//                            }
+                            //                                cmd.ExecuteNonQuery();
+                            //                            }
                         }
 
                         tx.Commit();
@@ -213,27 +213,20 @@ SELECT [meta],[data] FROM [{0}] WITH (NOLOCK) WHERE [aggId] = @aggId AND [seqNo]
             {
                 connection = _connectionProvider();
 
-                using (var tx = connection.BeginTransaction())
+                var cutoff = globalSequenceNumber;
+
+                while (true)
                 {
-                    using (var cmd = connection.CreateCommand())
+                    var eventBatch = LoadNextBatch(cutoff, connection);
+
+                    if (!eventBatch.Any()) break;
+
+                    foreach (var eventData in eventBatch)
                     {
-                        cmd.Transaction = tx;
-                        cmd.CommandText = string.Format(@"
-
-SELECT [meta],[data] FROM [{0}] WITH (NOLOCK) WHERE [globSeqNo] >= @cutoff ORDER BY [globSeqNo]
-
-", _tableName);
-
-                        cmd.Parameters.Add("cutoff", SqlDbType.BigInt).Value = globalSequenceNumber;
-
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                yield return ReadEvent(reader);
-                            }
-                        }
+                        yield return eventData;
                     }
+
+                    cutoff = eventBatch.Max(e => e.GetGlobalSequenceNumber()) + 1;
                 }
             }
             finally
@@ -241,6 +234,40 @@ SELECT [meta],[data] FROM [{0}] WITH (NOLOCK) WHERE [globSeqNo] >= @cutoff ORDER
                 if (connection != null)
                 {
                     _cleanupAction(connection);
+                }
+            }
+        }
+
+        List<EventData> LoadNextBatch(long fromGlobalSequenceNumber, SqlConnection connection)
+        {
+            using (var tx = connection.BeginTransaction())
+            {
+                using (var cmd = connection.CreateCommand())
+                {
+                    cmd.Transaction = tx;
+                    cmd.CommandText = string.Format(@"
+
+SELECT TOP 2000 [meta],[data] FROM [{0}] 
+    WHERE [globSeqNo] >= @cutoff 
+    ORDER BY [globSeqNo]
+
+", _tableName);
+
+                    cmd.Parameters.Add("cutoff", SqlDbType.BigInt).Value = fromGlobalSequenceNumber;
+
+                    var batch = new List<EventData>();
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var eventData = ReadEvent(reader);
+
+                            batch.Add(eventData);
+                        }
+                    }
+
+                    return batch;
                 }
             }
         }
@@ -262,8 +289,8 @@ SELECT [meta],[data] FROM [{0}] WITH (NOLOCK) WHERE [globSeqNo] >= @cutoff ORDER
 
         static EventData ReadEvent(IDataRecord reader)
         {
-            var meta = (string) reader["meta"];
-            var data = (byte[]) reader["data"];
+            var meta = (string)reader["meta"];
+            var data = (byte[])reader["data"];
 
             return EventData.FromMetadata(JsonConvert.DeserializeObject<Metadata>(meta), data);
         }
