@@ -6,6 +6,7 @@ using d60.Cirqus.Aggregates;
 using d60.Cirqus.Commands;
 using d60.Cirqus.Events;
 using d60.Cirqus.Extensions;
+using d60.Cirqus.MsSql.Views;
 using d60.Cirqus.Snapshotting;
 using d60.Cirqus.Views.ViewManagers;
 using d60.Cirqus.Views.ViewManagers.Locators;
@@ -63,7 +64,10 @@ namespace d60.Cirqus.Tests.Snapshotting.Models
         }
         public string Id { get; set; }
         public long LastGlobalSequenceNumber { get; set; }
+
+        [Json]
         public Dictionary<string, int> NumbersByRoot { get; set; }
+
         public void Handle(IViewContext context, RootGotNewNumber domainEvent)
         {
             var stopwatch = Stopwatch.StartNew();
@@ -73,8 +77,20 @@ namespace d60.Cirqus.Tests.Snapshotting.Models
             var root = context.Load<Root>(aggregateRootId);
             NumbersByRoot[aggregateRootId] = root.GetNumber();
 
-            var stats = (ConcurrentQueue<TestNewNewSnapshotting.DispatchStats>)context.Items["stats"];
-            stats.Enqueue(new TestNewNewSnapshotting.DispatchStats(dispatchTime, stopwatch.Elapsed));
+            var stats = (ConcurrentQueue<DispatchStats>)context.Items["stats"];
+            stats.Enqueue(new DispatchStats(dispatchTime, stopwatch.Elapsed));
+        }
+    }
+
+    public class DispatchStats
+    {
+        public DateTime Time { get; private set; }
+        public TimeSpan Elapsed { get; private set; }
+
+        public DispatchStats(DateTime time, TimeSpan elapsed)
+        {
+            Time = time;
+            Elapsed = elapsed;
         }
     }
 }

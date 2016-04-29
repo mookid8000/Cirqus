@@ -65,7 +65,9 @@
     <Compile Include="Snapshotting\InMemorySnapshotStore.cs" />
     <Compile Include="Snapshotting\EnableSnapshotsAttribute.cs" />
     <Compile Include="Snapshotting\InMemSnapshotConfigEx.cs" />
+    <Compile Include="Snapshotting\MsSqlSnapshotStore.cs" />
     <Compile Include="Snapshotting\New\ISnapshotStore.cs" />
+    <Compile Include="Snapshotting\New\MsSqlSnapshottingConfigurationExtensions.cs" />
     <Compile Include="Snapshotting\New\NewSnapshottingAggregateRootRepositoryDecorator.cs" />
     <Compile Include="Snapshotting\New\Snapshot.cs" />
     <Compile Include="Snapshotting\New\SnapshottingConfigurationBuilder.cs" />

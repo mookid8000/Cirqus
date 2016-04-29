@@ -7,28 +7,31 @@ using d60.Cirqus.Config;
 using d60.Cirqus.Events;
 using d60.Cirqus.Logging;
 using d60.Cirqus.Logging.Console;
-using d60.Cirqus.MongoDb.Config;
-using d60.Cirqus.MongoDb.Events;
-using d60.Cirqus.MongoDb.Views;
+using d60.Cirqus.MsSql.Config;
+using d60.Cirqus.MsSql.Events;
+using d60.Cirqus.MsSql.Views;
 using d60.Cirqus.Numbers;
 using d60.Cirqus.Serialization;
 using d60.Cirqus.Snapshotting.New;
-using d60.Cirqus.Tests.MongoDb;
+using d60.Cirqus.Tests.MsSql;
 using d60.Cirqus.Tests.Snapshotting.Models;
 using d60.Cirqus.Views;
-using MongoDB.Driver;
 using NUnit.Framework;
 
 namespace d60.Cirqus.Tests.Snapshotting
 {
     [TestFixture, Category(TestCategories.MongoDb)]
-    public class TestNewNewSnapshotting_MongoDb : FixtureBase
+    public class TestNewNewSnapshotting_MsSql : FixtureBase
     {
-        MongoDatabase _database;
-
         protected override void DoSetUp()
         {
-            _database = MongoHelper.InitializeTestDatabase();
+            MsSqlTestHelper.EnsureTestDatabaseExists();
+
+            MsSqlTestHelper.DropTable("Events");
+            MsSqlTestHelper.DropTable("GoodSnaps");
+            MsSqlTestHelper.DropTable("RootNumberView");
+            MsSqlTestHelper.DropTable("RootNumberView_Position");
+
             CirqusLoggerFactory.Current = new ConsoleLoggerFactory(Logger.Level.Warn);
         }
 
@@ -138,7 +141,7 @@ namespace d60.Cirqus.Tests.Snapshotting
 
         CommandProcessingResult GetLastResult()
         {
-            var eventStore = new MongoDbEventStore(_database, "Events");
+            var eventStore = new MsSqlEventStore(MsSqlTestHelper.ConnectionString, "Events");
             var nextGlobalSequenceNumber = eventStore.GetNextGlobalSequenceNumber();
             var lastGlobalSequenceNumber = nextGlobalSequenceNumber - 1;
             return CommandProcessingResult.WithNewPosition(lastGlobalSequenceNumber);
@@ -146,7 +149,7 @@ namespace d60.Cirqus.Tests.Snapshotting
 
         void SaveEvents(int numberOfCommandsToProcess, string aggregateRootId)
         {
-            var eventStore = new MongoDbEventStore(_database, "Events");
+            var eventStore = new MsSqlEventStore(MsSqlTestHelper.ConnectionString, "Events");
             var serializer = new JsonDomainEventSerializer();
             var typeNameMapper = new DefaultDomainTypeNameMapper();
 
@@ -182,13 +185,13 @@ namespace d60.Cirqus.Tests.Snapshotting
 
         IViewManager CreateViewManager()
         {
-            return new MongoDbViewManager<RootNumberView>(_database);
+            return new MsSqlViewManager<RootNumberView>(MsSqlTestHelper.ConnectionString);
         }
 
         ICommandProcessor CreateCommandProcessor(bool enableSnapshotting, IViewManager viewManager, ConcurrentQueue<DispatchStats> handleTimes)
         {
             return CommandProcessor.With()
-                .EventStore(e => e.UseMongoDb(_database, "Events"))
+                .EventStore(e => e.UseSqlServer(MsSqlTestHelper.ConnectionString, "Events"))
                 .EventDispatcher(e =>
                 {
                     var items = new Dictionary<string, object> { { "stats", handleTimes } };
@@ -201,24 +204,10 @@ namespace d60.Cirqus.Tests.Snapshotting
                     if (enableSnapshotting)
                     {
                         Console.WriteLine("Enabling snapshotting");
-
-                        o.EnableSnapshotting(s => s.UseMongoDb(_database, "GoodSnaps"));
-                        //o.EnableSnapshotting(s => s.UseInMemorySnapshotStore());
+                        o.EnableSnapshotting(s => s.UseSqlServer(MsSqlTestHelper.ConnectionString, "GoodSnaps"));
                     }
                 })
                 .Create();
-        }
-
-        public class DispatchStats
-        {
-            public DateTime Time { get; private set; }
-            public TimeSpan Elapsed { get; private set; }
-
-            public DispatchStats(DateTime time, TimeSpan elapsed)
-            {
-                Time = time;
-                Elapsed = elapsed;
-            }
         }
     }
 }
