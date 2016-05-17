@@ -67,9 +67,19 @@ namespace d60.Cirqus.Views.ViewManagers
                 return rootFromCache;
             }
 
+            // we accept that the root loaded here MIGHT be slightly stale due to fast-track dispatch with in-mem events - therefore
+            // we run our in-mem events over the newly hydrated root to give it a chance to apply any of the newly emitted events that might 
+            // not have been available when we loaded the root from the event store
             var aggregateRoot = LoadAggregateRoot<TAggregateRoot>(aggregateRootId, globalSequenceNumber);
 
-            _cachedRoots[aggregateRootId] = new CachedRoot(aggregateRoot, globalSequenceNumber);
+            var entry = new CachedRoot(aggregateRoot, globalSequenceNumber);
+
+            foreach (var e in _eventBatch)
+            {
+                entry.MaybeApply(e, _realUnitOfWork, globalSequenceNumber);
+            }
+
+            _cachedRoots[aggregateRootId] = entry;
 
             return aggregateRoot as TAggregateRoot;
         }
@@ -121,26 +131,23 @@ namespace d60.Cirqus.Views.ViewManagers
 
             public bool IsOk { get; private set; }
 
-            public void MaybeApply(DomainEvent domainEvent, RealUnitOfWork realUnitOfWork, long globalSequenceNumber)
+            public void MaybeApply(DomainEvent domainEvent, RealUnitOfWork realUnitOfWork, long requestedGlobalSequenceNumber)
             {
+                // other roots' events are not relevant
+                if (domainEvent.GetAggregateRootId() != _aggregateRootInfo.Id) return;
+
                 var globalSequenceNumberFromEvent = domainEvent.GetGlobalSequenceNumber();
 
                 // don't do anything if we are not supposed to go this far
-                if (globalSequenceNumberFromEvent > globalSequenceNumber) return;
+                if (globalSequenceNumberFromEvent > requestedGlobalSequenceNumber) return;
 
                 // don't do anything if the event is in the past
                 if (globalSequenceNumberFromEvent <= _globalSequenceNumber) return;
 
                 // if this entry is a future version of the requested version, it's not ok.... sorry!
-                if (_globalSequenceNumber > globalSequenceNumber)
+                if (_globalSequenceNumber > requestedGlobalSequenceNumber)
                 {
                     IsOk = false;
-                    return;
-                }
-
-                // only apply event if it's ours...
-                if (domainEvent.GetAggregateRootId() != _aggregateRootInfo.Id)
-                {
                     return;
                 }
 
@@ -162,7 +169,7 @@ namespace d60.Cirqus.Views.ViewManagers
                 catch (Exception exception)
                 {
                     _logger.Warn(exception, "Got an error while bringing cache entry for {0} up-to-date to {1}",
-                        _aggregateRootInfo.Id, globalSequenceNumber);
+                        _aggregateRootInfo.Id, requestedGlobalSequenceNumber);
 
                     IsOk = false;
                 }
