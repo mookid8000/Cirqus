@@ -132,9 +132,9 @@ INSERT INTO ""{0}"" (
                     tx.Commit();
                 }
             }
-            catch (NpgsqlException exception)
+            catch (PostgresException exception)
             {
-                if (exception.Code == "23505")
+                if (exception.SqlState == "23505")
                 {
                     throw new ConcurrencyException(batchId, eventList, exception);
                 }
