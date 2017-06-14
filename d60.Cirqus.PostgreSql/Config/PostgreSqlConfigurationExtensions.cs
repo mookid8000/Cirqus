@@ -2,6 +2,7 @@
 using d60.Cirqus.Config.Configurers;
 using d60.Cirqus.Events;
 using d60.Cirqus.PostgreSql.Events;
+using Npgsql;
 
 namespace d60.Cirqus.PostgreSql.Config
 {
@@ -17,6 +18,18 @@ namespace d60.Cirqus.PostgreSql.Config
             if (tableName == null) throw new ArgumentNullException("tableName");
 
             builder.Register<IEventStore>(context => new PostgreSqlEventStore(connectionStringOrConnectionStringName, tableName, automaticallyCreateSchema: automaticallyCreateSchema));
+        }
+
+        /// <summary>
+        /// Configures Cirqus to use Postgres as the event store
+        /// </summary>
+        public static void UsePostgreSql(this EventStoreConfigurationBuilder builder, Func<NpgsqlConnection> connectionFactory, string tableName, bool automaticallyCreateSchema = true)
+        {
+            if (builder == null) throw new ArgumentNullException("builder");
+            if (connectionFactory == null) throw new ArgumentNullException("connectionFactory");
+            if (tableName == null) throw new ArgumentNullException("tableName");
+
+            builder.Register<IEventStore>(context => new PostgreSqlEventStore(connectionFactory, tableName, automaticallyCreateSchema: automaticallyCreateSchema));
         }
     }
 }

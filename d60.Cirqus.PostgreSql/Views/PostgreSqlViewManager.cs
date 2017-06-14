@@ -24,14 +24,41 @@ namespace d60.Cirqus.PostgreSql.Views
         readonly ViewDispatcherHelper<TViewInstance> _dispatcher = new ViewDispatcherHelper<TViewInstance>();
         readonly ViewLocator _viewLocator = ViewLocator.GetLocatorFor<TViewInstance>();
         readonly Logger _logger = CirqusLoggerFactory.Current.GetCurrentClassLogger();
-        readonly string _connectionString;
+        readonly Func<NpgsqlConnection> _connectionFactory;
+        private readonly Func<Task<NpgsqlConnection>> _asyncConnectionFactory;
         readonly GenericSerializer _serializer = new GenericSerializer();
 
         public PostgreSqlViewManager(string connectionStringOrConnectionStringName, string tableName, string positionTableName = null, bool automaticallyCreateSchema = true)
         {
             _tableName = tableName;
             _positionTableName = positionTableName ?? _tableName + "_Position";
-            _connectionString = SqlHelper.GetConnectionString(connectionStringOrConnectionStringName);
+
+            _connectionFactory = () =>
+            {
+                var connection = new NpgsqlConnection(SqlHelper.GetConnectionString(connectionStringOrConnectionStringName));
+                connection.Open();
+                return connection;
+            };
+
+            _asyncConnectionFactory = async () =>
+            {
+                var connection = new NpgsqlConnection(SqlHelper.GetConnectionString(connectionStringOrConnectionStringName));
+                await connection.OpenAsync();
+                return connection;
+            };
+
+            if (automaticallyCreateSchema)
+            {
+                CreateSchema();
+            }
+        }
+
+        public PostgreSqlViewManager(Func<NpgsqlConnection> connectionFactory, Func<Task<NpgsqlConnection>> asyncConnectionFactory, string tableName, string positionTableName = null, bool automaticallyCreateSchema = true)
+        {
+            _tableName = tableName;
+            _positionTableName = positionTableName ?? _tableName + "_Position";
+            _connectionFactory = connectionFactory;
+            _asyncConnectionFactory = asyncConnectionFactory;
 
             if (automaticallyCreateSchema)
             {
@@ -59,32 +86,13 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
 
             _logger.Info("Ensuring that schema for '{0}' is created...", typeof(TViewInstance));
 
-            using (var connection = GetConnection())
+            using (var connection = _connectionFactory.Invoke())
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = sql;
                 command.ExecuteNonQuery();
             }
         }
-
-        NpgsqlConnection GetConnection()
-        {
-            var connection = new NpgsqlConnection(_connectionString);
-
-            connection.Open();
-
-            return connection;
-        }
-
-        async Task<NpgsqlConnection> GetConnectionAsync()
-        {
-            var connection = new NpgsqlConnection(_connectionString);
-
-            await connection.OpenAsync();
-
-            return connection;
-        }
-
 
         public override string Id
         {
@@ -101,7 +109,7 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
 
         async Task<long?> GetPositionFromPositionTable()
         {
-            using (var connection = await GetConnectionAsync())
+            using (var connection = await _asyncConnectionFactory.Invoke())
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = string.Format(@"select ""position"" from ""{0}"" where ""id"" = @id", _positionTableName);
@@ -126,7 +134,7 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
 
             var newPosition = eventList.Max(e => e.GetGlobalSequenceNumber());
 
-            using (var connection = GetConnection())
+            using (var connection = _connectionFactory.Invoke())
             {
                 using (var transaction = connection.BeginTransaction())
                 {
@@ -315,7 +323,7 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
         {
             _logger.Info("Purging PostgreSQL table {0}", _tableName);
 
-            using (var connection = GetConnection())
+            using (var connection = _connectionFactory.Invoke())
             {
                 using (var transaction = connection.BeginTransaction())
                 {
@@ -335,7 +343,7 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
 
         public override TViewInstance Load(string viewId)
         {
-            using (var connection = GetConnection())
+            using (var connection = _connectionFactory.Invoke())
             {
                 return FindOneById(viewId, connection, null);
             }
