@@ -10,6 +10,9 @@ namespace d60.Cirqus.Tests.PostgreSql
     {
         static PostgreSqlTestHelper()
         {
+            // sorry - this no longer seems to work
+            return;
+
             Console.WriteLine("Ensuring that Postgres test database exists");
 
             var namesOfExistingDatabases = GetExistingDatabaseNames();

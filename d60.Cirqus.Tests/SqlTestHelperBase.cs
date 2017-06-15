@@ -13,26 +13,27 @@ namespace d60.Cirqus.Tests
             if (string.IsNullOrWhiteSpace(teamCityAgentNumber) || !int.TryParse(teamCityAgentNumber, out number))
                 return databaseName;
 
-            return string.Format("{0}_agent{1}", databaseName, number);
+            return $"{databaseName}_agent{number}";
         }
 
         public static string GetDatabaseName(string connectionString)
         {
             var relevantSetting = connectionString
                 .Split(';')
+                .Select(pair => pair.Trim())
                 .Select(kvp =>
                 {
                     var tokens = kvp.Split('=');
 
                     return new
                     {
-                        Key = tokens[0],
-                        Value = tokens.Length > 0 ? tokens[1] : null
+                        Key = tokens.First().Trim(),
+                        Value = tokens.LastOrDefault()?.Trim()
                     };
                 })
                 .FirstOrDefault(a => string.Equals(a.Key, "database", StringComparison.InvariantCultureIgnoreCase));
 
-            return relevantSetting != null ? relevantSetting.Value : null;
+            return relevantSetting?.Value;
         }
     }
 }
