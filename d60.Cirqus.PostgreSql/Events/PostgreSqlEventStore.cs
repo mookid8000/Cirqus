@@ -14,31 +14,16 @@ namespace d60.Cirqus.PostgreSql.Events
 {
     public class PostgreSqlEventStore : IEventStore
     {
-        readonly Func<NpgsqlConnection> _connectionFactory;
+        readonly Action<NpgsqlConnection> _additionalConnectionSetup;
+        readonly string _connectionString;
         readonly string _tableName;
         readonly MetadataSerializer _metadataSerializer = new MetadataSerializer();
 
-        public PostgreSqlEventStore(string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true)
+        public PostgreSqlEventStore(string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true, Action<NpgsqlConnection> additionalConnectionSetup = null)
         {
             _tableName = tableName;
-
-            _connectionFactory = () =>
-            {
-                var connection = new NpgsqlConnection(SqlHelper.GetConnectionString(connectionStringOrConnectionStringName));
-                connection.Open();
-                return connection;
-            };
-            
-            if (automaticallyCreateSchema)
-            {
-                CreateSchema();
-            }
-        }
-
-        public PostgreSqlEventStore(Func<NpgsqlConnection> connectionFactory, string tableName, bool automaticallyCreateSchema = true)
-        {
-            _tableName = tableName;
-            _connectionFactory = connectionFactory;
+            _connectionString = SqlHelper.GetConnectionString(connectionStringOrConnectionStringName);
+            _additionalConnectionSetup = additionalConnectionSetup;
 
             if (automaticallyCreateSchema)
             {
@@ -82,7 +67,7 @@ END$$;
 
 ", _tableName);
 
-            using (var connection = _connectionFactory.Invoke())
+            using (var connection = GetConnection())
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = sql;
@@ -96,7 +81,7 @@ END$$;
 
             try
             {
-                using (var connection = _connectionFactory.Invoke())
+                using (var connection = GetConnection())
                 using (var tx = connection.BeginTransaction())
                 {
                     var nextSequenceNumber = GetNextGlobalSequenceNumber(connection, tx);
@@ -175,9 +160,22 @@ INSERT INTO ""{0}"" (
             }
         }
 
+        NpgsqlConnection GetConnection()
+        {
+            var connection = new NpgsqlConnection(_connectionString);
+
+            if (_additionalConnectionSetup != null)
+                _additionalConnectionSetup.Invoke(connection);
+
+            connection.Open();
+
+            return connection;
+        }
+
+
         public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
         {
-            using (var connection = _connectionFactory.Invoke())
+            using (var connection = GetConnection())
             {
                 using (var tx = connection.BeginTransaction())
                 {
@@ -205,7 +203,7 @@ INSERT INTO ""{0}"" (
 
         public IEnumerable<EventData> Stream(long globalSequenceNumber = 0)
         {
-            using (var connection = _connectionFactory.Invoke())
+            using (var connection = GetConnection())
             {
                 using (var tx = connection.BeginTransaction())
                 {
@@ -240,7 +238,7 @@ SELECT ""data"", ""meta"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY "
 
         public long GetNextGlobalSequenceNumber()
         {
-            using (var connection = _connectionFactory.Invoke())
+            using (var connection = GetConnection())
             {
                 using (var tx = connection.BeginTransaction())
                 {
@@ -251,7 +249,7 @@ SELECT ""data"", ""meta"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY "
 
         public void DropEvents()
         {
-            using (var connection = _connectionFactory.Invoke())
+            using (var connection = GetConnection())
             {
                 using (var tx = connection.BeginTransaction())
                 {

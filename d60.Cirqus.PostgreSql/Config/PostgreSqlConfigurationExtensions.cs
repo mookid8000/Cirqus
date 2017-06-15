@@ -11,25 +11,13 @@ namespace d60.Cirqus.PostgreSql.Config
         /// <summary>
         /// Configures Cirqus to use Postgres as the event store
         /// </summary>
-        public static void UsePostgreSql(this EventStoreConfigurationBuilder builder, string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true)
+        public static void UsePostgreSql(this EventStoreConfigurationBuilder builder, string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true, Action<NpgsqlConnection> additionalConnectionSetup = null)
         {
             if (builder == null) throw new ArgumentNullException("builder");
             if (connectionStringOrConnectionStringName == null) throw new ArgumentNullException("connectionStringOrConnectionStringName");
             if (tableName == null) throw new ArgumentNullException("tableName");
 
-            builder.Register<IEventStore>(context => new PostgreSqlEventStore(connectionStringOrConnectionStringName, tableName, automaticallyCreateSchema: automaticallyCreateSchema));
-        }
-
-        /// <summary>
-        /// Configures Cirqus to use Postgres as the event store
-        /// </summary>
-        public static void UsePostgreSql(this EventStoreConfigurationBuilder builder, Func<NpgsqlConnection> connectionFactory, string tableName, bool automaticallyCreateSchema = true)
-        {
-            if (builder == null) throw new ArgumentNullException("builder");
-            if (connectionFactory == null) throw new ArgumentNullException("connectionFactory");
-            if (tableName == null) throw new ArgumentNullException("tableName");
-
-            builder.Register<IEventStore>(context => new PostgreSqlEventStore(connectionFactory, tableName, automaticallyCreateSchema: automaticallyCreateSchema));
+            builder.Register<IEventStore>(context => new PostgreSqlEventStore(connectionStringOrConnectionStringName, tableName, automaticallyCreateSchema: automaticallyCreateSchema, additionalConnectionSetup: additionalConnectionSetup));
         }
     }
 }
