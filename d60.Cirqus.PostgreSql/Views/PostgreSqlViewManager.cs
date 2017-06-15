@@ -17,6 +17,7 @@ namespace d60.Cirqus.PostgreSql.Views
     public class PostgreSqlViewManager<TViewInstance> : AbstractViewManager<TViewInstance> where TViewInstance : class, IViewInstance, ISubscribeTo, new()
     {
         readonly string _tableName;
+        private readonly Action<NpgsqlConnection> _additionalConnectionSetup;
         readonly string _positionTableName;
         const int PrimaryKeySize = 255;
         const int DefaultPosition = -1;
@@ -27,9 +28,10 @@ namespace d60.Cirqus.PostgreSql.Views
         readonly string _connectionString;
         readonly GenericSerializer _serializer = new GenericSerializer();
 
-        public PostgreSqlViewManager(string connectionStringOrConnectionStringName, string tableName, string positionTableName = null, bool automaticallyCreateSchema = true)
+        public PostgreSqlViewManager(string connectionStringOrConnectionStringName, string tableName, string positionTableName = null, bool automaticallyCreateSchema = true, Action<NpgsqlConnection> additionalConnectionSetup = null)
         {
             _tableName = tableName;
+            _additionalConnectionSetup = additionalConnectionSetup;
             _positionTableName = positionTableName ?? _tableName + "_Position";
             _connectionString = SqlHelper.GetConnectionString(connectionStringOrConnectionStringName);
 
@@ -71,6 +73,9 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
         {
             var connection = new NpgsqlConnection(_connectionString);
 
+            if (_additionalConnectionSetup != null)
+                _additionalConnectionSetup.Invoke(connection);
+
             connection.Open();
 
             return connection;
@@ -79,6 +84,9 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
         async Task<NpgsqlConnection> GetConnectionAsync()
         {
             var connection = new NpgsqlConnection(_connectionString);
+
+            if (_additionalConnectionSetup != null)
+                _additionalConnectionSetup.Invoke(connection);
 
             await connection.OpenAsync();
 

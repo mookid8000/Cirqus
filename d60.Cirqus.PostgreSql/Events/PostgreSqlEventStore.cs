@@ -15,14 +15,16 @@ namespace d60.Cirqus.PostgreSql.Events
 {
     public class PostgreSqlEventStore : IEventStore
     {
+        readonly Action<NpgsqlConnection> _additionalConnectionSetup;
         readonly string _connectionString;
         readonly string _tableName;
         readonly MetadataSerializer _metadataSerializer = new MetadataSerializer();
 
-        public PostgreSqlEventStore(string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true)
+        public PostgreSqlEventStore(string connectionStringOrConnectionStringName, string tableName, bool automaticallyCreateSchema = true, Action<NpgsqlConnection> additionalConnectionSetup = null)
         {
             _tableName = tableName;
             _connectionString = SqlHelper.GetConnectionString(connectionStringOrConnectionStringName);
+            _additionalConnectionSetup = additionalConnectionSetup;
 
             if (automaticallyCreateSchema)
             {
@@ -159,15 +161,18 @@ INSERT INTO ""{0}"" (
             }
         }
 
-
         NpgsqlConnection GetConnection()
         {
             var connection = new NpgsqlConnection(_connectionString);
+
+            if (_additionalConnectionSetup != null)
+                _additionalConnectionSetup.Invoke(connection);
 
             connection.Open();
 
             return connection;
         }
+
 
         public IEnumerable<EventData> Load(string aggregateRootId, long firstSeq = 0)
         {
