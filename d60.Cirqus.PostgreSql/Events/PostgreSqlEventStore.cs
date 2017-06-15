@@ -9,6 +9,7 @@ using d60.Cirqus.Extensions;
 using d60.Cirqus.Numbers;
 using d60.Cirqus.Serialization;
 using Npgsql;
+using NpgsqlTypes;
 
 namespace d60.Cirqus.PostgreSql.Events
 {
@@ -120,8 +121,8 @@ INSERT INTO ""{0}"" (
 
                             cmd.Parameters.AddWithValue("batchId", batchId);
                             cmd.Parameters.AddWithValue("aggId", e.GetAggregateRootId());
-                            cmd.Parameters.AddWithValue("seqNo", e.Meta[DomainEvent.MetadataKeys.SequenceNumber]);
-                            cmd.Parameters.AddWithValue("globSeqNo", e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber]);
+                            cmd.Parameters.AddWithValue("seqNo", NpgsqlDbType.Bigint, e.Meta[DomainEvent.MetadataKeys.SequenceNumber]);
+                            cmd.Parameters.AddWithValue("globSeqNo", NpgsqlDbType.Bigint, e.Meta[DomainEvent.MetadataKeys.GlobalSequenceNumber]);
                             cmd.Parameters.AddWithValue("data", e.Data);
                             cmd.Parameters.AddWithValue("meta", Encoding.UTF8.GetBytes(_metadataSerializer.Serialize(e.Meta)));
 
@@ -180,7 +181,7 @@ INSERT INTO ""{0}"" (
 
                         cmd.CommandText = string.Format(@"SELECT ""data"", ""meta"" FROM ""{0}"" WHERE ""aggId"" = @aggId AND ""seqNo"" >= @firstSeqNo ORDER BY ""seqNo""", _tableName);
                         cmd.Parameters.AddWithValue("aggId", aggregateRootId);
-                        cmd.Parameters.AddWithValue("firstSeqNo", firstSeq);
+                        cmd.Parameters.AddWithValue("firstSeqNo", NpgsqlDbType.Bigint, firstSeq);
 
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -209,7 +210,7 @@ INSERT INTO ""{0}"" (
 
 SELECT ""data"", ""meta"" FROM ""{0}"" WHERE ""globSeqNo"" >= @cutoff ORDER BY ""globSeqNo""", _tableName);
 
-                        cmd.Parameters.AddWithValue("cutoff", globalSequenceNumber);
+                        cmd.Parameters.AddWithValue("cutoff", NpgsqlDbType.Bigint, globalSequenceNumber);
 
                         using (var reader = cmd.ExecuteReader())
                         {
