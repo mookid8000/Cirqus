@@ -17,10 +17,6 @@ IF !ERRORLEVEL! NEQ 0 (
 	GOTO FAIL
 )
 
-EXIT /B
-
-PAUSE
-
 ECHO Creating git tag %1
 git tag %1
 IF !ERRORLEVEL! NEQ 0 (
