@@ -252,9 +252,9 @@ CREATE TABLE IF NOT EXISTS ""{1}"" (
 
                 var sqlCommands = parametersAndData
                     .Select(a => a.IsNew
-                        ? string.Format(@"insert into ""{0}"" (id, data) values (@{1}, @{2});", _tableName,
+                        ? string.Format(@"insert into ""{0}"" (id, data) values (@{1}, @{2}::jsonb);", _tableName,
                             a.IdParameterName, a.DataParameterName)
-                        : string.Format(@"update ""{0}"" set data = @{2} where id = @{1};", _tableName,
+                        : string.Format(@"update ""{0}"" set data = @{2}::jsonb where id = @{1};", _tableName,
                             a.IdParameterName, a.DataParameterName))
                     .ToList();
 
