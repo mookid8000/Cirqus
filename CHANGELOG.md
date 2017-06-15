@@ -970,6 +970,11 @@ mount of time in the event that an error occurs (chill down, don't spam the logs
 
 * Defensive hydration by `DefaultViewContext` - always checks if in-mem event bactch has something that needs to be applied, which allows for safely loading aggregate roots local events when running on a replicated event store
 
+## 0.69.0
+
+* Add ability to customize `NpgsqlConnection` after its creation (to e.g. supply certificate validation callback) - thanks [enriquein]
+
+
 [asgerhallas]: https://github.com/asgerhallas
 [enriquein]: https://github.com/enriquein
 [kimbirkelund]: https://github.com/kimbirkelund
