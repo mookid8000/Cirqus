@@ -269,6 +269,7 @@ namespace d60.Cirqus.Testing
                 // consume events
                 results = results.Skip(1);
             }
+            AssertAllEventsExpected();
         }
 
         protected void ThenNo<T>() where T : DomainEvent
