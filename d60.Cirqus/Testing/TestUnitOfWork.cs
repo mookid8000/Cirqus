@@ -33,7 +33,7 @@ namespace d60.Cirqus.Testing
 
         internal event Action Committed = delegate { };
 
-        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        public TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot
         {
             var aggregateRoot = _realUnitOfWork.Get<TAggregateRoot>(aggregateRootId, long.MaxValue, createIfNotExists: true);
 

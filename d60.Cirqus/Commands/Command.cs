@@ -40,7 +40,7 @@ namespace d60.Cirqus.Commands
     /// Command base class that is mapped to one specific aggregate root instance for which the <seealso cref="Execute(TAggregateRoot)"/> method will be invoked
     /// </summary>
     /// <typeparam name="TAggregateRoot">Specifies the type of aggregate root that this command targets</typeparam>
-    public abstract class Command<TAggregateRoot> : ExecutableCommand where TAggregateRoot : AggregateRoot, new()
+    public abstract class Command<TAggregateRoot> : ExecutableCommand where TAggregateRoot : AggregateRoot
     {
         protected Command(string aggregateRootId)
         {

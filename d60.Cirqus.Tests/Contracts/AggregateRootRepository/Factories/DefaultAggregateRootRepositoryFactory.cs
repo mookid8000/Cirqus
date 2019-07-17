@@ -27,7 +27,7 @@ namespace d60.Cirqus.Tests.Contracts.AggregateRootRepository.Factories
         }
 
         public void SaveEvent<TDomainEvent, TAggregateRoot>(TDomainEvent e)
-            where TAggregateRoot : AggregateRoot, new()
+            where TAggregateRoot : AggregateRoot
             where TDomainEvent : DomainEvent<TAggregateRoot>
         {
             _eventStore.Save(Guid.NewGuid(), new[] { _domainEventSerializer.Serialize(e) });

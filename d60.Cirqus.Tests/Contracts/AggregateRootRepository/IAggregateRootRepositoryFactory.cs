@@ -8,7 +8,7 @@ namespace d60.Cirqus.Tests.Contracts.AggregateRootRepository
         IAggregateRootRepository GetRepo();
 
         void SaveEvent<TDomainEvent, TAggregateRoot>(TDomainEvent e)
-            where TAggregateRoot : AggregateRoot, new()
+            where TAggregateRoot : AggregateRoot
             where TDomainEvent : DomainEvent<TAggregateRoot>;
     }
 }

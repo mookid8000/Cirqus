@@ -8,7 +8,7 @@ namespace d60.Cirqus.Commands
     /// <summary>
     /// Composite command that allows for packing up multiple commands and have them executed in one single unit of work
     /// </summary>
-    public class CompositeCommand<TAggregateRoot> : Command<TAggregateRoot> where TAggregateRoot : AggregateRoot, new()
+    public class CompositeCommand<TAggregateRoot> : Command<TAggregateRoot> where TAggregateRoot : AggregateRoot
     {
         public List<Command<TAggregateRoot>> Commands { get; set; }
 
@@ -40,13 +40,13 @@ namespace d60.Cirqus.Commands
     public class CompositeCommand
     {
         public static CompositeCommandBuilder<TAggregateRoot> For<TAggregateRoot>()
-            where TAggregateRoot : AggregateRoot, new()
+            where TAggregateRoot : AggregateRoot
         {
             return new CompositeCommandBuilder<TAggregateRoot>();
         }
     }
 
-    public class CompositeCommandBuilder<TAggregateRoot> where TAggregateRoot : AggregateRoot, new()
+    public class CompositeCommandBuilder<TAggregateRoot> where TAggregateRoot : AggregateRoot
     {
         readonly List<Command<TAggregateRoot>> _commands = new List<Command<TAggregateRoot>>();
 

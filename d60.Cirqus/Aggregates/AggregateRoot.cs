@@ -178,7 +178,7 @@ namespace d60.Cirqus.Aggregates
         /// <summary>
         /// Creates another aggregate root with the specified <paramref name="aggregateRootId"/>. Will throw an exception if a root already exists with the specified ID.
         /// </summary>
-        protected TAggregateRoot Create<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        protected TAggregateRoot Create<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot
         {
             if (UnitOfWork == null)
             {
@@ -213,7 +213,7 @@ namespace d60.Cirqus.Aggregates
         /// Tries to load another aggregate root with the specified <paramref name="aggregateRootId"/>. Returns null if no root exists with that ID.
         /// Throws an <see cref="InvalidCastException"/> if a root was found, but its type was not compatible with the specified <typeparamref name="TAggregateRoot"/> type.
         /// </summary>
-        protected TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        protected TAggregateRoot TryLoad<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot
         {
             if (UnitOfWork == null)
             {
@@ -255,7 +255,7 @@ namespace d60.Cirqus.Aggregates
         /// Loads another aggregate root with the specified <paramref name="aggregateRootId"/>. Throws an exception if an aggregate root with that ID could not be found.
         /// Also throws an exception if an aggregate root instance was found, but the type was not compatible with the desired <typeparamref name="TAggregateRoot"/>
         /// </summary>
-        protected TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot, new()
+        protected TAggregateRoot Load<TAggregateRoot>(string aggregateRootId) where TAggregateRoot : AggregateRoot
         {
             if (UnitOfWork == null)
             {
