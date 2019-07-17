@@ -9,17 +9,23 @@ tying it all up in one simple and neat `CommandProcessor`.
 
 You do this:
 
-    var processor = CommandProcessor.With()
-        .(...)
-        .Create();
+```csharp
+var processor = CommandProcessor.With()
+    .(...)
+    .Create();
+```
 
 and let the API guide you through selecting an event store, possibly configuring some more stuff as well, and then you can do this:
 
-    processor.ProcessCommand(myCommand);
+```csharp
+processor.ProcessCommand(myCommand);
+```
 
 and then everything will flow from there. The command processor is reentrant and is meant to be kept around for the duration of your application's lifetime. Remember to
 
-    processor.Dispose();
+```csharp
+processor.Dispose();
+```
     
 when the application shuts down.
 
@@ -71,20 +77,22 @@ to use from something else (e.g. to have node.js-driven projections or whatever)
 
 This is how you can set up a fully functioning command processor, including a view:
 
-    // configure one single view manager
-    var viewManager = new MsSqlViewManager<CounterView>("sqltestdb");
+```csharp
+// configure one single view manager
+var viewManager = new MsSqlViewManager<CounterView>("sqltestdb");
 
-    // let's create & initialize the command processor
-    var processor = CommandProcessor.With()
-        .EventStore(e => e.UseSqlServer("sqltestdb", "Events"))
-        .EventDispatcher(e => e.UseViewManagerEventDispatcher(viewManager))
-        .Create();
+// let's create & initialize the command processor
+var processor = CommandProcessor.With()
+    .EventStore(e => e.UseSqlServer("sqltestdb", "Events"))
+    .EventDispatcher(e => e.UseViewManagerEventDispatcher(viewManager))
+    .Create();
 
-    // use the command processor, possibly from multiple threads,
-    // for the entire lifetime of your application....
+// use the command processor, possibly from multiple threads,
+// for the entire lifetime of your application....
 
-    // and then, when your application shuts down:
-    processor.Dispose();
+// and then, when your application shuts down:
+processor.Dispose();
+```
 
 
 ### Elaborate configuration example
@@ -93,27 +101,29 @@ If you're interested in seeing which moving parts are involved in the command pr
 configuration where all the things are wired together manually. As you can see, it's actually fairly simple
 (although the configuration API is much more intuitive and concise).
 
-    // this is the origin of truth - let's keep it in SQL Server!
-    var eventStore = new MsSqlEventStore("sqltestdb", "Events", 
-                                         automaticallyCreateSchema: true);
+```csharp
+// this is the origin of truth - let's keep it in SQL Server!
+var eventStore = new MsSqlEventStore("sqltestdb", "Events", 
+                                     automaticallyCreateSchema: true);
 
-    // aggregate roots are simply built when needed by replaying events
-    // for the requested root
-    var repository = new DefaultAggregateRootRepository(eventStore);
+// aggregate roots are simply built when needed by replaying events
+// for the requested root
+var repository = new DefaultAggregateRootRepository(eventStore);
 
-    // configure one single view manager in another table in our SQL Server
-    var viewManager = new MsSqlViewManager<CounterView>("sqltestdb", "CounterView", 
-                                                        automaticallyCreateSchema: true);
+// configure one single view manager in another table in our SQL Server
+var viewManager = new MsSqlViewManager<CounterView>("sqltestdb", "CounterView", 
+                                                    automaticallyCreateSchema: true);
 
-    // Cirqus will deliver emitted events to the event dispatcher when they have
-    //  been persisted
-    var eventDispatcher = new ViewManagerEventDispatcher(repository, eventStore, viewManager);
+// Cirqus will deliver emitted events to the event dispatcher when they have
+//  been persisted
+var eventDispatcher = new ViewManagerEventDispatcher(repository, eventStore, viewManager);
 
-    // we can create the processor now
-    var processor = new CommandProcessor(eventStore, repository, eventDispatcher);
+// we can create the processor now
+var processor = new CommandProcessor(eventStore, repository, eventDispatcher);
 
-    // and then, when your application shuts down:
-    processor.Dispose();
+// and then, when your application shuts down:
+processor.Dispose();
+```
 
 
 ### Code example
@@ -121,66 +131,72 @@ configuration where all the things are wired together manually. As you can see, 
 This is an example of a command whose purpose it is to instruct the `Counter` aggregate root to increment itself by
 some specific value, as indicated by the given `delta` parameter:
 
-    public class IncrementCounter : Command<Counter>
+```csharp
+public class IncrementCounter : Command<Counter>
+{
+    public IncrementCounter(string aggregateRootId, int delta)
+        : base(aggregateRootId)
     {
-        public IncrementCounter(string aggregateRootId, int delta)
-            : base(aggregateRootId)
-        {
-            Delta = delta;
-        }
-
-        public int Delta { get; private set; }
-
-        public override void Execute(Counter aggregateRoot)
-        {
-            aggregateRoot.Increment(Delta);
-        }
+        Delta = delta;
     }
+
+    public int Delta { get; private set; }
+
+    public override void Execute(Counter aggregateRoot)
+    {
+        aggregateRoot.Increment(Delta);
+    }
+}
+```
 
 Note how the command indicates the type and ID of the aggregate root to address, as well as an `Execute` method that
 will be invoked by the framework. Let's take a look at `Counter` - aggregate roots must be based on the
 `AggregateRoot` base class and must of course follow the [_emit/apply_ pattern](https://github.com/d60/Cirqus/wiki/Emit-Apply-Pattern)
  for mutating themselves - it looks like this:
 
-    public class Counter : AggregateRoot, IEmit<CounterIncremented>
+```csharp
+public class Counter : AggregateRoot, IEmit<CounterIncremented>
+{
+    int _currentValue;
+
+    public void Increment(int delta)
     {
-        int _currentValue;
-
-        public void Increment(int delta)
-        {
-            Emit(new CounterIncremented(delta));
-        }
-
-        public void Apply(CounterIncremented e)
-        {
-            _currentValue += e.Delta;
-        }
-
-        public int CurrentValue
-        {
-            get { return _currentValue; }
-        }
-
-        public double GetSecretBizValue()
-        {
-            return CurrentValue%2 == 0
-                ? Math.PI
-                : CurrentValue;
-        }
+        Emit(new CounterIncremented(delta));
     }
+
+    public void Apply(CounterIncremented e)
+    {
+        _currentValue += e.Delta;
+    }
+
+    public int CurrentValue
+    {
+        get { return _currentValue; }
+    }
+
+    public double GetSecretBizValue()
+    {
+        return CurrentValue%2 == 0
+            ? Math.PI
+            : CurrentValue;
+    }
+}
+```
 
 As you can see, the command's `Execute` method will invoke the `Increment(delta)` method on the root, which
 in turn will emit a `CounterIncremented` event, which simply looks like this:
 
-    public class CounterIncremented : DomainEvent<Counter>
+```csharp
+public class CounterIncremented : DomainEvent<Counter>
+{
+    public CounterIncremented(int delta)
     {
-        public CounterIncremented(int delta)
-        {
-            Delta = delta;
-        }
-
-        public int Delta { get; private set; }
+        Delta = delta;
     }
+
+    public int Delta { get; private set; }
+}
+```
 
 The event is immediately applied (via the root's `Apply` method that comes from implementing
 `IEmit<CounterIncremented>`), and this is the place where the root is free
@@ -192,41 +208,43 @@ between the counter's value and π, depending on whether the counter's value is 
 
 Lastly, we have set up a `MsSqlViewManager` that operates on a `CounterView` that looks like this:
 
-    public class CounterView : IViewInstance<InstancePerAggregateRootLocator>,
-        ISubscribeTo<CounterIncremented>
+```csharp
+public class CounterView : IViewInstance<InstancePerAggregateRootLocator>,
+    ISubscribeTo<CounterIncremented>
+{
+    public CounterView()
     {
-        public CounterView()
-        {
-            SomeRecentBizValues = new List<double>();
-        }
-
-        public string Id { get; set; }
-
-        public long LastGlobalSequenceNumber { get; set; }
-
-        public int CurrentValue { get; set; }
-
-        public double SecretBizValue { get; set; }
-
-        public List<double> SomeRecentBizValues { get; set; }
-
-        public void Handle(IViewContext context, CounterIncremented domainEvent)
-        {
-            CurrentValue += domainEvent.Delta;
-
-            var id = domainEvent.GetAggregateRootId();
-            var version = domainEvent.GetGlobalSequenceNumber();
-            var counter = context.Load<Counter>(id, version);
-
-            SecretBizValue = counter.GetSecretBizValue();
-
-            SomeRecentBizValues.Add(SecretBizValue);
-
-            // trim to 10 most recent biz values
-            while(SomeRecentBizValues.Count > 10) 
-                SomeRecentBizValues.RemoveAt(0);
-        }
+        SomeRecentBizValues = new List<double>();
     }
+
+    public string Id { get; set; }
+
+    public long LastGlobalSequenceNumber { get; set; }
+
+    public int CurrentValue { get; set; }
+
+    public double SecretBizValue { get; set; }
+
+    public List<double> SomeRecentBizValues { get; set; }
+
+    public void Handle(IViewContext context, CounterIncremented domainEvent)
+    {
+        CurrentValue += domainEvent.Delta;
+
+        var id = domainEvent.GetAggregateRootId();
+        var version = domainEvent.GetGlobalSequenceNumber();
+        var counter = context.Load<Counter>(id, version);
+
+        SecretBizValue = counter.GetSecretBizValue();
+
+        SomeRecentBizValues.Add(SecretBizValue);
+
+        // trim to 10 most recent biz values
+        while(SomeRecentBizValues.Count > 10) 
+            SomeRecentBizValues.RemoveAt(0);
+    }
+}
+```
 
 Views can define how processed events are mapped to view IDs via the `ViewLocator` implementation that closes the `IViewInstance<>`
 interface - in this case, we're using `InstancePerAggregateRootLocator` which means that the aggregate root ID of the processed
